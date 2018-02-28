@@ -3,9 +3,13 @@
 #include <mpi.h>
 
 namespace hicma {
-  int MPIRANK;                                  //!< Rank of MPI communicator
-  int MPISIZE;                                  //!< Size of MPI communicator
-  int EXTERNAL;                                 //!< Flag to indicate external MPI_Init/Finalize
+  int MPIRANK;
+  int MPISIZE;
+  int BLCRANK;
+  int BLCSIZE;
+  int BLCROW;
+  int BLCCOL;
+  int EXTERNAL;
 
   void startMPI(int argc, char ** argv) {
     MPI_Initialized(&EXTERNAL);
