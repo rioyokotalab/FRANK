@@ -11,7 +11,7 @@ block_lu: block_lu.o
 
 block_lu_mpi: block_lu_mpi.o
 	$(CXX) $? -lblas -llapack -lblacsCinit-openmpi -lblacs-openmpi
-	mpirun -np 2 ./a.out
+	mpirun -np 4 ./a.out
 
 clean:
 	$(RM) *.o *.out

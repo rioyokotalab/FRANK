@@ -5,10 +5,11 @@
 namespace hicma {
   int MPIRANK;
   int MPISIZE;
-  int BLCRANK;
-  int BLCSIZE;
-  int BLCROW;
-  int BLCCOL;
+  int CONTEXT;
+  int ROWSIZE;
+  int COLSIZE;
+  int ROWRANK;
+  int COLRANK;
   int EXTERNAL;
 
   void startMPI(int argc, char ** argv) {

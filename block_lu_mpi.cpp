@@ -1,5 +1,6 @@
 #include "mpi_utils.h"
 #include <algorithm>
+#include <cassert>
 #include <cmath>
 #include <cstdlib>
 #include "print.h"
@@ -14,13 +15,25 @@ extern "C" {
   void dgemm_(char* TRANSA, char* TRANSB, int* M, int* N, int* K, double* ALPHA, double* A, int* LDA, double* B, int* LDB, double* BETA, double* C, int* LDC);
   void dgemv_(char* TRANS, int* M, int* N, double* ALPHA, double* A, int* LDA, double* X, int* INCX, double* BETA, double* Y, int* INCY);
   void blacs_pinfo_(int* MYPNUM, int* NPROCS);
+  void blacs_get_(int* ICONTXT, int* WHAT, int* VAL);
+  void blacs_gridinit_(int* ICONTXT, char* ORDER, int* NPROW, int* NPCOL);
+  void blacs_gridinfo_(int* ICONTXT, int* NPROW, int* NPCOL, int* MYPROW, int* MYPCOL);
+  void blacs_gridexit_(int* ICONTXT);
 }
 
 int main(int argc, char** argv) {
   MPI_Init(&argc, &argv);
-  MPI_Comm_rank(MPI_COMM_WORLD, &MPIRANK);
-  MPI_Comm_size(MPI_COMM_WORLD, &MPISIZE);
-  blacs_pinfo_(&BLCRANK, &BLCSIZE);
+  int i0 = 0;
+  char c_r = 'r';
+  blacs_pinfo_(&MPIRANK, &MPISIZE);
+  blacs_get_(&i0, &i0, &CONTEXT);
+  ROWSIZE = std::sqrt(MPISIZE);
+  COLSIZE = MPISIZE / ROWSIZE;
+  assert(MPISIZE == ROWSIZE * COLSIZE);
+  blacs_gridinit_(&CONTEXT, &c_r, &ROWSIZE, &COLSIZE);
+  blacs_gridinfo_(&CONTEXT, &ROWSIZE, &COLSIZE, &ROWRANK, &COLRANK);
+  printMPI(ROWRANK);
+  printMPI(COLRANK);
   int N = 64;
   int Nb = 4;
   int Nc = N / Nb;
@@ -30,7 +43,7 @@ int main(int argc, char** argv) {
   std::vector<double> b(N);
   std::vector<double> A(N*N);
   for (int i=0; i<N; i++) {
-    x[i] = i+1;
+    x[i] = drand48();
     b[i] = 0;
   }
   std::sort(x.begin(), x.end());
@@ -51,7 +64,6 @@ int main(int argc, char** argv) {
   stop("Init matrix");
   start("LU decomposition");
   char c_l='l';
-  char c_r='r';
   char c_u='u';
   char c_n='n';
   char c_t='t';
@@ -104,6 +116,7 @@ int main(int argc, char** argv) {
   }
   print("Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
+  blacs_gridexit_(&CONTEXT);
   MPI_Finalize();
   return 0;
 }

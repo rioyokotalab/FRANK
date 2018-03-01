@@ -2,6 +2,8 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
+#include "dense.h"
+#include "low_rank.h"
 #include "print.h"
 #include "timer.h"
 #include <vector>
@@ -25,7 +27,7 @@ int main(int argc, char** argv) {
   std::vector<double> b(N);
   std::vector<double> A(N*N);
   for (int i=0; i<N; i++) {
-    x[i] = i+1;
+    x[i] = drand48();
     b[i] = 0;
   }
   std::sort(x.begin(), x.end());
