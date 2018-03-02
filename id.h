@@ -133,7 +133,7 @@ void randomized_low_rank_svd2(gsl_matrix *M, int k, gsl_matrix **U, gsl_matrix *
   *S = gsl_matrix_calloc(k,k);
   *V = gsl_matrix_calloc(n,k);
   // build random matrix
-  gsl_matrix *RN = gsl_matrix_calloc(n,k); // calloc sets all elements to zero
+  gsl_matrix *RN = gsl_matrix_calloc(n,k);
   //RN = matrix_load_from_file("data/R.mtx");
   initialize_random_matrix(RN);
   // multiply to get matrix of random samples Y

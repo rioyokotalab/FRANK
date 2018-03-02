@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include "dense.h"
 #include "grid.h"
+#include "low_rank.h"
 #include "print.h"
 #include "timer.h"
 #include <vector>
@@ -12,13 +13,14 @@ using namespace hicma;
 
 int main(int argc, char** argv) {
   int N = 64;
-  int Nb = 4;
+  int Nb = 16;
   int Nc = N / Nb;
+  int rank = 8;
   std::vector<int> ipiv(Nb);
   std::vector<double> randx(N);
-  Grid x2(Nc);
   std::vector<Dense> x(Nc);
   std::vector<Dense> b(Nc);
+  Grid A2(Nc, Nc);
   std::vector<Dense> A(Nc*Nc);
   for (int i=0; i<N; i++) {
     randx[i] = drand48();
@@ -27,17 +29,19 @@ int main(int argc, char** argv) {
   print("Time");
   start("Init matrix");
   for (int ic=0; ic<Nc; ic++) {
-    x2.data.push_back(new Dense);
     x[ic].resize(Nb);
     b[ic].resize(Nb);
     for (int ib=0; ib<Nb; ib++) {
-      x2.data[0][ib] = randx[Nb*ic+ib];
       x[ic][ib] = randx[Nb*ic+ib];
       b[ic][ib] = 0;
     }
   }
   for (int ic=0; ic<Nc; ic++) {
     for (int jc=0; jc<Nc; jc++) {
+      Dense Aii(Nb, Nb);
+      LowRank Aij(Nb, Nb, rank);
+      if (ic == jc) A2(ic,jc) = Aii;
+      else A2(ic,jc) = Aij;
       A[Nc*ic+jc].resize(Nb,Nb);
       for (int ib=0; ib<Nb; ib++) {
         for (int jb=0; jb<Nb; jb++) {
