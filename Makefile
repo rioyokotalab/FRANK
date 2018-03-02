@@ -7,10 +7,6 @@ block_lu: block_lu.o
 	$(CXX) $? -lblas -llapack
 	valgrind ./a.out
 
-block_lu_mpi: block_lu_mpi.o
-	$(CXX) $? -lblas -llapack -lblacsCinit-openmpi -lblacs-openmpi
-	mpirun -np 4 ./a.out
-
 low_rank: id.o
 	$(CXX) $? -lgsl -lgslcblas -lm
 	./a.out
