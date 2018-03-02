@@ -1,10 +1,11 @@
 #ifndef dense_h
 #define dense_h
 #include <cassert>
+#include "node.h"
 #include <vector>
 
 namespace hicma {
-  class Dense {
+  class Dense : public Node {
   public:
     std::vector<double> data;
     int dim[2];
@@ -14,11 +15,6 @@ namespace hicma {
     }
 
     Dense(int i, int j) {
-      dim[0]=i; dim[1]=j;
-      data.resize(dim[0]*dim[1]);
-    }
-
-    void resize(int i, int j){
       dim[0]=i; dim[1]=j;
       data.resize(dim[0]*dim[1]);
     }
@@ -55,6 +51,11 @@ namespace hicma {
         }
       }
       return D2;
+    }
+
+    void resize(int i, int j) {
+      dim[0]=i; dim[1]=j;
+      data.resize(dim[0]*dim[1]);
     }
 
     void print() {
