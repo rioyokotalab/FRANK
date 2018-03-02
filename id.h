@@ -93,8 +93,8 @@ void build_diagonal_matrix(gsl_vector *dvals, int n, gsl_matrix *D){
 /* frobenius norm */
 double matrix_frobenius_norm(gsl_matrix *M){
   double norm = 0;
-  for(int i=0; i<M->size1; i++){
-    for(int j=0; j<M->size2; j++){
+  for(size_t i=0; i<M->size1; i++){
+    for(size_t j=0; j<M->size2; j++){
       double val = gsl_matrix_get(M, i, j);
       norm += val*val;
     }

@@ -1,10 +1,12 @@
 #ifndef low_rank_h
 #define low_rank_h
 #include <cassert>
+#include "dense.h"
+#include "node.h"
 #include <vector>
 
 namespace hicma {
-  class LowRank {
+  class LowRank : public Node {
   public:
     Dense U, B, V;
     int dim[2];

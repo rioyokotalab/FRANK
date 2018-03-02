@@ -25,7 +25,10 @@ int main(int argc, char** argv) {
   std::vector<int> ipiv(Nb);
   std::vector<double> x(N);
   std::vector<double> b(N);
-  std::vector<double> A(N*N);
+  std::vector<Dense> A(Nc*Nc);
+  for (int i=0; i<Nc*Nc; i++) {
+    A[i].resize(Nb,Nb);
+  }
   for (int i=0; i<N; i++) {
     x[i] = drand48();
     b[i] = 0;
@@ -39,8 +42,8 @@ int main(int argc, char** argv) {
         for (int jb=0; jb<Nb; jb++) {
           int i = Nb * ic + ib;
           int j = Nb * jc + jb;
-          A[Nb*Nb*Nc*ic+Nb*Nb*jc+Nb*ib+jb] = 1 / (std::abs(x[i] - x[j]) + 1e-3);
-          b[i] += A[Nb*Nb*Nc*ic+Nb*Nb*jc+Nb*ib+jb] * x[j];
+          A[Nc*ic+jc](ib,jb) = 1 / (std::abs(x[i] - x[j]) + 1e-3);
+          b[i] += A[Nc*ic+jc](ib,jb) * x[j];
         }
       }
     }
@@ -57,18 +60,18 @@ int main(int argc, char** argv) {
   double m1 = -1;
   for (int ic=0; ic<Nc; ic++) {
     start("-DGETRF");
-    dgetrf_(&Nb, &Nb, &A[Nb*Nb*Nc*ic+Nb*Nb*ic], &Nb, &ipiv[0], &info);
+    dgetrf_(&Nb, &Nb, &A[Nc*ic+ic][0], &Nb, &ipiv[0], &info);
     stop("-DGETRF", false);
     for (int jc=ic+1; jc<Nc; jc++) {
       start("-DTRSM");
-      dtrsm_(&c_r, &c_l, &c_t, &c_u, &Nb, &Nb, &p1, &A[Nb*Nb*Nc*ic+Nb*Nb*ic], &Nb, &A[Nb*Nb*Nc*ic+Nb*Nb*jc], &Nb);
-      dtrsm_(&c_l, &c_u, &c_t, &c_n, &Nb, &Nb, &p1, &A[Nb*Nb*Nc*ic+Nb*Nb*ic], &Nb, &A[Nb*Nb*Nc*jc+Nb*Nb*ic], &Nb);
+      dtrsm_(&c_r, &c_l, &c_t, &c_u, &Nb, &Nb, &p1, &A[Nc*ic+ic][0], &Nb, &A[Nc*ic+jc][0], &Nb);
+      dtrsm_(&c_l, &c_u, &c_t, &c_n, &Nb, &Nb, &p1, &A[Nc*ic+ic][0], &Nb, &A[Nc*jc+ic][0], &Nb);
       stop("-DTRSM", false);
     }
     for (int jc=ic+1; jc<Nc; jc++) {
       for (int kc=ic+1; kc<Nc; kc++) {
         start("-DGEMM");
-        dgemm_(&c_n, &c_n, &Nb, &Nb, &Nb, &m1, &A[Nb*Nb*Nc*ic+Nb*Nb*kc], &Nb, &A[Nb*Nb*Nc*jc+Nb*Nb*ic], &Nb, &p1, &A[Nb*Nb*Nc*jc+Nb*Nb*kc], &Nb);
+        dgemm_(&c_n, &c_n, &Nb, &Nb, &Nb, &m1, &A[Nc*ic+kc][0], &Nb, &A[Nc*jc+ic][0], &Nb, &p1, &A[Nc*jc+kc][0], &Nb);
         stop("-DGEMM", false);
       }
     }
@@ -80,17 +83,17 @@ int main(int argc, char** argv) {
   start("Forward substitution");
   for (int ic=0; ic<Nc; ic++) {
     for (int jc=0; jc<ic; jc++) {
-      dgemv_(&c_t, &Nb, &Nb, &m1, &A[Nb*Nb*Nc*ic+Nb*Nb*jc], &Nb, &b[Nb*jc], &i1, &p1, &b[Nb*ic], &i1);
+      dgemv_(&c_t, &Nb, &Nb, &m1, &A[Nc*ic+jc][0], &Nb, &b[Nb*jc], &i1, &p1, &b[Nb*ic], &i1);
     }
-    dtrsm_(&c_l, &c_l, &c_n, &c_u, &Nb, &i1, &p1, &A[Nb*Nb*Nc*ic+Nb*Nb*ic], &Nb, &b[Nb*ic], &Nb);
+    dtrsm_(&c_l, &c_l, &c_n, &c_u, &Nb, &i1, &p1, &A[Nc*ic+ic][0], &Nb, &b[Nb*ic], &Nb);
   }
   stop("Forward substitution");
   start("Backward substitution");
   for (int ic=Nc-1; ic>=0; ic--) {
     for (int jc=Nc-1; jc>ic; jc--) {
-      dgemv_(&c_t, &Nb, &Nb, &m1, &A[Nb*Nb*Nc*ic+Nb*Nb*jc], &Nb, &b[Nb*jc], &i1, &p1, &b[Nb*ic], &i1);
+      dgemv_(&c_t, &Nb, &Nb, &m1, &A[Nc*ic+jc][0], &Nb, &b[Nb*jc], &i1, &p1, &b[Nb*ic], &i1);
     }
-    dtrsm_(&c_l, &c_u, &c_n, &c_n, &Nb, &i1, &p1, &A[Nb*Nb*Nc*ic+Nb*Nb*ic], &Nb, &b[Nb*ic], &Nb);
+    dtrsm_(&c_l, &c_u, &c_n, &c_n, &Nb, &i1, &p1, &A[Nc*ic+ic][0], &Nb, &b[Nb*ic], &Nb);
   }
   stop("Backward substitution");
 
