@@ -1,40 +1,45 @@
 #include <vector>
+#include <iostream>
 
 class Node {
 public:
-  int i;
-  int j;
-  int level;
+  virtual Node operator * (const Node *);
 };
 
 class Dense : public Node {
 public:
-  std::vector<double> data;
-  int dim[2];
-  double& operator[](const int i) {
-    return data[i];
+  int i;
+  Dense(int in) {
+    i = in;
   }
-  Dense() {
-    dim[0]=0; dim[1]=0;
+
+  Dense operator * (const Dense & other) {
+    return other;
   }
 };
 
 class Grid : public Node {
 public:
-  int dim[2];
-  std::vector<Node*> data;
-  Node* operator[](const int i) {
-    return data[i];
+  int i;
+  Grid(int in) {
+    i = in;
   }
-  Grid(int m) {
-    dim[0] = m;
-    dim[1] = 1;
-    data.resize(m);
+  Dense operator * (const Dense & other) {
+    this->i += other.i;
+    return other;
+  }
+  Grid operator * (const Grid & other) {
+    this->i -= other.i;
+    return *this;
   }
 };
 
 int main(int argc, char** argv) {
-  Grid x(2);
-  x.data.push_back(new Dense);
-  (*static_cast<Dense*>(x.data[0])).data.resize(4);
+  Grid x(0);
+  Dense y(1);
+  Grid z(1);
+  x * y;
+  x * z;
+  x * z;
+  std::cout << x.i << std::endl;
 }
