@@ -46,13 +46,6 @@ int main(int argc, char** argv) {
   }
   stop("Init matrix");
   start("LU decomposition");
-  char c_l='l';
-  char c_u='u';
-  char c_n='n';
-  char c_t='t';
-  int i1 = 1;
-  double p1 = 1;
-  double m1 = -1;
   for (int ic=0; ic<Nc; ic++) {
     start("-DGETRF");
     A[Nc*ic+ic].getrf(ipiv);
@@ -78,17 +71,17 @@ int main(int argc, char** argv) {
   start("Forward substitution");
   for (int ic=0; ic<Nc; ic++) {
     for (int jc=0; jc<ic; jc++) {
-      dgemv_(&c_t, &Nb, &Nb, &m1, &A[Nc*ic+jc][0], &Nb, &b[jc][0], &i1, &p1, &b[ic][0], &i1);
+      b[ic].gemv(A[Nc*ic+jc], b[jc]);
     }
-    dtrsm_(&c_l, &c_l, &c_n, &c_u, &Nb, &i1, &p1, &A[Nc*ic+ic][0], &Nb, &b[ic][0], &Nb);
+    b[ic].trsm(A[Nc*ic+ic],'l');
   }
   stop("Forward substitution");
   start("Backward substitution");
   for (int ic=Nc-1; ic>=0; ic--) {
     for (int jc=Nc-1; jc>ic; jc--) {
-      dgemv_(&c_t, &Nb, &Nb, &m1, &A[Nc*ic+jc][0], &Nb, &b[jc][0], &i1, &p1, &b[ic][0], &i1);
+      b[ic].gemv(A[Nc*ic+jc], b[jc]);
     }
-    dtrsm_(&c_l, &c_u, &c_n, &c_n, &Nb, &i1, &p1, &A[Nc*ic+ic][0], &Nb, &b[ic][0], &Nb);
+    b[ic].trsm(A[Nc*ic+ic],'u');
   }
   stop("Backward substitution");
 

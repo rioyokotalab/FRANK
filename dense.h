@@ -76,15 +76,28 @@ namespace hicma {
     void trsm(Dense& D, const char& uplo) const {
       double one = 1;
       char c_l='l', c_r='r', c_u='u', c_n='n', c_t='t';
-      switch (uplo) {
-      case 'l' :
-        dtrsm_(&c_r, &c_l, &c_t, &c_u, &dim[0], &dim[1], &one, &D[0], &dim[1], &data[0], &dim[0]);
-        break;
-      case 'u' :
-        dtrsm_(&c_l, &c_u, &c_t, &c_n, &dim[0], &dim[1], &one, &D[0], &dim[0], &data[0], &dim[0]);
-        break;
-      default :
-        fprintf(stderr,"First argument must be 'l' for lower, 'u' for upper.\n");
+      if (dim[1] == 1) {
+        switch (uplo) {
+        case 'l' :
+          dtrsm_(&c_l, &c_l, &c_n, &c_u, &dim[0], &dim[1], &one, &D[0], &dim[0], &data[0], &dim[0]);
+          break;
+        case 'u' :
+          dtrsm_(&c_l, &c_u, &c_n, &c_n, &dim[0], &dim[1], &one, &D[0], &dim[0], &data[0], &dim[0]);
+          break;
+        default :
+          fprintf(stderr,"First argument must be 'l' for lower, 'u' for upper.\n");
+        }
+      } else {
+        switch (uplo) {
+        case 'l' :
+          dtrsm_(&c_r, &c_l, &c_t, &c_u, &dim[0], &dim[1], &one, &D[0], &dim[1], &data[0], &dim[0]);
+          break;
+        case 'u' :
+          dtrsm_(&c_l, &c_u, &c_t, &c_n, &dim[0], &dim[1], &one, &D[0], &dim[0], &data[0], &dim[0]);
+          break;
+        default :
+          fprintf(stderr,"First argument must be 'l' for lower, 'u' for upper.\n");
+        }
       }
     }
 
