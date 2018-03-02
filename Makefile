@@ -1,5 +1,3 @@
-.SUFFIXES: .cxx .o
-
 CXX = mpicxx -ggdb3 -Wall -O3 -fopenmp -I.
 
 .cxx.o:
@@ -15,12 +13,7 @@ block_lu_mpi: block_lu_mpi.o
 
 low_rank: id.o
 	$(CXX) $? -lgsl -lgslcblas -lm
-	./a.out 0
-	./a.out 1
-	./a.out 2
-	./a.out 3
-	./a.out 4
-	./a.out 5
+	./a.out
 
 clean:
 	$(RM) *.o *.out
