@@ -4,14 +4,11 @@
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_eigen.h>
+#include <gsl/gsl_linalg.h>
 #include <gsl/gsl_rng.h>
 
 #define min(x,y) (((x) < (y)) ? (x) : (y))
 #define max(x,y) (((x) > (y)) ? (x) : (y))
-
-int gsl_linalg_QR_decomp (gsl_matrix * A, gsl_vector * tau);
-int gsl_linalg_QR_Qvec (const gsl_matrix * QR, const gsl_vector * tau, gsl_vector * v);
-int gsl_linalg_SV_decomp (gsl_matrix * A, gsl_matrix * V, gsl_vector * S, gsl_vector * work);
 
 void initialize_random_matrix(gsl_matrix *M){
     gsl_rng_env_setup();
