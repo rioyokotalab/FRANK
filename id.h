@@ -7,25 +7,16 @@
 
 #define min(x,y) (((x) < (y)) ? (x) : (y))
 #define max(x,y) (((x) > (y)) ? (x) : (y))
+#define RAND_MAX 1
 
-void initialize_random_matrix(gsl_matrix *M){
-    gsl_rng_env_setup();
-    const gsl_rng_type * T = gsl_rng_default;
-    gsl_rng * r = gsl_rng_alloc(T);
-    gsl_rng_set (r, time(NULL));
-    int m = M->size1;
-    int n = M->size2;
-    for(int i=0; i<m; i++){
-      for(int j=0; j<n; j++){
-        gsl_matrix_set(M, i, j, gsl_rng_uniform (r));
-      }
+void initialize_random_matrix(double *M, int nrows, int ncols){
+  time_t t;
+  srand((unsigned) time(&t));
+  for(int i=0; i<nrows; i++){
+    for(int j=0; j<ncols; j++){
+      M[i*ncols + j] = rand();
     }
-    gsl_rng_free (r);
-}
-
-/* C = A*B */
-void matrix_matrix_mult(gsl_matrix *A, gsl_matrix *B, gsl_matrix *C){
-    gsl_blas_dgemm (CblasNoTrans, CblasNoTrans, 1.0, A, B, 0.0, C);
+  }
 }
 
 /* C = A^T*B */
@@ -63,13 +54,11 @@ void compute_QR_compact_factorization(gsl_matrix *M, gsl_matrix *Q, gsl_matrix *
 /* compute compact QR factorization and get Q
 M is mxn; Q is mxk and R is kxk (not computed)
 */
-void QR_factorization_getQ(gsl_matrix *M, gsl_matrix *Q){
-  int m = M->size1;
-  int n = M->size2;
-  int k = min(m,n);
-  gsl_matrix *QR = gsl_matrix_calloc(M->size1, M->size2);
-  gsl_vector *tau = gsl_vector_alloc(min(M->size1,M->size2));
-  gsl_matrix_memcpy (QR, M);
+void QR_factorization_getQ(double *M, double *Q, int nrows, int ncols){
+  int k = min(nrows,ncols);
+  double *QR = calloc(nrows*ncols);
+  double *tau = calloc(k);
+  memcpy (QR, M, nrows*ncols);
   gsl_linalg_QR_decomp (QR, tau);
   gsl_vector *vj = gsl_vector_calloc(m);
   for(int j=0; j<k; j++){
@@ -124,24 +113,36 @@ double get_percent_error_between_two_mats(gsl_matrix *A, gsl_matrix *B){
   return 100.0*normA_minus_B/normA;
 }
 
+/* C = A*B */
+void matrix_matrix_mult(doubl *A, double *B, double *C, int nrows, int ncols){
+  int c_n = 'n'; double m1 = 1; double p1 = 1;
+  dgemm_(&c_n, &c_n, &nrows, &ncols, &nrows, &m1, A, &nrows, B, &ncols, &p1, C, &nrows);
+}
+
 /* computes the approximate low rank SVD of rank k of matrix M using QR method */
-void randomized_low_rank_svd2(gsl_matrix *M, int k, gsl_matrix **U, gsl_matrix **S, gsl_matrix **V){
-  int m = M->size1;
-  int n = M->size2;
+void randomized_low_rank_svd2(
+                              double *M,
+                              int k,
+                              double *U,
+                              double *S,
+                              double *V,
+                              int nrows ,
+                              int ncols)
+{
   // setup mats
-  *U = gsl_matrix_calloc(m,k);
-  *S = gsl_matrix_calloc(k,k);
-  *V = gsl_matrix_calloc(n,k);
+  U = calloc(nrows*k);
+  S = calloc(k*k);
+  V = calloc(ncols*k);
   // build random matrix
-  gsl_matrix *RN = gsl_matrix_calloc(n,k); // calloc sets all elements to zero
+  double *RN = calloc(nrows*k); // calloc sets all elements to zero
   //RN = matrix_load_from_file("data/R.mtx");
-  initialize_random_matrix(RN);
+  initialize_random_matrix(RN, nrows, k);
   // multiply to get matrix of random samples Y
-  gsl_matrix *Y = gsl_matrix_alloc(m,k);
-  matrix_matrix_mult(M, RN, Y);
+  double *Y = malloc(nrows*k);
+  matrix_matrix_mult(M, RN, Y, nrows, k);
   // build Q from Y
-  gsl_matrix *Q = gsl_matrix_alloc(m,k);
-  QR_factorization_getQ(Y, Q);
+  double *Q = alloc(nrows*k);
+  QR_factorization_getQ(Y, Q, nrows, k);
   // form Bt = Mt*Q : nxm * mxk = nxk
   gsl_matrix *Bt = gsl_matrix_alloc(n,k);
   matrix_transpose_matrix_mult(M,Q,Bt);
