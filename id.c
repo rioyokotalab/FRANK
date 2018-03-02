@@ -1,10 +1,8 @@
-/* single core code using GSL library */
-#include "low_rank_svd_algorithms_gsl.h"
+#include "id.h"
 #include <sys/time.h>
 
 int main (int argc, char** argv) {
     int m, n, k;
-    double normM, normU, normS, normV, normP;
     gsl_matrix *U,*S,*V;
     k = 10;
     m = 1000; n = 1000;

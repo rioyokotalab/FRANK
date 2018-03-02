@@ -1,6 +1,4 @@
-#include "low_rank_svd_algorithms_gsl.h"
-
-
+#include "gsl_wrapper.h"
 
 /* computes the approximate low rank SVD of rank k of matrix M using BBt version */
 void randomized_low_rank_svd1(gsl_matrix *M, int k, gsl_matrix **U, gsl_matrix **S, gsl_matrix **V){
