@@ -97,5 +97,27 @@ int main(int argc, char** argv) {
   }
   print("Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
+  Dense A1(1,2);
+  A1(0,0) = 1;
+  A1(0,1) = 2;
+  Dense A2(2,3);
+  A2(0,0) = 1;
+  A2(0,1) = 2;
+  A2(0,2) = 2;
+  A2(1,0) = 3;
+  A2(1,1) = 4;
+  A2(1,2) = 4;
+  Dense A3(1,3);
+  A3 = A1 * A2;
+  Dense A4(1,3);
+  for (int i=0; i<1; i++) {
+    for (int j=0; j<3; j++) {
+      A4(i,j) = 0;
+      for (int k=0; k<2; k++) {
+        A4(i,j) += A1(i,k) * A2(k,j);
+      }
+      std::cout << i << " " << j << " " << A3(i,j) << " " << A4(i,j) << std::endl;
+    }
+  }
   return 0;
 }

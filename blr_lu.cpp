@@ -45,10 +45,10 @@ int main(int argc, char** argv) {
           b.D(ic)[ib] += Aij(ib,jb) * x.D(jc)[jb];
         }
       }
-      if (ic == jc) {
+      if ((ic != 0) | (jc != Nc-1)) {
         A(ic,jc) = Aij;
       } else {
-        A(ic,jc) = Aij;
+        A(ic,jc) = LowRank(Aij, rank);
       }
     }
   }

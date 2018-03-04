@@ -35,9 +35,9 @@ namespace hicma {
     Dense(const Dense& A) {
       dim[0]=A.dim[0]; dim[1]=A.dim[1];
       data.resize(dim[0]*dim[1]);
-      for (int i=0; i<dim[0]*dim[1]; i++) data[i] = A.data[i];
+      data = A.data;
     }
-    
+
     double& operator[](const int i) {
       assert(i<dim[0]*dim[1]);
       return data[i];
@@ -58,14 +58,22 @@ namespace hicma {
       return data[i*dim[1]+j];
     }
 
-    const Dense &operator=(const Dense D) {
-      data = D.data;
+    const Dense &operator=(const Dense A) {
+      dim[0]=A.dim[0]; dim[1]=A.dim[1];
+      data.resize(dim[0]*dim[1]);
+      data = A.data;
       return *this;
     }
-    
-    const Dense operator+=(const Dense& D) {
+
+    const Dense operator+=(const Dense& A) {
       for (int i=0; i<dim[0]*dim[1]; i++)
-        this->data[i] += D.data[i];
+        this->data[i] += A.data[i];
+      return *this;
+    }
+
+    const Dense operator-=(const Dense& A) {
+      for (int i=0; i<dim[0]*dim[1]; i++)
+        this->data[i] -= A.data[i];
       return *this;
     }
 
@@ -73,12 +81,16 @@ namespace hicma {
       return Dense(*this) += A;
     }
 
-    Dense operator*(const Dense& B) const {
+    Dense operator-(const Dense& A) const {
+      return Dense(*this) -= A;
+    }
+
+    Dense operator*(const Dense& A) const {
       char c_n='n';
-      double zero = 0;
+      double zero = 1;
       double one = 1;
-      Dense C(dim[0], B.dim[1]);
-      dgemm_(&c_n, &c_n, &dim[0], &B.dim[1], &dim[1], &zero, &data[0], &dim[0], &B[0], &B.dim[0], &one, &C[0], &C.dim[0]);
+      Dense C(dim[0], A.dim[1]);
+      dgemm_(&c_n, &c_n, &A.dim[1], &dim[0], &dim[1], &one, &A[0], &A.dim[1], &data[0], &dim[1], &zero, &C[0], &C.dim[1]);
       return C;
     }
 
@@ -106,10 +118,10 @@ namespace hicma {
       } else {
         switch (uplo) {
         case 'l' :
-          dtrsm_(&c_r, &c_l, &c_t, &c_u, &dim[0], &dim[1], &one, &A[0], &dim[1], &data[0], &dim[0]);
+          dtrsm_(&c_r, &c_l, &c_t, &c_u, &dim[0], &dim[1], &one, &A[0], &A.dim[1], &data[0], &dim[0]);
           break;
         case 'u' :
-          dtrsm_(&c_l, &c_u, &c_t, &c_n, &dim[0], &dim[1], &one, &A[0], &dim[0], &data[0], &dim[0]);
+          dtrsm_(&c_l, &c_u, &c_t, &c_n, &dim[0], &dim[1], &one, &A[0], &A.dim[0], &data[0], &dim[0]);
           break;
         default :
           fprintf(stderr,"Second argument must be 'l' for lower, 'u' for upper.\n");
@@ -144,10 +156,20 @@ namespace hicma {
       data.resize(dim[0]*dim[1]);
     }
 
+    double norm() {
+      double l2 = 0;
+      for (int i=0; i<dim[0]; i++) {
+        for (int j=0; j<dim[1]; j++) {
+          l2 += data[i*dim[1]+j] * data[i*dim[1]+j];
+        }
+      }
+      return l2;
+    }
+
     void print() {
       for (int i=0; i<dim[0]; i++) {
         for (int j=0; j<dim[1]; j++) {
-          std::cout << data[dim[0]*i+j] << ' ';
+          std::cout << data[i*dim[1]+j] << ' ';
         }
         std::cout << std::endl;
       }

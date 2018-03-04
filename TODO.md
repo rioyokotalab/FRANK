@@ -1,8 +1,11 @@
 [Immediate]
-Swap GEMM A and B input order
+Add low rank to BLR
+Tree construction
+HODLR
+H-matrix
+H^2-matrix
 
 [Development]  
-Use BLAS, LAPACK in Dense class
 MPI version  
 Asyncronous communication  
 ID with controllable precision  

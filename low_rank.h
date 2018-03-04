@@ -13,28 +13,17 @@ namespace hicma {
     int dim[2];
     int rank;
 
-    LowRank() {
-      dim[0]=0; dim[1]=0; rank=0;
-    }
-
-    LowRank(const int m, const int n, const int k) {
-      dim[0]=m; dim[1]=n; rank=k;
-      U.resize(dim[0],rank);
-      B.resize(rank,rank);
-      V.resize(rank,dim[1]);
-    }
-
-    LowRank(const LowRank &A) {
+    LowRank(const LowRank &A) : U(A.U), B(A.B), V(A.V) {
       dim[0]=A.dim[0]; dim[1]=A.dim[1]; rank=A.rank;
-      for (int i=0; i<dim[0]*rank; i++) U[i] = A.U[i];
-      for (int i=0; i<rank*rank; i++) B[i] = A.B[i];
-      for (int i=0; i<rank*dim[1]; i++) V[i] = A.V[i];
     }
 
     LowRank(const Dense &D, const int k) {
       int m = dim[0] = D.dim[0];
       int n = dim[1] = D.dim[1];
       rank = k;
+      U.resize(m,k);
+      B.resize(k,k);
+      V.resize(k,n);
       gsl_matrix *D2 = gsl_matrix_calloc(m,n);
       gsl_matrix *U2 = gsl_matrix_calloc(m,k);
       gsl_matrix *B2 = gsl_matrix_calloc(k,k);
@@ -92,16 +81,42 @@ namespace hicma {
       gsl_matrix_free(Bt);
     }
 
+    const LowRank& operator=(const LowRank A) {
+      dim[0]=A.dim[0]; dim[1]=A.dim[1]; rank=A.rank;
+      U = A.U;
+      B = A.B;
+      V = A.V;
+      return *this;
+    }
+
     Dense operator+(const Dense& D) const {
       return U * B * V + D;
     }
 
+    /*
     LowRank operator*(const Dense& D) {
-      LowRank A = *this;
-      A.V = A.V * D;
-      return A;
+      V *= D;
+      return *this;
     }
+    */
 
+    /*
+    LowRank operator*(const LowRank& A) {
+      B *= (V * A.U) * A.B;
+      return *this;
+    }
+    */
+
+    Dense dense() {
+      std::cout << "U: " << U.dim[0] << " " << U.dim[1] << std::endl;
+      std::cout << "B: " << B.dim[0] << " " << B.dim[1] << std::endl;
+      std::cout << "V: " << V.dim[0] << " " << V.dim[1] << std::endl;
+      Dense UB = U * B;
+      std::cout << "UB: " << UB.dim[0] << " " << UB.dim[1] << std::endl;
+      Dense UBV = U * B * V;
+      std::cout << "UBV: " << UBV.dim[0] << " " << UBV.dim[1] << std::endl;
+      return UBV;
+    }
   };
 }
 #endif
