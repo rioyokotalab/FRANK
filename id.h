@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <lapacke.h>
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_rng.h>
@@ -8,6 +9,15 @@
 #define min(x,y) (((x) < (y)) ? (x) : (y))
 #define max(x,y) (((x) > (y)) ? (x) : (y))
 #define RAND_MAX 1
+
+lapack_int LAPACKE_dgeqrf( int matrix_layout, lapack_int m, lapack_int n,
+                           double* a, lapack_int lda, double* tau );
+lapack_int LAPACKE_dormqr( int matrix_layout, char side, char trans,
+                           lapack_int m, lapack_int n, lapack_int k,
+                           const double* a, lapack_int lda, const double* tau,
+                           double* c, lapack_int ldc );
+
+void dgemm_(char* TRANSA, char* TRANSB, int* M, int* N, int* K, double* ALPHA, double* A, int* LDA, double* B, int* LDB, double* BETA, double* C, int* LDC);
 
 void initialize_random_matrix(double *M, int nrows, int ncols){
   time_t t;
@@ -51,25 +61,43 @@ void compute_QR_compact_factorization(gsl_matrix *M, gsl_matrix *Q, gsl_matrix *
   }
 }
 
-/* compute compact QR factorization and get Q
-M is mxn; Q is mxk and R is kxk (not computed)
+/* Function for calling the dgeqrf_ ATLAS routine for computing the QR decomposition.
+ * The result is stored inside QR and TAU.
+ * 
+ * This function computes the QR decomposition and stores in QR and TAU.
+ * The upper triangle (including diagonal) contains the upper trinagle matrix R.
+ * QR_temp - Original input matrix. nrows*ncols.
+ * TAU - Temporary TAU vector used by LAPACKE.
+ * Q - result matrix. 
+ */
+// References:
+// * http://www.netlib.no/netlib/lapack/double/dgeqrf.f
+// * https://stackoverflow.com/a/21974753
+// * https://github.com/SciRuby/nmatrix/blob/00b86992a9babef239b56a2561bfa58f1719c937/lib/nmatrix/lapacke.rb#L299
+void qr_decomp(double *QR_temp, double* TAU, double* Q, int nrows, int ncols, int k)
+{
+  char side = 'L';
+  char trans = 'N';
+  LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, nrows, ncols, QR_temp, nrows, TAU);
+  LAPACKE_dormqr(LAPACK_ROW_MAJOR, side, trans, nrows, ncols, k, QR_temp, nrows, TAU, Q, nrows);
+}
+
+/* compute compact QR factoriation and get Q
+ * M - original matrix. dim: nrows * ncols.
+ * Q - Q part of QR factorized matrix. Answer is returned in this vector. nrows*k. no data during input.
+ * nrows - number of rows of the Matrix Q.
+ * ncols - number of columns of the matrix k.
 */
 void QR_factorization_getQ(double *M, double *Q, int nrows, int ncols){
   int k = min(nrows,ncols);
-  double *QR = calloc(nrows*ncols);
-  double *tau = calloc(k);
-  memcpy (QR, M, nrows*ncols);
-  gsl_linalg_QR_decomp (QR, tau);
-  gsl_vector *vj = gsl_vector_calloc(m);
-  for(int j=0; j<k; j++){
-    gsl_vector_set(vj,j,1.0);
-    gsl_linalg_QR_Qvec (QR, tau, vj);
-    gsl_matrix_set_col(Q,j,vj);
-    vj = gsl_vector_calloc(m);
-  }
-  gsl_vector_free(vj);
-  gsl_vector_free(tau);
-  gsl_matrix_free(QR);
+  double *QR_temp = calloc(nrows*ncols); // temp result from LAPACK stored in this
+  double *TAU = calloc(k); // temp vector for LAPACK.
+  memcpy (QR_temp, M, nrows*ncols);
+  for (int i = 0;i < nrows; ++i) QR_temp[i*nrows + i] = 1.0;
+  
+  qr_decomp (QR_temp, TAU, Q, nrows, ncols, k);
+  free(TAU);
+  free(QR_temp);
 }
 
 /* build diagonal matrix from vector elements */
@@ -120,6 +148,15 @@ void matrix_matrix_mult(doubl *A, double *B, double *C, int nrows, int ncols){
 }
 
 /* computes the approximate low rank SVD of rank k of matrix M using QR method */
+/* 
+ * M - input matrix.
+ * k - rank of the output.
+ * U - U matrix from ID.
+ * S - S (sigma) matrix from ID containing eigenvalues.
+ * V - V matrix from ID.
+ * nrows - number of rows of M.
+ * ncols - number of cols of M.
+ */
 void randomized_low_rank_svd2(
                               double *M,
                               int k,
@@ -143,6 +180,7 @@ void randomized_low_rank_svd2(
   // build Q from Y
   double *Q = alloc(nrows*k);
   QR_factorization_getQ(Y, Q, nrows, k);
+  
   // form Bt = Mt*Q : nxm * mxk = nxk
   gsl_matrix *Bt = gsl_matrix_alloc(n,k);
   matrix_transpose_matrix_mult(M,Q,Bt);
