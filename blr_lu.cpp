@@ -4,7 +4,7 @@
 #include <cmath>
 #include <cstdlib>
 #include "dense.h"
-#include "grid.h"
+#include "hierarchical.h"
 #include "print.h"
 #include "timer.h"
 #include <vector>
@@ -15,10 +15,11 @@ int main(int argc, char** argv) {
   int N = 64;
   int Nb = 16;
   int Nc = N / Nb;
+  int rank = 8;
   std::vector<double> randx(N);
-  Grid x(Nc);
-  Grid b(Nc);
-  Grid A(Nc,Nc);
+  Hierarchical x(Nc);
+  Hierarchical b(Nc);
+  Hierarchical A(Nc,Nc);
   for (int i=0; i<N; i++) {
     randx[i] = drand48();
   }
@@ -44,7 +45,11 @@ int main(int argc, char** argv) {
           b.D(ic)[ib] += Aij(ib,jb) * x.D(jc)[jb];
         }
       }
-      A(ic,jc) = Aij;
+      if (ic == jc) {
+        A(ic,jc) = Aij;
+      } else {
+        A(ic,jc) = Aij;
+      }
     }
   }
   stop("Init matrix");

@@ -1,24 +1,24 @@
-#ifndef grid_h
-#define grid_h
+#ifndef hierarchical_h
+#define hierarchical_h
 #include <boost/any.hpp>
 #include "dense.h"
 #include "low_rank.h"
 
 namespace hicma {
-  class Grid {
+  class Hierarchical {
   public:
     int dim[2];
     std::vector<boost::any> data;
 
-    Grid() {
+    Hierarchical() {
       dim[0]=0; dim[1]=0;
     }
     
-    Grid(const int m) {
+    Hierarchical(const int m) {
       dim[0]=m; dim[1]=1; data.resize(dim[0]);
     }
 
-    Grid(const int m, const int n) {
+    Hierarchical(const int m, const int n) {
       dim[0]=m; dim[1]=n; data.resize(dim[0]*dim[1]);
     }
 

@@ -1,5 +1,4 @@
 [Immediate]
-Grid -> Hierarchical
 Swap GEMM A and B input order
 
 [Development]  

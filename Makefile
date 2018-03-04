@@ -3,10 +3,6 @@ CXX = mpicxx -ggdb3 -Wall -O3 -fopenmp -I.
 .cxx.o:
 	$(CXX) -c $? -o $@
 
-test: test.o
-	$(CXX) $? -lblas -llapack -lgsl -lgslcblas -lm
-	valgrind ./a.out
-
 block_lu: block_lu.o
 	$(CXX) $? -lblas -llapack -lgsl -lgslcblas -lm
 	valgrind ./a.out

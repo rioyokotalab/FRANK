@@ -4,7 +4,7 @@
 #include <cmath>
 #include <cstdlib>
 #include "dense.h"
-#include "grid.h"
+#include "hierarchical.h"
 #include "print.h"
 #include "timer.h"
 #include <vector>
@@ -16,9 +16,9 @@ int main(int argc, char** argv) {
   int Nb = 16;
   int Nc = N / Nb;
   std::vector<double> randx(N);
-  Grid x(Nc);
-  Grid b(Nc);
-  Grid A(Nc,Nc);
+  Hierarchical x(Nc);
+  Hierarchical b(Nc);
+  Hierarchical A(Nc,Nc);
   for (int i=0; i<N; i++) {
     randx[i] = drand48();
   }
