@@ -67,7 +67,7 @@ int main(int argc, char** argv) {
     for (int jc=ic+1; jc<Nc; jc++) {
       for (int kc=ic+1; kc<Nc; kc++) {
         start("-DGEMM");
-        gemm(A(ic,kc),A(jc,ic),A(jc,kc));
+        gemm(A(jc,ic),A(ic,kc),A(jc,kc));
         stop("-DGEMM", false);
       }
     }

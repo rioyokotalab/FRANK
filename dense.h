@@ -127,11 +127,11 @@ namespace hicma {
     }
 
     void gemm(Dense& A, Dense& B) const {
-      assert(dim[0] == A.dim[0] && dim[1] == B.dim[1] && A.dim[1] == B.dim[0]);
+      assert(dim[0] == B.dim[0] && dim[1] == A.dim[1] && B.dim[1] == A.dim[0]);
       char c_n='n';
       double p1 = 1;
       double m1 = -1;
-      dgemm_(&c_n, &c_n, &dim[0], &dim[1], &A.dim[1], &m1, &A[0], &A.dim[0], &B[0], &B.dim[0], &p1, &data[0], &dim[0]);
+      dgemm_(&c_n, &c_n, &dim[0], &dim[1], &B.dim[1], &m1, &B[0], &B.dim[0], &A[0], &A.dim[0], &p1, &data[0], &dim[0]);
     }
 
     void resize(int i) {
