@@ -13,7 +13,7 @@ using namespace hicma;
 
 int main(int argc, char** argv) {
   int N = 64;
-  int Nb = 4;
+  int Nb = 16;
   int Nc = N / Nb;
   std::vector<double> randx(N);
   Grid x(Nc);
