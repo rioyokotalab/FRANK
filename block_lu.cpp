@@ -27,11 +27,10 @@ int main(int argc, char** argv) {
   print("Time");
   start("Init matrix");
   for (int ic=0; ic<Nc; ic++) {
-    x2.data.push_back(new Dense);
+    x2[ic].
     x[ic].resize(Nb);
     b[ic].resize(Nb);
     for (int ib=0; ib<Nb; ib++) {
-      x2.data[0][ib] = randx[Nb*ic+ib];
       x[ic][ib] = randx[Nb*ic+ib];
       b[ic][ib] = 0;
     }

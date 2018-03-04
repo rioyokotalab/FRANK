@@ -1,12 +1,18 @@
 #ifndef grid_h
 #define grid_h
-#include "node.h"
+#include "dense.h"
+#include "low_rank.h"
 
 namespace hicma {
-  class Grid : public Node {
+  class Grid {
   public:
+    struct Data {
+      int flag;
+      Dense d;
+      LowRank l;
+    }
     int dim[2];
-    std::vector<Node*> data;
+    std::vector<Data> data;
 
     Grid(int m) {
       dim[0] = m;
@@ -20,10 +26,10 @@ namespace hicma {
       data.resize(m*n);
     }
 
-    Node* operator[](const int i) {
+    Data operator[](const int i) {
       return data[i];
     }
-    Node* operator()(const int i, const int j) {
+    Data operator()(const int i, const int j) {
       return data[i*dim[1]+j];
     }
   };
