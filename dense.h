@@ -1,6 +1,9 @@
 #ifndef dense_h
 #define dense_h
 #include <cassert>
+#include <cstdio>
+#include <cstdlib>
+#include <iostream>
 #include "node.h"
 #include <vector>
 
@@ -31,6 +34,7 @@ namespace hicma {
 
     Dense(const Dense& A) {
       dim[0]=A.dim[0]; dim[1]=A.dim[1];
+      data.resize(dim[0]*dim[1]);
       for (int i=0; i<dim[0]*dim[1]; i++) data[i] = A.data[i];
     }
     
@@ -54,6 +58,11 @@ namespace hicma {
       return data[i*dim[1]+j];
     }
 
+    const Dense &operator=(const Dense D) {
+      data = D.data;
+      return *this;
+    }
+    
     const Dense operator+=(const Dense& D) {
       for (int i=0; i<dim[0]*dim[1]; i++)
         this->data[i] += D.data[i];
@@ -73,9 +82,11 @@ namespace hicma {
       return C;
     }
 
-    void getrf(std::vector<int>& ipiv) const {
+    std::vector<int> getrf() const {
       int info;
+      std::vector<int> ipiv(std::min(dim[0],dim[1]));
       dgetrf_(&dim[0], &dim[1], &data[0], &dim[0], &ipiv[0], &info);
+      return ipiv;
     }
 
     void trsm(Dense& A, const char& uplo) const {

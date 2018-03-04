@@ -1,5 +1,9 @@
+[Immediate]
+Grid -> Hierarchical
+Swap GEMM A and B input order
+
 [Development]  
-Use BLAS, LAPACK in Dense class  
+Use BLAS, LAPACK in Dense class
 MPI version  
 Asyncronous communication  
 ID with controllable precision  

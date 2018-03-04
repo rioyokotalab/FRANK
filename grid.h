@@ -14,11 +14,11 @@ namespace hicma {
       dim[0]=0; dim[1]=0;
     }
     
-    Grid(int m) {
+    Grid(const int m) {
       dim[0]=m; dim[1]=1; data.resize(dim[0]);
     }
 
-    Grid(int m, int n) {
+    Grid(const int m, const int n) {
       dim[0]=m; dim[1]=n; data.resize(dim[0]*dim[1]);
     }
 
@@ -40,6 +40,16 @@ namespace hicma {
     const boost::any& operator()(const int i, const int j) const {
       assert(i<dim[0] && j<dim[1]);
       return data[i*dim[1]+j];
+    }
+
+    Dense& D(const int i) {
+      assert(i<dim[0]*dim[1]);
+      return boost::any_cast<Dense&>(data[i]);
+    }
+
+    Dense& D(const int i, const int j) {
+      assert(i<dim[0] && j<dim[1]);
+      return boost::any_cast<Dense&>(data[i*dim[1]+j]);
     }
   };
 }

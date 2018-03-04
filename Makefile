@@ -4,7 +4,7 @@ CXX = mpicxx -ggdb3 -Wall -O3 -fopenmp -I.
 	$(CXX) -c $? -o $@
 
 test: test.o
-	$(CXX) $?
+	$(CXX) $? -lblas -llapack -lgsl -lgslcblas -lm
 	valgrind ./a.out
 
 block_lu: block_lu.o
@@ -15,7 +15,7 @@ blr_lu: blr_lu.o
 	$(CXX) $? -lblas -llapack -lgsl -lgslcblas -lm
 	valgrind ./a.out
 
-low_rank: id.o
+id: id.o
 	$(CXX) $? -lgsl -lgslcblas -lm
 	./a.out
 
