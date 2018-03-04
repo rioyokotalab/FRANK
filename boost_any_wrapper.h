@@ -103,6 +103,7 @@ namespace hicma {
         }
       } else if (B.type() == typeid(LowRank)) {
         if (C.type() == typeid(Dense)) {
+          //boost::any_cast<Dense&>(C).gemm(boost::any_cast<Dense&>(A), boost::any_cast<LowRank&>(B));
           Dense BD = boost::any_cast<LowRank&>(B).dense();
           boost::any_cast<Dense&>(C).gemm(boost::any_cast<Dense&>(A), BD);
           fprintf(stderr,"Revert to dense 3.\n");

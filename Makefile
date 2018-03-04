@@ -3,15 +3,15 @@ CXX = mpicxx -ggdb3 -Wall -O3 -fopenmp -I.
 .cxx.o:
 	$(CXX) -c $? -o $@
 
-block_lu: block_lu.o
+block_lu: block_lu.o low_rank.o id.o
 	$(CXX) $? -lblas -llapack -lgsl -lgslcblas -lm
 	valgrind ./a.out
 
-blr_lu: blr_lu.o
+blr_lu: blr_lu.o low_rank.o id.o
 	$(CXX) $? -lblas -llapack -lgsl -lgslcblas -lm
 	valgrind ./a.out
 
-id: id.o
+id_test: id_test.o id.o
 	$(CXX) $? -lgsl -lgslcblas -lm
 	./a.out
 
