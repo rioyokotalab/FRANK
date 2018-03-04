@@ -20,7 +20,6 @@ int main(int argc, char** argv) {
   std::vector<double> randx(N);
   std::vector<Dense> x(Nc);
   std::vector<Dense> b(Nc);
-  Grid A2(Nc, Nc);
   std::vector<Dense> A(Nc*Nc);
   for (int i=0; i<N; i++) {
     randx[i] = drand48();
@@ -38,10 +37,6 @@ int main(int argc, char** argv) {
   }
   for (int ic=0; ic<Nc; ic++) {
     for (int jc=0; jc<Nc; jc++) {
-      Dense Aii(Nb, Nb);
-      LowRank Aij(Nb, Nb, rank);
-      if (ic == jc) A2(ic,jc) = Aii;
-      else A2(ic,jc) = Aij;
       A[Nc*ic+jc].resize(Nb,Nb);
       for (int ib=0; ib<Nb; ib++) {
         for (int jb=0; jb<Nb; jb++) {

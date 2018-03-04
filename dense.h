@@ -21,21 +21,26 @@ namespace hicma {
       dim[0]=0; dim[1]=0;
     }
 
-    Dense(int i) {
-      dim[0]=i; dim[1]=1;
-      data.resize(dim[0]*dim[1]);
+    Dense(const int m) {
+      dim[0]=m; dim[1]=1; data.resize(dim[0]);
     }
 
-    Dense(int i, int j) {
-      dim[0]=i; dim[1]=j;
-      data.resize(dim[0]*dim[1]);
+    Dense(const int m, const int n) {
+      dim[0]=m; dim[1]=n; data.resize(dim[0]*dim[1]);
     }
 
+    Dense(const Dense& A) {
+      dim[0]=A.dim[0]; dim[1]=A.dim[1];
+      for (int i=0; i<dim[0]*dim[1]; i++) data[i] = A.data[i];
+    }
+    
     double& operator[](const int i) {
+      assert(i<dim[0]*dim[1]);
       return data[i];
     }
 
     const double& operator[](const int i) const {
+      assert(i<dim[0]*dim[1]);
       return data[i];
     }
 
@@ -55,8 +60,8 @@ namespace hicma {
       return *this;
     }
 
-    Dense operator+(const Dense& D) const {
-      return Dense(*this) += D;
+    Dense operator+(const Dense& A) const {
+      return Dense(*this) += A;
     }
 
     Dense operator*(const Dense& B) const {
@@ -73,30 +78,30 @@ namespace hicma {
       dgetrf_(&dim[0], &dim[1], &data[0], &dim[0], &ipiv[0], &info);
     }
 
-    void trsm(Dense& D, const char& uplo) const {
+    void trsm(Dense& A, const char& uplo) const {
       double one = 1;
       char c_l='l', c_r='r', c_u='u', c_n='n', c_t='t';
       if (dim[1] == 1) {
         switch (uplo) {
         case 'l' :
-          dtrsm_(&c_l, &c_l, &c_n, &c_u, &dim[0], &dim[1], &one, &D[0], &dim[0], &data[0], &dim[0]);
+          dtrsm_(&c_l, &c_l, &c_n, &c_u, &dim[0], &dim[1], &one, &A[0], &dim[0], &data[0], &dim[0]);
           break;
         case 'u' :
-          dtrsm_(&c_l, &c_u, &c_n, &c_n, &dim[0], &dim[1], &one, &D[0], &dim[0], &data[0], &dim[0]);
+          dtrsm_(&c_l, &c_u, &c_n, &c_n, &dim[0], &dim[1], &one, &A[0], &dim[0], &data[0], &dim[0]);
           break;
         default :
-          fprintf(stderr,"First argument must be 'l' for lower, 'u' for upper.\n");
+          fprintf(stderr,"Second argument must be 'l' for lower, 'u' for upper.\n");
         }
       } else {
         switch (uplo) {
         case 'l' :
-          dtrsm_(&c_r, &c_l, &c_t, &c_u, &dim[0], &dim[1], &one, &D[0], &dim[1], &data[0], &dim[0]);
+          dtrsm_(&c_r, &c_l, &c_t, &c_u, &dim[0], &dim[1], &one, &A[0], &dim[1], &data[0], &dim[0]);
           break;
         case 'u' :
-          dtrsm_(&c_l, &c_u, &c_t, &c_n, &dim[0], &dim[1], &one, &D[0], &dim[0], &data[0], &dim[0]);
+          dtrsm_(&c_l, &c_u, &c_t, &c_n, &dim[0], &dim[1], &one, &A[0], &dim[0], &data[0], &dim[0]);
           break;
         default :
-          fprintf(stderr,"First argument must be 'l' for lower, 'u' for upper.\n");
+          fprintf(stderr,"Second argument must be 'l' for lower, 'u' for upper.\n");
         }
       }
     }

@@ -1,35 +1,44 @@
 #ifndef grid_h
 #define grid_h
+#include <boost/any.hpp>
 #include "dense.h"
 #include "low_rank.h"
 
 namespace hicma {
   class Grid {
   public:
-    struct Data {
-      int flag;
-      Dense d;
-      LowRank l;
-    }
     int dim[2];
-    std::vector<Data> data;
+    std::vector<boost::any> data;
 
+    Grid() {
+      dim[0]=0; dim[1]=0;
+    }
+    
     Grid(int m) {
-      dim[0] = m;
-      dim[1] = 1;
-      data.resize(m);
+      dim[0]=m; dim[1]=1; data.resize(dim[0]);
     }
 
     Grid(int m, int n) {
-      dim[0] = m;
-      dim[1] = n;
-      data.resize(m*n);
+      dim[0]=m; dim[1]=n; data.resize(dim[0]*dim[1]);
     }
 
-    Data operator[](const int i) {
+    boost::any& operator[](const int i) {
+      assert(i<dim[0]*dim[1]);
       return data[i];
     }
-    Data operator()(const int i, const int j) {
+    
+    const boost::any& operator[](const int i) const {
+      assert(i<dim[0]*dim[1]);
+      return data[i];
+    }
+    
+    boost::any& operator()(const int i, const int j) {
+      assert(i<dim[0] && j<dim[1]);
+      return data[i*dim[1]+j];
+    }
+
+    const boost::any& operator()(const int i, const int j) const {
+      assert(i<dim[0] && j<dim[1]);
       return data[i*dim[1]+j];
     }
   };

@@ -17,21 +17,21 @@ namespace hicma {
       dim[0]=0; dim[1]=0; rank=0;
     }
 
-    LowRank(int i, int j, int k) {
-      dim[0]=i; dim[1]=j; rank=k;
+    LowRank(const int m, const int n, const int k) {
+      dim[0]=m; dim[1]=n; rank=k;
       U.resize(dim[0],rank);
       B.resize(rank,rank);
       V.resize(rank,dim[1]);
     }
 
-    LowRank(LowRank &A) {
+    LowRank(const LowRank &A) {
       dim[0]=A.dim[0]; dim[1]=A.dim[1]; rank=A.rank;
       for (int i=0; i<dim[0]*rank; i++) U[i] = A.U[i];
       for (int i=0; i<rank*rank; i++) B[i] = A.B[i];
       for (int i=0; i<rank*dim[1]; i++) V[i] = A.V[i];
     }
 
-    LowRank(Dense &D, int k) {
+    LowRank(const Dense &D, const int k) {
       int m = dim[0] = D.dim[0];
       int n = dim[1] = D.dim[1];
       rank = k;

@@ -8,7 +8,7 @@ test: test.o
 	valgrind ./a.out
 
 block_lu: block_lu.o
-	$(CXX) $? -lblas -llapack
+	$(CXX) $? -lblas -llapack -lgsl -lgslcblas -lm
 	valgrind ./a.out
 
 blr_lu: blr_lu.o

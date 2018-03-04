@@ -16,7 +16,6 @@ int main(int argc, char** argv) {
   int Nc = N / Nb;
   std::vector<int> ipiv(Nb);
   std::vector<double> randx(N);
-  Grid x2(Nc);
   std::vector<Dense> x(Nc);
   std::vector<Dense> b(Nc);
   std::vector<Dense> A(Nc*Nc);
@@ -27,7 +26,6 @@ int main(int argc, char** argv) {
   print("Time");
   start("Init matrix");
   for (int ic=0; ic<Nc; ic++) {
-    x2[ic].
     x[ic].resize(Nb);
     b[ic].resize(Nb);
     for (int ib=0; ib<Nb; ib++) {
