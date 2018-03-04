@@ -95,27 +95,20 @@ namespace hicma {
 
     /*
     LowRank operator*(const Dense& D) {
-      V *= D;
+      V = V * D;
       return *this;
     }
     */
 
     /*
     LowRank operator*(const LowRank& A) {
-      B *= (V * A.U) * A.B;
+      B = B * (V * A.U) * A.B;
       return *this;
     }
     */
 
     Dense dense() {
-      std::cout << "U: " << U.dim[0] << " " << U.dim[1] << std::endl;
-      std::cout << "B: " << B.dim[0] << " " << B.dim[1] << std::endl;
-      std::cout << "V: " << V.dim[0] << " " << V.dim[1] << std::endl;
-      Dense UB = U * B;
-      std::cout << "UB: " << UB.dim[0] << " " << UB.dim[1] << std::endl;
-      Dense UBV = U * B * V;
-      std::cout << "UBV: " << UBV.dim[0] << " " << UBV.dim[1] << std::endl;
-      return UBV;
+      return (U * B * V);
     }
   };
 }
