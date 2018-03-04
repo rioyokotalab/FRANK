@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
           b.D(ic)[ib] += Aij(ib,jb) * x.D(jc)[jb];
         }
       }
-      if ((ic != 0) | (jc != Nc-1)) {
+      if (std::abs(ic - jc) <= 1) {
         A(ic,jc) = Aij;
       } else {
         A(ic,jc) = LowRank(Aij, rank);
