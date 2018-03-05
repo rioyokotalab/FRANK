@@ -7,6 +7,7 @@
 #include <vector>
 
 namespace hicma {
+  class Dense;
   class LowRank : public Node {
   public:
     Dense U, B, V;
