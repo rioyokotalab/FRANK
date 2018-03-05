@@ -25,24 +25,10 @@ namespace hicma {
         boost::any_cast<Dense&>(Aij).trsm(boost::any_cast<Dense&>(Aii), uplo);
       }
       else if (Aij.type() == typeid(LowRank)) {
-        LowRank A = boost::any_cast<LowRank&>(Aij);
-        Dense AD = A.dense();
-        AD.trsm(boost::any_cast<Dense&>(Aii), uplo);
-        Aij = LowRank(AD, boost::any_cast<LowRank&>(Aij).rank);
-        fprintf(stderr,"Revert to dense 1.\n");
-        /*
-          switch (uplo) {
-          case 'l' :
-          boost::any_cast<LowRank&>(Aij).U.trsm(boost::any_cast<Dense&>(Aii), uplo);
-          case 'u' :
-          boost::any_cast<LowRank&>(Aij).V.trsm(boost::any_cast<Dense&>(Aii), uplo);
-          default :
-          fprintf(stderr,"Third argument must be 'l' for lower, 'u' for upper.\n");
-          }
-        */
+        boost::any_cast<LowRank&>(Aij).trsm(boost::any_cast<Dense&>(Aii), uplo);
       }
       else if (Aij.type() == typeid(Hierarchical)) {
-        fprintf(stderr,"Operation undefined 1.\n");
+        fprintf(stderr,"Operation undefined 0.\n");
       }
       else {
         fprintf(stderr,"Second value must be Dense, LowRank or Hierarchical.\n");
@@ -50,7 +36,7 @@ namespace hicma {
     }
     else if (Aii.type() == typeid(Hierarchical)) {
       if (Aij.type() == typeid(Dense)) {
-        boost::any_cast<Dense&>(Aij).trsm(boost::any_cast<Dense&>(Aii), uplo);
+        fprintf(stderr,"Operation undefined 1.\n");
       }
       else if (Aij.type() == typeid(LowRank)) {
         fprintf(stderr,"Operation undefined 2.\n");
@@ -81,9 +67,7 @@ namespace hicma {
     }
     else if (A.type() == typeid(LowRank)) {
       if (b.type() == typeid(Dense)) {
-        Dense AD = boost::any_cast<LowRank&>(A).dense();
-        boost::any_cast<Dense&>(x).gemv(AD, boost::any_cast<Dense&>(b));
-        fprintf(stderr,"Revert to dense 2.\n");
+        boost::any_cast<Dense&>(x).gemv(boost::any_cast<LowRank&>(A), boost::any_cast<Dense&>(b));
       }
       else if (b.type() == typeid(Hierarchical)) {
         fprintf(stderr,"Operation undefined 5.\n");
@@ -115,7 +99,7 @@ namespace hicma {
           boost::any_cast<Dense&>(C).gemm(boost::any_cast<Dense&>(A), boost::any_cast<Dense&>(B));
         }
         else if (C.type() == typeid(LowRank)) {
-          fprintf(stderr,"Operation undefined 8.\n");
+          boost::any_cast<LowRank&>(C).gemm(boost::any_cast<Dense&>(A), boost::any_cast<Dense&>(B));
         }
         else if (C.type() == typeid(Hierarchical)) {
           fprintf(stderr,"Operation undefined 9.\n");
@@ -162,9 +146,7 @@ namespace hicma {
           boost::any_cast<Dense&>(C).gemm(boost::any_cast<LowRank&>(A), boost::any_cast<Dense&>(B));
         }
         else if (C.type() == typeid(LowRank)) {
-          Dense CD = boost::any_cast<LowRank&>(C).dense();
-          CD.gemm(boost::any_cast<LowRank&>(A), boost::any_cast<Dense&>(B));
-          C = LowRank(CD, boost::any_cast<LowRank&>(C).rank);
+          boost::any_cast<LowRank&>(C).gemm(boost::any_cast<LowRank&>(A), boost::any_cast<Dense&>(B));
         }
         else if (C.type() == typeid(Hierarchical)) {
           fprintf(stderr,"Operation undefined 18.\n");
@@ -175,18 +157,10 @@ namespace hicma {
       }
       else if (B.type() == typeid(LowRank)) {
         if (C.type() == typeid(Dense)) {
-          Dense AD = boost::any_cast<LowRank&>(A).dense();
-          Dense BD = boost::any_cast<LowRank&>(B).dense();
-          boost::any_cast<Dense&>(C).gemm(AD, BD);
-          fprintf(stderr,"Revert to dense 5.\n");
+          boost::any_cast<Dense&>(C).gemm(boost::any_cast<LowRank&>(A), boost::any_cast<LowRank&>(B));
         }
         else if (C.type() == typeid(LowRank)) {
-          Dense AD = boost::any_cast<LowRank&>(A).dense();
-          Dense BD = boost::any_cast<LowRank&>(B).dense();
-          Dense CD = boost::any_cast<LowRank&>(C).dense();
-          CD.gemm(AD, BD);
-          C = LowRank(CD, boost::any_cast<LowRank&>(C).rank);
-          fprintf(stderr,"Revert to dense 6.\n");
+          boost::any_cast<LowRank&>(C).gemm(boost::any_cast<LowRank&>(A), boost::any_cast<LowRank&>(B));
         }
         else if (C.type() == typeid(Hierarchical)) {
           fprintf(stderr,"Operation undefined 21.\n");
@@ -271,7 +245,7 @@ namespace hicma {
       l2 = boost::any_cast<Dense&>(A).norm();
     }
     else if (A.type() == typeid(LowRank)) {
-      fprintf(stderr,"Operation undefined 34.\n");
+      l2 = boost::any_cast<LowRank&>(A).dense().norm();
     }
     else if (A.type() == typeid(Hierarchical)) {
       fprintf(stderr,"Operation undefined 35.\n");

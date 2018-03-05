@@ -111,11 +111,38 @@ namespace hicma {
     return *this;
   }
 
-  LowRank LowRank::gemm(const LowRank& A, const Dense& B) const {
-    const Dense& D = this->dense();
-    Dense AD = A.U * A.B * A.V;
-    D.gemm(AD, B);
-    return LowRank(D, this->rank);
+  void LowRank::trsm(Dense& A, const char& uplo) {
+    Dense D = this->dense();
+    D.trsm(A, uplo);
+    *this = LowRank(D, this->rank);
+  }
+
+  LowRank& LowRank::gemm(const Dense& A, const Dense& B) {
+    const Dense D = this->dense();
+    D.gemm(A, B);
+    *this = LowRank(D, this->rank);
+    return *this;
+  }
+
+  LowRank& LowRank::gemm(const LowRank& A, const Dense& B) {
+    const Dense D = this->dense();
+    D.gemm(A, B);
+    *this = LowRank(D, this->rank);
+    return *this;
+  }
+
+  LowRank& LowRank::gemm(const Dense& A, const LowRank& B) {
+    const Dense D = this->dense();
+    D.gemm(A, B);
+    *this = LowRank(D, this->rank);
+    return *this;
+  }
+
+  LowRank& LowRank::gemm(const LowRank& A, const LowRank& B) {
+    const Dense D = this->dense();
+    D.gemm(A, B);
+    *this = LowRank(D, this->rank);
+    return *this;
   }
 
   Dense LowRank::dense() const {

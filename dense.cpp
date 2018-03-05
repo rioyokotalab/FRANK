@@ -94,7 +94,7 @@ namespace hicma {
     return ipiv;
   }
 
-  void Dense::trsm(Dense& A, const char& uplo) const {
+  void Dense::trsm(Dense& A, const char& uplo) {
     double one = 1;
     char c_l='l', c_r='r', c_u='u', c_n='n', c_t='t';
     if (dim[1] == 1) {
@@ -132,6 +132,16 @@ namespace hicma {
     dgemv_(&c_t, &A.dim[0], &A.dim[1], &m1, &A[0], &A.dim[0], &b[0], &i1, &p1, &data[0], &i1);
   }
 
+  void Dense::gemv(const LowRank& A, const Dense& b) const {
+    assert(dim[1] == 1 && b.dim[1] == 1);
+    char c_t='t';
+    int i1 = 1;
+    double p1 = 1;
+    double m1 = -1;
+    Dense AD = A.dense();
+    dgemv_(&c_t, &AD.dim[0], &A.dim[1], &m1, &AD[0], &AD.dim[0], &b[0], &i1, &p1, &data[0], &i1);
+  }
+
   void Dense::gemm(const Dense& A, const Dense& B) const {
     assert(dim[0] == B.dim[0] && dim[1] == A.dim[1] && B.dim[1] == A.dim[0]);
     char c_n='n';
@@ -156,6 +166,16 @@ namespace hicma {
     double m1 = -1;
     Dense AD = A.dense();
     dgemm_(&c_n, &c_n, &dim[0], &dim[1], &B.dim[1], &m1, &B[0], &B.dim[0], &AD[0], &AD.dim[0], &p1, &data[0], &dim[0]);
+  }
+
+  void Dense::gemm(const LowRank& A, const LowRank& B) const {
+    assert(dim[0] == B.dim[0] && dim[1] == A.dim[1] && B.dim[1] == A.dim[0]);
+    char c_n='n';
+    double p1 = 1;
+    double m1 = -1;
+    Dense AD = A.dense();
+    Dense BD = B.dense();
+    dgemm_(&c_n, &c_n, &dim[0], &dim[1], &BD.dim[1], &m1, &BD[0], &BD.dim[0], &AD[0], &AD.dim[0], &p1, &data[0], &dim[0]);
   }
 
   void Dense::resize(int i) {

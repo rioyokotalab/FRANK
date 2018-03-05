@@ -35,7 +35,15 @@ namespace hicma {
 
     LowRank operator*(const LowRank& A);
 
-    LowRank gemm(const LowRank& A, const Dense& B) const;
+    void trsm(Dense& A, const char& uplo);
+
+    LowRank& gemm(const Dense& A, const Dense& B);
+
+    LowRank& gemm(const Dense& A, const LowRank& B);
+
+    LowRank& gemm(const LowRank& A, const Dense& B);
+
+    LowRank& gemm(const LowRank& A, const LowRank& B);
 
     Dense dense() const;
   };
