@@ -12,15 +12,16 @@
 using namespace hicma;
 
 int main(int argc, char** argv) {
-  int N = 64;
-  int Nb = 16;
+  int N = 6;
+  int Nb = 3;
   int Nc = N / Nb;
   std::vector<double> randx(N);
   Hierarchical x(Nc);
   Hierarchical b(Nc);
   Hierarchical A(Nc,Nc);
   for (int i=0; i<N; i++) {
-    randx[i] = drand48();
+    //randx[i] = drand48();
+    randx[i] = i + 1;
   }
   std::sort(randx.begin(), randx.end());
   print("Time");

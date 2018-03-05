@@ -53,21 +53,21 @@ namespace hicma {
 
     LowRank operator*(LowRank& A);
 
-    std::vector<int> getrf() const;
+    std::vector<int> getrf();
 
     void trsm(Dense& A, const char& uplo);
 
-    void gemv(const Dense& A, const Dense& b) const;
+    void gemv(const Dense& A, const Dense& b);
 
-    void gemv(const LowRank& A, const Dense& b) const;
+    void gemv(const LowRank& A, const Dense& b);
 
-    void gemm(const Dense& A, const Dense& B) const;
+    void gemm(const Dense& A, const Dense& B);
 
-    void gemm(const Dense& A, const LowRank& B) const;
+    void gemm(const Dense& A, const LowRank& B);
 
-    void gemm(const LowRank& A, const Dense& B) const;
+    void gemm(const LowRank& A, const Dense& B);
 
-    void gemm(const LowRank& A, const LowRank& B) const;
+    void gemm(const LowRank& A, const LowRank& B);
 
     void resize(int i);
 
