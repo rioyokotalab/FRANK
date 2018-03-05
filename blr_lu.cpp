@@ -47,7 +47,8 @@ int main(int argc, char** argv) {
       }
       if (std::abs(ic - jc) <= 1) {
         A(ic,jc) = Aij;
-      } else {
+      }
+      else {
         A(ic,jc) = LowRank(Aij, rank);
       }
     }

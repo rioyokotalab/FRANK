@@ -108,7 +108,8 @@ namespace hicma {
       default :
         fprintf(stderr,"Second argument must be 'l' for lower, 'u' for upper.\n");
       }
-    } else {
+    }
+    else {
       switch (uplo) {
       case 'l' :
         dtrsm_(&c_r, &c_l, &c_t, &c_u, &dim[0], &dim[1], &one, &A[0], &A.dim[1], &data[0], &dim[0]);
