@@ -1,13 +1,14 @@
-#include "hierarchical.h"
 #include "dense.h"
-typedef std::vector<double>::iterator Iter;
+#include "low_rank.h"
+#include "hierarchical.h"
 
+typedef std::vector<double>::iterator Iter;
 
 namespace hicma {
   Hierarchical::Hierarchical() {
     dim[0]=0; dim[1]=0;
   }
-  
+
   Hierarchical::Hierarchical(const int m) {
     dim[0]=m; dim[1]=1; data.resize(dim[0]);
   }
@@ -30,7 +31,7 @@ namespace hicma {
     data.resize(4);
     size_t xi_half = (xi_end - xi_begin)/2;
     size_t xj_half = (xj_end - xj_begin)/2;
-    
+
     for ( int i=0; i<2; ++i ) {
       for ( int j=0; j<2; ++j ) {
         int i_tot, j_tot;
@@ -56,12 +57,12 @@ namespace hicma {
     assert(i<dim[0]*dim[1]);
     return data[i];
   }
-  
+
   const boost::any& Hierarchical::operator[](const int i) const {
     assert(i<dim[0]*dim[1]);
     return data[i];
   }
-  
+
   boost::any& Hierarchical::operator()(const int i, const int j) {
     assert(i<dim[0] && j<dim[1]);
     return data[i*dim[1]+j];

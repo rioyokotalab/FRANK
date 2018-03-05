@@ -1,4 +1,6 @@
+#include "dense.h"
 #include "low_rank.h"
+#include "hierarchical.h"
 
 namespace hicma {
   LowRank::LowRank(const LowRank &A) : U(A.U), B(A.B), V(A.V) {

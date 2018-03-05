@@ -1,19 +1,21 @@
 #ifndef hierarchical_h
 #define hierarchical_h
 #include <boost/any.hpp>
-#include "dense.h"
-#include "low_rank.h"
 #include "node.h"
+
 typedef std::vector<double>::iterator Iter;
 
 namespace hicma {
-  class Hierarchical : public Node{
+  class Node;
+  class Dense;
+  class LowRank;
+  class Hierarchical : public Node {
   public:
     int dim[2];
     std::vector<boost::any> data;
 
-    Hierarchical(); 
-    
+    Hierarchical();
+
     Hierarchical(const int m);
 
     Hierarchical(const int m, const int n);
@@ -29,16 +31,16 @@ namespace hicma {
         const int j_rel);
 
     boost::any& operator[](const int i);
-    
+
     const boost::any& operator[](const int i) const;
-    
-    boost::any& operator()(const int i, const int j); 
+
+    boost::any& operator()(const int i, const int j);
 
     const boost::any& operator()(const int i, const int j) const;
 
-    Dense& D(const int i); 
+    Dense& D(const int i);
 
-    Dense& D(const int i, const int j); 
+    Dense& D(const int i, const int j);
   };
 }
 #endif

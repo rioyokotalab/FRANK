@@ -8,6 +8,7 @@
 #include <vector>
 
 namespace hicma {
+  class Node;
   class LowRank;
   class Hierarchical;
   class Dense : public Node {

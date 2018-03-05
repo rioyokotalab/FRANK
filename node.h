@@ -1,6 +1,7 @@
 #ifndef node_h
 #define node_h
 #include <boost/any.hpp>
+#include <vector>
 
 namespace hicma {
   class Hierarchical;
@@ -10,9 +11,8 @@ namespace hicma {
     int j;
     int level;
 
-    // Root constructor
     Node();
-    // Non-root constructor
+
     Node(const Hierarchical*, const int, const int);
   };
 }
