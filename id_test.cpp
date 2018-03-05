@@ -2,35 +2,50 @@
 #include <sys/time.h>
 using namespace hicma;
 
-int main (int argc, char** argv) {
-  int n = 1000;
-  int m = 1000;
-  int k = 16;
-  int niter = 10;
-  gsl_matrix *M = gsl_matrix_alloc(m,n);
-  gsl_matrix *P = gsl_matrix_alloc(m,n);
-  for (int i=0; i<m; i++) {
-    for (int j=0; j<n; j++) {
-      M->data[i*n+j] = 1 / fabs(i - j - n);
+void transpose(double * mat, double* mat_t, int nrows, int ncols)
+{
+  for (int i = 0; i < nrows; ++i) {
+    for (int j = 0; j < ncols; ++j) {
+      mat_t[j*nrows + i] = mat[i*ncols + j];
     }
   }
-  gsl_matrix *U,*S,*V;
+}
+
+int main (int argc, char** argv) {
+  int ncols = 1000;
+  int nrows = 1000;
+  int rank = 500;
+  int niter = 1;
+  double *M = (double*)malloc(sizeof(double)*nrows*ncols);
+  for (int i=0; i<nrows; i++) {
+    for (int j=0; j<ncols; j++) {
+      M[i*nrows+j] = 1 / fabs(i - j - ncols);
+    }
+  }
+
   struct timeval tic;
   gettimeofday(&tic, NULL);
   double error = 0;
   for(int it=0; it<niter; it++) {
-    randomized_low_rank_svd2(M, k, &U, &S, &V);
-    form_svd_product_matrix(U,S,V,P);
-    error += get_percent_error_between_two_mats(M,P);
+    double * P = (double*)calloc(nrows*ncols, sizeof(double));
+    double * U = (double*)calloc(nrows*rank,sizeof(double));
+    double * S = (double*)calloc(rank*rank,sizeof(double));
+    double * V = (double*)calloc(rank*ncols,sizeof(double));
+    double * V_t = (double*)calloc(ncols*rank,sizeof(double));
+  
+    randomized_low_rank_svd2(M, rank, U, S, V, nrows, ncols);
+    transpose(V,V_t,rank, ncols);
+    form_svd_product_matrix(U,S,V_t,P, nrows, ncols, rank);
+    error += get_percent_error_between_two_mats(M, P, nrows, ncols);
+
+    free(P);
+    free(U);
+    free(S);
+    free(V);
   }
   struct timeval toc;
   gettimeofday(&toc, NULL);
   double time = toc.tv_sec - tic.tv_sec + (toc.tv_usec - tic.tv_usec) * 1e-6;
   printf("time: %lf s, error: %g\n", time, error/niter);
-  gsl_matrix_free(M);
-  gsl_matrix_free(U);
-  gsl_matrix_free(S);
-  gsl_matrix_free(V);
-  gsl_matrix_free(P);
   return 0;
 }

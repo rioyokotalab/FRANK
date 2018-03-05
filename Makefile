@@ -12,8 +12,8 @@ blr_lu: blr_lu.o dense.o low_rank.o id.o
 	valgrind ./a.out
 
 id_test: id_test.o id.o
-	$(CXX) $? -lgsl -lgslcblas -lm
-	valgrind ./a.out
+	$(CXX) $? -lm -llapacke -llapack -lopenblas
+	./a.out
 
 clean:
 	$(RM) *.o *.out

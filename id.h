@@ -1,32 +1,85 @@
 #ifndef id_h
 #define id_h
 
+/* NOTE TO THE WISE
+ * 
+ * You MUST tranpose V that you get from the ID function after the computation is done.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <gsl/gsl_blas.h>
-#include <gsl/gsl_linalg.h>
-#include <gsl/gsl_rng.h>
+#include <lapacke.h>
+#include <cblas.h>
+#include <math.h>
+#include <string.h>
+#include <sys/time.h>
+
+
+lapack_int LAPACKE_dgeqrf( int matrix_layout, lapack_int m, lapack_int n,
+                           double* a, lapack_int lda, double* tau );
+lapack_int LAPACKE_dormqr( int matrix_layout, char side, char trans,
+                           lapack_int m, lapack_int n, lapack_int k,
+                           const double* a, lapack_int lda, const double* tau,
+                           double* c, lapack_int ldc );
+lapack_int LAPACKE_dgesvd( int matrix_layout, char jobu, char jobvt,
+                           lapack_int m, lapack_int n, double* a,
+                           lapack_int lda, double* s, double* u, lapack_int ldu,
+                           double* vt, lapack_int ldvt, double* superb );
+
+void cblas_dgemm(CBLAS_LAYOUT layout, CBLAS_TRANSPOSE TransA,
+                 CBLAS_TRANSPOSE TransB, const int M, const int N,
+                 const int K, const double alpha, const double *A,
+                 const int lda, const double *B, const int ldb,
+                 const double beta, double *C, const int ldc);
 
 namespace hicma {
-  void initialize_random_matrix(gsl_matrix *M);
+  
 
-  void matrix_matrix_mult(gsl_matrix *A, gsl_matrix *B, gsl_matrix *C);
+  void matrix_matrix_mult(
+                          double *A, double *B, double *C,
+                          int nrows_a, int ncols_a, int nrows_b, int ncols_b);
 
-  void matrix_transpose_matrix_mult(gsl_matrix *A, gsl_matrix *B, gsl_matrix *C);
+  void print_matrix( char* desc, int m, int n, double* a,int lda );
 
-  void compute_QR_compact_factorization(gsl_matrix *M, gsl_matrix *Q, gsl_matrix *R);
+  void initialize_random_matrix(double *M, int nrows, int ncols);
 
-  void QR_factorization_getQ(gsl_matrix *M, gsl_matrix *Q);
+  void compute_QR_compact_factorization(
+                                        double *Bt,
+                                        double *Q,
+                                        double *R,
+                                        int nrows,
+                                        int ncols,
+                                        int rank);
+  
+  void QR_factorization_getQ(double *M, double *Q, int nrows, int ncols, int rank);
 
-  void build_diagonal_matrix(gsl_vector *dvals, int n, gsl_matrix *D);
+  void build_diagonal_matrix(double *dvals, int n, double *D);
 
-  double matrix_frobenius_norm(gsl_matrix *M);
+  double matrix_frobenius_norm(double *M, int nrows, int ncols);
 
-  void form_svd_product_matrix(gsl_matrix *U, gsl_matrix *S, gsl_matrix *V, gsl_matrix *P);
+  void form_svd_product_matrix(
+                               double *U,
+                               double *S,
+                               double *V,
+                               double *P,
+                               int nrows,
+                               int ncols,
+                               int rank);
 
-  double get_percent_error_between_two_mats(gsl_matrix *A, gsl_matrix *B);
+  double get_percent_error_between_two_mats(double *A, double *B, int nrows, int ncols);
 
-  void randomized_low_rank_svd2(gsl_matrix *M, int k, gsl_matrix **U, gsl_matrix **S, gsl_matrix **V);
+  void calculate_svd(
+                     double *U, double *S, double *Vt,
+                     double *M, int nrows, int ncols, int rank);
+  
+  void randomized_low_rank_svd2(
+                                double *M,
+                                int rank,
+                                double *U,
+                                double *S,
+                                double *V,
+                                int nrows ,
+                                int ncols);
 }
 #endif

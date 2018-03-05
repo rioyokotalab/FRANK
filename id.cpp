@@ -1,180 +1,267 @@
 #include "id.h"
-
 #define min(x,y) (((x) < (y)) ? (x) : (y))
 #define max(x,y) (((x) > (y)) ? (x) : (y))
-
+using namespace std;
 namespace hicma {
-  void initialize_random_matrix(gsl_matrix *M){
-    gsl_rng_env_setup();
-    const gsl_rng_type * T = gsl_rng_default;
-    gsl_rng * r = gsl_rng_alloc(T);
-    gsl_rng_set (r, time(NULL));
-    int m = M->size1;
-    int n = M->size2;
-    for(int i=0; i<m; i++){
-      for(int j=0; j<n; j++){
-        gsl_matrix_set(M, i, j, gsl_rng_uniform (r));
-      }
+
+  void initialize_random_matrix(double *M, int nrows, int ncols){
+    time_t t;
+    srand((unsigned) time(&t));
+    for(int i=0; i < nrows*ncols; i++){
+      M[i] = (double)rand() / (double)RAND_MAX;
     }
-    gsl_rng_free (r);
   }
 
-  /* C = A*B */
-  void matrix_matrix_mult(gsl_matrix *A, gsl_matrix *B, gsl_matrix *C){
-    gsl_blas_dgemm (CblasNoTrans, CblasNoTrans, 1.0, A, B, 0.0, C);
+  /* C = A^T*B 
+   *
+   * A - nrows_a * ncols_a
+   * B - nrows_b * ncols_b
+   * C - nrows_a * ncols_b
+   */
+  void matrix_transpose_matrix_mult(
+                                    double *A,
+                                    double *B,
+                                    double *C,
+                                    int nrows_a,
+                                    int ncols_a,
+                                    int nrows_b,
+                                    int ncols_b)
+  {
+    cblas_dgemm(
+                CblasRowMajor, CblasTrans, CblasNoTrans,
+                ncols_a, ncols_b, nrows_a,
+                1, A, ncols_a,
+                B, ncols_b, 1,
+                C, ncols_b);
   }
 
-  /* C = A^T*B */
-  void matrix_transpose_matrix_mult(gsl_matrix *A, gsl_matrix *B, gsl_matrix *C){
-    gsl_blas_dgemm (CblasTrans, CblasNoTrans, 1.0, A, B, 0.0, C);
-  }
 
   /* compute compact QR factorization
-     M is mxn; Q is mxk and R is kxk
+   * Bt - input matrix. rank x ncols
+   * Q - matrix in which Q is to be saved. ncols x rank
+   * R - matrix in which R is to be saved. rank x rank
+   M is mxn; Q is mxk and R is kxk
+   NOTE: FUNCTION NOT USED AS OF NOW.
   */
-  void compute_QR_compact_factorization(gsl_matrix *M, gsl_matrix *Q, gsl_matrix *R){
-    int m = M->size1;
-    int n = M->size2;
-    int k = min(m,n);
-    gsl_matrix *QR = gsl_matrix_calloc(M->size1, M->size2);
-    gsl_vector *tau = gsl_vector_alloc(min(M->size1,M->size2));
-    gsl_matrix_memcpy (QR, M);
-    gsl_linalg_QR_decomp (QR, tau);
-    for(int i=0; i<k; i++){
-      for(int j=0; j<k; j++){
+  void compute_QR_compact_factorization(
+                                        double *Bt,
+                                        double *Q,
+                                        double *R,
+                                        int nrows,
+                                        int ncols,
+                                        int rank)
+  {
+    int k = min(ncols, rank);
+    double *QR_temp = (double*)calloc(ncols*rank, sizeof(double));
+    double *TAU = (double*)malloc(sizeof(double)*k);
+    memcpy (QR_temp, Bt, sizeof(double)*ncols*rank);
+    LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, ncols, rank, QR_temp, rank, TAU);
+  
+    for(int i=0; i<ncols; i++) {
+      for(int j=0; j<rank; j++) {
         if(j>=i){
-          gsl_matrix_set(R,i,j,gsl_matrix_get(QR,i,j));
+          R[i*rank + j] = QR_temp[i*rank + j];
         }
       }
     }
-    gsl_vector *vj = gsl_vector_calloc(m);
-    for(int j=0; j<k; j++){
-      gsl_vector_set(vj,j,1.0);
-      gsl_linalg_QR_Qvec (QR, tau, vj);
-      gsl_matrix_set_col(Q,j,vj);
-      vj = gsl_vector_calloc(m);
-    }
-    gsl_matrix_free(QR);
-    gsl_vector_free(tau);
-    gsl_vector_free(vj);
+
+    for (int i = 0; i < k; ++i) Q[i*k + i] = 1.0;
+        
+    LAPACKE_dormqr(
+                   LAPACK_ROW_MAJOR, 'L', 'N',
+                   ncols, rank, rank, QR_temp, rank, TAU, Q, rank);
   }
 
-  /* compute compact QR factorization and get Q
-     M is mxn; Q is mxk and R is kxk (not computed)
-  */
-  void QR_factorization_getQ(gsl_matrix *M, gsl_matrix *Q){
-    int m = M->size1;
-    int n = M->size2;
-    int k = min(m,n);
-    gsl_matrix *QR = gsl_matrix_calloc(M->size1, M->size2);
-    gsl_vector *tau = gsl_vector_alloc(min(M->size1,M->size2));
-    gsl_matrix_memcpy (QR, M);
-    gsl_linalg_QR_decomp (QR, tau);
-    gsl_vector *vj = gsl_vector_calloc(m);
-    for(int j=0; j<k; j++){
-      gsl_vector_set(vj,j,1.0);
-      gsl_linalg_QR_Qvec (QR, tau, vj);
-      gsl_matrix_set_col(Q,j,vj);
-      vj = gsl_vector_calloc(m);
-    }
-    gsl_vector_free(vj);
-    gsl_vector_free(tau);
-    gsl_matrix_free(QR);
+
+  /* compute compact QR factoriation and get Q
+   * M - original matrix. dim: nrows * rank
+   * Q - Q part of QR factorized matrix. Answer is returned in this vector. nrows*k. no data during input.
+   * nrows - number of rows of the Matrix Q.
+   * ncols - number of columns of M.
+   * rank - target rank.
+   */
+  void QR_factorization_getQ(double *M, double *Q, int nrows, int ncols, int rank){
+    int k = min(nrows, rank);
+    double *QR_temp = (double*)calloc(nrows*rank, sizeof(double)); // temp result from LAPACK stored in this
+    double *TAU = (double*)calloc(k, sizeof(double)); // temp vector for LAPACK.
+    memcpy (QR_temp, M, nrows*rank*sizeof(double));
+    for (int i = 0;i < k; ++i) Q[i*k + i] = 1.0;
+    LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, nrows, rank, QR_temp, rank, TAU); // correct so far
+    LAPACKE_dormqr(LAPACK_ROW_MAJOR, 'L', 'N', nrows, rank, rank, QR_temp, rank, TAU, Q, rank);
+    free(TAU);
+    free(QR_temp);
   }
 
   /* build diagonal matrix from vector elements */
-  void build_diagonal_matrix(gsl_vector *dvals, int n, gsl_matrix *D){
+  void build_diagonal_matrix(double *dvals, int n, double *D){
     for(int i=0; i<n; i++){
-      gsl_matrix_set(D,i,i,gsl_vector_get(dvals,i));
+      D[i*n + i] = dvals[i];
     }
   }
 
   /* frobenius norm */
-  double matrix_frobenius_norm(gsl_matrix *M){
+  double matrix_frobenius_norm(double *M, int nrows, int ncols){
     double norm = 0;
-    for(size_t i=0; i<M->size1; i++){
-      for(size_t j=0; j<M->size2; j++){
-        double val = gsl_matrix_get(M, i, j);
-        norm += val*val;
-      }
+    for(size_t i=0; i < nrows*ncols; i++){
+      double val = M[i];
+      norm += val*val;
     }
+  
     norm = sqrt(norm);
     return norm;
   }
 
   /* P = U*S*V^T */
-  void form_svd_product_matrix(gsl_matrix *U, gsl_matrix *S, gsl_matrix *V, gsl_matrix *P){
-    int n = P->size2;
-    int k = S->size1;
-    gsl_matrix * SVt = gsl_matrix_alloc(k,n);
-    gsl_blas_dgemm(CblasNoTrans, CblasTrans, 1.0, S, V, 0.0, SVt);
-    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, U, SVt, 0.0, P);
-    gsl_matrix_free(SVt);
+  void form_svd_product_matrix(
+                               double *U,
+                               double *S,
+                               double *V,
+                               double *P,
+                               int nrows,
+                               int ncols,
+                               int rank)
+  {
+    double * US = (double*)calloc(nrows*rank, sizeof(double));
+    matrix_matrix_mult(U, S, US, nrows, rank, rank, rank);
+    matrix_matrix_mult(US, V, P, nrows, rank, rank, ncols);
+    free(US);
   }
 
   /* calculate percent error between A and B: 100*norm(A - B)/norm(A) */
-  double get_percent_error_between_two_mats(gsl_matrix *A, gsl_matrix *B){
-    int m = A->size1;
-    int n = A->size2;
-    gsl_matrix *A_minus_B = gsl_matrix_alloc(m,n);
-    gsl_matrix_memcpy(A_minus_B, A);
-    gsl_matrix_sub(A_minus_B,B);
-    double normA = matrix_frobenius_norm(A);
-    double normA_minus_B = matrix_frobenius_norm(A_minus_B);
-    gsl_matrix_free(A_minus_B);
+  double get_percent_error_between_two_mats(double *A, double *B, int nrows, int ncols)
+  {
+    int i;
+    double *A_minus_B = (double*)malloc(sizeof(double)*nrows*ncols);
+    memcpy(A_minus_B, A, sizeof(double)*nrows*ncols);
+    for (i = 0; i < nrows*ncols; ++i) {
+      A_minus_B[i] -= B[i];
+    }
+    double normA = matrix_frobenius_norm(A, nrows, ncols);
+    double normA_minus_B = matrix_frobenius_norm(A_minus_B, nrows, ncols);
     return 100.0*normA_minus_B/normA;
   }
 
+  /* C = A*B */
+  void matrix_matrix_mult(double *A, double *B, double *C, int nrows_a, int ncols_a, int nrows_b, int ncols_b)
+  {
+    cblas_dgemm(
+                CblasRowMajor, CblasNoTrans, CblasNoTrans,
+                nrows_a, ncols_b, nrows_b,
+                1, A, ncols_a, B,
+                ncols_b, 1, C, ncols_b);
+  }
+
+  /* 
+   * Outputs:
+   * U -> rank*rank
+   * S -> rank*rank
+   * Vt -> rank*rank
+   *
+   * Inputs:
+   * M -> nrows*ncols.
+   */
+  void calculate_svd(
+                     double *U, double *S, double *Vt,
+                     double *M, int nrows, int ncols, int rank)
+  {
+    int lda = ncols;
+    int ldu = nrows;
+    int ldvt = ncols;
+
+    double superb[min(nrows, ncols) - 1];
+    LAPACKE_dgesvd(
+                   LAPACK_ROW_MAJOR, 'A', 'A', rank, rank,
+                   M, rank, S, U, rank, Vt, rank, superb);
+  }
+
+  void print_matrix( char* desc, int m, int n, double* a,int lda ) {
+    int i, j;
+    printf( "\n %s\n", desc );
+    for( i = 0; i < m; i++ ) {
+      for( j = 0; j < n; j++ ) printf( " %6.2f", a[i*lda + j] );
+      printf( "\n" );
+    }
+  }
+
+  void transpose(double * mat, double* mat_t, int nrows, int ncols)
+  {
+    double temp;
+    for (int i = 0; i < nrows; ++i) {
+      for (int j = 0; j < ncols; ++j) {
+        mat_t[i + j*nrows] = mat[i*ncols + j];
+      }
+    }
+  }
+
   /* computes the approximate low rank SVD of rank k of matrix M using QR method */
-  void randomized_low_rank_svd2(gsl_matrix *M, int k, gsl_matrix **U, gsl_matrix **S, gsl_matrix **V){
-    int m = M->size1;
-    int n = M->size2;
-    // setup mats
-    *U = gsl_matrix_calloc(m,k);
-    *S = gsl_matrix_calloc(k,k);
-    *V = gsl_matrix_calloc(n,k);
-    // build random matrix
-    gsl_matrix *RN = gsl_matrix_calloc(n,k);
-    //RN = matrix_load_from_file("data/R.mtx");
-    initialize_random_matrix(RN);
+  /* 
+   * M - input matrix.
+   * k - rank of the output.
+   * U - U matrix from ID.
+   * S - S (sigma) matrix from ID containing eigenvalues.
+   * V - V matrix from ID.
+   * nrows - number of rows of M.
+   * ncols - number of cols of M.
+   */
+  void randomized_low_rank_svd2(
+                                double *M,
+                                int rank,
+                                double *U,
+                                double *S,
+                                double *V,
+                                int nrows ,
+                                int ncols)
+  {
+    // RN = randn(n,k+p)
+    // build random matrix 
+    double *RN = (double*)malloc(sizeof(double)*ncols*rank);
+    initialize_random_matrix(RN, ncols, rank);
+
+    // Y = M * RN
     // multiply to get matrix of random samples Y
-    gsl_matrix *Y = gsl_matrix_alloc(m,k);
-    matrix_matrix_mult(M, RN, Y);
-    // build Q from Y
-    gsl_matrix *Q = gsl_matrix_alloc(m,k);
-    QR_factorization_getQ(Y, Q);
-    // form Bt = Mt*Q : nxm * mxk = nxk
-    gsl_matrix *Bt = gsl_matrix_alloc(n,k);
-    matrix_transpose_matrix_mult(M,Q,Bt);
-    gsl_matrix *Qhat = gsl_matrix_calloc(n,k);
-    gsl_matrix *Rhat = gsl_matrix_calloc(k,k);
-    compute_QR_compact_factorization(Bt,Qhat,Rhat);
-    // compute SVD of Rhat (kxk)
-    gsl_matrix *Uhat = gsl_matrix_alloc(k,k);
-    gsl_vector *Sigmahat = gsl_vector_alloc(k);
-    gsl_matrix *Vhat = gsl_matrix_alloc(k,k);
-    gsl_vector *svd_work_vec = gsl_vector_alloc(k);
-    gsl_matrix_memcpy(Uhat, Rhat);
-    gsl_linalg_SV_decomp (Uhat, Vhat, Sigmahat, svd_work_vec);
-    // record singular values
-    build_diagonal_matrix(Sigmahat, k, *S);
-    // U = Q*Vhat
-    matrix_matrix_mult(Q,Vhat,*U);
+    double *Y = (double*)calloc(nrows*rank, sizeof(double)); // nrows * rank
+    matrix_matrix_mult(M, RN, Y, nrows, ncols, ncols, rank);
+
+    // [q, r] = qr(Y,0)
+    double *Q = (double*)calloc(nrows*rank,sizeof(double));
+    QR_factorization_getQ(Y, Q, nrows, ncols, rank);
+
+    // bt = M' * q;
+    // form Bt = Qt*M : rankxnrows * nrowsxncols = rankxncols
+    double *Bt = (double*)calloc(ncols*rank,sizeof(double));
+    matrix_transpose_matrix_mult(M, Q, Bt, nrows, ncols, nrows, rank);
+    
+    /* // Bt -> ncols * rank, Qhat -> ncols * rank, Rhat -> rank, rank */
+    // [Qhat, Rhat] = qr(bt)
+    double * Qhat = (double*)calloc(ncols*rank, sizeof(double));
+    double * Rhat = (double*)calloc(rank*rank, sizeof(double));
+    compute_QR_compact_factorization(Bt, Qhat, Rhat, nrows, ncols, rank);
+
+    // compute SVD of Rhat
+    // [Uhat, S, Vhat] = svd(Rhat);
+    double *Uhat = (double*)calloc(rank*rank, sizeof(double));
+    double *Sigmahat = (double*)calloc(rank, sizeof(double));
+    double *Vhat = (double*)calloc(rank*rank, sizeof(double));
+    calculate_svd(Uhat, Sigmahat, Vhat, Rhat, rank, rank, rank);
+
+    // Vhat = Vhat'
+    double *Vhat_t = (double*)calloc(rank*rank, sizeof(double));
+    transpose(Vhat, Vhat_t, rank, rank);
+    
+    build_diagonal_matrix(Sigmahat, rank, S);
+
+    // U = q * Vhat
+    matrix_matrix_mult(Q, Vhat_t, U, nrows, rank, rank, rank);
+
     // V = Qhat*Uhat
-    matrix_matrix_mult(Qhat,Uhat,*V);
-    // free stuff
-    gsl_matrix_free(RN);
-    gsl_matrix_free(Y);
-    gsl_matrix_free(Q);
-    gsl_matrix_free(Bt);
-    gsl_matrix_free(Qhat);
-    gsl_matrix_free(Rhat);
-    gsl_matrix_free(Uhat);
-    gsl_vector_free(Sigmahat);
-    gsl_matrix_free(Vhat);
-    gsl_vector_free(svd_work_vec);
+    matrix_matrix_mult(Qhat, Uhat, V, ncols, rank, rank, rank);
+
+    free(Y);
+    free(Q);
+    free(Uhat);
+    free(Bt);
+    free(Vhat);
+    free(Vhat_t);
+    free(Sigmahat);
   }
 }
-
-#undef min
-#undef max
