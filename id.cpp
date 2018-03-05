@@ -128,17 +128,17 @@ namespace hicma {
   }
 
   /* calculate percent error between A and B: 100*norm(A - B)/norm(A) */
-  double get_percent_error_between_two_mats(double *A, double *B, int nrows, int ncols)
+  double get_relative_error_between_two_mats(double *A, double *B, int nrows, int ncols)
   {
     int i;
     double *A_minus_B = (double*)malloc(sizeof(double)*nrows*ncols);
     memcpy(A_minus_B, A, sizeof(double)*nrows*ncols);
     for (i = 0; i < nrows*ncols; ++i) {
-      A_minus_B[i] -= B[i];
+      A_minus_B[i] = A[i] - B[i];
     }
     double normA = matrix_frobenius_norm(A, nrows, ncols);
     double normA_minus_B = matrix_frobenius_norm(A_minus_B, nrows, ncols);
-    return 100.0*normA_minus_B/normA;
+    return normA_minus_B/normA;
   }
 
   /* C = A*B */

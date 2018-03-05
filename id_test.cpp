@@ -12,9 +12,9 @@ void transpose(double * mat, double* mat_t, int nrows, int ncols)
 }
 
 int main (int argc, char** argv) {
-  int ncols = 1000;
-  int nrows = 1000;
-  int rank = 500;
+  int ncols = 100;
+  int nrows = 100;
+  int rank = 50;
   int niter = 1;
   double *M = (double*)malloc(sizeof(double)*nrows*ncols);
   for (int i=0; i<nrows; i++) {
@@ -36,7 +36,7 @@ int main (int argc, char** argv) {
     randomized_low_rank_svd2(M, rank, U, S, V, nrows, ncols);
     transpose(V,V_t,rank, ncols);
     form_svd_product_matrix(U,S,V_t,P, nrows, ncols, rank);
-    error += get_percent_error_between_two_mats(M, P, nrows, ncols);
+    error = get_relative_error_between_two_mats(M, P, nrows, ncols);
 
     free(P);
     free(U);

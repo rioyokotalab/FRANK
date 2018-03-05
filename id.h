@@ -67,7 +67,7 @@ namespace hicma {
                                int ncols,
                                int rank);
 
-  double get_percent_error_between_two_mats(double *A, double *B, int nrows, int ncols);
+  double get_relative_error_between_two_mats(double *A, double *B, int nrows, int ncols);
 
   void calculate_svd(
                      double *U, double *S, double *Vt,
