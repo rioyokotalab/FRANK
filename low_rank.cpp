@@ -93,12 +93,20 @@ namespace hicma {
     return *this -= D;
   }
 
-  LowRank LowRank::operator+(const LowRank& A) const {
+  LowRank LowRank::operator+=(const LowRank& A) const {
     return LowRank(U * B * V + A.U * A.B * A.V, rank);
   }
 
-  LowRank LowRank::operator-(const LowRank& A) const {
+  LowRank LowRank::operator-=(const LowRank& A) const {
     return LowRank(U * B * V - A.U * A.B * A.V, rank);
+  }
+
+  LowRank LowRank::operator+(const LowRank& A) const {
+    return *this += A;
+  }
+
+  LowRank LowRank::operator-(const LowRank& A) const {
+    return *this -= A;
   }
 
   LowRank LowRank::operator*(const Dense& D) {
