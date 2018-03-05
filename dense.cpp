@@ -81,8 +81,14 @@ namespace hicma {
 
   Dense Dense::operator*(const Dense& B) const {
     Dense C(dim[0],B.dim[1]);
-    cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, C.dim[0], C.dim[1], dim[1], 1,
-                &data[0], dim[1], &B[0], B.dim[1], 0, &C[0], C.dim[1]);
+    if (B.dim[1] == 1) {
+      cblas_dgemv(CblasRowMajor, CblasNoTrans, dim[0], dim[1], 1, &data[0], dim[1],
+                  &B[0], 1, 0, &C[0], 1);
+    }
+    else {
+      cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, C.dim[0], C.dim[1], dim[1], 1,
+                  &data[0], dim[1], &B[0], B.dim[1], 0, &C[0], C.dim[1]);
+    }
     return C;
   }
 
@@ -128,44 +134,27 @@ namespace hicma {
   }
 
   void Dense::gemv(const Dense& A, const Dense& b) {
-    assert(dim[1] == 1 && b.dim[1] == 1);
-    cblas_dgemv(CblasRowMajor, CblasNoTrans, A.dim[0], A.dim[1], -1, &A[0], A.dim[1],
-                &b[0], 1, 1, &data[0], 1);
+    *this -= A * b;
   }
 
   void Dense::gemv(const LowRank& A, const Dense& b) {
-    assert(dim[1] == 1 && b.dim[1] == 1);
-    Dense AD = A.dense();
-    cblas_dgemv(CblasRowMajor, CblasNoTrans, AD.dim[0], AD.dim[1], -1, &AD[0], AD.dim[1],
-                &b[0], 1, 1, &data[0], 1);
+    *this -= A.U * A.B * (A.V * b);
   }
 
   void Dense::gemm(const Dense& A, const Dense& B) {
-    assert(dim[0] == A.dim[0] && dim[1] == B.dim[1] && A.dim[1] == B.dim[0]);
-    cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, dim[0], dim[1], A.dim[1], -1,
-                &A[0], A.dim[1], &B[0], B.dim[1], 1, &data[0], dim[1]);
+    *this -= A * B;
   }
 
   void Dense::gemm(const Dense& A, const LowRank& B) {
-    assert(dim[0] == A.dim[0] && dim[1] == B.dim[1] && A.dim[1] == B.dim[0]);
-    Dense BD = B.dense();
-    cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, dim[0], dim[1], A.dim[1], -1,
-                &A[0], A.dim[1], &BD[0], BD.dim[1], 1, &data[0], dim[1]);
+    *this -= ((A * B.U) * B.B) * B.V;
   }
 
   void Dense::gemm(const LowRank& A, const Dense& B) {
-    assert(dim[0] == A.dim[0] && dim[1] == B.dim[1] && A.dim[1] == B.dim[0]);
-    Dense AD = A.dense();
-    cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, dim[0], dim[1], A.dim[1], -1,
-                &AD[0], AD.dim[1], &B[0], B.dim[1], 1, &data[0], dim[1]);
+    *this -= A.U * (A.B * (A.V * B));
   }
 
   void Dense::gemm(const LowRank& A, const LowRank& B) {
-    assert(dim[0] == A.dim[0] && dim[1] == B.dim[1] && A.dim[1] == B.dim[0]);
-    Dense AD = A.dense();
-    Dense BD = B.dense();
-    cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, dim[0], dim[1], A.dim[1], -1,
-                &AD[0], AD.dim[1], &BD[0], BD.dim[1], 1, &data[0], dim[1]);
+    *this -= A.U * (A.B * (A.V * B.U) * B.B) * B.V;
   }
 
   void Dense::resize(int i) {
