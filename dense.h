@@ -9,6 +9,7 @@
 
 namespace hicma {
   class LowRank;
+  class Hierarchical;
   class Dense : public Node {
   public:
     std::vector<double> data;
@@ -21,6 +22,13 @@ namespace hicma {
     Dense(const int m, const int n);
 
     Dense(const Dense& A);
+
+    Dense(
+        const Hierarchical* parent,
+        const int i_rel,
+        const int j_rel,
+        const size_t xi_half,
+        const size_t xj_half);
 
     double& operator[](const int i);
 

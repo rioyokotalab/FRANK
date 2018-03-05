@@ -1,5 +1,6 @@
 #include "dense.h"
 #include "low_rank.h"
+#include "hierarchical.h"
 
 extern "C" {
   void dgetrf_(const int* M, const int* N, const double* A, const int* LDA, const int* IPIV, const int* INFO);
@@ -25,6 +26,15 @@ namespace hicma {
     dim[0]=A.dim[0]; dim[1]=A.dim[1];
     data.resize(dim[0]*dim[1]);
     data = A.data;
+  }
+
+  Dense::Dense(
+      const Hierarchical* parent,
+      const int i_rel,
+      const int j_rel,
+      const size_t xi_half,
+      const size_t xj_half) : Node(parent, i_rel, j_rel) {
+
   }
 
   double& Dense::operator[](const int i) {
