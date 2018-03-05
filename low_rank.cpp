@@ -111,7 +111,14 @@ namespace hicma {
     return *this;
   }
 
-  Dense LowRank::dense() {
+  LowRank LowRank::gemm(const LowRank& A, const Dense& B) const {
+    const Dense& D = this->dense();
+    Dense AD = A.U * A.B * A.V;
+    D.gemm(AD, B);
+    return LowRank(D, this->rank);
+  }
+
+  Dense LowRank::dense() const {
     return (U * B * V);
   }
 }

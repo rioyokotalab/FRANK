@@ -35,7 +35,9 @@ namespace hicma {
 
     LowRank operator*(const LowRank& A);
 
-    Dense dense();
+    LowRank gemm(const LowRank& A, const Dense& B) const;
+
+    Dense dense() const;
   };
 }
 #endif

@@ -129,11 +129,9 @@ namespace hicma {
         if (C.type() == typeid(Dense)) {
           boost::any_cast<Dense&>(C).gemm(boost::any_cast<LowRank&>(A), boost::any_cast<Dense&>(B));
         } else if (C.type() == typeid(LowRank)) {
-          Dense AD = boost::any_cast<LowRank&>(A).dense();
           Dense CD = boost::any_cast<LowRank&>(C).dense();
-          CD.gemm(AD, boost::any_cast<Dense&>(B));
+          CD.gemm(boost::any_cast<LowRank&>(A), boost::any_cast<Dense&>(B));
           C = LowRank(CD, boost::any_cast<LowRank&>(C).rank);
-          fprintf(stderr,"Revert to dense 4.1.\n");
         } else if (C.type() == typeid(Hierarchical)) {
           fprintf(stderr,"Operation undefined 18.\n");
         } else {

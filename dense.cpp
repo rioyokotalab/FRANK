@@ -84,7 +84,7 @@ namespace hicma {
   }
 
   LowRank Dense::operator*(LowRank& A) {
-    return LowRank((*this) * (A.U * A.B * A.V), A.rank);
+    return LowRank((*this) * A.dense(), A.rank);
   }
 
   std::vector<int> Dense::getrf() const {
@@ -122,7 +122,7 @@ namespace hicma {
     }
   }
 
-  void Dense::gemv(Dense& A, Dense& b) const {
+  void Dense::gemv(const Dense& A, const Dense& b) const {
     assert(dim[1] == 1 && b.dim[1] == 1);
     char c_t='t';
     int i1 = 1;
@@ -131,7 +131,7 @@ namespace hicma {
     dgemv_(&c_t, &A.dim[0], &A.dim[1], &m1, &A[0], &A.dim[0], &b[0], &i1, &p1, &data[0], &i1);
   }
 
-  void Dense::gemm(Dense& A, Dense& B) const {
+  void Dense::gemm(const Dense& A, const Dense& B) const {
     assert(dim[0] == B.dim[0] && dim[1] == A.dim[1] && B.dim[1] == A.dim[0]);
     char c_n='n';
     double p1 = 1;
@@ -139,7 +139,7 @@ namespace hicma {
     dgemm_(&c_n, &c_n, &dim[0], &dim[1], &B.dim[1], &m1, &B[0], &B.dim[0], &A[0], &A.dim[0], &p1, &data[0], &dim[0]);
   }
 
-  void Dense::gemm(Dense& A, LowRank& B) const {
+  void Dense::gemm(const Dense& A, const LowRank& B) const {
     assert(dim[0] == B.dim[0] && dim[1] == A.dim[1] && B.dim[1] == A.dim[0]);
     char c_n='n';
     double p1 = 1;
@@ -148,7 +148,7 @@ namespace hicma {
     dgemm_(&c_n, &c_n, &dim[0], &dim[1], &BD.dim[1], &m1, &BD[0], &BD.dim[0], &A[0], &A.dim[0], &p1, &data[0], &dim[0]);
   }
 
-  void Dense::gemm(LowRank& A, Dense& B) const {
+  void Dense::gemm(const LowRank& A, const Dense& B) const {
     assert(dim[0] == B.dim[0] && dim[1] == A.dim[1] && B.dim[1] == A.dim[0]);
     char c_n='n';
     double p1 = 1;

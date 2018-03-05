@@ -48,13 +48,13 @@ namespace hicma {
 
     void trsm(Dense& A, const char& uplo) const;
 
-    void gemv(Dense& A, Dense& b) const;
+    void gemv(const Dense& A, const Dense& b) const;
 
-    void gemm(Dense& A, Dense& B) const;
+    void gemm(const Dense& A, const Dense& B) const;
 
-    void gemm(Dense& A, LowRank& B) const;
+    void gemm(const Dense& A, const LowRank& B) const;
 
-    void gemm(LowRank& A, Dense& B) const;
+    void gemm(const LowRank& A, const Dense& B) const;
 
     void resize(int i);
 
