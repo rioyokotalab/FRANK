@@ -1,4 +1,5 @@
 #include "dense.h"
+#include "low_rank.h"
 
 extern "C" {
   void dgetrf_(const int* M, const int* N, const double* A, const int* LDA, const int* IPIV, const int* INFO);
@@ -134,16 +135,14 @@ namespace hicma {
     dgemm_(&c_n, &c_n, &dim[0], &dim[1], &B.dim[1], &m1, &B[0], &B.dim[0], &A[0], &A.dim[0], &p1, &data[0], &dim[0]);
   }
 
-  /*
-    void Dense::gemm(Dense& A, LowRank& B) const {
+  void Dense::gemm(Dense& A, LowRank& B) const {
     assert(dim[0] == B.dim[0] && dim[1] == A.dim[1] && B.dim[1] == A.dim[0]);
     char c_n='n';
     double p1 = 1;
     double m1 = -1;
     Dense BD = B.dense();
     dgemm_(&c_n, &c_n, &dim[0], &dim[1], &BD.dim[1], &m1, &BD[0], &BD.dim[0], &A[0], &A.dim[0], &p1, &data[0], &dim[0]);
-    }
-  */
+  }
 
   void Dense::resize(int i) {
     dim[0]=i; dim[1]=1;
