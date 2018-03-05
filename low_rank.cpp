@@ -140,17 +140,16 @@ namespace hicma {
     return *this -= A;
   }
 
-  /*
-  LowRank LowRank::operator*(const Dense& D) {
-    V = V * D;
-    return *this;
+  LowRank LowRank::operator*(const Dense& D) const {
+    LowRank A(*this);
+    A.V = V * D;
+    return A;
   }
 
   LowRank LowRank::operator*(const LowRank& A) {
     S = S * (V * A.U) * A.S;
     return *this;
   }
-  */
 
   LowRank LowRank::operator-() const {
     LowRank A(*this);
@@ -168,37 +167,32 @@ namespace hicma {
   }
 
   void LowRank::trsm(Dense& A, const char& uplo) {
-    Dense D = this->dense();
-    D.trsm(A, uplo);
-    *this = LowRank(D, this->rank);
+    switch (uplo) {
+    case 'l' :
+      U.trsm(A, uplo);
+      break;
+    case 'u' :
+      V.trsm(A, uplo);
+      break;
+    }
   }
 
-  LowRank& LowRank::gemm(const Dense& A, const Dense& B) {
+  void LowRank::gemm(const LowRank& A, const Dense& B) {
     Dense D = this->dense();
     D.gemm(A, B);
     *this = LowRank(D, this->rank);
-    return *this;
   }
 
-  LowRank& LowRank::gemm(const LowRank& A, const Dense& B) {
+  void LowRank::gemm(const Dense& A, const LowRank& B) {
     Dense D = this->dense();
     D.gemm(A, B);
     *this = LowRank(D, this->rank);
-    return *this;
   }
 
-  LowRank& LowRank::gemm(const Dense& A, const LowRank& B) {
+  void LowRank::gemm(const LowRank& A, const LowRank& B) {
     Dense D = this->dense();
     D.gemm(A, B);
     *this = LowRank(D, this->rank);
-    return *this;
-  }
-
-  LowRank& LowRank::gemm(const LowRank& A, const LowRank& B) {
-    Dense D = this->dense();
-    D.gemm(A, B);
-    *this = LowRank(D, this->rank);
-    return *this;
   }
 
   void LowRank::mergeU(const LowRank&A, const LowRank& B) {

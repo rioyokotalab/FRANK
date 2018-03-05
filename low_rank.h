@@ -39,7 +39,7 @@ namespace hicma {
 
     LowRank operator-(const LowRank& A) const;
 
-    LowRank operator*(const Dense& D);
+    LowRank operator*(const Dense& D) const;
 
     LowRank operator*(const LowRank& A);
 
@@ -49,13 +49,11 @@ namespace hicma {
 
     void trsm(Dense& A, const char& uplo);
 
-    LowRank& gemm(const Dense& A, const Dense& B);
+    void gemm(const Dense& A, const LowRank& B);
 
-    LowRank& gemm(const Dense& A, const LowRank& B);
+    void gemm(const LowRank& A, const Dense& B);
 
-    LowRank& gemm(const LowRank& A, const Dense& B);
-
-    LowRank& gemm(const LowRank& A, const LowRank& B);
+    void gemm(const LowRank& A, const LowRank& B);
 
     void mergeU(const LowRank&A, const LowRank& B);
 

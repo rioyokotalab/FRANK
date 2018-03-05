@@ -52,7 +52,7 @@ namespace hicma {
     return data[i*dim[1]+j];
   }
 
-  const Dense& Dense::operator=(const Dense A) {
+  const Dense Dense::operator=(const Dense A) {
     dim[0]=A.dim[0]; dim[1]=A.dim[1];
     data.resize(dim[0]*dim[1]);
     data = A.data;
@@ -65,17 +65,33 @@ namespace hicma {
     return *this;
   }
 
+  const Dense Dense::operator+=(const LowRank& A) {
+    return *this += A.dense();
+  }
+
   const Dense Dense::operator-=(const Dense& A) {
     for (int i=0; i<dim[0]*dim[1]; i++)
       this->data[i] -= A.data[i];
     return *this;
   }
 
+  const Dense Dense::operator-=(const LowRank& A) {
+    return *this -= A.dense();
+  }
+
   Dense Dense::operator+(const Dense& A) const {
     return Dense(*this) += A;
   }
 
+  Dense Dense::operator+(const LowRank& A) const {
+    return Dense(*this) += A;
+  }
+
   Dense Dense::operator-(const Dense& A) const {
+    return Dense(*this) -= A;
+  }
+
+  Dense Dense::operator-(const LowRank& A) const {
     return Dense(*this) -= A;
   }
 
@@ -93,7 +109,8 @@ namespace hicma {
   }
 
   LowRank Dense::operator*(LowRank& A) {
-    return LowRank((*this) * A.dense(), A.rank);
+    A.U = *this * A.U;
+    return A;
   }
 
   Dense Dense::operator-() const {
@@ -120,7 +137,7 @@ namespace hicma {
                     dim[0], dim[1], 1, &A[0], A.dim[1], &data[0], dim[1]);
         break;
       default :
-        fprintf(stderr,"Second argument must be 'l' for lower, 'u' for upper.\n");
+        fprintf(stderr,"Second argument must be 'l' for lower, 'u' for upper.\n"); abort();
       }
     }
     else {
@@ -134,7 +151,7 @@ namespace hicma {
                     dim[0], dim[1], 1, &A[0], A.dim[1], &data[0], dim[1]);
         break;
       default :
-        fprintf(stderr,"Second argument must be 'l' for lower, 'u' for upper.\n");
+        fprintf(stderr,"Second argument must be 'l' for lower, 'u' for upper.\n"); abort();
       }
     }
   }
@@ -144,7 +161,8 @@ namespace hicma {
   }
 
   void Dense::gemv(const LowRank& A, const Dense& b) {
-    *this -= A.U * A.S * (A.V * b);
+    //*this -= A.U * A.S * (A.V * b);
+    *this -= A * b;
   }
 
   void Dense::gemm(const Dense& A, const Dense& B) {

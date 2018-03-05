@@ -39,15 +39,23 @@ namespace hicma {
 
     const double& operator()(const int i, const int j) const;
 
-    const Dense &operator=(const Dense A);
+    const Dense operator=(const Dense A);
 
     const Dense operator+=(const Dense& A);
 
+    const Dense operator+=(const LowRank& A);
+
     const Dense operator-=(const Dense& A);
+
+    const Dense operator-=(const LowRank& A);
 
     Dense operator+(const Dense& A) const;
 
+    Dense operator+(const LowRank& A) const;
+
     Dense operator-(const Dense& A) const;
+
+    Dense operator-(const LowRank& A) const;
 
     Dense operator*(const Dense& A) const;
 
