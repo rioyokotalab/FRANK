@@ -77,23 +77,39 @@ namespace hicma {
     return *this;
   }
 
-  Dense LowRank::operator+(const Dense& D) const {
+  Dense LowRank::operator+=(const Dense& D) const {
     return U * B * V + D;
   }
 
-  /*
-    LowRank LowRank::operator*(const Dense& D) {
+  Dense LowRank::operator-=(const Dense& D) const {
+    return U * B * V - D;
+  }
+
+  Dense LowRank::operator+(const Dense& D) const {
+    return *this += D;
+  }
+
+  Dense LowRank::operator-(const Dense& D) const {
+    return *this -= D;
+  }
+
+  LowRank LowRank::operator+(const LowRank& A) const {
+    return LowRank(U * B * V + A.U * A.B * A.V, rank);
+  }
+
+  LowRank LowRank::operator-(const LowRank& A) const {
+    return LowRank(U * B * V - A.U * A.B * A.V, rank);
+  }
+
+  LowRank LowRank::operator*(const Dense& D) {
     V = V * D;
     return *this;
-    }
-  */
+  }
 
-  /*
-    LowRank LowRank::operator*(const LowRank& A) {
+  LowRank LowRank::operator*(const LowRank& A) {
     B = B * (V * A.U) * A.B;
     return *this;
-    }
-  */
+  }
 
   Dense LowRank::dense() {
     return (U * B * V);
