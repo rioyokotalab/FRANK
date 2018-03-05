@@ -1,5 +1,5 @@
 [Immediate]
-Fix transpose issue
+B -> S
 Change dense ops to low rank in BLR
 Tree construction
 HODLR

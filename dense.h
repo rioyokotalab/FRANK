@@ -53,6 +53,8 @@ namespace hicma {
 
     LowRank operator*(LowRank& A);
 
+    Dense operator-() const;
+
     std::vector<int> getrf();
 
     void trsm(Dense& A, const char& uplo);

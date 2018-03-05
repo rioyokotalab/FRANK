@@ -15,6 +15,8 @@ namespace hicma {
     int dim[2];
     int rank;
 
+    LowRank();
+
     LowRank(const LowRank &A);
 
     LowRank(const Dense &D, const int k);
@@ -41,6 +43,10 @@ namespace hicma {
 
     LowRank operator*(const LowRank& A);
 
+    LowRank operator-() const;
+
+    void resize(int m, int n, int k);
+
     void trsm(Dense& A, const char& uplo);
 
     LowRank& gemm(const Dense& A, const Dense& B);
@@ -50,6 +56,12 @@ namespace hicma {
     LowRank& gemm(const LowRank& A, const Dense& B);
 
     LowRank& gemm(const LowRank& A, const LowRank& B);
+
+    void mergeU(const LowRank&A, const LowRank& B);
+
+    void mergeB(const LowRank&A, const LowRank& B);
+
+    void mergeV(const LowRank&A, const LowRank& B);
 
     Dense dense() const;
   };

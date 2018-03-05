@@ -96,6 +96,12 @@ namespace hicma {
     return LowRank((*this) * A.dense(), A.rank);
   }
 
+  Dense Dense::operator-() const {
+    Dense D(dim[0],dim[1]);
+    for (int i=0; i<dim[0]*dim[1]; i++) D[i] = -data[i];
+    return D;
+  }
+
   std::vector<int> Dense::getrf() {
     std::vector<int> ipiv(std::min(dim[0],dim[1]));
     LAPACKE_dgetrf(LAPACK_ROW_MAJOR, dim[0], dim[1], &data[0], dim[1], &ipiv[0]);

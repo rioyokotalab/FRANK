@@ -3,6 +3,10 @@
 #include "hierarchical.h"
 
 namespace hicma {
+  LowRank::LowRank() {
+    dim[0]=0; dim[1]=0; rank=0;
+  }
+
   LowRank::LowRank(const LowRank &A) : U(A.U), B(A.B), V(A.V) {
     dim[0]=A.dim[0]; dim[1]=A.dim[1]; rank=A.rank;
   }
@@ -99,11 +103,33 @@ namespace hicma {
   }
 
   LowRank LowRank::operator+=(const LowRank& A) const {
-    return LowRank(U * B * V + A.U * A.B * A.V, rank);
+    assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
+    LowRank C;
+    if (rank+A.rank >= dim[0]) {
+      C = LowRank(U * B * V + A.U * A.B * A.V, rank);
+    }
+    else {
+      C.resize(dim[0], dim[1], rank+A.rank);
+      C.mergeU(*this,A);
+      C.mergeB(*this,A);
+      C.mergeV(*this,A);
+    }
+    return C;
   }
 
   LowRank LowRank::operator-=(const LowRank& A) const {
-    return LowRank(U * B * V - A.U * A.B * A.V, rank);
+    assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
+    LowRank C;
+    if (rank+A.rank >= dim[0]) {
+      C = LowRank(U * B * V - A.U * A.B * A.V, rank);
+    }
+    else {
+      C.resize(dim[0], dim[1], rank+A.rank);
+      C.mergeU(*this,-A);
+      C.mergeB(*this,-A);
+      C.mergeV(*this,-A);
+    }
+    return C;
   }
 
   LowRank LowRank::operator+(const LowRank& A) const {
@@ -125,6 +151,21 @@ namespace hicma {
     return *this;
   }
   */
+
+  LowRank LowRank::operator-() const {
+    LowRank A(*this);
+    A.U = -U;
+    A.B = -B;
+    A.V = -V;
+    return A;
+  }
+
+  void LowRank::resize(int m, int n, int k) {
+    dim[0]=m; dim[1]=n; rank=k;
+    U.resize(m,k);
+    B.resize(k,k);
+    V.resize(k,n);
+  }
 
   void LowRank::trsm(Dense& A, const char& uplo) {
     Dense D = this->dense();
@@ -158,6 +199,46 @@ namespace hicma {
     D.gemm(A, B);
     *this = LowRank(D, this->rank);
     return *this;
+  }
+
+  void LowRank::mergeU(const LowRank&A, const LowRank& B) {
+    assert(rank == A.rank + B.rank);
+    for (int i=0; i<dim[0]; i++) {
+      for (int j=0; j<A.rank; j++) {
+        U(i,j) = A.U(i,j);
+      }
+      for (int j=0; j<B.rank; j++) {
+        U(i,j+A.rank) = B.U(i,j);
+      }
+    }
+  }
+
+  void LowRank::mergeB(const LowRank&A, const LowRank& C) {
+    assert(rank == A.rank + C.rank);
+    for (int i=0; i<A.rank; i++) {
+      for (int j=0; j<A.rank; j++) {
+        B(i,j) = A.B(i,j);
+      }
+    }
+    for (int i=0; i<C.rank; i++) {
+      for (int j=0; j<C.rank; j++) {
+        B(i+A.rank,j+A.rank) = C.B(i,j);
+      }
+    }
+  }
+
+  void LowRank::mergeV(const LowRank&A, const LowRank& B) {
+    assert(rank == A.rank + B.rank);
+    for (int i=0; i<A.rank; i++) {
+      for (int j=0; j<dim[1]; j++) {
+        V(i,j) = A.V(i,j);
+      }
+    }
+    for (int i=0; i<B.rank; i++) {
+      for (int j=0; j<dim[1]; j++) {
+        V(i+A.rank,j) = B.V(i,j);
+      }
+    }
   }
 
   Dense LowRank::dense() const {
