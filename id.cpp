@@ -1,14 +1,14 @@
 #include "id.h"
 #include <sys/time.h>
 
-void print_matrix( char* desc, int m, int n, double* a,int lda ) {
-  int i, j;
-  printf( "\n %s\n", desc );
-  for( i = 0; i < m; i++ ) {
-    for( j = 0; j < n; j++ ) printf( " %6.2f", a[i*lda + j] );
-    printf( "\n" );
-  }
-}
+// void print_matrix( char* desc, int m, int n, double* a,int lda ) {
+//   int i, j;
+//   printf( "\n %s\n", desc );
+//   for( i = 0; i < m; i++ ) {
+//     for( j = 0; j < n; j++ ) printf( " %6.2f", a[i*lda + j] );
+//     printf( "\n" );
+//   }
+// }
 
 int main (int argc, char** argv) {
   // int ncols = 1000;
@@ -31,7 +31,7 @@ int main (int argc, char** argv) {
     9.84,   0.15,  -8.99,  -6.02,  -5.31 };
   int nrows = 6;
   int ncols = 5;
-  int rank = 5;
+  int rank = 3;
   
   
     // setup matrix

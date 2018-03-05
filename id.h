@@ -30,21 +30,21 @@ void matrix_matrix_mult(
                         double *A, double *B, double *C,
                         int nrows_a, int ncols_a, int nrows_b, int ncols_b);
 
+void print_matrix( char* desc, int m, int n, double* a,int lda );
+
 void initialize_random_matrix(double *M, int nrows, int ncols){
   time_t t;
   srand((unsigned) time(&t));
   for(int i=0; i < nrows*ncols; i++){
-    //    for(int j=0; j<ncols; j++){
     M[i] = (double)rand() / (double)RAND_MAX;
-      // }
   }
 }
 
 /* C = A^T*B 
  *
- * A - nrows * ncols
- * B - nrows*rank
- * C - ncols*rank
+ * A - nrows_a * ncols_a
+ * B - nrows_b * ncols_b
+ * C - nrows_a * ncols_b
 */
 void matrix_transpose_matrix_mult(
                                   double *A,
@@ -57,11 +57,13 @@ void matrix_transpose_matrix_mult(
 {
   cblas_dgemm(
               CblasRowMajor, CblasTrans, CblasNoTrans,
-              nrows_a, ncols_b, nrows_b,
+              ncols_a, ncols_b, nrows_a,
               1, A, ncols_a,
               B, ncols_b, 1,
-              C, ncols_b);
+              C, ncols_b
+              );
 }
+
 
 /* compute compact QR factorization
  * Bt - input matrix. ncols * rank
@@ -100,11 +102,10 @@ void compute_QR_compact_factorization(double *Bt, double *Q, double *R, int nrow
 // * http://www.netlib.no/netlib/lapack/double/dgeqrf.f
 // * https://stackoverflow.com/a/21974753
 // * https://github.com/SciRuby/nmatrix/blob/00b86992a9babef239b56a2561bfa58f1719c937/lib/nmatrix/lapacke.rb#L299
-void qr_decomp(double *QR_temp, double* TAU, double* Q, int nrows, int ncols, int rank)
-{
-  LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, nrows, rank, QR_temp, rank, TAU);
-  LAPACKE_dormqr(LAPACK_ROW_MAJOR, 'L', 'N', nrows, rank, rank, QR_temp, rank, TAU, Q, rank);
-}
+/* void qr_decomp(double *QR_temp, double* TAU, double* Q, int nrows, int ncols, int rank) */
+/* { */
+
+/* } */
 
 /* compute compact QR factoriation and get Q
  * M - original matrix. dim: nrows * rank
@@ -117,10 +118,11 @@ void QR_factorization_getQ(double *M, double *Q, int nrows, int ncols, int rank)
   int k = min(nrows, rank);
   double *QR_temp = (double*)calloc(nrows*rank, sizeof(double)); // temp result from LAPACK stored in this
   double *TAU = (double*)calloc(k, sizeof(double)); // temp vector for LAPACK.
-  memcpy (QR_temp, M, nrows*rank);
-  for (int i = 0;i < k; ++i) QR_temp[i*k + i] = 1.0;
-  
-  qr_decomp (QR_temp, TAU, Q, nrows, ncols, rank);
+  memcpy (QR_temp, M, nrows*rank*sizeof(double));
+  for (int i = 0;i < k; ++i) Q[i*k + i] = 1.0;
+
+  LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, nrows, rank, QR_temp, rank, TAU); // correct so far
+  LAPACKE_dormqr(LAPACK_ROW_MAJOR, 'L', 'N', nrows, rank, rank, QR_temp, rank, TAU, Q, rank);
   free(TAU);
   free(QR_temp);
 }
@@ -184,7 +186,9 @@ void matrix_matrix_mult(double *A, double *B, double *C, int nrows_a, int ncols_
  * Inputs:
  * M -> nrows*ncols.
  */
-void calculate_svd(double *U, double *S, double *Vt, double *M, int nrows, int ncols, int rank)
+void calculate_svd(
+                   double *U, double *S, double *Vt,
+                   double *M, int nrows, int ncols, int rank)
 {
   int lda = ncols;
   int ldu = nrows;
@@ -192,6 +196,15 @@ void calculate_svd(double *U, double *S, double *Vt, double *M, int nrows, int n
 
   double superb[min(nrows, ncols) - 1];
   LAPACKE_dgesvd(LAPACK_ROW_MAJOR, 'A', 'A', nrows, ncols, M, lda, S, U, ldu, Vt, ldvt, superb);
+}
+
+void print_matrix( char* desc, int m, int n, double* a,int lda ) {
+  int i, j;
+  printf( "\n %s\n", desc );
+  for( i = 0; i < m; i++ ) {
+    for( j = 0; j < n; j++ ) printf( " %6.2f", a[i*lda + j] );
+    printf( "\n" );
+  }
 }
 
 /* computes the approximate low rank SVD of rank k of matrix M using QR method */
@@ -216,52 +229,80 @@ void randomized_low_rank_svd2(
 
   // RN = randn(n,k+p)
   // build random matrix 
-  double *RN = (double*)malloc(sizeof(double)*ncols*rank);
+  //double *RN = (double*)malloc(sizeof(double)*ncols*rank);
   // calloc sets all elements to zero
   //RN = matrix_load_from_file("data/R.mtx");
-  initialize_random_matrix(RN, ncols, rank);
+  double RN[15] =    {
+    -0.2938,    0.3075,   -1.3320,
+    -0.8479,   -1.2571,   -2.3299,
+    -1.1201,   -0.8655,   -1.4491,
+    2.5260,   -0.1765,    0.3335,
+    1.6555,    0.7914,    0.3914
+  };
+  //initialize_random_matrix(RN, ncols, rank);
 
   // Y = M * RN
   // multiply to get matrix of random samples Y
   double *Y = (double*)calloc(nrows*rank, sizeof(double)); // nrows * rank
   matrix_matrix_mult(M, RN, Y, nrows, ncols, ncols, rank);
+
+  print_matrix("Y:", nrows, rank, Y, rank);
   // [Q, R] = qr(Y,0)
   // build Q from 
-  double *Q = (double*)malloc(sizeof(double)*nrows*rank);
+  double *Q = (double*)calloc(nrows*rank,sizeof(double));
   QR_factorization_getQ(Y, Q, nrows, ncols, rank);
 
-  // B = Q' * A
-  // form Bt = Mt*Q : nxm * mxk = nxk
-  double *Bt = (double*)calloc(ncols*rank,sizeof(double));
-  matrix_transpose_matrix_mult(M, Q, Bt, nrows, ncols, nrows, rank);
+  print_matrix("Q from SVD:", nrows, rank, Q, rank);
 
-  double *Qhat = (double*)malloc(sizeof(double)*nrows*rank);
-  double *Rhat = (double*)malloc(sizeof(double)*rank*rank);
-  // Bt -> ncols * rank, Qhat -> nrows * rank, Rhat -> rank, rank
-  compute_QR_compact_factorization(Bt, Qhat, Rhat, nrows, ncols, rank);
+  // Bt = Q' * M
+  // form Bt = Qt*M : rankxnrows * nrowsxncols = rankxncols
+  double *Bt = (double*)calloc(rank*ncols,sizeof(double));
+  matrix_transpose_matrix_mult(Q, M, Bt, nrows, rank, nrows, ncols);
 
-  // [Uhat, D, V] = svd(B,'econ')
-  // compute SVD of Rhat (kxk)
-  double *Uhat = (double*)malloc(sizeof(double)*rank*rank);
-  double *Sigmahat = (double*)malloc(sizeof(double)*rank*rank);
-  double *Vhat = (double*)malloc(sizeof(double)*rank*rank);
-  memcpy(Uhat, Rhat, rank*rank);
-  calculate_svd(Uhat, Sigmahat, Vhat, Bt, rank, rank, rank);
+  print_matrix("Btrans", rank, ncols, Bt, ncols);
+  /* double *Qhat = (double*)malloc(sizeof(double)*nrows*rank); */
+  /* double *Rhat = (double*)malloc(sizeof(double)*rank*rank); */
+  /* // Bt -> ncols * rank, Qhat -> nrows * rank, Rhat -> rank, rank */
+  /* compute_QR_compact_factorization(Bt, Qhat, Rhat, nrows, ncols, rank); */
+
+  //[Uhat, D, V] = svd(B,'econ')
+  //  compute SVD of Rhat (kxk)
+  /* double *Uhat = (double*)malloc(sizeof(double)*rank*rank); */
+  /* double *Sigmahat = (double*)malloc(sizeof(double)*rank*rank); */
+
+
+  /* double *Vhat = (double*)malloc(sizeof(double)*rank*rank); */
+
+
+  //double *Uhat = (double*)calloc(ncols*ncols, sizeof(double));
+
+
+  //double *S_temp = (double*)calloc(rank*rank, sizeof(double))
+  //double *V_te = (double*)calloc(ncols*rank, sizeof(double));
+  //memcpy(Uhat, Rhat, rank*rank);
+
+
   
+  //calculate_svd(Uhat, S, V, Bt, nrows, ncols, rank);
+  //  matrix_matrix_mult(Q, Uhat, U, nrows, rank, ncols, ncols);
+
+
+  
+  //double *U = (double*)calloc()
   // U = Q * Uhat
   // record singul0ar values
-  build_diagonal_matrix(Sigmahat, rank, S);
+  //build_diagonal_matrix(Sigmahat, rank, S);
   // U = Q*Vhat
-  matrix_matrix_mult(Q, Vhat, U, nrows, rank, rank, rank);
+  //matrix_matrix_mult(Q, Vhat, U, nrows, rank, rank, rank);
   // V = Qhat*Uhat
-  matrix_matrix_mult(Qhat, Uhat, V, nrows, rank, rank, rank);
+  //matrix_matrix_mult(Qhat, Uhat, V, nrows, rank, rank, rank);
   // free stuff
-  free(RN);
-  free(Y);
-  free(Q);
-  free(Rhat);
-  free(Qhat);
-  free(Uhat);
-  free(Vhat);
-  free(Bt);
+  /* free(RN); */
+  /* free(Y); */
+  /* free(Q); */
+  /* free(Rhat); */
+  /* free(Qhat); */
+  /* free(Uhat); */
+  /* free(Vhat); */
+  /* free(Bt); */
 }
