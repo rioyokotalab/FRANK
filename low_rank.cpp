@@ -7,6 +7,13 @@ namespace hicma {
     dim[0]=0; dim[1]=0; rank=0;
   }
 
+  LowRank::LowRank(const int m, const int n, const int k) {
+    dim[0]=m; dim[1]=n; rank=k;
+    U.resize(m,k);
+    S.resize(k,k);
+    V.resize(k,n);
+  }
+
   LowRank::LowRank(const LowRank &A) : U(A.U), S(A.S), V(A.V) {
     dim[0]=A.dim[0]; dim[1]=A.dim[1]; rank=A.rank;
   }
@@ -86,69 +93,76 @@ namespace hicma {
     return *this;
   }
 
-  Dense LowRank::operator+=(const Dense& D) const {
-    return U * S * V + D;
+  const Dense LowRank::operator+=(const Dense& D) {
+    assert(dim[0]==D.dim[0] && dim[1]==D.dim[1]);
+    return this->dense() + D;
   }
 
-  Dense LowRank::operator-=(const Dense& D) const {
-    return U * S * V - D;
+  const LowRank LowRank::operator+=(const LowRank& B) {
+    assert(dim[0]==B.dim[0] && dim[1]==B.dim[1]);
+    LowRank A(*this);
+    if (rank+B.rank >= dim[0]) {
+      *this = LowRank(A.dense() + B.dense(), rank);
+    }
+    else {
+      this->resize(dim[0], dim[1], rank+A.rank);
+      this->mergeU(A,B);
+      this->mergeS(A,B);
+      this->mergeV(A,B);
+    }
+    return *this;
+  }
+
+  const Dense LowRank::operator-=(const Dense& D) {
+    assert(dim[0]==D.dim[0] && dim[1]==D.dim[1]);
+    return this->dense() - D;
+  }
+
+  const LowRank LowRank::operator-=(const LowRank& B) {
+    assert(dim[0]==B.dim[0] && dim[1]==B.dim[1]);
+    LowRank A(*this);
+    if (rank+B.rank >= dim[0]) {
+      *this = LowRank(A.dense() - B.dense(), rank);
+    }
+    else {
+      this->resize(dim[0], dim[1], rank+A.rank);
+      this->mergeU(A,-B);
+      this->mergeS(A,-B);
+      this->mergeV(A,-B);
+    }
+    return *this;
   }
 
   Dense LowRank::operator+(const Dense& D) const {
-    return *this += D;
-  }
-
-  Dense LowRank::operator-(const Dense& D) const {
-    return *this -= D;
-  }
-
-  LowRank LowRank::operator+=(const LowRank& A) const {
-    assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
-    LowRank C;
-    if (rank+A.rank >= dim[0]) {
-      C = LowRank(U * S * V + A.U * A.S * A.V, rank);
-    }
-    else {
-      C.resize(dim[0], dim[1], rank+A.rank);
-      C.mergeU(*this,A);
-      C.mergeS(*this,A);
-      C.mergeV(*this,A);
-    }
-    return C;
-  }
-
-  LowRank LowRank::operator-=(const LowRank& A) const {
-    assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
-    LowRank C;
-    if (rank+A.rank >= dim[0]) {
-      C = LowRank(U * S * V - A.U * A.S * A.V, rank);
-    }
-    else {
-      C.resize(dim[0], dim[1], rank+A.rank);
-      C.mergeU(*this,-A);
-      C.mergeS(*this,-A);
-      C.mergeV(*this,-A);
-    }
-    return C;
+    return LowRank(*this) += D;
   }
 
   LowRank LowRank::operator+(const LowRank& A) const {
-    return *this += A;
+    return LowRank(*this) += A;
+  }
+
+  Dense LowRank::operator-(const Dense& D) const {
+    return LowRank(*this) -= D;
   }
 
   LowRank LowRank::operator-(const LowRank& A) const {
-    return *this -= A;
+    return LowRank(*this) -= A;
   }
 
   LowRank LowRank::operator*(const Dense& D) const {
-    LowRank A(*this);
+    LowRank A(dim[0],D.dim[1],rank);
+    A.U = U;
+    A.S = S;
     A.V = V * D;
     return A;
   }
 
-  LowRank LowRank::operator*(const LowRank& A) {
-    S = S * (V * A.U) * A.S;
-    return *this;
+  LowRank LowRank::operator*(const LowRank& A) const {
+    LowRank B(dim[0],A.dim[1],rank);
+    B.U = U;
+    B.S = S * (V * A.U) * A.S;
+    B.V = V;
+    return B;
   }
 
   LowRank LowRank::operator-() const {

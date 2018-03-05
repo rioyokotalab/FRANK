@@ -60,22 +60,26 @@ namespace hicma {
   }
 
   const Dense Dense::operator+=(const Dense& A) {
+    assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
     for (int i=0; i<dim[0]*dim[1]; i++)
       this->data[i] += A.data[i];
     return *this;
   }
 
   const Dense Dense::operator+=(const LowRank& A) {
+    assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
     return *this += A.dense();
   }
 
   const Dense Dense::operator-=(const Dense& A) {
+    assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
     for (int i=0; i<dim[0]*dim[1]; i++)
       this->data[i] -= A.data[i];
     return *this;
   }
 
   const Dense Dense::operator-=(const LowRank& A) {
+    assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
     return *this -= A.dense();
   }
 
@@ -108,9 +112,10 @@ namespace hicma {
     return C;
   }
 
-  LowRank Dense::operator*(LowRank& A) {
-    A.U = *this * A.U;
-    return A;
+  LowRank Dense::operator*(const LowRank& A) const {
+    LowRank B(A);
+    B.U = *this * A.U;
+    return B;
   }
 
   Dense Dense::operator-() const {

@@ -59,7 +59,7 @@ namespace hicma {
 
     Dense operator*(const Dense& A) const;
 
-    LowRank operator*(LowRank& A);
+    LowRank operator*(const LowRank& A) const;
 
     Dense operator-() const;
 

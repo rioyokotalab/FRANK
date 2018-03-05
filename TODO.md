@@ -1,4 +1,5 @@
 [Immediate]
+Add *= ops
 Change dense ops to low rank in BLR
 Tree construction
 HODLR

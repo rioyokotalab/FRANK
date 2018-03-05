@@ -17,31 +17,33 @@ namespace hicma {
 
     LowRank();
 
+    LowRank(const int m, const int n, const int k);
+
     LowRank(const LowRank &A);
 
     LowRank(const Dense &D, const int k);
 
     const LowRank& operator=(const LowRank A);
 
-    Dense operator+=(const Dense& D) const;
+    const Dense operator+=(const Dense& D);
 
-    Dense operator-=(const Dense& D) const;
+    const LowRank operator+=(const LowRank& A);
+
+    const Dense operator-=(const Dense& D);
+
+    const LowRank operator-=(const LowRank& A);
 
     Dense operator+(const Dense& D) const;
 
-    Dense operator-(const Dense& D) const;
-
-    LowRank operator+=(const LowRank& A) const;
-
-    LowRank operator-=(const LowRank& A) const;
-
     LowRank operator+(const LowRank& A) const;
+
+    Dense operator-(const Dense& D) const;
 
     LowRank operator-(const LowRank& A) const;
 
     LowRank operator*(const Dense& D) const;
 
-    LowRank operator*(const LowRank& A);
+    LowRank operator*(const LowRank& A) const;
 
     LowRank operator-() const;
 
