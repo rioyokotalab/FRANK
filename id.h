@@ -8,7 +8,6 @@
 
 #define min(x,y) (((x) < (y)) ? (x) : (y))
 #define max(x,y) (((x) > (y)) ? (x) : (y))
-#define RAND_MAX 1
 
 lapack_int LAPACKE_dgeqrf( int matrix_layout, lapack_int m, lapack_int n,
                            double* a, lapack_int lda, double* tau );
@@ -29,14 +28,14 @@ void cblas_dgemm(CBLAS_LAYOUT layout, CBLAS_TRANSPOSE TransA,
 
 void matrix_matrix_mult(
                         double *A, double *B, double *C,
-                        int nrows_a, int nrows_b, int ncols_a, int ncols_b);
+                        int nrows_a, int ncols_a, int nrows_b, int ncols_b);
 
 void initialize_random_matrix(double *M, int nrows, int ncols){
   time_t t;
   srand((unsigned) time(&t));
-  for(int i=0; i<nrows*ncols; i++){
+  for(int i=0; i < nrows*ncols; i++){
     //    for(int j=0; j<ncols; j++){
-      M[i] = rand();
+    M[i] = (double)rand() / (double)RAND_MAX;
       // }
   }
 }
@@ -47,7 +46,15 @@ void initialize_random_matrix(double *M, int nrows, int ncols){
  * B - nrows*rank
  * C - ncols*rank
 */
-void matrix_transpose_matrix_mult(double *A, double *B, double *C, int nrows_a, int ncols_a, int nrows_b, int ncols_b){
+void matrix_transpose_matrix_mult(
+                                  double *A,
+                                  double *B,
+                                  double *C,
+                                  int nrows_a,
+                                  int ncols_a,
+                                  int nrows_b,
+                                  int ncols_b)
+{
   cblas_dgemm(
               CblasRowMajor, CblasTrans, CblasNoTrans,
               nrows_a, ncols_b, nrows_b,
@@ -160,7 +167,7 @@ double get_percent_error_between_two_mats(double *A, double *B, int nrows, int n
 }
 
 /* C = A*B */
-void matrix_matrix_mult(double *A, double *B, double *C, int nrows_a, int nrows_b, int ncols_a, int ncols_b){
+void matrix_matrix_mult(double *A, double *B, double *C, int nrows_a, int ncols_a, int nrows_b, int ncols_b){
   cblas_dgemm(
               CblasRowMajor, CblasNoTrans, CblasNoTrans,
               nrows_a, ncols_b, nrows_b,
@@ -206,10 +213,7 @@ void randomized_low_rank_svd2(
                               int nrows ,
                               int ncols)
 {
-  // setup matrix
-  U = (double*)calloc(nrows*rank,sizeof(double));
-  S = (double*)calloc(rank*rank,sizeof(double));
-  V = (double*)calloc(rank*ncols,sizeof(double));
+
   // RN = randn(n,k+p)
   // build random matrix 
   double *RN = (double*)malloc(sizeof(double)*ncols*rank);
@@ -219,9 +223,8 @@ void randomized_low_rank_svd2(
 
   // Y = M * RN
   // multiply to get matrix of random samples Y
-  double *Y = (double*)malloc(sizeof(double)*nrows*rank); // nrows * rank
+  double *Y = (double*)calloc(nrows*rank, sizeof(double)); // nrows * rank
   matrix_matrix_mult(M, RN, Y, nrows, ncols, ncols, rank);
-
   // [Q, R] = qr(Y,0)
   // build Q from 
   double *Q = (double*)malloc(sizeof(double)*nrows*rank);
@@ -229,7 +232,7 @@ void randomized_low_rank_svd2(
 
   // B = Q' * A
   // form Bt = Mt*Q : nxm * mxk = nxk
-  double *Bt = (double*)malloc(sizeof(double)*ncols*rank);
+  double *Bt = (double*)calloc(ncols*rank,sizeof(double));
   matrix_transpose_matrix_mult(M, Q, Bt, nrows, ncols, nrows, rank);
 
   double *Qhat = (double*)malloc(sizeof(double)*nrows*rank);
