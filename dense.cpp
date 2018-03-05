@@ -144,7 +144,7 @@ namespace hicma {
   }
 
   void Dense::gemv(const LowRank& A, const Dense& b) {
-    *this -= A.U * A.B * (A.V * b);
+    *this -= A.U * A.S * (A.V * b);
   }
 
   void Dense::gemm(const Dense& A, const Dense& B) {
@@ -152,15 +152,15 @@ namespace hicma {
   }
 
   void Dense::gemm(const Dense& A, const LowRank& B) {
-    *this -= ((A * B.U) * B.B) * B.V;
+    *this -= ((A * B.U) * B.S) * B.V;
   }
 
   void Dense::gemm(const LowRank& A, const Dense& B) {
-    *this -= A.U * (A.B * (A.V * B));
+    *this -= A.U * (A.S * (A.V * B));
   }
 
   void Dense::gemm(const LowRank& A, const LowRank& B) {
-    *this -= A.U * (A.B * (A.V * B.U) * B.B) * B.V;
+    *this -= A.U * (A.S * (A.V * B.U) * B.S) * B.V;
   }
 
   void Dense::resize(int i) {

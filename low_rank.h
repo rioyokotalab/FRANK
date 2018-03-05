@@ -11,7 +11,7 @@ namespace hicma {
   class Hierarchical;
   class LowRank : public Node {
   public:
-    Dense U, B, V;
+    Dense U, S, V;
     int dim[2];
     int rank;
 
@@ -59,7 +59,7 @@ namespace hicma {
 
     void mergeU(const LowRank&A, const LowRank& B);
 
-    void mergeB(const LowRank&A, const LowRank& B);
+    void mergeS(const LowRank&A, const LowRank& B);
 
     void mergeV(const LowRank&A, const LowRank& B);
 

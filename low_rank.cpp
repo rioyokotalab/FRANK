@@ -7,7 +7,7 @@ namespace hicma {
     dim[0]=0; dim[1]=0; rank=0;
   }
 
-  LowRank::LowRank(const LowRank &A) : U(A.U), B(A.B), V(A.V) {
+  LowRank::LowRank(const LowRank &A) : U(A.U), S(A.S), V(A.V) {
     dim[0]=A.dim[0]; dim[1]=A.dim[1]; rank=A.rank;
   }
 
@@ -16,11 +16,11 @@ namespace hicma {
     int n = dim[1] = D.dim[1];
     rank = k;
     U.resize(m,k);
-    B.resize(k,k);
+    S.resize(k,k);
     V.resize(k,n);
     gsl_matrix *D2 = gsl_matrix_calloc(m,n);
     gsl_matrix *U2 = gsl_matrix_calloc(m,k);
-    gsl_matrix *B2 = gsl_matrix_calloc(k,k);
+    gsl_matrix *S2 = gsl_matrix_calloc(k,k);
     gsl_matrix *V2 = gsl_matrix_calloc(n,k);
     for(int i=0; i<m; i++){
       for(int j=0; j<n; j++){
@@ -44,7 +44,7 @@ namespace hicma {
     gsl_vector *svd_work_vec = gsl_vector_alloc(k);
     gsl_matrix_memcpy(Uhat, Rhat);
     gsl_linalg_SV_decomp (Uhat, Vhat, Sigmahat, svd_work_vec);
-    build_diagonal_matrix(Sigmahat, k, B2);
+    build_diagonal_matrix(Sigmahat, k, S2);
     matrix_matrix_mult(Q,Vhat,U2);
     matrix_matrix_mult(Qhat,Uhat,V2);
     for(int i=0; i<m; i++){
@@ -54,7 +54,7 @@ namespace hicma {
     }
     for(int i=0; i<k; i++){
       for(int j=0; j<k; j++){
-        B(i,j) = B2->data[i*k+j];
+        S(i,j) = S2->data[i*k+j];
       }
     }
     for(int i=0; i<n; i++){
@@ -64,7 +64,7 @@ namespace hicma {
     }
     gsl_matrix_free(D2);
     gsl_matrix_free(U2);
-    gsl_matrix_free(B2);
+    gsl_matrix_free(S2);
     gsl_matrix_free(V2);
     gsl_matrix_free(RN);
     gsl_matrix_free(Y);
@@ -81,17 +81,17 @@ namespace hicma {
   const LowRank& LowRank::operator=(const LowRank A) {
     dim[0]=A.dim[0]; dim[1]=A.dim[1]; rank=A.rank;
     U = A.U;
-    B = A.B;
+    S = A.S;
     V = A.V;
     return *this;
   }
 
   Dense LowRank::operator+=(const Dense& D) const {
-    return U * B * V + D;
+    return U * S * V + D;
   }
 
   Dense LowRank::operator-=(const Dense& D) const {
-    return U * B * V - D;
+    return U * S * V - D;
   }
 
   Dense LowRank::operator+(const Dense& D) const {
@@ -106,12 +106,12 @@ namespace hicma {
     assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
     LowRank C;
     if (rank+A.rank >= dim[0]) {
-      C = LowRank(U * B * V + A.U * A.B * A.V, rank);
+      C = LowRank(U * S * V + A.U * A.S * A.V, rank);
     }
     else {
       C.resize(dim[0], dim[1], rank+A.rank);
       C.mergeU(*this,A);
-      C.mergeB(*this,A);
+      C.mergeS(*this,A);
       C.mergeV(*this,A);
     }
     return C;
@@ -121,12 +121,12 @@ namespace hicma {
     assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
     LowRank C;
     if (rank+A.rank >= dim[0]) {
-      C = LowRank(U * B * V - A.U * A.B * A.V, rank);
+      C = LowRank(U * S * V - A.U * A.S * A.V, rank);
     }
     else {
       C.resize(dim[0], dim[1], rank+A.rank);
       C.mergeU(*this,-A);
-      C.mergeB(*this,-A);
+      C.mergeS(*this,-A);
       C.mergeV(*this,-A);
     }
     return C;
@@ -147,7 +147,7 @@ namespace hicma {
   }
 
   LowRank LowRank::operator*(const LowRank& A) {
-    B = B * (V * A.U) * A.B;
+    S = S * (V * A.U) * A.S;
     return *this;
   }
   */
@@ -155,7 +155,7 @@ namespace hicma {
   LowRank LowRank::operator-() const {
     LowRank A(*this);
     A.U = -U;
-    A.B = -B;
+    A.S = -S;
     A.V = -V;
     return A;
   }
@@ -163,7 +163,7 @@ namespace hicma {
   void LowRank::resize(int m, int n, int k) {
     dim[0]=m; dim[1]=n; rank=k;
     U.resize(m,k);
-    B.resize(k,k);
+    S.resize(k,k);
     V.resize(k,n);
   }
 
@@ -213,16 +213,22 @@ namespace hicma {
     }
   }
 
-  void LowRank::mergeB(const LowRank&A, const LowRank& C) {
-    assert(rank == A.rank + C.rank);
+  void LowRank::mergeS(const LowRank&A, const LowRank& B) {
+    assert(rank == A.rank + B.rank);
     for (int i=0; i<A.rank; i++) {
       for (int j=0; j<A.rank; j++) {
-        B(i,j) = A.B(i,j);
+        S(i,j) = A.S(i,j);
+      }
+      for (int j=0; j<B.rank; j++) {
+        S(i,j+A.rank) = 0;
       }
     }
-    for (int i=0; i<C.rank; i++) {
-      for (int j=0; j<C.rank; j++) {
-        B(i+A.rank,j+A.rank) = C.B(i,j);
+    for (int i=0; i<B.rank; i++) {
+      for (int j=0; j<A.rank; j++) {
+        S(i+A.rank,j) = 0;
+      }
+      for (int j=0; j<B.rank; j++) {
+        S(i+A.rank,j+A.rank) = B.S(i,j);
       }
     }
   }
@@ -242,6 +248,6 @@ namespace hicma {
   }
 
   Dense LowRank::dense() const {
-    return (U * B * V);
+    return (U * S * V);
   }
 }
