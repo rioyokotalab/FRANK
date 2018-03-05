@@ -54,6 +54,9 @@ namespace hicma {
       gsl_matrix_set_col(Q,j,vj);
       vj = gsl_vector_calloc(m);
     }
+    gsl_matrix_free(QR);
+    gsl_vector_free(tau);
+    gsl_vector_free(vj);
   }
 
   /* compute compact QR factorization and get Q
@@ -106,6 +109,7 @@ namespace hicma {
     gsl_matrix * SVt = gsl_matrix_alloc(k,n);
     gsl_blas_dgemm(CblasNoTrans, CblasTrans, 1.0, S, V, 0.0, SVt);
     gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, U, SVt, 0.0, P);
+    gsl_matrix_free(SVt);
   }
 
   /* calculate percent error between A and B: 100*norm(A - B)/norm(A) */
@@ -117,6 +121,7 @@ namespace hicma {
     gsl_matrix_sub(A_minus_B,B);
     double normA = matrix_frobenius_norm(A);
     double normA_minus_B = matrix_frobenius_norm(A_minus_B);
+    gsl_matrix_free(A_minus_B);
     return 100.0*normA_minus_B/normA;
   }
 
@@ -161,11 +166,13 @@ namespace hicma {
     gsl_matrix_free(RN);
     gsl_matrix_free(Y);
     gsl_matrix_free(Q);
-    gsl_matrix_free(Rhat);
-    gsl_matrix_free(Qhat);
-    gsl_matrix_free(Uhat);
-    gsl_matrix_free(Vhat);
     gsl_matrix_free(Bt);
+    gsl_matrix_free(Qhat);
+    gsl_matrix_free(Rhat);
+    gsl_matrix_free(Uhat);
+    gsl_vector_free(Sigmahat);
+    gsl_matrix_free(Vhat);
+    gsl_vector_free(svd_work_vec);
   }
 }
 

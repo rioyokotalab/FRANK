@@ -60,13 +60,16 @@ namespace hicma {
     gsl_matrix_free(U2);
     gsl_matrix_free(B2);
     gsl_matrix_free(V2);
+    gsl_matrix_free(RN);
     gsl_matrix_free(Y);
     gsl_matrix_free(Q);
-    gsl_matrix_free(Rhat);
+    gsl_matrix_free(Bt);
     gsl_matrix_free(Qhat);
+    gsl_matrix_free(Rhat);
+    gsl_vector_free(Sigmahat);
     gsl_matrix_free(Uhat);
     gsl_matrix_free(Vhat);
-    gsl_matrix_free(Bt);
+    gsl_vector_free(svd_work_vec);
   }
 
   const LowRank& LowRank::operator=(const LowRank A) {
@@ -109,6 +112,7 @@ namespace hicma {
     return *this -= A;
   }
 
+  /*
   LowRank LowRank::operator*(const Dense& D) {
     V = V * D;
     return *this;
@@ -118,6 +122,7 @@ namespace hicma {
     B = B * (V * A.U) * A.B;
     return *this;
   }
+  */
 
   void LowRank::trsm(Dense& A, const char& uplo) {
     Dense D = this->dense();

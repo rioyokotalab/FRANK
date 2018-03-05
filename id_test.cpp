@@ -1,5 +1,6 @@
 #include "id.h"
 #include <sys/time.h>
+using namespace hicma;
 
 int main (int argc, char** argv) {
   int n = 1000;
