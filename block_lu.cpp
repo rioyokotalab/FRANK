@@ -3,8 +3,6 @@
 #include "boost_any_wrapper.h"
 #include <cmath>
 #include <cstdlib>
-#include "dense.h"
-#include "hierarchical.h"
 #include "print.h"
 #include "timer.h"
 #include <vector>
@@ -52,6 +50,8 @@ int main(int argc, char** argv) {
   for (int ic=0; ic<Nc; ic++) {
     start("-DGETRF");
     std::vector<int> ipiv = getrf(A(ic,ic));
+    for (int ib=0; ib<Nb; ib++)
+      std::cout << ib << " " << ipiv[ib] << std::endl;
     stop("-DGETRF", false);
     for (int jc=ic+1; jc<Nc; jc++) {
       start("-DTRSM");

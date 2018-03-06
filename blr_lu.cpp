@@ -3,8 +3,6 @@
 #include "boost_any_wrapper.h"
 #include <cmath>
 #include <cstdlib>
-#include "dense.h"
-#include "hierarchical.h"
 #include "print.h"
 #include "timer.h"
 #include <vector>
