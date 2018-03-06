@@ -1,5 +1,6 @@
 [Immediate]
 Add *= ops
+Rename getrf, trsm
 Change dense ops to low rank in BLR
 Tree construction
 HODLR

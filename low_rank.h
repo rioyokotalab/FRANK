@@ -23,6 +23,8 @@ namespace hicma {
 
     LowRank(const Dense &D, const int k);
 
+    const LowRank& operator=(const double v);
+
     const LowRank& operator=(const LowRank A);
 
     const Dense operator+=(const Dense& D);

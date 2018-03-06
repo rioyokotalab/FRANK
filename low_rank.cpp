@@ -85,6 +85,13 @@ namespace hicma {
     gsl_vector_free(svd_work_vec);
   }
 
+  const LowRank& LowRank::operator=(const double v) {
+    U = 0;
+    S = 0;
+    V = 0;
+    return *this;
+  }
+
   const LowRank& LowRank::operator=(const LowRank A) {
     dim[0]=A.dim[0]; dim[1]=A.dim[1]; rank=A.rank;
     U = A.U;
@@ -161,7 +168,7 @@ namespace hicma {
     LowRank B(dim[0],A.dim[1],rank);
     B.U = U;
     B.S = S * (V * A.U) * A.S;
-    B.V = V;
+    B.V = A.V;
     return B;
   }
 

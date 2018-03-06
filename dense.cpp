@@ -52,6 +52,12 @@ namespace hicma {
     return data[i*dim[1]+j];
   }
 
+  const Dense Dense::operator=(const double v) {
+    for (int i=0; i<dim[0]*dim[1]; i++)
+      data[i] = v;
+    return *this;
+  }
+
   const Dense Dense::operator=(const Dense A) {
     dim[0]=A.dim[0]; dim[1]=A.dim[1];
     data.resize(dim[0]*dim[1]);
@@ -62,7 +68,7 @@ namespace hicma {
   const Dense Dense::operator+=(const Dense& A) {
     assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
     for (int i=0; i<dim[0]*dim[1]; i++)
-      this->data[i] += A.data[i];
+      data[i] += A.data[i];
     return *this;
   }
 
@@ -166,7 +172,6 @@ namespace hicma {
   }
 
   void Dense::gemv(const LowRank& A, const Dense& b) {
-    //*this -= A.U * A.S * (A.V * b);
     *this -= A * b;
   }
 
@@ -175,15 +180,15 @@ namespace hicma {
   }
 
   void Dense::gemm(const Dense& A, const LowRank& B) {
-    *this -= ((A * B.U) * B.S) * B.V;
+    *this -= A * B;
   }
 
   void Dense::gemm(const LowRank& A, const Dense& B) {
-    *this -= A.U * (A.S * (A.V * B));
+    *this -= A * B;
   }
 
   void Dense::gemm(const LowRank& A, const LowRank& B) {
-    *this -= A.U * (A.S * (A.V * B.U) * B.S) * B.V;
+    *this -= A * B;
   }
 
   void Dense::resize(int i) {
@@ -206,12 +211,13 @@ namespace hicma {
     return l2;
   }
 
-  void Dense::print() {
+  void Dense::print() const {
     for (int i=0; i<dim[0]; i++) {
       for (int j=0; j<dim[1]; j++) {
         std::cout << std::setw(20) << std::setprecision(15) << data[i*dim[1]+j] << ' ';
       }
       std::cout << std::endl;
     }
+      std::cout << "----------------------------------------------------------------------------------" << std::endl;
   }
 }

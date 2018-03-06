@@ -39,6 +39,8 @@ namespace hicma {
 
     const double& operator()(const int i, const int j) const;
 
+    const Dense operator=(const double v);
+
     const Dense operator=(const Dense A);
 
     const Dense operator+=(const Dense& A);
@@ -85,7 +87,7 @@ namespace hicma {
 
     double norm();
 
-    void print();
+    void print() const;
   };
 }
 #endif
