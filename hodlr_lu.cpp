@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include "dense.h"
 #include "hierarchical.h"
+#include "low_rank.h"
 #include "print.h"
 #include "timer.h"
 #include <vector>
@@ -12,19 +13,22 @@
 using namespace hicma;
 
 int main(int argc, char** argv) {
-  int N = 6;
-  int Nb = 3;
+  int N = 64;
+  int Nb = 16;
   int Nc = N / Nb;
-  std::vector<double> randx(N);
+  int rank = 8;
   Hierarchical x(Nc);
   Hierarchical b(Nc);
   Hierarchical A(Nc,Nc);
+  // Fill vector of particle positions with random numbers and sort
+  std::vector<double> randx(N);
   for (int i=0; i<N; i++) {
-    //randx[i] = drand48();
-    randx[i] = i + 1;
+    randx[i] = drand48();
   }
   std::sort(randx.begin(), randx.end());
   print("Time");
+
+  // Create and fill cells
   start("Init matrix");
   for (int ic=0; ic<Nc; ic++) {
     Dense xi(Nb);
@@ -36,6 +40,7 @@ int main(int argc, char** argv) {
     x[ic] = xi;
     b[ic] = bj;
   }
+  // Fill A with blocks and make low rank if admissible
   for (int ic=0; ic<Nc; ic++) {
     for (int jc=0; jc<Nc; jc++) {
       Dense Aij(Nb,Nb);
@@ -45,10 +50,16 @@ int main(int argc, char** argv) {
           b.D(ic)[ib] += Aij(ib,jb) * x.D(jc)[jb];
         }
       }
-      A(ic,jc) = Aij;
+      if (std::abs(ic - jc) <= 1) {
+        A(ic,jc) = Aij;
+      }
+      else {
+        A(ic,jc) = LowRank(Aij, rank);
+      }
     }
   }
   stop("Init matrix");
+
   start("LU decomposition");
   for (int ic=0; ic<Nc; ic++) {
     start("-DGETRF");
@@ -69,6 +80,7 @@ int main(int argc, char** argv) {
     }
   }
   stop("LU decomposition");
+
   print2("-DGETRF");
   print2("-DTRSM");
   print2("-DGEMM");
@@ -80,6 +92,7 @@ int main(int argc, char** argv) {
     trsm(A(ic,ic),b[ic],'l');
   }
   stop("Forward substitution");
+
   start("Backward substitution");
   for (int ic=Nc-1; ic>=0; ic--) {
     for (int jc=Nc-1; jc>ic; jc--) {
@@ -98,27 +111,5 @@ int main(int argc, char** argv) {
   }
   print("Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
-  Dense A1(1,2);
-  A1(0,0) = 1;
-  A1(0,1) = 2;
-  Dense A2(2,3);
-  A2(0,0) = 1;
-  A2(0,1) = 2;
-  A2(0,2) = 2;
-  A2(1,0) = 3;
-  A2(1,1) = 4;
-  A2(1,2) = 4;
-  Dense A3(1,3);
-  A3 = A1 * A2;
-  Dense A4(1,3);
-  for (int i=0; i<1; i++) {
-    for (int j=0; j<3; j++) {
-      A4(i,j) = 0;
-      for (int k=0; k<2; k++) {
-        A4(i,j) += A1(i,k) * A2(k,j);
-      }
-      std::cout << i << " " << j << " " << A3(i,j) << " " << A4(i,j) << std::endl;
-    }
-  }
   return 0;
 }

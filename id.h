@@ -14,6 +14,8 @@
 #include <math.h>
 #include <string.h>
 #include <sys/time.h>
+#include <boost/random.hpp>
+#include <boost/random/normal_distribution.hpp>
 
 
 lapack_int LAPACKE_dgeqrf( int matrix_layout, lapack_int m, lapack_int n,
@@ -27,11 +29,11 @@ lapack_int LAPACKE_dgesvd( int matrix_layout, char jobu, char jobvt,
                            lapack_int lda, double* s, double* u, lapack_int ldu,
                            double* vt, lapack_int ldvt, double* superb );
 
-void cblas_dgemm(CBLAS_LAYOUT layout, CBLAS_TRANSPOSE TransA,
-                 CBLAS_TRANSPOSE TransB, const int M, const int N,
-                 const int K, const double alpha, const double *A,
-                 const int lda, const double *B, const int ldb,
-                 const double beta, double *C, const int ldc);
+/* void cblas_dgemm(CBLAS_LAYOUT layout, CBLAS_TRANSPOSE TransA, */
+/*                  CBLAS_TRANSPOSE TransB, const int M, const int N, */
+/*                  const int K, const double alpha, const double *A, */
+/*                  const int lda, const double *B, const int ldb, */
+/*                  const double beta, double *C, const int ldc); */
 
 namespace hicma {
   

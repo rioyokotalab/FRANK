@@ -1,12 +1,14 @@
 #ifndef low_rank_h
 #define low_rank_h
 #include <cassert>
-#include "dense.h"
 #include "id.h"
 #include "node.h"
 #include <vector>
 
 namespace hicma {
+  class Node;
+  class Dense;
+  class Hierarchical;
   class LowRank : public Node {
   public:
     Dense U, B, V;

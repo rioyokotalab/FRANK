@@ -8,7 +8,9 @@
 #include <vector>
 
 namespace hicma {
+  class Node;
   class LowRank;
+  class Hierarchical;
   class Dense : public Node {
   public:
     std::vector<double> data;
@@ -21,6 +23,13 @@ namespace hicma {
     Dense(const int m, const int n);
 
     Dense(const Dense& A);
+
+    Dense(
+        const Hierarchical* parent,
+        const int i_rel,
+        const int j_rel,
+        const size_t xi_half,
+        const size_t xj_half);
 
     double& operator[](const int i);
 
@@ -44,21 +53,21 @@ namespace hicma {
 
     LowRank operator*(LowRank& A);
 
-    std::vector<int> getrf() const;
+    std::vector<int> getrf();
 
     void trsm(Dense& A, const char& uplo);
 
-    void gemv(const Dense& A, const Dense& b) const;
+    void gemv(const Dense& A, const Dense& b);
 
-    void gemv(const LowRank& A, const Dense& b) const;
+    void gemv(const LowRank& A, const Dense& b);
 
-    void gemm(const Dense& A, const Dense& B) const;
+    void gemm(const Dense& A, const Dense& B);
 
-    void gemm(const Dense& A, const LowRank& B) const;
+    void gemm(const Dense& A, const LowRank& B);
 
-    void gemm(const LowRank& A, const Dense& B) const;
+    void gemm(const LowRank& A, const Dense& B);
 
-    void gemm(const LowRank& A, const LowRank& B) const;
+    void gemm(const LowRank& A, const LowRank& B);
 
     void resize(int i);
 

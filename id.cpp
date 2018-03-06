@@ -1,15 +1,29 @@
 #include "id.h"
+#include <iostream>
+#include <fstream>
+
 #define min(x,y) (((x) < (y)) ? (x) : (y))
 #define max(x,y) (((x) > (y)) ? (x) : (y))
 using namespace std;
 namespace hicma {
 
-  void initialize_random_matrix(double *M, int nrows, int ncols){
-    time_t t;
-    srand((unsigned) time(&t));
-    for(int i=0; i < nrows*ncols; i++){
-      M[i] = (double)rand() / (double)RAND_MAX;
+  void initialize_random_matrix(double *M, int nrows, int ncols)
+  {
+    boost::mt19937 rng;
+    boost::normal_distribution<> nd(0.0, 1.0);
+    boost::variate_generator<boost::mt19937&, 
+                             boost::normal_distribution<> > var_nor(rng, nd);
+
+    std::fstream data("/home/sameer/gitrepos/scratch/FMM/rand.txt", std::ios_base::in);
+    double a;
+    for (int i = 0; i < nrows*ncols; i++) {
+      data >> a;
+      M[i] = a;
     }
+    
+    // for(int i=0; i < nrows*ncols; i++){
+    //   M[i] = var_nor();
+    // }
   }
 
   /* C = A^T*B 
@@ -178,7 +192,7 @@ namespace hicma {
     int i, j;
     printf( "\n %s\n", desc );
     for( i = 0; i < m; i++ ) {
-      for( j = 0; j < n; j++ ) printf( " %6.2f", a[i*lda + j] );
+      for( j = 0; j < n; j++ ) printf( " %6.4f", a[i*lda + j] );
       printf( "\n" );
     }
   }
@@ -214,28 +228,44 @@ namespace hicma {
   {
     // RN = randn(n,k+p)
     // build random matrix 
-    double *RN = (double*)malloc(sizeof(double)*ncols*rank);
-    initialize_random_matrix(RN, ncols, rank);
+    // double *RN = (double*)malloc(sizeof(double)*ncols*rank);
+    // initialize_random_matrix(RN, ncols, rank);
+    double RN[20] = {-0.0915,    0.7352,   -0.7581,    1.2603,
+                     0.5578,    0.3510,    1.2075,   -0.9663,
+                     -0.8848,    0.9110,   -1.3710,    0.7351,
+                     0.1427,   -0.0160,    1.3716,  -0.2503,
+                     1.0225,    1.5506,   -0.3009,   -0.7037};
+
+    // double RN[25] = {-0.0915,    0.7352,   -0.7581,    1.2603, 0.543,
+    //                  0.5578,    0.3510,    1.2075,   -0.9663, 0.4321,
+    //                  -0.8848,    0.9110,   -1.3710,    0.7351, -0.422,
+    //                  0.1427,   -0.0160,    1.3716,  -0.2503, 1.34,
+    //                  1.0225,    1.5506,   -0.3009,   -0.7037, 0.842};
 
     // Y = M * RN
     // multiply to get matrix of random samples Y
     double *Y = (double*)calloc(nrows*rank, sizeof(double)); // nrows * rank
     matrix_matrix_mult(M, RN, Y, nrows, ncols, ncols, rank);
+    print_matrix("Y:", nrows, rank, Y, rank);
 
     // [q, r] = qr(Y,0)
     double *Q = (double*)calloc(nrows*rank,sizeof(double));
     QR_factorization_getQ(Y, Q, nrows, ncols, rank);
+    print_matrix("Q", nrows, rank, Q, rank);
 
     // bt = M' * q;
     // form Bt = Qt*M : rankxnrows * nrowsxncols = rankxncols
     double *Bt = (double*)calloc(ncols*rank,sizeof(double));
     matrix_transpose_matrix_mult(M, Q, Bt, nrows, ncols, nrows, rank);
+    print_matrix("Bt", ncols, rank, Bt, rank);
     
     /* // Bt -> ncols * rank, Qhat -> ncols * rank, Rhat -> rank, rank */
     // [Qhat, Rhat] = qr(bt)
     double * Qhat = (double*)calloc(ncols*rank, sizeof(double));
     double * Rhat = (double*)calloc(rank*rank, sizeof(double));
     compute_QR_compact_factorization(Bt, Qhat, Rhat, nrows, ncols, rank);
+    print_matrix("Qhat:", ncols, rank, Qhat, rank);
+    print_matrix("Rhat:", rank, rank, Rhat, rank);
 
     // compute SVD of Rhat
     // [Uhat, S, Vhat] = svd(Rhat);
@@ -243,18 +273,21 @@ namespace hicma {
     double *Sigmahat = (double*)calloc(rank, sizeof(double));
     double *Vhat = (double*)calloc(rank*rank, sizeof(double));
     calculate_svd(Uhat, Sigmahat, Vhat, Rhat, rank, rank, rank);
-
+    build_diagonal_matrix(Sigmahat, rank, S);
+    print_matrix("Uhat:", rank, rank, Uhat, rank);
+    print_matrix("S", rank, rank, S, rank);
     // Vhat = Vhat'
     double *Vhat_t = (double*)calloc(rank*rank, sizeof(double));
     transpose(Vhat, Vhat_t, rank, rank);
-    
-    build_diagonal_matrix(Sigmahat, rank, S);
+    print_matrix("Vhat_original:", rank, rank, Vhat_t, rank);
 
     // U = q * Vhat
     matrix_matrix_mult(Q, Vhat_t, U, nrows, rank, rank, rank);
+    print_matrix("U:", nrows, rank, U, rank);
 
     // V = Qhat*Uhat
     matrix_matrix_mult(Qhat, Uhat, V, ncols, rank, rank, rank);
+    print_matrix("V:", ncols, rank, V, rank);
 
     free(Y);
     free(Q);
