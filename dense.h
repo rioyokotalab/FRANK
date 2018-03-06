@@ -25,11 +25,15 @@ namespace hicma {
     Dense(const Dense& A);
 
     Dense(
-        const Hierarchical* parent,
-        const int i_rel,
-        const int j_rel,
-        const size_t xi_half,
-        const size_t xj_half);
+          std::vector<double>& x,
+          const int ni,
+          const int nj,
+          const int i_begin,
+          const int j_begin,
+          const Hierarchical* parent,
+          const int i_rel,
+          const int j_rel
+          );
 
     double& operator[](const int i);
 

@@ -1,4 +1,4 @@
-CXX = mpicxx -ggdb3 -Wall -O3 -fopenmp -I. -I/usr/include/openblas
+CXX = mpicxx -ggdb3 -Wall -O3 -fopenmp -I.
 
 .cxx.o:
 	$(CXX) -c $? -o $@

@@ -1,5 +1,0 @@
-Use BLAS, LAPACK in Dense class
-Template over float/double
-Const correctness
-Non-square matrices
-Optimize memory usage for allocation of U,S,V in ID.

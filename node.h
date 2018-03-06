@@ -7,8 +7,8 @@ namespace hicma {
   class Hierarchical;
   class Node {
   public:
-    int i;
-    int j;
+    int i_abs;
+    int j_abs;
     int level;
 
     Node();
