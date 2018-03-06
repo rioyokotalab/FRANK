@@ -1,8 +1,8 @@
 #include "dense.h"
-#include <lapacke.h>
 #include "low_rank.h"
 #include "hierarchical.h"
 #include <iomanip>
+#include <lapacke.h>
 
 namespace hicma {
   Dense::Dense() {

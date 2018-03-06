@@ -9,13 +9,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <lapacke.h>
 #include <cblas.h>
 #include <math.h>
 #include <string.h>
 #include <sys/time.h>
 #include <boost/random.hpp>
 #include <boost/random/normal_distribution.hpp>
+#include <lapacke.h>
 
 namespace hicma {
   void matrix_matrix_mult(

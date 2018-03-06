@@ -20,7 +20,7 @@ id: id_test.o id.o
 	valgrind ./a.out
 
 build_tree: build_tree.o node.o dense.o low_rank.o hierarchical.o id.o
-	$(CXX) $? -lblas -llapacke
+	$(CXX) $? -lblas -llapacke -lcblas
 	valgrind ./a.out
 
 clean:
