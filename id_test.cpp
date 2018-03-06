@@ -6,7 +6,7 @@ using namespace hicma;
 int main (int argc, char** argv) {
   int ncols = 1000;
   int nrows = 1000;
-  int rank = 500;
+  int rank = 100;
   int niter = 10;
   double *M = (double*)malloc(sizeof(double)*nrows*ncols);
   for (int i=0; i<nrows; i++) {
@@ -24,12 +24,12 @@ int main (int argc, char** argv) {
     double * S = (double*)calloc(rank*rank,sizeof(double));
     double * V = (double*)calloc(rank*ncols,sizeof(double));
     double * V_t = (double*)calloc(ncols*rank,sizeof(double));
-  
+
     randomized_low_rank_svd2(M, rank, U, S, V, nrows, ncols);
     transpose(V,V_t,rank, ncols);
-    
+
     form_svd_product_matrix(U,S,V_t,P, nrows, ncols, rank);
-    
+
     error += get_relative_error_between_two_mats(M, P, nrows, ncols);
 
     free(P);

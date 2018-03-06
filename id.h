@@ -2,7 +2,7 @@
 #define id_h
 
 /* NOTE TO THE WISE
- * 
+ *
  * You MUST tranpose V that you get from the ID function after the computation is done.
  */
 
@@ -17,27 +17,7 @@
 #include <boost/random.hpp>
 #include <boost/random/normal_distribution.hpp>
 
-
-lapack_int LAPACKE_dgeqrf( int matrix_layout, lapack_int m, lapack_int n,
-                           double* a, lapack_int lda, double* tau );
-lapack_int LAPACKE_dormqr( int matrix_layout, char side, char trans,
-                           lapack_int m, lapack_int n, lapack_int k,
-                           const double* a, lapack_int lda, const double* tau,
-                           double* c, lapack_int ldc );
-lapack_int LAPACKE_dgesvd( int matrix_layout, char jobu, char jobvt,
-                           lapack_int m, lapack_int n, double* a,
-                           lapack_int lda, double* s, double* u, lapack_int ldu,
-                           double* vt, lapack_int ldvt, double* superb );
-
-/* void cblas_dgemm(CBLAS_LAYOUT layout, CBLAS_TRANSPOSE TransA, */
-/*                  CBLAS_TRANSPOSE TransB, const int M, const int N, */
-/*                  const int K, const double alpha, const double *A, */
-/*                  const int lda, const double *B, const int ldb, */
-/*                  const double beta, double *C, const int ldc); */
-
 namespace hicma {
-  
-
   void matrix_matrix_mult(
                           double *A, double *B, double *C,
                           int nrows_a, int ncols_a, int nrows_b, int ncols_b);
@@ -53,7 +33,7 @@ namespace hicma {
                                         int nrows,
                                         int ncols,
                                         int rank);
-  
+
   void QR_factorization_getQ(double *M, double *Q, int nrows, int ncols, int rank);
 
   void build_diagonal_matrix(double *dvals, int n, double *D);
@@ -74,7 +54,7 @@ namespace hicma {
   void calculate_svd(
                      double *U, double *S, double *Vt,
                      double *M, int nrows, int ncols, int rank);
-  
+
   void randomized_low_rank_svd2(
                                 double *M,
                                 int rank,

@@ -2,22 +2,22 @@
 
 #define min(x,y) (((x) < (y)) ? (x) : (y))
 #define max(x,y) (((x) > (y)) ? (x) : (y))
-using namespace std;
+//using namespace std;
 namespace hicma {
 
   void initialize_random_matrix(double *M, int nrows, int ncols)
   {
     boost::mt19937 rng;
     boost::normal_distribution<> nd(0.0, 1.0);
-    boost::variate_generator<boost::mt19937&, 
+    boost::variate_generator<boost::mt19937&,
                              boost::normal_distribution<> > var_nor(rng, nd);
-    
+
     for(int i=0; i < nrows*ncols; i++){
       M[i] = var_nor();
     }
   }
 
-  /* C = A^T*B 
+  /* C = A^T*B
    *
    * A - nrows_a * ncols_a
    * B - nrows_b * ncols_b
@@ -61,7 +61,7 @@ namespace hicma {
     double *TAU = (double*)malloc(sizeof(double)*k);
     memcpy (QR_temp, Bt, sizeof(double)*ncols*rank);
     LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, ncols, rank, QR_temp, rank, TAU);
-  
+
     for(int i=0; i<ncols; i++) {
       for(int j=0; j<rank; j++) {
         if(j>=i){
@@ -71,7 +71,7 @@ namespace hicma {
     }
 
     for (int i = 0; i < k; ++i) Q[i*k + i] = 1.0;
-        
+
     LAPACKE_dormqr(
                    LAPACK_ROW_MAJOR, 'L', 'N',
                    ncols, rank, rank, QR_temp, rank, TAU, Q, rank);
@@ -107,11 +107,11 @@ namespace hicma {
   /* frobenius norm */
   double matrix_frobenius_norm(double *M, int nrows, int ncols){
     double norm = 0;
-    for(size_t i=0; i < nrows*ncols; i++){
+    for(int i=0; i<nrows*ncols; i++){
       double val = M[i];
       norm += val*val;
     }
-  
+
     norm = sqrt(norm);
     return norm;
   }
@@ -156,7 +156,7 @@ namespace hicma {
                 ncols_b, 1, C, ncols_b);
   }
 
-  /* 
+  /*
    * Outputs:
    * U -> rank*rank
    * S -> rank*rank
@@ -196,7 +196,7 @@ namespace hicma {
   }
 
   /* computes the approximate low rank SVD of rank k of matrix M using QR method */
-  /* 
+  /*
    * M - input matrix.
    * k - rank of the output.
    * U - U matrix from ID.
@@ -215,7 +215,7 @@ namespace hicma {
                                 int ncols)
   {
     // RN = randn(n,k+p)
-    // build random matrix 
+    // build random matrix
     double *RN = (double*)malloc(sizeof(double)*ncols*rank);
     initialize_random_matrix(RN, ncols, rank);
 
@@ -232,7 +232,7 @@ namespace hicma {
     // form Bt = Qt*M : rankxnrows * nrowsxncols = rankxncols
     double *Bt = (double*)calloc(ncols*rank,sizeof(double));
     matrix_transpose_matrix_mult(M, Q, Bt, nrows, ncols, nrows, rank);
-    
+
     /* // Bt -> ncols * rank, Qhat -> ncols * rank, Rhat -> rank, rank */
     // [Qhat, Rhat] = qr(bt)
     double * Qhat = (double*)calloc(ncols*rank, sizeof(double));
@@ -246,11 +246,11 @@ namespace hicma {
     double *Vhat = (double*)calloc(rank*rank, sizeof(double));
     calculate_svd(Uhat, Sigmahat, Vhat, Rhat, rank, rank, rank);
     build_diagonal_matrix(Sigmahat, rank, S);
-    
+
     // Vhat = Vhat'
     double *Vhat_t = (double*)calloc(rank*rank, sizeof(double));
     transpose(Vhat, Vhat_t, rank, rank);
-    
+
     // U = q * Vhat
     matrix_matrix_mult(Q, Vhat_t, U, nrows, rank, rank, rank);
 
