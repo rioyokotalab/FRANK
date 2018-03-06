@@ -26,11 +26,11 @@ namespace hicma {
                  const int nj,
                  const int rank,
                  const int nleaf,
-                 const int i_begin=0,
-                 const int j_begin=0,
-                 const Hierarchical* parent=nullptr,
-                 const int i_rel=0,
-                 const int j_rel=0
+                 const int i_begin,
+                 const int j_begin,
+                 const Hierarchical* parent,
+                 const int i_rel,
+                 const int j_rel
                  );
 
     boost::any& operator[](const int i);

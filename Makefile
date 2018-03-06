@@ -17,7 +17,7 @@ hodlr_lu: hodlr_lu.o node.o dense.o low_rank.o hierarchical.o id.o
 
 id: id_test.o id.o
 	$(CXX) $? -lblas -llapacke
-	./a.out
+	valgrind ./a.out
 
 build_tree: build_tree.o node.o dense.o low_rank.o hierarchical.o id.o
 	$(CXX) $? -lblas -llapacke

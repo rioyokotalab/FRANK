@@ -23,11 +23,11 @@ namespace hicma {
                              const int nleaf,
                              const int i_begin=0,
                              const int j_begin=0,
-                             const Hierarchical* parent=nullptr,
+                             const Hierarchical* parent=NULL,
                              const int i_rel=0,
                              const int j_rel=0
                              ) : Node(parent, i_rel, j_rel) {
-    if ( parent ) {
+    if ( !parent ) {
       assert(int(x.size()) == nj);
       std::sort(x.begin(),x.end());
     }
@@ -53,42 +53,16 @@ namespace hicma {
         }
         if ( std::abs(i_abs_child - j_abs_child) <= 1 ) { // TODO: use x in admissibility condition
           if ( ni <= nleaf && nj <= nleaf ) {
-            Dense D(
-                x,
-                ni_child,
-                nj_child,
-                i_begin_child,
-                j_begin_child,
-                this,
-                i_rel_child,
-                j_rel_child);
+            Dense D(x, ni_child, nj_child, i_begin_child, j_begin_child, this, i_rel_child, j_rel_child);
             (*this)(i_rel_child,j_rel_child) = D;
           }
           else {
-            Hierarchical H(
-                x,
-                ni_child,
-                nj_child,
-                rank,
-                nleaf,
-                i_begin_child,
-                j_begin_child,
-                this,
-                i_rel_child,
-                j_rel_child);
+            Hierarchical H(x, ni_child, nj_child, rank, nleaf, i_begin_child, j_begin_child, this, i_rel_child, j_rel_child);
             (*this)(i_rel_child,j_rel_child) = H;
           }
         }
         else {
-          Dense D(
-              x,
-              ni_child,
-              nj_child,
-              i_begin_child,
-              j_begin_child,
-              this,
-              i_rel_child,
-              j_rel_child);
+          Dense D(x, ni_child, nj_child, i_begin_child, j_begin_child, this, i_rel_child, j_rel_child);
           LowRank LR(D, rank); // TODO : create a LowRank constructor that does ID with x
           (*this)(i_rel_child,j_rel_child) = LR;
         }
