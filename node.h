@@ -6,7 +6,7 @@
 namespace hicma {
   class Hierarchical;
   class Node {
-  protected:
+  public:
     int i;
     int j;
     int level;

@@ -3,9 +3,6 @@
 #include "boost_any_wrapper.h"
 #include <cmath>
 #include <cstdlib>
-#include "dense.h"
-#include "hierarchical.h"
-#include "low_rank.h"
 #include "print.h"
 #include "timer.h"
 #include <vector>
@@ -17,18 +14,15 @@ int main(int argc, char** argv) {
   int Nb = 16;
   int Nc = N / Nb;
   int rank = 8;
+  std::vector<double> randx(N);
   Hierarchical x(Nc);
   Hierarchical b(Nc);
   Hierarchical A(Nc,Nc);
-  // Fill vector of particle positions with random numbers and sort
-  std::vector<double> randx(N);
   for (int i=0; i<N; i++) {
     randx[i] = drand48();
   }
   std::sort(randx.begin(), randx.end());
   print("Time");
-
-  // Create and fill cells
   start("Init matrix");
   for (int ic=0; ic<Nc; ic++) {
     Dense xi(Nb);
@@ -40,7 +34,6 @@ int main(int argc, char** argv) {
     x[ic] = xi;
     b[ic] = bj;
   }
-  // Fill A with blocks and make low rank if admissible
   for (int ic=0; ic<Nc; ic++) {
     for (int jc=0; jc<Nc; jc++) {
       Dense Aij(Nb,Nb);
@@ -59,7 +52,6 @@ int main(int argc, char** argv) {
     }
   }
   stop("Init matrix");
-
   start("LU decomposition");
   for (int ic=0; ic<Nc; ic++) {
     start("-DGETRF");
@@ -80,7 +72,6 @@ int main(int argc, char** argv) {
     }
   }
   stop("LU decomposition");
-
   print2("-DGETRF");
   print2("-DTRSM");
   print2("-DGEMM");
@@ -92,7 +83,6 @@ int main(int argc, char** argv) {
     trsm(A(ic,ic),b[ic],'l');
   }
   stop("Forward substitution");
-
   start("Backward substitution");
   for (int ic=Nc-1; ic>=0; ic--) {
     for (int jc=Nc-1; jc>ic; jc--) {
@@ -104,10 +94,8 @@ int main(int argc, char** argv) {
 
   double diff = 0, norm = 0;
   for (int ic=0; ic<Nc; ic++) {
-    for (int ib=0; ib<Nb; ib++) {
-      diff += (x.D(ic)[ib] - b.D(ic)[ib]) * (x.D(ic)[ib] - b.D(ic)[ib]);
-      norm += x.D(ic)[ib] * x.D(ic)[ib];
-    }
+    diff += (x.D(ic) - b.D(ic)).norm();
+    norm += x.D(ic).norm();
   }
   print("Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);

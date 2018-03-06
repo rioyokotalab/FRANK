@@ -3,8 +3,6 @@
 #include "boost_any_wrapper.h"
 #include <cmath>
 #include <cstdlib>
-#include "dense.h"
-#include "hierarchical.h"
 #include "print.h"
 #include "timer.h"
 #include <vector>
@@ -96,10 +94,8 @@ int main(int argc, char** argv) {
 
   double diff = 0, norm = 0;
   for (int ic=0; ic<Nc; ic++) {
-    for (int ib=0; ib<Nb; ib++) {
-      diff += (x.D(ic)[ib] - b.D(ic)[ib]) * (x.D(ic)[ib] - b.D(ic)[ib]);
-      norm += x.D(ic)[ib] * x.D(ic)[ib];
-    }
+    diff += (x.D(ic) - b.D(ic)).norm();
+    norm += x.D(ic).norm();
   }
   print("Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);

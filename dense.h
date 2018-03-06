@@ -39,19 +39,35 @@ namespace hicma {
 
     const double& operator()(const int i, const int j) const;
 
-    const Dense &operator=(const Dense A);
+    const Dense operator=(const double v);
+
+    const Dense operator=(const Dense A);
 
     const Dense operator+=(const Dense& A);
 
+    const Dense operator+=(const LowRank& A);
+
     const Dense operator-=(const Dense& A);
+
+    const Dense operator-=(const LowRank& A);
+
+    const Dense operator*=(const Dense& A);
+
+    const LowRank operator*=(const LowRank& A);
 
     Dense operator+(const Dense& A) const;
 
+    Dense operator+(const LowRank& A) const;
+
     Dense operator-(const Dense& A) const;
+
+    Dense operator-(const LowRank& A) const;
 
     Dense operator*(const Dense& A) const;
 
-    LowRank operator*(LowRank& A);
+    LowRank operator*(const LowRank& A) const;
+
+    Dense operator-() const;
 
     std::vector<int> getrf();
 
@@ -75,7 +91,7 @@ namespace hicma {
 
     double norm();
 
-    void print();
+    void print() const;
   };
 }
 #endif

@@ -3,8 +3,6 @@
 #include "boost_any_wrapper.h"
 #include <cmath>
 #include <cstdlib>
-#include "dense.h"
-#include "hierarchical.h"
 #include "print.h"
 #include "timer.h"
 #include <vector>
@@ -12,16 +10,15 @@
 using namespace hicma;
 
 int main(int argc, char** argv) {
-  int N = 6;
-  int Nb = 3;
+  int N = 64;
+  int Nb = 16;
   int Nc = N / Nb;
   std::vector<double> randx(N);
   Hierarchical x(Nc);
   Hierarchical b(Nc);
   Hierarchical A(Nc,Nc);
   for (int i=0; i<N; i++) {
-    //randx[i] = drand48();
-    randx[i] = i + 1;
+    randx[i] = drand48();
   }
   std::sort(randx.begin(), randx.end());
   print("Time");
@@ -53,6 +50,8 @@ int main(int argc, char** argv) {
   for (int ic=0; ic<Nc; ic++) {
     start("-DGETRF");
     std::vector<int> ipiv = getrf(A(ic,ic));
+    for (int ib=0; ib<Nb; ib++)
+      std::cout << ib << " " << ipiv[ib] << std::endl;
     stop("-DGETRF", false);
     for (int jc=ic+1; jc<Nc; jc++) {
       start("-DTRSM");
@@ -91,10 +90,8 @@ int main(int argc, char** argv) {
 
   double diff = 0, norm = 0;
   for (int ic=0; ic<Nc; ic++) {
-    for (int ib=0; ib<Nb; ib++) {
-      diff += (x.D(ic)[ib] - b.D(ic)[ib]) * (x.D(ic)[ib] - b.D(ic)[ib]);
-      norm += x.D(ic)[ib] * x.D(ic)[ib];
-    }
+    diff += (x.D(ic) - b.D(ic)).norm();
+    norm += x.D(ic).norm();
   }
   print("Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);

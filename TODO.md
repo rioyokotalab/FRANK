@@ -1,6 +1,4 @@
 [Immediate]
-Fix transpose issue
-Change dense ops to low rank in BLR
 Tree construction
 HODLR
 H-matrix
