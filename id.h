@@ -83,5 +83,7 @@ namespace hicma {
                                 double *V,
                                 int nrows ,
                                 int ncols);
+
+  void transpose(double * mat, double* mat_t, int nrows, int ncols);
 }
 #endif
