@@ -25,64 +25,58 @@ namespace hicma {
     U.resize(m,k);
     S.resize(k,k);
     V.resize(k,n);
-    gsl_matrix *D2 = gsl_matrix_calloc(m,n);
-    gsl_matrix *U2 = gsl_matrix_calloc(m,k);
-    gsl_matrix *S2 = gsl_matrix_calloc(k,k);
-    gsl_matrix *V2 = gsl_matrix_calloc(n,k);
+    double *D2 = (double*)calloc(m*n, sizeof(double));
+    double *U2 = (double*)calloc(m*k, sizeof(double));
+    double *S2 = (double*)calloc(k*k, sizeof(double));
+    double *V2 = (double*)calloc(n*k, sizeof(double));
+    double *V2_t = (double*)calloc(k*n, sizeof(double));
     for(int i=0; i<m; i++){
       for(int j=0; j<n; j++){
-        D2->data[i*n+j] = D(i,j);
+        D2[i*n+j] = D[i*n + j];
       }
     }
-    gsl_matrix *RN = gsl_matrix_calloc(n,k);
-    initialize_random_matrix(RN);
-    gsl_matrix *Y = gsl_matrix_alloc(m,k);
-    matrix_matrix_mult(D2, RN, Y);
-    gsl_matrix *Q = gsl_matrix_alloc(m,k);
-    QR_factorization_getQ(Y, Q);
-    gsl_matrix *Bt = gsl_matrix_alloc(n,k);
-    matrix_transpose_matrix_mult(D2,Q,Bt);
-    gsl_matrix *Qhat = gsl_matrix_calloc(n,k);
-    gsl_matrix *Rhat = gsl_matrix_calloc(k,k);
-    compute_QR_compact_factorization(Bt,Qhat,Rhat);
-    gsl_matrix *Uhat = gsl_matrix_alloc(k,k);
-    gsl_vector *Sigmahat = gsl_vector_alloc(k);
-    gsl_matrix *Vhat = gsl_matrix_alloc(k,k);
-    gsl_vector *svd_work_vec = gsl_vector_alloc(k);
-    gsl_matrix_memcpy(Uhat, Rhat);
-    gsl_linalg_SV_decomp (Uhat, Vhat, Sigmahat, svd_work_vec);
-    build_diagonal_matrix(Sigmahat, k, S2);
-    matrix_matrix_mult(Q,Vhat,U2);
-    matrix_matrix_mult(Qhat,Uhat,V2);
+    randomized_low_rank_svd2(D2, rank, U2, S2, V2, m, n);
+    transpose(V2, V2_t, n, k);
+    // double *RN = gsl_matrix_calloc(n,k);
+    // initialize_random_matrix(RN);
+    // gsl_matrix *Y = gsl_matrix_alloc(m,k);
+    // matrix_matrix_mult(D2, RN, Y);
+    // gsl_matrix *Q = gsl_matrix_alloc(m,k);
+    // QR_factorization_getQ(Y, Q);
+    // gsl_matrix *Bt = gsl_matrix_alloc(n,k);
+    // matrix_transpose_matrix_mult(D2,Q,Bt);
+    // gsl_matrix *Qhat = gsl_matrix_calloc(n,k);
+    // gsl_matrix *Rhat = gsl_matrix_calloc(k,k);
+    // compute_QR_compact_factorization(Bt,Qhat,Rhat);
+    // gsl_matrix *Uhat = gsl_matrix_alloc(k,k);
+    // gsl_vector *Sigmahat = gsl_vector_alloc(k);
+    // gsl_matrix *Vhat = gsl_matrix_alloc(k,k);
+    // gsl_vector *svd_work_vec = gsl_vector_alloc(k);
+    // gsl_matrix_memcpy(Uhat, Rhat);
+    // gsl_linalg_SV_decomp (Uhat, Vhat, Sigmahat, svd_work_vec);
+    // build_diagonal_matrix(Sigmahat, k, S2);
+    // matrix_matrix_mult(Q,Vhat,U2);
+    // matrix_matrix_mult(Qhat,Uhat,V2);
+    
     for(int i=0; i<m; i++){
       for(int j=0; j<k; j++){
-        U(i,j) = U2->data[i*k+j];
+        U(i,j) = U2[i*k+j];
       }
     }
     for(int i=0; i<k; i++){
       for(int j=0; j<k; j++){
-        S(i,j) = S2->data[i*k+j];
+        S(i,j) = S2[i*k+j];
       }
     }
     for(int i=0; i<n; i++){
       for(int j=0; j<k; j++){
-        V(j,i) = V2->data[i*k+j];
+        V(j,i) = V2[i*k+j];
       }
     }
-    gsl_matrix_free(D2);
-    gsl_matrix_free(U2);
-    gsl_matrix_free(S2);
-    gsl_matrix_free(V2);
-    gsl_matrix_free(RN);
-    gsl_matrix_free(Y);
-    gsl_matrix_free(Q);
-    gsl_matrix_free(Bt);
-    gsl_matrix_free(Qhat);
-    gsl_matrix_free(Rhat);
-    gsl_vector_free(Sigmahat);
-    gsl_matrix_free(Uhat);
-    gsl_matrix_free(Vhat);
-    gsl_vector_free(svd_work_vec);
+    free(D2);
+    free(U2);
+    free(S2);
+    free(V2);
   }
 
   const LowRank& LowRank::operator=(const double v) {

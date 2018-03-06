@@ -1,6 +1,4 @@
 #include "id.h"
-#include <iostream>
-#include <fstream>
 
 #define min(x,y) (((x) < (y)) ? (x) : (y))
 #define max(x,y) (((x) > (y)) ? (x) : (y))
@@ -13,17 +11,10 @@ namespace hicma {
     boost::normal_distribution<> nd(0.0, 1.0);
     boost::variate_generator<boost::mt19937&, 
                              boost::normal_distribution<> > var_nor(rng, nd);
-
-    std::fstream data("/home/sameer/gitrepos/scratch/FMM/rand.txt", std::ios_base::in);
-    double a;
-    for (int i = 0; i < nrows*ncols; i++) {
-      data >> a;
-      M[i] = a;
-    }
     
-    // for(int i=0; i < nrows*ncols; i++){
-    //   M[i] = var_nor();
-    // }
+    for(int i=0; i < nrows*ncols; i++){
+      M[i] = var_nor();
+    }
   }
 
   /* C = A^T*B 
@@ -178,24 +169,20 @@ namespace hicma {
                      double *U, double *S, double *Vt,
                      double *M, int nrows, int ncols, int rank)
   {
-    int lda = ncols;
-    int ldu = nrows;
-    int ldvt = ncols;
-
     double superb[min(nrows, ncols) - 1];
     LAPACKE_dgesvd(
                    LAPACK_ROW_MAJOR, 'A', 'A', rank, rank,
                    M, rank, S, U, rank, Vt, rank, superb);
   }
 
-  void print_matrix( char* desc, int m, int n, double* a,int lda ) {
-    int i, j;
-    printf( "\n %s\n", desc );
-    for( i = 0; i < m; i++ ) {
-      for( j = 0; j < n; j++ ) printf( " %6.4f", a[i*lda + j] );
-      printf( "\n" );
-    }
-  }
+  // void print_matrix( char* desc, int m, int n, double* a,int lda ) {
+  //   int i, j;
+  //   printf( "\n %s\n", desc );
+  //   for( i = 0; i < m; i++ ) {
+  //     for( j = 0; j < n; j++ ) printf( " %6.4f", a[i*lda + j] );
+  //     printf( "\n" );
+  //   }
+  // }
 
   void transpose(double * mat, double* mat_t, int nrows, int ncols)
   {
