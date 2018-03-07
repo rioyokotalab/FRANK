@@ -94,7 +94,7 @@ namespace hicma {
 
     Dense& dense(const int i, const int j);
 
-    std::vector<int> getrf();
+    void getrf();
   };
 }
 #endif

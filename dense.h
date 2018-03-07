@@ -99,7 +99,7 @@ namespace hicma {
 
     void print() const;
 
-    std::vector<int> getrf();
+    void getrf();
 
     void trsm(const Dense& A, const char& uplo);
 

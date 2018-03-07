@@ -165,8 +165,18 @@ namespace hicma {
     return boost::any_cast<Dense&>(data[i*dim[1]+j]);
   }
 
-  std::vector<int> Hierarchical::getrf() {
-    std::vector<int>(a);
-    return a;
+  void Hierarchical::getrf() {
+    for (int i=0; i<dim[0]; i++) {
+      hicma::getrf((*this)(i,i));
+      for (int j=i+1; j<dim[1]; j++) {
+        hicma::trsm((*this)(i,i),(*this)(i,j),'l');
+        hicma::trsm((*this)(i,i),(*this)(j,i),'u');
+      }
+      for (int j=i+1; j<dim[1]; j++) {
+        for (int k=i+1; k<dim[1]; k++) {
+          hicma::gemm((*this)(j,i),(*this)(i,k),(*this)(j,k));
+        }
+      }
+    }
   }
 }

@@ -1,18 +1,16 @@
 #include "hblas.h"
 
 namespace hicma {
-  std::vector<int> getrf(boost::any& A) {
-    std::vector<int> ipiv;
+  void getrf(boost::any& A) {
     if (A.type() == typeid(Dense)) {
-      ipiv = boost::any_cast<Dense&>(A).getrf();
+      boost::any_cast<Dense&>(A).getrf();
     }
     else if (A.type() == typeid(Hierarchical)) {
-      ipiv = boost::any_cast<Hierarchical&>(A).getrf();
+      boost::any_cast<Hierarchical&>(A).getrf();
     }
     else {
       fprintf(stderr,"Data type must be Dense or Hierarchical.\n"); abort();
     }
-    return ipiv;
   }
 
   void trsm(const boost::any& Aii, boost::any& Aij, const char& uplo) {

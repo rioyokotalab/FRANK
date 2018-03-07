@@ -25,24 +25,7 @@ int main(int argc, char** argv) {
   b -= A * x;
   stop("Init matrix");
   start("LU decomposition");
-  for (int ic=0; ic<Nc; ic++) {
-    start("-DGETRF");
-    std::vector<int> ipiv = getrf(A(ic,ic));
-    stop("-DGETRF", false);
-    for (int jc=ic+1; jc<Nc; jc++) {
-      start("-DTRSM");
-      trsm(A(ic,ic),A(ic,jc),'l');
-      trsm(A(ic,ic),A(jc,ic),'u');
-      stop("-DTRSM", false);
-    }
-    for (int jc=ic+1; jc<Nc; jc++) {
-      for (int kc=ic+1; kc<Nc; kc++) {
-        start("-DGEMM");
-        gemm(A(jc,ic),A(ic,kc),A(jc,kc));
-        stop("-DGEMM", false);
-      }
-    }
-  }
+  A.getrf();
   stop("LU decomposition");
   print2("-DGETRF");
   print2("-DTRSM");

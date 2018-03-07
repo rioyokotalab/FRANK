@@ -5,7 +5,7 @@
 #include "hierarchical.h"
 
 namespace hicma {
-  std::vector<int> getrf(boost::any& A);
+  void getrf(boost::any& A);
 
   void trsm(const boost::any& Aii, boost::any& Aij, const char& uplo);
 

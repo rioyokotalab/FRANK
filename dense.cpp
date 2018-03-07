@@ -204,10 +204,9 @@ namespace hicma {
       std::cout << "----------------------------------------------------------------------------------" << std::endl;
   }
 
-  std::vector<int> Dense::getrf() {
+  void Dense::getrf() {
     std::vector<int> ipiv(std::min(dim[0],dim[1]));
     LAPACKE_dgetrf(LAPACK_ROW_MAJOR, dim[0], dim[1], &data[0], dim[1], &ipiv[0]);
-    return ipiv;
   }
 
   void Dense::trsm(const Dense& A, const char& uplo) {
