@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "dense.h"
 #include "low_rank.h"
 #include "hierarchical.h"

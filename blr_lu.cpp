@@ -1,11 +1,8 @@
 #include "mpi_utils.h"
-#include <algorithm>
 #include "boost_any_wrapper.h"
-#include <cmath>
-#include <cstdlib>
+#include "functions.h"
 #include "print.h"
 #include "timer.h"
-#include <vector>
 
 using namespace hicma;
 
@@ -36,10 +33,9 @@ int main(int argc, char** argv) {
   }
   for (int ic=0; ic<Nc; ic++) {
     for (int jc=0; jc<Nc; jc++) {
-      Dense Aij(Nb,Nb);
+      Dense Aij(laplace1d, randx, Nb, Nb, Nb*ic, Nb*jc);
       for (int ib=0; ib<Nb; ib++) {
         for (int jb=0; jb<Nb; jb++) {
-          Aij(ib,jb) = 1 / (std::abs(x.dense(ic)[ib] - x.dense(jc)[jb]) + 1e-3);
           b.dense(ic)[ib] += Aij(ib,jb) * x.dense(jc)[jb];
         }
       }

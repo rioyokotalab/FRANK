@@ -1,11 +1,8 @@
 #include "mpi_utils.h"
-#include <algorithm>
 #include "boost_any_wrapper.h"
-#include <cmath>
-#include <cstdlib>
+#include "functions.h"
 #include "print.h"
 #include "timer.h"
-#include <vector>
 
 using namespace hicma;
 
@@ -19,7 +16,7 @@ int main(int argc, char** argv) {
   }
   print("Time");
   start("Init matrix");
-  Hierarchical H(x,N,N,rank,nleaf,0,0,0,0,0);
+  Hierarchical H(laplace1d, x, N, N, rank, nleaf, 0, 0, 0, 0, 0);
   stop("Init matrix");
   start("LU decomposition");
 
