@@ -4,14 +4,13 @@
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
-#include "node.h"
 #include <vector>
 
 namespace hicma {
   class Node;
   class LowRank;
   class Hierarchical;
-  class Dense : public Node {
+  class Dense {
   public:
     std::vector<double> data;
     int dim[2];
@@ -29,10 +28,7 @@ namespace hicma {
           const int ni,
           const int nj,
           const int i_begin,
-          const int j_begin,
-          const Hierarchical* parent,
-          const int i_rel,
-          const int j_rel
+          const int j_begin
           );
 
     double& operator[](const int i);

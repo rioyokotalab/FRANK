@@ -19,10 +19,16 @@
 
 namespace hicma {
   void matrix_matrix_mult(
-                          double *A, double *B, double *C,
-                          int nrows_a, int ncols_a, int nrows_b, int ncols_b);
+                          double *A,
+                          double *B,
+                          double *C,
+                          int nrows_a,
+                          int ncols_a,
+                          int nrows_b,
+                          int ncols_b
+                          );
 
-  void print_matrix( char* desc, int m, int n, double* a,int lda );
+  void print_matrix(char* desc, int m, int n, double* a,int lda);
 
   void initialize_random_matrix(double *M, int nrows, int ncols);
 
@@ -32,7 +38,8 @@ namespace hicma {
                                         double *R,
                                         int nrows,
                                         int ncols,
-                                        int rank);
+                                        int rank
+                                        );
 
   void QR_factorization_getQ(double *M, double *Q, int nrows, int ncols, int rank);
 
@@ -47,13 +54,20 @@ namespace hicma {
                                double *P,
                                int nrows,
                                int ncols,
-                               int rank);
+                               int rank
+                               );
 
   double get_relative_error_between_two_mats(double *A, double *B, int nrows, int ncols);
 
   void calculate_svd(
-                     double *U, double *S, double *Vt,
-                     double *M, int nrows, int ncols, int rank);
+                     double *U,
+                     double *S,
+                     double *Vt,
+                     double *M,
+                     int nrows,
+                     int ncols,
+                     int rank
+                     );
 
   void randomized_low_rank_svd2(
                                 double *M,
@@ -62,7 +76,8 @@ namespace hicma {
                                 double *S,
                                 double *V,
                                 int nrows ,
-                                int ncols);
+                                int ncols
+                                );
 
   void transpose(double * mat, double* mat_t, int nrows, int ncols);
 }

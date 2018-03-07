@@ -37,27 +37,7 @@ namespace hicma {
     }
     randomized_low_rank_svd2(D2, rank, U2, S2, V2, m, n);
     transpose(V2, V2_t, n, k);
-    // double *RN = gsl_matrix_calloc(n,k);
-    // initialize_random_matrix(RN);
-    // gsl_matrix *Y = gsl_matrix_alloc(m,k);
-    // matrix_matrix_mult(D2, RN, Y);
-    // gsl_matrix *Q = gsl_matrix_alloc(m,k);
-    // QR_factorization_getQ(Y, Q);
-    // gsl_matrix *Bt = gsl_matrix_alloc(n,k);
-    // matrix_transpose_matrix_mult(D2,Q,Bt);
-    // gsl_matrix *Qhat = gsl_matrix_calloc(n,k);
-    // gsl_matrix *Rhat = gsl_matrix_calloc(k,k);
-    // compute_QR_compact_factorization(Bt,Qhat,Rhat);
-    // gsl_matrix *Uhat = gsl_matrix_alloc(k,k);
-    // gsl_vector *Sigmahat = gsl_vector_alloc(k);
-    // gsl_matrix *Vhat = gsl_matrix_alloc(k,k);
-    // gsl_vector *svd_work_vec = gsl_vector_alloc(k);
-    // gsl_matrix_memcpy(Uhat, Rhat);
-    // gsl_linalg_SV_decomp (Uhat, Vhat, Sigmahat, svd_work_vec);
-    // build_diagonal_matrix(Sigmahat, k, S2);
-    // matrix_matrix_mult(Q,Vhat,U2);
-    // matrix_matrix_mult(Qhat,Uhat,V2);
-    
+
     for(int i=0; i<m; i++){
       for(int j=0; j<k; j++){
         U(i,j) = U2[i*k+j];

@@ -23,48 +23,40 @@ namespace hicma {
                              const int nleaf,
                              const int i_begin=0,
                              const int j_begin=0,
-                             const Hierarchical* parent=NULL,
-                             const int i_rel=0,
-                             const int j_rel=0
-                             ) : Node(parent, i_rel, j_rel) {
-    if ( !parent ) {
+                             const int i_abs=0,
+                             const int j_abs=0,
+                             const int level=0
+                             ) {
+    if ( !level ) {
       assert(int(x.size()) == nj);
       std::sort(x.begin(),x.end());
     }
     dim[0]=2; dim[1]=2;
-    data.resize(4);
-    for ( int i_rel_child=0; i_rel_child<2; i_rel_child++ ) {
-      for ( int j_rel_child=0; j_rel_child<2; j_rel_child++ ) {
-        int ni_child, nj_child;
-        if ( i_rel_child == 0 ) ni_child = ni/2;
-        else ni_child = ni - ni/2;
-        if ( j_rel_child == 0 ) nj_child = nj/2;
-        else nj_child = nj - nj/2;
-        int i_begin_child = i_begin + ni/2 * i_rel_child;
-        int j_begin_child = j_begin + nj/2 * j_rel_child;
-        int i_abs_child, j_abs_child;
-        if ( parent ) {
-          i_abs_child = (parent->i_abs << 1) + i_rel_child;
-          j_abs_child = (parent->j_abs << 1) + j_rel_child;
-        }
-        else {
-          i_abs_child = i_rel_child;
-          j_abs_child = j_rel_child;
-        }
+    data.resize(dim[0]*dim[1]);
+    for ( int i=0; i<dim[0]; i++ ) {
+      for ( int j=0; j<dim[1]; j++ ) {
+        int ni_child = ni/dim[0];
+        if ( i == dim[0]-1 ) ni_child = ni - (ni/dim[0]) * (dim[0]-1);
+        int nj_child = nj/dim[1];
+        if ( j == dim[1]-1 ) nj_child = nj - (nj/dim[1]) * (dim[1]-1);
+        int i_begin_child = i_begin + ni/dim[0] * i;
+        int j_begin_child = j_begin + nj/dim[1] * j;
+        int i_abs_child = i_abs * dim[0] + i;
+        int j_abs_child = j_abs * dim[1] + j;
         if ( std::abs(i_abs_child - j_abs_child) <= 1 ) { // TODO: use x in admissibility condition
           if ( ni <= nleaf && nj <= nleaf ) {
-            Dense D(x, ni_child, nj_child, i_begin_child, j_begin_child, this, i_rel_child, j_rel_child);
-            (*this)(i_rel_child,j_rel_child) = D;
+            Dense D(x, ni_child, nj_child, i_begin_child, j_begin_child);
+            (*this)(i,j) = D;
           }
           else {
-            Hierarchical H(x, ni_child, nj_child, rank, nleaf, i_begin_child, j_begin_child, this, i_rel_child, j_rel_child);
-            (*this)(i_rel_child,j_rel_child) = H;
+            Hierarchical H(x, ni_child, nj_child, rank, nleaf, i_begin_child, j_begin_child, i_abs_child, j_abs_child, level+1);
+            (*this)(i,j) = H;
           }
         }
         else {
-          Dense D(x, ni_child, nj_child, i_begin_child, j_begin_child, this, i_rel_child, j_rel_child);
+          Dense D(x, ni_child, nj_child, i_begin_child, j_begin_child);
           LowRank LR(D, rank); // TODO : create a LowRank constructor that does ID with x
-          (*this)(i_rel_child,j_rel_child) = LR;
+          (*this)(i,j) = LR;
         }
       }
     }

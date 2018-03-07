@@ -1,15 +1,13 @@
 #ifndef hierarchical_h
 #define hierarchical_h
 #include <boost/any.hpp>
-#include "node.h"
 
 typedef std::vector<double>::iterator Iter;
 
 namespace hicma {
-  class Node;
   class Dense;
   class LowRank;
-  class Hierarchical : public Node {
+  class Hierarchical {
   public:
     int dim[2];
     std::vector<boost::any> data;
@@ -28,9 +26,9 @@ namespace hicma {
                  const int nleaf,
                  const int i_begin,
                  const int j_begin,
-                 const Hierarchical* parent,
-                 const int i_rel,
-                 const int j_rel
+                 const int i_abs,
+                 const int j_abs,
+                 const int level
                  );
 
     boost::any& operator[](const int i);

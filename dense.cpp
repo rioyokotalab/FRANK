@@ -28,11 +28,8 @@ namespace hicma {
                const int ni,
                const int nj,
                const int i_begin,
-               const int j_begin,
-               const Hierarchical* parent,
-               const int i_rel,
-               const int j_rel
-               ) : Node(parent, i_rel, j_rel) {
+               const int j_begin
+               ) {
     dim[0] = ni; dim[1] = nj;
     data.resize(dim[0]*dim[1]);
     for (int i=0; i<ni; i++) {

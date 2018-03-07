@@ -17,6 +17,6 @@ int main(int argc, char** argv) {
   for (int i=0; i<N; i++) {
     x[i] = drand48();
   }
-  Hierarchical H(x,N,N,rank,nleaf,0,0,NULL,0,0);
+  Hierarchical H(x,N,N,rank,nleaf,0,0,0,0,0);
   return 0;
 }
