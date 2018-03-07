@@ -23,38 +23,7 @@ namespace hicma {
     U.resize(m,k);
     S.resize(k,k);
     V.resize(k,n);
-    double *A2 = (double*)calloc(m*n, sizeof(double));
-    double *U2 = (double*)calloc(m*k, sizeof(double));
-    double *S2 = (double*)calloc(k*k, sizeof(double));
-    double *V2 = (double*)calloc(n*k, sizeof(double));
-    double *V2_t = (double*)calloc(k*n, sizeof(double));
-    for(int i=0; i<m; i++){
-      for(int j=0; j<n; j++){
-        A2[i*n+j] = A[i*n+j];
-      }
-    }
-    randomized_low_rank_svd2(A2, rank, U2, S2, V2, m, n);
-    transpose(V2, V2_t, n, k);
-
-    for(int i=0; i<m; i++){
-      for(int j=0; j<k; j++){
-        U(i,j) = U2[i*k+j];
-      }
-    }
-    for(int i=0; i<k; i++){
-      for(int j=0; j<k; j++){
-        S(i,j) = S2[i*k+j];
-      }
-    }
-    for(int i=0; i<n; i++){
-      for(int j=0; j<k; j++){
-        V(j,i) = V2[i*k+j];
-      }
-    }
-    free(A2);
-    free(U2);
-    free(S2);
-    free(V2);
+    randomized_low_rank_svd2(A.data, rank, U.data, S.data, V.data, m, n);
   }
 
   const LowRank& LowRank::operator=(const double v) {

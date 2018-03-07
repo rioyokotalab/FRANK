@@ -20,7 +20,7 @@ namespace hicma {
 
     LowRank(const LowRank &A);
 
-    LowRank(const Dense &D, const int k);
+    LowRank(const Dense &A, const int k);
 
     const LowRank& operator=(const double v);
 

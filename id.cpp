@@ -5,16 +5,43 @@
 //using namespace std;
 namespace hicma {
 
-  void initialize_random_matrix(double *M, int nrows, int ncols)
+  void initialize_random_matrix(std::vector<double>& M, int nrows, int ncols)
   {
     boost::mt19937 rng;
     boost::normal_distribution<> nd(0.0, 1.0);
     boost::variate_generator<boost::mt19937&,
                              boost::normal_distribution<> > var_nor(rng, nd);
 
-    for(int i=0; i < nrows*ncols; i++){
+    for(int i=0; i<nrows*ncols; i++){
       M[i] = var_nor();
     }
+  }
+
+  /* C = A*B */
+  void matrix_matrix_mult(
+                          const std::vector<double>& A,
+                          std::vector<double>& B,
+                          std::vector<double>& C,
+                          int nrows_a,
+                          int ncols_a,
+                          int nrows_b,
+                          int ncols_b
+                          ) {
+    cblas_dgemm(
+                CblasRowMajor,
+                CblasNoTrans,
+                CblasNoTrans,
+                nrows_a,
+                ncols_b,
+                nrows_b,
+                1,
+                &A[0],
+                ncols_a,
+                &B[0],
+                ncols_b,
+                1,
+                &C[0],
+                ncols_b);
   }
 
   /* C = A^T*B
@@ -24,20 +51,30 @@ namespace hicma {
    * C - nrows_a * ncols_b
    */
   void matrix_transpose_matrix_mult(
-                                    double *A,
-                                    double *B,
-                                    double *C,
+                                    const std::vector<double>& A,
+                                    std::vector<double>& B,
+                                    std::vector<double>& C,
                                     int nrows_a,
                                     int ncols_a,
                                     int nrows_b,
-                                    int ncols_b)
-  {
+                                    int ncols_b
+                                    ) {
     cblas_dgemm(
-                CblasRowMajor, CblasTrans, CblasNoTrans,
-                ncols_a, ncols_b, nrows_a,
-                1, A, ncols_a,
-                B, ncols_b, 1,
-                C, ncols_b);
+                CblasRowMajor,
+                CblasTrans,
+                CblasNoTrans,
+                ncols_a,
+                ncols_b,
+                nrows_a,
+                1,
+                &A[0],
+                ncols_a,
+                &B[0],
+                ncols_b,
+                1,
+                &C[0],
+                ncols_b
+                );
   }
 
 
@@ -49,19 +86,17 @@ namespace hicma {
    NOTE: FUNCTION NOT USED AS OF NOW.
   */
   void compute_QR_compact_factorization(
-                                        double *Bt,
-                                        double *Q,
-                                        double *R,
+                                        std::vector<double>& Bt,
+                                        std::vector<double>& Q,
+                                        std::vector<double>& R,
                                         int nrows,
                                         int ncols,
                                         int rank)
   {
     int k = min(ncols, rank);
-    double *QR_temp = (double*)calloc(ncols*rank, sizeof(double));
-    double *TAU = (double*)malloc(sizeof(double)*k);
-    memcpy (QR_temp, Bt, sizeof(double)*ncols*rank);
-    LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, ncols, rank, QR_temp, rank, TAU);
-
+    std::vector<double> QR_temp(Bt);
+    std::vector<double> TAU(k);
+    LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, ncols, rank, &QR_temp[0], rank, &TAU[0]);
     for(int i=0; i<ncols; i++) {
       for(int j=0; j<rank; j++) {
         if(j>=i){
@@ -69,12 +104,8 @@ namespace hicma {
         }
       }
     }
-
-    for (int i = 0; i < k; ++i) Q[i*k + i] = 1.0;
-
-    LAPACKE_dormqr(
-                   LAPACK_ROW_MAJOR, 'L', 'N',
-                   ncols, rank, rank, QR_temp, rank, TAU, Q, rank);
+    for (int i=0; i<k; i++) Q[i*k+i] = 1.0;
+    LAPACKE_dormqr(LAPACK_ROW_MAJOR, 'L', 'N', ncols, rank, rank, &QR_temp[0], rank, &TAU[0], &Q[0], rank);
   }
 
 
@@ -85,75 +116,35 @@ namespace hicma {
    * ncols - number of columns of M.
    * rank - target rank.
    */
-  void QR_factorization_getQ(double *M, double *Q, int nrows, int ncols, int rank){
+  void QR_factorization_getQ(std::vector<double>& M, std::vector<double>& Q, int nrows, int ncols, int rank){
     int k = min(nrows, rank);
-    double *QR_temp = (double*)calloc(nrows*rank, sizeof(double)); // temp result from LAPACK stored in this
-    double *TAU = (double*)calloc(k, sizeof(double)); // temp vector for LAPACK.
-    memcpy (QR_temp, M, nrows*rank*sizeof(double));
-    for (int i = 0;i < k; ++i) Q[i*k + i] = 1.0;
-    LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, nrows, rank, QR_temp, rank, TAU); // correct so far
-    LAPACKE_dormqr(LAPACK_ROW_MAJOR, 'L', 'N', nrows, rank, rank, QR_temp, rank, TAU, Q, rank);
-    free(TAU);
-    free(QR_temp);
+    std::vector<double> QR_temp(M);
+    std::vector<double> TAU(k);
+    for (int i=0; i<k; i++) Q[i*k+i] = 1.0;
+    LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, nrows, rank, &QR_temp[0], rank, &TAU[0]);
+    LAPACKE_dormqr(LAPACK_ROW_MAJOR, 'L', 'N', nrows, rank, rank, &QR_temp[0], rank, &TAU[0], &Q[0], rank);
   }
 
   /* build diagonal matrix from vector elements */
-  void build_diagonal_matrix(double *dvals, int n, double *D){
+  void build_diagonal_matrix(std::vector<double>& dvals, int n, std::vector<double>& D){
     for(int i=0; i<n; i++){
-      D[i*n + i] = dvals[i];
+      D[i*n+i] = dvals[i];
     }
-  }
-
-  /* frobenius norm */
-  double matrix_frobenius_norm(double *M, int nrows, int ncols){
-    double norm = 0;
-    for(int i=0; i<nrows*ncols; i++){
-      double val = M[i];
-      norm += val*val;
-    }
-
-    norm = sqrt(norm);
-    return norm;
   }
 
   /* P = U*S*V^T */
   void form_svd_product_matrix(
-                               double *U,
-                               double *S,
-                               double *V,
-                               double *P,
+                               std::vector<double>& U,
+                               std::vector<double>& S,
+                               std::vector<double>& V,
+                               std::vector<double>& P,
                                int nrows,
                                int ncols,
-                               int rank)
-  {
-    double * US = (double*)calloc(nrows*rank, sizeof(double));
+                               int rank
+                               ) {
+    std::vector<double> US(nrows*rank);
     matrix_matrix_mult(U, S, US, nrows, rank, rank, rank);
     matrix_matrix_mult(US, V, P, nrows, rank, rank, ncols);
-    free(US);
-  }
-
-  /* calculate percent error between A and B: 100*norm(A - B)/norm(A) */
-  double get_relative_error_between_two_mats(double *A, double *B, int nrows, int ncols)
-  {
-    int i;
-    double *A_minus_B = (double*)malloc(sizeof(double)*nrows*ncols);
-    memcpy(A_minus_B, A, sizeof(double)*nrows*ncols);
-    for (i = 0; i < nrows*ncols; ++i) {
-      A_minus_B[i] = A[i] - B[i];
-    }
-    double normA = matrix_frobenius_norm(A, nrows, ncols);
-    double normA_minus_B = matrix_frobenius_norm(A_minus_B, nrows, ncols);
-    return normA_minus_B/normA;
-  }
-
-  /* C = A*B */
-  void matrix_matrix_mult(double *A, double *B, double *C, int nrows_a, int ncols_a, int nrows_b, int ncols_b)
-  {
-    cblas_dgemm(
-                CblasRowMajor, CblasNoTrans, CblasNoTrans,
-                nrows_a, ncols_b, nrows_b,
-                1, A, ncols_a, B,
-                ncols_b, 1, C, ncols_b);
   }
 
   /*
@@ -166,22 +157,23 @@ namespace hicma {
    * M -> nrows*ncols.
    */
   void calculate_svd(
-                     double *U, double *S, double *Vt,
-                     double *M, int nrows, int ncols, int rank)
-  {
-    double superb[min(nrows, ncols) - 1];
-    LAPACKE_dgesvd(
-                   LAPACK_ROW_MAJOR, 'A', 'A', rank, rank,
-                   M, rank, S, U, rank, Vt, rank, superb);
+                     std::vector<double>& U,
+                     std::vector<double>& S,
+                     std::vector<double>& Vt,
+                     std::vector<double>& M,
+                     int nrows,
+                     int ncols,
+                     int rank
+                     ) {
+    std::vector<double> SU(min(nrows, ncols) - 1);
+    LAPACKE_dgesvd(LAPACK_ROW_MAJOR, 'A', 'A', rank, rank, &M[0], rank, &S[0], &U[0], rank, &Vt[0], rank, &SU[0]);
   }
 
-  void transpose(double * mat, double* mat_t, int nrows, int ncols)
+  void transpose(std::vector<double>&  mat, std::vector<double>& mat_t, int nrows, int ncols)
   {
-    int index = 0;
-    for (int i = 0; i < nrows; ++i) {
-      for (int j = 0; j < ncols; ++j) {
-        mat_t[index] = mat[i + j*nrows];
-        index += 1;
+    for (int i=0; i<nrows; i++) {
+      for (int j=0; j<ncols; j++) {
+        mat_t[i*ncols+j] = mat[j*nrows+i];
       }
     }
   }
@@ -197,55 +189,59 @@ namespace hicma {
    * ncols - number of cols of M.
    */
   void randomized_low_rank_svd2(
-                                double *M,
+                                const std::vector<double>& M,
                                 int rank,
-                                double *U,
-                                double *S,
-                                double *V,
+                                std::vector<double>& U,
+                                std::vector<double>& S,
+                                std::vector<double>& V,
                                 int nrows,
                                 int ncols
                                 ) {
     // RN = randn(n,k+p)
     // build random matrix
     std::vector<double> RN(ncols*rank);
-    initialize_random_matrix(&RN[0], ncols, rank);
+    initialize_random_matrix(RN, ncols, rank);
 
     // Y = M * RN
     // multiply to get matrix of random samples Y
     std::vector<double> Y(nrows*rank);
-    matrix_matrix_mult(M, &RN[0], &Y[0], nrows, ncols, ncols, rank);
+    matrix_matrix_mult(M, RN, Y, nrows, ncols, ncols, rank);
 
     // [q, r] = qr(Y,0)
     std::vector<double> Q(nrows*rank);
-    QR_factorization_getQ(&Y[0], &Q[0], nrows, ncols, rank);
+    QR_factorization_getQ(Y, Q, nrows, ncols, rank);
 
     // bt = M' * q;
     // form Bt = Qt*M : rankxnrows * nrowsxncols = rankxncols
     std::vector<double> Bt(ncols*rank);
-    matrix_transpose_matrix_mult(M, &Q[0], &Bt[0], nrows, ncols, nrows, rank);
+    matrix_transpose_matrix_mult(M, Q, Bt, nrows, ncols, nrows, rank);
 
     /* // Bt -> ncols * rank, Qhat -> ncols * rank, Rhat -> rank, rank */
     // [Qhat, Rhat] = qr(bt)
     std::vector<double> Qhat(ncols*rank);
     std::vector<double> Rhat(rank*rank);
-    compute_QR_compact_factorization(&Bt[0], &Qhat[0], &Rhat[0], nrows, ncols, rank);
+    compute_QR_compact_factorization(Bt, Qhat, Rhat, nrows, ncols, rank);
 
     // compute SVD of Rhat
     // [Uhat, S, Vhat] = svd(Rhat);
     std::vector<double> Uhat(rank*rank);
     std::vector<double> Shat(rank);
     std::vector<double> Vhat(rank*rank);
-    calculate_svd(&Uhat[0], &Shat[0], &Vhat[0], &Rhat[0], rank, rank, rank);
-    build_diagonal_matrix(&Shat[0], rank, S);
+    calculate_svd(Uhat, Shat, Vhat, Rhat, rank, rank, rank);
+    build_diagonal_matrix(Shat, rank, S);
 
     // Vhat = Vhat'
     std::vector<double> Vhat_t(rank*rank);
-    transpose(&Vhat[0], &Vhat_t[0], rank, rank);
+    transpose(Vhat, Vhat_t, rank, rank);
 
     // U = q * Vhat
-    matrix_matrix_mult(&Q[0], &Vhat_t[0], &U[0], nrows, rank, rank, rank);
+    matrix_matrix_mult(Q, Vhat_t, U, nrows, rank, rank, rank);
 
     // V = Qhat*Uhat
-    matrix_matrix_mult(&Qhat[0], &Uhat[0], &V[0], ncols, rank, rank, rank);
+    std::vector<double> V_t(ncols*rank);
+    matrix_matrix_mult(Qhat, Uhat, V_t, ncols, rank, rank, rank);
+
+    // V = V'
+    transpose(V_t, V, rank, ncols);
   }
 }

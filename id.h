@@ -18,65 +18,62 @@
 #include <lapacke.h>
 
 namespace hicma {
+  /*
   void matrix_matrix_mult(
-                          double *A,
-                          double *B,
-                          double *C,
+                          const std::vector<double>& A,
+                          std::vector<double>& B,
+                          std::vector<double>& C,
                           int nrows_a,
                           int ncols_a,
                           int nrows_b,
                           int ncols_b
                           );
 
-  void initialize_random_matrix(double *M, int nrows, int ncols);
+  void initialize_random_matrix(std::vector<double>& M, int nrows, int ncols);
 
   void compute_QR_compact_factorization(
-                                        double *Bt,
-                                        double *Q,
-                                        double *R,
+                                        std::vector<double>& Bt,
+                                        std::vector<double>& Q,
+                                        std::vector<double>& R,
                                         int nrows,
                                         int ncols,
                                         int rank
                                         );
 
-  void QR_factorization_getQ(double *M, double *Q, int nrows, int ncols, int rank);
+  void QR_factorization_getQ(std::vector<double>& M, std::vector<double>& Q, int nrows, int ncols, int rank);
 
-  void build_diagonal_matrix(double *dvals, int n, double *D);
-
-  double matrix_frobenius_norm(double *M, int nrows, int ncols);
+  void build_diagonal_matrix(std::vector<double>& dvals, int n, std::vector<double>& D);
 
   void form_svd_product_matrix(
-                               double *U,
-                               double *S,
-                               double *V,
-                               double *P,
+                               std::vector<double>& U,
+                               std::vector<double>& S,
+                               std::vector<double>& V,
+                               std::vector<double>& P,
                                int nrows,
                                int ncols,
                                int rank
                                );
 
-  double get_relative_error_between_two_mats(double *A, double *B, int nrows, int ncols);
-
   void calculate_svd(
-                     double *U,
-                     double *S,
-                     double *Vt,
-                     double *M,
+                     std::vector<double>& U,
+                     std::vector<double>& S,
+                     std::vector<double>& Vt,
+                     std::vector<double>& M,
                      int nrows,
                      int ncols,
                      int rank
                      );
-
+  */
   void randomized_low_rank_svd2(
-                                double *M,
+                                const std::vector<double>& M,
                                 int rank,
-                                double *U,
-                                double *S,
-                                double *V,
+                                std::vector<double>& U,
+                                std::vector<double>& S,
+                                std::vector<double>& V,
                                 int nrows ,
                                 int ncols
                                 );
 
-  void transpose(double * mat, double* mat_t, int nrows, int ncols);
+  void transpose(std::vector<double>&  mat, std::vector<double>& mat_t, int nrows, int ncols);
 }
 #endif
