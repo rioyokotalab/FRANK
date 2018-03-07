@@ -24,6 +24,14 @@ namespace hicma {
   }
 
   Dense::Dense(
+               void (*func)(
+                            std::vector<double>& data,
+                            std::vector<double>& x,
+                            const int& ni,
+                            const int& nj,
+                            const int& i_begin,
+                            const int& j_begin
+                            ),
                std::vector<double>& x,
                const int ni,
                const int nj,
@@ -32,11 +40,7 @@ namespace hicma {
                ) {
     dim[0] = ni; dim[1] = nj;
     data.resize(dim[0]*dim[1]);
-    for (int i=0; i<ni; i++) {
-      for (int j=0; j<nj; j++) {
-        data[i*nj+j] = 1 / (std::abs(x[i+i_begin] - x[j+j_begin]) + 1e-3);
-      }
-    }
+    func(data, x, ni, nj, i_begin, j_begin);
   }
 
   double& Dense::operator[](const int i) {
@@ -145,6 +149,36 @@ namespace hicma {
     return D;
   }
 
+  void Dense::resize(int i) {
+    dim[0]=i; dim[1]=1;
+    data.resize(dim[0]*dim[1]);
+  }
+
+  void Dense::resize(int i, int j) {
+    dim[0]=i; dim[1]=j;
+    data.resize(dim[0]*dim[1]);
+  }
+
+  double Dense::norm() {
+    double l2 = 0;
+    for (int i=0; i<dim[0]; i++) {
+      for (int j=0; j<dim[1]; j++) {
+        l2 += data[i*dim[1]+j] * data[i*dim[1]+j];
+      }
+    }
+    return l2;
+  }
+
+  void Dense::print() const {
+    for (int i=0; i<dim[0]; i++) {
+      for (int j=0; j<dim[1]; j++) {
+        std::cout << std::setw(20) << std::setprecision(15) << data[i*dim[1]+j] << ' ';
+      }
+      std::cout << std::endl;
+    }
+      std::cout << "----------------------------------------------------------------------------------" << std::endl;
+  }
+
   std::vector<int> Dense::getrf() {
     std::vector<int> ipiv(std::min(dim[0],dim[1]));
     LAPACKE_dgetrf(LAPACK_ROW_MAJOR, dim[0], dim[1], &data[0], dim[1], &ipiv[0]);
@@ -204,35 +238,5 @@ namespace hicma {
 
   void Dense::gemm(const LowRank& A, const LowRank& B) {
     *this -= A * B;
-  }
-
-  void Dense::resize(int i) {
-    dim[0]=i; dim[1]=1;
-    data.resize(dim[0]*dim[1]);
-  }
-
-  void Dense::resize(int i, int j) {
-    dim[0]=i; dim[1]=j;
-    data.resize(dim[0]*dim[1]);
-  }
-
-  double Dense::norm() {
-    double l2 = 0;
-    for (int i=0; i<dim[0]; i++) {
-      for (int j=0; j<dim[1]; j++) {
-        l2 += data[i*dim[1]+j] * data[i*dim[1]+j];
-      }
-    }
-    return l2;
-  }
-
-  void Dense::print() const {
-    for (int i=0; i<dim[0]; i++) {
-      for (int j=0; j<dim[1]; j++) {
-        std::cout << std::setw(20) << std::setprecision(15) << data[i*dim[1]+j] << ' ';
-      }
-      std::cout << std::endl;
-    }
-      std::cout << "----------------------------------------------------------------------------------" << std::endl;
   }
 }

@@ -16,6 +16,14 @@ namespace hicma {
   }
 
   Hierarchical::Hierarchical(
+                             void (*func)(
+                                          std::vector<double>& data,
+                                          std::vector<double>& x,
+                                          const int& ni,
+                                          const int& nj,
+                                          const int& i_begin,
+                                          const int& j_begin
+                                          ),
                              std::vector<double>& x,
                              const int ni,
                              const int nj,
@@ -45,16 +53,27 @@ namespace hicma {
         int j_abs_child = j_abs * dim[1] + j;
         if ( std::abs(i_abs_child - j_abs_child) <= 1 ) { // TODO: use x in admissibility condition
           if ( ni <= nleaf && nj <= nleaf ) {
-            Dense D(x, ni_child, nj_child, i_begin_child, j_begin_child);
+            Dense D(func, x, ni_child, nj_child, i_begin_child, j_begin_child);
             (*this)(i,j) = D;
           }
           else {
-            Hierarchical H(x, ni_child, nj_child, rank, nleaf, i_begin_child, j_begin_child, i_abs_child, j_abs_child, level+1);
+            Hierarchical H(
+                           func,
+                           x,
+                           ni_child,
+                           nj_child,
+                           rank, nleaf,
+                           i_begin_child,
+                           j_begin_child,
+                           i_abs_child,
+                           j_abs_child,
+                           level+1
+                           );
             (*this)(i,j) = H;
           }
         }
         else {
-          Dense D(x, ni_child, nj_child, i_begin_child, j_begin_child);
+          Dense D(func, x, ni_child, nj_child, i_begin_child, j_begin_child);
           LowRank LR(D, rank); // TODO : create a LowRank constructor that does ID with x
           (*this)(i,j) = LR;
         }
@@ -82,13 +101,18 @@ namespace hicma {
     return data[i*dim[1]+j];
   }
 
-  Dense& Hierarchical::D(const int i) {
+  Dense& Hierarchical::dense(const int i) {
     assert(i<dim[0]*dim[1]);
     return boost::any_cast<Dense&>(data[i]);
   }
 
-  Dense& Hierarchical::D(const int i, const int j) {
+  Dense& Hierarchical::dense(const int i, const int j) {
     assert(i<dim[0] && j<dim[1]);
     return boost::any_cast<Dense&>(data[i*dim[1]+j]);
+  }
+
+  std::vector<int> Hierarchical::getrf() {
+    std::vector<int>(a);
+    return a;
   }
 }

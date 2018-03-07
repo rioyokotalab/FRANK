@@ -11,7 +11,7 @@ namespace hicma {
       ipiv = boost::any_cast<Dense&>(A).getrf();
     }
     else if (A.type() == typeid(Hierarchical)) {
-      fprintf(stderr,"Operation undefined 0.\n"); abort();
+      ipiv = boost::any_cast<Hierarchical&>(A).getrf();
     }
     else {
       fprintf(stderr,"Data type must be Dense or Hierarchical.\n"); abort();

@@ -54,13 +54,7 @@ namespace hicma {
 
     void resize(int m, int n, int k);
 
-    void trsm(Dense& A, const char& uplo);
-
-    void gemm(const Dense& A, const LowRank& B);
-
-    void gemm(const LowRank& A, const Dense& B);
-
-    void gemm(const LowRank& A, const LowRank& B);
+    Dense dense() const;
 
     void mergeU(const LowRank&A, const LowRank& B);
 
@@ -68,7 +62,13 @@ namespace hicma {
 
     void mergeV(const LowRank&A, const LowRank& B);
 
-    Dense dense() const;
+    void trsm(Dense& A, const char& uplo);
+
+    void gemm(const Dense& A, const LowRank& B);
+
+    void gemm(const LowRank& A, const Dense& B);
+
+    void gemm(const LowRank& A, const LowRank& B);
   };
 }
 #endif

@@ -19,6 +19,14 @@ namespace hicma {
     Hierarchical(const int m, const int n);
 
     Hierarchical(
+                 void (*func)(
+                              std::vector<double>& data,
+                              std::vector<double>& x,
+                              const int& ni,
+                              const int& nj,
+                              const int& i_begin,
+                              const int& j_begin
+                              ),
                  std::vector<double>& x,
                  const int ni,
                  const int nj,
@@ -39,9 +47,11 @@ namespace hicma {
 
     const boost::any& operator()(const int i, const int j) const;
 
-    Dense& D(const int i);
+    Dense& dense(const int i);
 
-    Dense& D(const int i, const int j);
+    Dense& dense(const int i, const int j);
+
+    std::vector<int> getrf();
   };
 }
 #endif

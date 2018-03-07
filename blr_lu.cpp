@@ -39,8 +39,8 @@ int main(int argc, char** argv) {
       Dense Aij(Nb,Nb);
       for (int ib=0; ib<Nb; ib++) {
         for (int jb=0; jb<Nb; jb++) {
-          Aij(ib,jb) = 1 / (std::abs(x.D(ic)[ib] - x.D(jc)[jb]) + 1e-3);
-          b.D(ic)[ib] += Aij(ib,jb) * x.D(jc)[jb];
+          Aij(ib,jb) = 1 / (std::abs(x.dense(ic)[ib] - x.dense(jc)[jb]) + 1e-3);
+          b.dense(ic)[ib] += Aij(ib,jb) * x.dense(jc)[jb];
         }
       }
       if (std::abs(ic - jc) <= 1) {
@@ -94,8 +94,8 @@ int main(int argc, char** argv) {
 
   double diff = 0, norm = 0;
   for (int ic=0; ic<Nc; ic++) {
-    diff += (x.D(ic) - b.D(ic)).norm();
-    norm += x.D(ic).norm();
+    diff += (x.dense(ic) - b.dense(ic)).norm();
+    norm += x.dense(ic).norm();
   }
   print("Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);

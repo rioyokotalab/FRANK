@@ -24,6 +24,14 @@ namespace hicma {
     Dense(const Dense& A);
 
     Dense(
+          void (*func)(
+                       std::vector<double>& data,
+                       std::vector<double>& x,
+                       const int& ni,
+                       const int& nj,
+                       const int& i_begin,
+                       const int& j_begin
+                       ),
           std::vector<double>& x,
           const int ni,
           const int nj,
@@ -69,6 +77,14 @@ namespace hicma {
 
     Dense operator-() const;
 
+    void resize(int i);
+
+    void resize(int i, int j);
+
+    double norm();
+
+    void print() const;
+
     std::vector<int> getrf();
 
     void trsm(Dense& A, const char& uplo);
@@ -84,14 +100,6 @@ namespace hicma {
     void gemm(const LowRank& A, const Dense& B);
 
     void gemm(const LowRank& A, const LowRank& B);
-
-    void resize(int i);
-
-    void resize(int i, int j);
-
-    double norm();
-
-    void print() const;
   };
 }
 #endif
