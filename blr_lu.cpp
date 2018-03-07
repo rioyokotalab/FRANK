@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
   start("Forward substitution");
   for (int ic=0; ic<Nc; ic++) {
     for (int jc=0; jc<ic; jc++) {
-      gemv(A(ic,jc),b[jc],b[ic]);
+      gemm(A(ic,jc),b[jc],b[ic]);
     }
     trsm(A(ic,ic),b[ic],'l');
   }
@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
   start("Backward substitution");
   for (int ic=Nc-1; ic>=0; ic--) {
     for (int jc=Nc-1; jc>ic; jc--) {
-      gemv(A(ic,jc),b[jc],b[ic]);
+      gemm(A(ic,jc),b[jc],b[ic]);
     }
     trsm(A(ic,ic),b[ic],'u');
   }

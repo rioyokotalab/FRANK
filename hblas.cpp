@@ -234,4 +234,54 @@ namespace hicma {
       fprintf(stderr,"First value must be Dense, LowRank or Hierarchical.\n"); abort();
     }
   }
+
+  void add(const boost::any& A, const boost::any& B, boost::any& C) {
+    if (A.type() == typeid(Dense)) {
+      assert(B.type() == typeid(Hierarchical) && C.type() == typeid(Dense));
+      //boost::any_cast<Dense&>(C) = boost::any_cast<const Dense&>(A) + boost::any_cast<const Hierarchical&>(B);
+    }
+    else if (A.type() == typeid(LowRank)) {
+      assert(B.type() == typeid(Hierarchical) && C.type() == typeid(LowRank));
+      //boost::any_cast<LowRank&>(C) = boost::any_cast<const LowRank&>(A) + boost::any_cast<const Hierarchical&>(B);
+    }
+    else if (A.type() == typeid(Hierarchical)) {
+      if (B.type() == typeid(Dense)) {
+        assert(C.type() == typeid(Dense));
+        //boost::any_cast<Dense&>(C) = boost::any_cast<const Hierarchical&>(A) + boost::any_cast<const Dense&>(B);
+      }
+      else if (B.type() == typeid(LowRank)) {
+        assert(C.type() == typeid(LowRank));
+        //boost::any_cast<LowRank&>(C) = boost::any_cast<const Hierarchical&>(A) + boost::any_cast<const LowRank&>(B);
+      }
+      else if (B.type() == typeid(Hierarchical)) {
+        assert(C.type() == typeid(Hierarchical));
+        boost::any_cast<Hierarchical&>(C) = boost::any_cast<const Hierarchical&>(A) + boost::any_cast<const Hierarchical&>(B);
+      }
+    }
+  }
+
+  void sub(const boost::any& A, const boost::any& B, boost::any& C) {
+    if (A.type() == typeid(Dense)) {
+      assert(B.type() == typeid(Hierarchical) && C.type() == typeid(Dense));
+      //boost::any_cast<Dense&>(C) = boost::any_cast<const Dense&>(A) - boost::any_cast<const Hierarchical&>(B);
+    }
+    else if (A.type() == typeid(LowRank)) {
+      assert(B.type() == typeid(Hierarchical) && C.type() == typeid(LowRank));
+      //boost::any_cast<LowRank&>(C) = boost::any_cast<const LowRank&>(A) - boost::any_cast<const Hierarchical&>(B);
+    }
+    else if (A.type() == typeid(Hierarchical)) {
+      if (B.type() == typeid(Dense)) {
+        assert(C.type() == typeid(Dense));
+        //boost::any_cast<Dense&>(C) = boost::any_cast<const Hierarchical&>(A) - boost::any_cast<const Dense&>(B);
+      }
+      else if (B.type() == typeid(LowRank)) {
+        assert(C.type() == typeid(LowRank));
+        //boost::any_cast<LowRank&>(C) = boost::any_cast<const Hierarchical&>(A) - boost::any_cast<const LowRank&>(B);
+      }
+      else if (B.type() == typeid(Hierarchical)) {
+        assert(C.type() == typeid(Hierarchical));
+        boost::any_cast<Hierarchical&>(C) = boost::any_cast<const Hierarchical&>(A) - boost::any_cast<const Hierarchical&>(B);
+      }
+    }
+  }
 }

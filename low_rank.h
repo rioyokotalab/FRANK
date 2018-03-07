@@ -30,25 +30,37 @@ namespace hicma {
 
     const LowRank operator+=(const LowRank& A);
 
+    const LowRank operator+=(const Hierarchical& A);
+
     const Dense operator-=(const Dense& D);
 
     const LowRank operator-=(const LowRank& A);
+
+    const LowRank operator-=(const Hierarchical& A);
 
     const LowRank operator*=(const Dense& D);
 
     const LowRank operator*=(const LowRank& A);
 
+    const LowRank operator*=(const Hierarchical& A);
+
     Dense operator+(const Dense& D) const;
 
     LowRank operator+(const LowRank& A) const;
+
+    LowRank operator+(const Hierarchical& A) const;
 
     Dense operator-(const Dense& D) const;
 
     LowRank operator-(const LowRank& A) const;
 
+    LowRank operator-(const Hierarchical& A) const;
+
     LowRank operator*(const Dense& D) const;
 
     LowRank operator*(const LowRank& A) const;
+
+    LowRank operator*(const Hierarchical& A) const;
 
     LowRank operator-() const;
 

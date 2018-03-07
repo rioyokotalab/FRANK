@@ -30,6 +30,9 @@ namespace hicma {
                  const int nj,
                  const int rank,
                  const int nleaf,
+                 const int admis,
+                 const int ni_level,
+                 const int nj_level,
                  const int i_begin,
                  const int j_begin,
                  const int i_abs,
@@ -49,13 +52,13 @@ namespace hicma {
 
     const Dense operator+=(const Dense& A);
 
-    const Hierarchical operator+=(const LowRank& A);
+    const LowRank operator+=(const LowRank& A);
 
     const Hierarchical operator+=(const Hierarchical& A);
 
     const Dense operator-=(const Dense& A);
 
-    const Hierarchical operator-=(const LowRank& A);
+    const LowRank operator-=(const LowRank& A);
 
     const Hierarchical operator-=(const Hierarchical& A);
 
@@ -67,13 +70,13 @@ namespace hicma {
 
     Dense operator+(const Dense& A) const;
 
-    Hierarchical operator+(const LowRank& A) const;
+    LowRank operator+(const LowRank& A) const;
 
     Hierarchical operator+(const Hierarchical& A) const;
 
     Dense operator-(const Dense& A) const;
 
-    Hierarchical operator-(const LowRank& A) const;
+    LowRank operator-(const LowRank& A) const;
 
     Hierarchical operator-(const Hierarchical& A) const;
 

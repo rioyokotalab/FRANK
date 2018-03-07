@@ -115,6 +115,7 @@ namespace hicma {
   }
 
   const LowRank LowRank::operator*=(const Dense& A) {
+    assert(dim[1] == A.dim[0]);
     LowRank B(dim[0],A.dim[1],rank);
     B.U = U;
     B.S = S;
@@ -123,6 +124,7 @@ namespace hicma {
   }
 
   const LowRank LowRank::operator*=(const LowRank& A) {
+    assert(dim[1] == A.dim[0]);
     LowRank B(dim[0],A.dim[1],rank);
     B.U = U;
     B.S = S * (V * A.U) * A.S;

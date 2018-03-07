@@ -55,31 +55,45 @@ namespace hicma {
 
     const Dense operator+=(const LowRank& A);
 
+    const Dense operator+=(const Hierarchical& A);
+
     const Dense operator-=(const Dense& A);
 
     const Dense operator-=(const LowRank& A);
+
+    const Dense operator-=(const Hierarchical& A);
 
     const Dense operator*=(const Dense& A);
 
     const LowRank operator*=(const LowRank& A);
 
+    const Dense operator*=(const Hierarchical& A);
+
     Dense operator+(const Dense& A) const;
 
     Dense operator+(const LowRank& A) const;
+
+    Dense operator+(const Hierarchical& A) const;
 
     Dense operator-(const Dense& A) const;
 
     Dense operator-(const LowRank& A) const;
 
+    Dense operator-(const Hierarchical& A) const;
+
     Dense operator*(const Dense& A) const;
 
     LowRank operator*(const LowRank& A) const;
+
+    Dense operator*(const Hierarchical& A) const;
 
     Dense operator-() const;
 
     void resize(int i);
 
     void resize(int i, int j);
+
+    Dense extract(int i, int j, int ni, int nj);
 
     double norm();
 
