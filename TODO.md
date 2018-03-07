@@ -1,4 +1,6 @@
 [Immediate]
+H gemm
+typedef any_cast
 Remove dense() in Hierarchical
 Hierarchical matvec, assign scalar
 
@@ -15,7 +17,7 @@ Pivots inside diagonal blocks
 Non-square matrices
 
 [After SIAM]
-Clean randomized SVD routine
+Clean randomized id.cpp
 
 [Results]
 Compare {FullRank, LowRank, Hierarchical}, {A, L, U} types with op. overloading

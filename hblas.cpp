@@ -56,13 +56,15 @@ namespace hicma {
           boost::any_cast<Dense&>(C).gemm(boost::any_cast<const Dense&>(A), boost::any_cast<const Dense&>(B));
         }
         else if (C.type() == typeid(LowRank)) {
-          fprintf(stderr,"Operation undefined 8.\n"); abort();
+          fprintf(stderr,"L += D * D\n"); abort();
         }
         else if (C.type() == typeid(Hierarchical)) {
-          fprintf(stderr,"Operation undefined 9.\n"); abort();
+          fprintf(stderr,"H += D * D\n"); abort();
         }
         else {
-          fprintf(stderr,"Third value must be Dense, LowRank or Hierarchical.\n"); abort();
+          Dense D(boost::any_cast<const Dense&>(A).dim[0],boost::any_cast<const Dense&>(B).dim[1]);
+          C = D;
+          boost::any_cast<Dense&>(C).gemm(boost::any_cast<const Dense&>(A), boost::any_cast<const Dense&>(B));
         }
       }
       else if (B.type() == typeid(LowRank)) {
@@ -73,24 +75,26 @@ namespace hicma {
           boost::any_cast<LowRank&>(C).gemm(boost::any_cast<const Dense&>(A), boost::any_cast<const LowRank&>(B));
         }
         else if (C.type() == typeid(Hierarchical)) {
-          fprintf(stderr,"Operation undefined 12.\n"); abort();
+          fprintf(stderr,"H += D * L\n"); abort();
         }
         else {
-          fprintf(stderr,"Third value must be Dense, LowRank or Hierarchical.\n"); abort();
+          LowRank D(boost::any_cast<const Dense&>(A).dim[0],boost::any_cast<const LowRank&>(B).dim[1],boost::any_cast<const LowRank&>(B).rank);
+          C = D;
+          boost::any_cast<LowRank&>(C).gemm(boost::any_cast<const Dense&>(A), boost::any_cast<const LowRank&>(B));
         }
       }
       else if (B.type() == typeid(Hierarchical)) {
         if (C.type() == typeid(Dense)) {
-          fprintf(stderr,"Operation undefined 13.\n"); abort();
+          fprintf(stderr,"D += D * H\n"); abort();
         }
         else if (C.type() == typeid(LowRank)) {
-          fprintf(stderr,"Operation undefined 14.\n"); abort();
+          fprintf(stderr,"L += D * H\n"); abort();
         }
         else if (C.type() == typeid(Hierarchical)) {
-          fprintf(stderr,"Operation undefined 15.\n"); abort();
+          fprintf(stderr,"H += D * H\n"); abort();
         }
         else {
-          fprintf(stderr,"Third value must be Dense, LowRank or Hierarchical.\n"); abort();
+          fprintf(stderr,"D += D * H\n"); abort();
         }
       }
       else {
@@ -106,10 +110,12 @@ namespace hicma {
           boost::any_cast<LowRank&>(C).gemm(boost::any_cast<const LowRank&>(A), boost::any_cast<const Dense&>(B));
         }
         else if (C.type() == typeid(Hierarchical)) {
-          fprintf(stderr,"Operation undefined 18.\n"); abort();
+          fprintf(stderr,"H += L * D\n"); abort();
         }
         else {
-          fprintf(stderr,"Third value must be Dense, LowRank or Hierarchical.\n"); abort();
+          LowRank D(boost::any_cast<const LowRank&>(A).dim[0],boost::any_cast<const Dense&>(B).dim[1],boost::any_cast<const LowRank&>(A).rank);
+          C = D;
+          boost::any_cast<LowRank&>(C).gemm(boost::any_cast<const LowRank&>(A), boost::any_cast<const Dense&>(B));
         }
       }
       else if (B.type() == typeid(LowRank)) {
@@ -120,24 +126,26 @@ namespace hicma {
           boost::any_cast<LowRank&>(C).gemm(boost::any_cast<const LowRank&>(A), boost::any_cast<const LowRank&>(B));
         }
         else if (C.type() == typeid(Hierarchical)) {
-          fprintf(stderr,"Operation undefined 21.\n"); abort();
+          fprintf(stderr,"H += L * L\n"); abort();
         }
         else {
-          fprintf(stderr,"Third value must be Dense, LowRank or Hierarchical.\n"); abort();
+          LowRank D(boost::any_cast<const LowRank&>(A).dim[0],boost::any_cast<const LowRank&>(B).dim[1],boost::any_cast<const LowRank&>(A).rank);
+          C = D;
+          boost::any_cast<LowRank&>(C).gemm(boost::any_cast<const LowRank&>(A), boost::any_cast<const LowRank&>(B));
         }
       }
       else if (B.type() == typeid(Hierarchical)) {
         if (C.type() == typeid(Dense)) {
-          fprintf(stderr,"Operation undefined 22.\n"); abort();
+          fprintf(stderr,"D += L * H\n"); abort();
         }
         else if (C.type() == typeid(LowRank)) {
-          fprintf(stderr,"Operation undefined 23.\n"); abort();
+          fprintf(stderr,"L += L * H\n"); abort();
         }
         else if (C.type() == typeid(Hierarchical)) {
-          fprintf(stderr,"Operation undefined 24.\n"); abort();
+          fprintf(stderr,"H += L * H\n"); abort();
         }
         else {
-          fprintf(stderr,"Third value must be Dense, LowRank or Hierarchical.\n"); abort();
+          fprintf(stderr,"L += L * H\n"); abort();
         }
       }
       else {
@@ -147,44 +155,44 @@ namespace hicma {
     else if (A.type() == typeid(Hierarchical)) {
       if (B.type() == typeid(Dense)) {
         if (C.type() == typeid(Dense)) {
-          fprintf(stderr,"Operation undefined 25.\n"); abort();
+          fprintf(stderr,"D += H * D\n"); abort();
         }
         else if (C.type() == typeid(LowRank)) {
-          fprintf(stderr,"Operation undefined 26.\n"); abort();
+          fprintf(stderr,"L += H * D\n"); abort();
         }
         else if (C.type() == typeid(Hierarchical)) {
-          fprintf(stderr,"Operation undefined 27.\n"); abort();
+          fprintf(stderr,"H += H * D\n"); abort();
         }
         else {
-          fprintf(stderr,"Third value must be Dense, LowRank or Hierarchical.\n"); abort();
+          fprintf(stderr,"D += H * D\n"); abort();
         }
       }
       else if (B.type() == typeid(LowRank)) {
         if (C.type() == typeid(Dense)) {
-          fprintf(stderr,"Operation undefined 28.\n"); abort();
+          fprintf(stderr,"D += H * L\n"); abort();
         }
         else if (C.type() == typeid(LowRank)) {
-          fprintf(stderr,"Operation undefined 29.\n"); abort();
+          fprintf(stderr,"L += H * L\n"); abort();
         }
         else if (C.type() == typeid(Hierarchical)) {
-          fprintf(stderr,"Operation undefined 30.\n"); abort();
+          fprintf(stderr,"H += H * L\n"); abort();
         }
         else {
-          fprintf(stderr,"Third value must be Dense, LowRank or Hierarchical.\n"); abort();
+          fprintf(stderr,"L += H * L\n"); abort();
         }
       }
       else if (B.type() == typeid(Hierarchical)) {
         if (C.type() == typeid(Dense)) {
-          fprintf(stderr,"Operation undefined 31.\n"); abort();
+          fprintf(stderr,"D += H * H\n"); abort();
         }
         else if (C.type() == typeid(LowRank)) {
-          fprintf(stderr,"Operation undefined 32.\n"); abort();
+          fprintf(stderr,"L += H * H\n"); abort();
         }
         else if (C.type() == typeid(Hierarchical)) {
-          fprintf(stderr,"Operation undefined 33.\n"); abort();
+          fprintf(stderr,"H += H * H\n"); abort();
         }
         else {
-          fprintf(stderr,"Third value must be Dense, LowRank or Hierarchical.\n"); abort();
+          fprintf(stderr,"H += H * H\n"); abort();
         }
       }
       else {
