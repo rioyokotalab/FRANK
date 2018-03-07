@@ -1,5 +1,5 @@
 [Immediate]
-Assume ni == nj
+forward/back substitution
 Get timers to work across compile units
 
 [Development]

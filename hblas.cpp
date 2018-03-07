@@ -22,7 +22,8 @@ namespace hicma {
         boost::any_cast<LowRank&>(Aij).trsm(boost::any_cast<const Dense&>(Aii), uplo);
       }
       else if (Aij.type() == typeid(Hierarchical)) {
-        fprintf(stderr,"Operation undefined 0.\n"); abort();
+        fprintf(stderr,"H /= D\n"); abort();
+        //boost::any_cast<Hierarchical&>(Aij).trsm(boost::any_cast<const Dense&>(Aii), uplo);
       }
       else {
         fprintf(stderr,"Second value must be Dense, LowRank or Hierarchical.\n"); abort();
@@ -30,13 +31,15 @@ namespace hicma {
     }
     else if (Aii.type() == typeid(Hierarchical)) {
       if (Aij.type() == typeid(Dense)) {
-        fprintf(stderr,"Operation undefined 1.\n"); abort();
+        fprintf(stderr,"D /= H\n"); abort();
+        //boost::any_cast<Dense&>(Aij).trsm(boost::any_cast<const Hierarchical&>(Aii), uplo);
       }
       else if (Aij.type() == typeid(LowRank)) {
-        fprintf(stderr,"Operation undefined 2.\n"); abort();
+        fprintf(stderr,"L /= H\n"); abort();
+        //boost::any_cast<LowRank&>(Aij).trsm(boost::any_cast<const Hierarchical&>(Aii), uplo);
       }
       else if (Aij.type() == typeid(Hierarchical)) {
-        fprintf(stderr,"Operation undefined 3.\n"); abort();
+        boost::any_cast<Hierarchical&>(Aij).trsm(boost::any_cast<const Hierarchical&>(Aii), uplo);
       }
       else {
         fprintf(stderr,"Second value must be Dense, LowRank or Hierarchical.\n"); abort();

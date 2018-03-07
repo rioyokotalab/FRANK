@@ -30,14 +30,14 @@ namespace hicma {
                  const int nj,
                  const int rank,
                  const int nleaf,
-                 const int admis,
-                 const int ni_level,
-                 const int nj_level,
-                 const int i_begin,
-                 const int j_begin,
-                 const int i_abs,
-                 const int j_abs,
-                 const int level
+                 const int admis=1,
+                 const int ni_level=2,
+                 const int nj_level=2,
+                 const int i_begin=0,
+                 const int j_begin=0,
+                 const int i_abs=0,
+                 const int j_abs=0,
+                 const int level=0
                  );
 
     boost::any& operator[](const int i);
@@ -95,6 +95,8 @@ namespace hicma {
     Dense& dense(const int i, const int j);
 
     void getrf();
+
+    void trsm(const Hierarchical& A, const char& uplo);
   };
 }
 #endif

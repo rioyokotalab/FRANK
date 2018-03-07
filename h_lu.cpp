@@ -27,24 +27,11 @@ int main(int argc, char** argv) {
   start("LU decomposition");
   A.getrf();
   stop("LU decomposition");
-  print2("-DGETRF");
-  print2("-DTRSM");
-  print2("-DGEMM");
   start("Forward substitution");
-  for (int ic=0; ic<Nc; ic++) {
-    for (int jc=0; jc<ic; jc++) {
-      gemm(A(ic,jc),b[jc],b[ic]);
-    }
-    trsm(A(ic,ic),b[ic],'l');
-  }
+  b.trsm(A,'l');
   stop("Forward substitution");
   start("Backward substitution");
-  for (int ic=Nc-1; ic>=0; ic--) {
-    for (int jc=Nc-1; jc>ic; jc--) {
-      gemm(A(ic,jc),b[jc],b[ic]);
-    }
-    trsm(A(ic,ic),b[ic],'u');
-  }
+  b.trsm(A,'u');
   stop("Backward substitution");
   double diff = 0, norm = 0;
   for (int ic=0; ic<Nc; ic++) {

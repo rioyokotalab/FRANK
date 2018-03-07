@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
   start("LU decomposition");
   for (int ic=0; ic<Nc; ic++) {
     start("-DGETRF");
-    std::vector<int> ipiv = getrf(A(ic,ic));
+    getrf(A(ic,ic));
     stop("-DGETRF", false);
     for (int jc=ic+1; jc<Nc; jc++) {
       start("-DTRSM");

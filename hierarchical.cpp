@@ -28,14 +28,14 @@ namespace hicma {
                              const int nj,
                              const int rank,
                              const int nleaf,
-                             const int admis=1,
-                             const int ni_level=0,
-                             const int nj_level=0,
-                             const int i_begin=0,
-                             const int j_begin=0,
-                             const int i_abs=0,
-                             const int j_abs=0,
-                             const int level=0
+                             const int admis,
+                             const int ni_level,
+                             const int nj_level,
+                             const int i_begin,
+                             const int j_begin,
+                             const int i_abs,
+                             const int j_abs,
+                             const int level
                              ) {
     if ( !level ) {
       assert(int(x.size()) == std::max(ni,nj));
@@ -168,14 +168,61 @@ namespace hicma {
   void Hierarchical::getrf() {
     for (int i=0; i<dim[0]; i++) {
       hicma::getrf((*this)(i,i));
-      for (int j=i+1; j<dim[1]; j++) {
+      for (int j=i+1; j<dim[0]; j++) {
         hicma::trsm((*this)(i,i),(*this)(i,j),'l');
         hicma::trsm((*this)(i,i),(*this)(j,i),'u');
       }
-      for (int j=i+1; j<dim[1]; j++) {
-        for (int k=i+1; k<dim[1]; k++) {
+      for (int j=i+1; j<dim[0]; j++) {
+        for (int k=i+1; k<dim[0]; k++) {
           hicma::gemm((*this)(j,i),(*this)(i,k),(*this)(j,k));
         }
+      }
+    }
+  }
+
+  void Hierarchical::trsm(const Hierarchical& A, const char& uplo) {
+    if (dim[1] == 1) {
+      switch (uplo) {
+      case 'l' :
+        for (int i=0; i<dim[0]; i++) {
+          for (int j=0; j<i; j++) {
+            hicma::gemm(A(i,j),(*this)[j],(*this)[i]);
+          }
+          hicma::trsm(A(i,i),(*this)[i],'l');
+        }
+        break;
+      case 'u' :
+        for (int i=dim[0]-1; i>=0; i--) {
+          for (int j=dim[0]-1; j>i; j--) {
+            hicma::gemm(A(i,j),(*this)[j],(*this)[i]);
+          }
+          hicma::trsm(A(i,i),(*this)[i],'u');
+        }
+        break;
+      default :
+        fprintf(stderr,"Second argument must be 'l' for lower, 'u' for upper.\n"); abort();
+      }
+    }
+    else {
+      switch (uplo) {
+      case 'l' :
+        for (int i=0; i<dim[0]; i++) {
+          for (int j=0; j<i; j++) {
+            hicma::gemm(A(i,j),(*this)[j],(*this)[i]);
+          }
+          hicma::trsm(A(i,i),(*this)[i],'l');
+        }
+        break;
+      case 'u' :
+        for (int i=dim[0]-1; i>=0; i--) {
+          for (int j=dim[0]-1; j>i; j--) {
+            hicma::gemm(A(i,j),(*this)[j],(*this)[i]);
+          }
+          hicma::trsm(A(i,i),(*this)[i],'u');
+        }
+        break;
+      default :
+        fprintf(stderr,"Second argument must be 'l' for lower, 'u' for upper.\n"); abort();
       }
     }
   }
