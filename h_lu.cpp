@@ -22,12 +22,7 @@ int main(int argc, char** argv) {
   Hierarchical A(laplace1d, randx, N, N, rank, Nb, admis, Nc, Nc, 0, 0, 0, 0, 0);
   Hierarchical x(rand, randx, N, 1, rank, Nb, admis, Nc, 1, 0, 0, 0, 0, 0);
   Hierarchical b(zeros, randx, N, 1, rank, Nb, admis, Nc, 1, 0, 0, 0, 0, 0);
-  //b += A * x;
-  for (int ic=0; ic<Nc; ic++) {
-    for (int jc=0; jc<Nc; jc++) {
-      b.dense(ic) += A.dense(ic,jc) * x.dense(jc);
-    }
-  }
+  b -= A * x;
   stop("Init matrix");
   start("LU decomposition");
   for (int ic=0; ic<Nc; ic++) {

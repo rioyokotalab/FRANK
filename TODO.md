@@ -1,23 +1,19 @@
 [Immediate]
-H gemm
-typedef any_cast
-Remove dense() in Hierarchical
-Hierarchical matvec, assign scalar
+
 
 [Development]
-Tree construction
-HODLR
-H-matrix
-H^2-matrix
+H-matrix LU
 MPI version
 Asyncronous communication
+
+[After SIAM]
+Clean randomized id.cpp
+typedef any_cast
+H^2-matrix LU
 ID with controllable precision
 Template over float/double
 Pivots inside diagonal blocks
 Non-square matrices
-
-[After SIAM]
-Clean randomized id.cpp
 
 [Results]
 Compare {FullRank, LowRank, Hierarchical}, {A, L, U} types with op. overloading

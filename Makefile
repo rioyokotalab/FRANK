@@ -11,7 +11,7 @@ blr_lu: blr_lu.o hblas.o dense.o id.o low_rank.o hierarchical.o
 	$(CXX) $? -lblas -llapacke
 	valgrind ./a.out
 
-hodlr_lu: hodlr_lu.o hblas.o dense.o id.o low_rank.o hierarchical.o
+h_lu: h_lu.o hblas.o dense.o id.o low_rank.o hierarchical.o
 	$(CXX) $? -lblas -llapacke
 	valgrind ./a.out
 

@@ -117,9 +117,11 @@ namespace hicma {
 
   const Hierarchical Hierarchical::operator+=(const Hierarchical& A) {
     assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
-    for (int i=0; i<dim[0]; i++)
-      for (int j=0; j<dim[1]; j++)
+    for (int i=0; i<dim[0]; i++) {
+      for (int j=0; j<dim[1]; j++) {
         add((*this)(i,j), A(i,j), (*this)(i,j));
+      }
+    }
     return *this;
   }
 
