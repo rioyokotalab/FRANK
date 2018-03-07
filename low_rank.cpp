@@ -18,24 +18,24 @@ namespace hicma {
     dim[0]=A.dim[0]; dim[1]=A.dim[1]; rank=A.rank;
   }
 
-  LowRank::LowRank(const Dense &D, const int k) {
-    int m = dim[0] = D.dim[0];
-    int n = dim[1] = D.dim[1];
+  LowRank::LowRank(const Dense &A, const int k) {
+    int m = dim[0] = A.dim[0];
+    int n = dim[1] = A.dim[1];
     rank = k;
     U.resize(m,k);
     S.resize(k,k);
     V.resize(k,n);
-    double *D2 = (double*)calloc(m*n, sizeof(double));
+    double *A2 = (double*)calloc(m*n, sizeof(double));
     double *U2 = (double*)calloc(m*k, sizeof(double));
     double *S2 = (double*)calloc(k*k, sizeof(double));
     double *V2 = (double*)calloc(n*k, sizeof(double));
     double *V2_t = (double*)calloc(k*n, sizeof(double));
     for(int i=0; i<m; i++){
       for(int j=0; j<n; j++){
-        D2[i*n+j] = D[i*n + j];
+        A2[i*n+j] = A[i*n+j];
       }
     }
-    randomized_low_rank_svd2(D2, rank, U2, S2, V2, m, n);
+    randomized_low_rank_svd2(A2, rank, U2, S2, V2, m, n);
     transpose(V2, V2_t, n, k);
 
     for(int i=0; i<m; i++){
@@ -53,13 +53,14 @@ namespace hicma {
         V(j,i) = V2[i*k+j];
       }
     }
-    free(D2);
+    free(A2);
     free(U2);
     free(S2);
     free(V2);
   }
 
   const LowRank& LowRank::operator=(const double v) {
+    assert(v == 0);
     U = 0;
     S = 0;
     V = 0;
@@ -67,6 +68,7 @@ namespace hicma {
   }
 
   const LowRank& LowRank::operator=(const LowRank A) {
+    assert(dim[0]==A.dim[0] && dim[1]==A.dim[1] && rank==A.rank);
     dim[0]=A.dim[0]; dim[1]=A.dim[1]; rank=A.rank;
     U = A.U;
     S = A.S;
@@ -74,9 +76,9 @@ namespace hicma {
     return *this;
   }
 
-  const Dense LowRank::operator+=(const Dense& D) {
-    assert(dim[0]==D.dim[0] && dim[1]==D.dim[1]);
-    return this->dense() + D;
+  const Dense LowRank::operator+=(const Dense& A) {
+    assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
+    return this->dense() + A;
   }
 
   const LowRank LowRank::operator+=(const LowRank& B) {
@@ -94,9 +96,9 @@ namespace hicma {
     return *this;
   }
 
-  const Dense LowRank::operator-=(const Dense& D) {
-    assert(dim[0]==D.dim[0] && dim[1]==D.dim[1]);
-    return this->dense() - D;
+  const Dense LowRank::operator-=(const Dense& A) {
+    assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
+    return this->dense() - A;
   }
 
   const LowRank LowRank::operator-=(const LowRank& B) {
@@ -114,12 +116,12 @@ namespace hicma {
     return *this;
   }
 
-  const LowRank LowRank::operator*=(const Dense& D) {
-    LowRank A(dim[0],D.dim[1],rank);
-    A.U = U;
-    A.S = S;
-    A.V = V * D;
-    return A;
+  const LowRank LowRank::operator*=(const Dense& A) {
+    LowRank B(dim[0],A.dim[1],rank);
+    B.U = U;
+    B.S = S;
+    B.V = V * A;
+    return B;
   }
 
   const LowRank LowRank::operator*=(const LowRank& A) {
@@ -130,24 +132,24 @@ namespace hicma {
     return B;
   }
 
-  Dense LowRank::operator+(const Dense& D) const {
-    return LowRank(*this) += D;
+  Dense LowRank::operator+(const Dense& A) const {
+    return LowRank(*this) += A;
   }
 
   LowRank LowRank::operator+(const LowRank& A) const {
     return LowRank(*this) += A;
   }
 
-  Dense LowRank::operator-(const Dense& D) const {
-    return LowRank(*this) -= D;
+  Dense LowRank::operator-(const Dense& A) const {
+    return LowRank(*this) -= A;
   }
 
   LowRank LowRank::operator-(const LowRank& A) const {
     return LowRank(*this) -= A;
   }
 
-  LowRank LowRank::operator*(const Dense& D) const {
-    return LowRank(*this) *= D;
+  LowRank LowRank::operator*(const Dense& A) const {
+    return LowRank(*this) *= A;
   }
 
   LowRank LowRank::operator*(const LowRank& A) const {

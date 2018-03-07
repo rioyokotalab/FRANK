@@ -28,8 +28,6 @@ namespace hicma {
                           int ncols_b
                           );
 
-  void print_matrix(char* desc, int m, int n, double* a,int lda);
-
   void initialize_random_matrix(double *M, int nrows, int ncols);
 
   void compute_QR_compact_factorization(

@@ -40,7 +40,8 @@ namespace hicma {
       assert(int(x.size()) == nj);
       std::sort(x.begin(),x.end());
     }
-    dim[0]=2; dim[1]=2;
+    dim[0] = std::min(2,ni);
+    dim[1] = std::min(2,nj);
     data.resize(dim[0]*dim[1]);
     for ( int i=0; i<dim[0]; i++ ) {
       for ( int j=0; j<dim[1]; j++ ) {
@@ -101,6 +102,18 @@ namespace hicma {
     assert(i<dim[0] && j<dim[1]);
     return data[i*dim[1]+j];
   }
+
+  /*
+  const Hierarchical Hierarchical::operator*=(const Hierarchical& A) {
+    assert(dim[1] == A.dim[0]);
+    Hierarchical B(dim[0],A.dim[1]);
+    for (int i=0; i<dim[0]; i++)
+      for (int j=0; j<A.dim[1]; j++)
+        for (int k=0; k<dim[1]; k++)
+          gemm((*this)(i,k), A(k,j), B(i,j));
+    return B;
+  }
+  */
 
   Dense& Hierarchical::dense(const int i) {
     assert(i<dim[0]*dim[1]);

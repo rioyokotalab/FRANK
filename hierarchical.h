@@ -47,6 +47,48 @@ namespace hicma {
 
     const boost::any& operator()(const int i, const int j) const;
 
+    const Hierarchical& operator=(const Hierarchical& A);
+
+    const Dense operator+=(const Dense& A);
+
+    const Hierarchical operator+=(const LowRank& A);
+
+    const Hierarchical operator+=(const Hierarchical& A);
+
+    const Dense operator-=(const Dense& A);
+
+    const Hierarchical operator-=(const LowRank& A);
+
+    const Hierarchical operator-=(const Hierarchical& A);
+
+    const Dense operator*=(const Dense& A);
+
+    const LowRank operator*=(const LowRank& A);
+
+    const Hierarchical operator*=(const Hierarchical& A);
+
+    Dense operator+(const Dense& A) const;
+
+    Hierarchical operator+(const LowRank& A) const;
+
+    Hierarchical operator+(const Hierarchical& A) const;
+
+    Dense operator-(const Dense& A) const;
+
+    Hierarchical operator-(const LowRank& A) const;
+
+    Hierarchical operator-(const Hierarchical& A) const;
+
+    Dense operator*(const Dense& A) const;
+
+    LowRank operator*(const LowRank& A) const;
+
+    Hierarchical operator*(const Hierarchical& A) const;
+
+    Dense dense() const;
+
+    Dense lowRank() const;
+
     Dense& dense(const int i);
 
     Dense& dense(const int i, const int j);

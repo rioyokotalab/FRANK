@@ -1,10 +1,12 @@
 [Immediate]
+Remove dense() in Hierarchical
+Hierarchical matvec, assign scalar
+
+[Development]
 Tree construction
 HODLR
 H-matrix
 H^2-matrix
-
-[Development]
 MPI version
 Asyncronous communication
 ID with controllable precision
@@ -12,9 +14,8 @@ Template over float/double
 Pivots inside diagonal blocks
 Non-square matrices
 
-[Minor issues]
-dim[2] to m, n
-Const correctness
+[After SIAM]
+Clean randomized SVD routine
 
 [Results]
 Compare {FullRank, LowRank, Hierarchical}, {A, L, U} types with op. overloading

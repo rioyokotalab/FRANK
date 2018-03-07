@@ -238,22 +238,5 @@ namespace hicma {
       fprintf(stderr,"First value must be Dense, LowRank or Hierarchical.\n"); abort();
     }
   }
-
-  double l2norm(boost::any A) {
-    double l2 = 0;
-    if (A.type() == typeid(Dense)) {
-      l2 = boost::any_cast<Dense&>(A).norm();
-    }
-    else if (A.type() == typeid(LowRank)) {
-      l2 = boost::any_cast<LowRank&>(A).dense().norm();
-    }
-    else if (A.type() == typeid(Hierarchical)) {
-      fprintf(stderr,"Operation undefined 35.\n"); abort();
-    }
-    else {
-      fprintf(stderr,"Data type must be Dense, LowRank or Hierarchical.\n"); abort();
-    }
-    return l2;
-  }
 }
 #endif

@@ -175,15 +175,6 @@ namespace hicma {
                    M, rank, S, U, rank, Vt, rank, superb);
   }
 
-  // void print_matrix( char* desc, int m, int n, double* a,int lda ) {
-  //   int i, j;
-  //   printf( "\n %s\n", desc );
-  //   for( i = 0; i < m; i++ ) {
-  //     for( j = 0; j < n; j++ ) printf( " %6.4f", a[i*lda + j] );
-  //     printf( "\n" );
-  //   }
-  // }
-
   void transpose(double * mat, double* mat_t, int nrows, int ncols)
   {
     int index = 0;
@@ -211,58 +202,50 @@ namespace hicma {
                                 double *U,
                                 double *S,
                                 double *V,
-                                int nrows ,
-                                int ncols)
-  {
+                                int nrows,
+                                int ncols
+                                ) {
     // RN = randn(n,k+p)
     // build random matrix
-    double *RN = (double*)malloc(sizeof(double)*ncols*rank);
-    initialize_random_matrix(RN, ncols, rank);
+    std::vector<double> RN(ncols*rank);
+    initialize_random_matrix(&RN[0], ncols, rank);
 
     // Y = M * RN
     // multiply to get matrix of random samples Y
-    double *Y = (double*)calloc(nrows*rank, sizeof(double)); // nrows * rank
-    matrix_matrix_mult(M, RN, Y, nrows, ncols, ncols, rank);
+    std::vector<double> Y(nrows*rank);
+    matrix_matrix_mult(M, &RN[0], &Y[0], nrows, ncols, ncols, rank);
 
     // [q, r] = qr(Y,0)
-    double *Q = (double*)calloc(nrows*rank,sizeof(double));
-    QR_factorization_getQ(Y, Q, nrows, ncols, rank);
+    std::vector<double> Q(nrows*rank);
+    QR_factorization_getQ(&Y[0], &Q[0], nrows, ncols, rank);
 
     // bt = M' * q;
     // form Bt = Qt*M : rankxnrows * nrowsxncols = rankxncols
-    double *Bt = (double*)calloc(ncols*rank,sizeof(double));
-    matrix_transpose_matrix_mult(M, Q, Bt, nrows, ncols, nrows, rank);
+    std::vector<double> Bt(ncols*rank);
+    matrix_transpose_matrix_mult(M, &Q[0], &Bt[0], nrows, ncols, nrows, rank);
 
     /* // Bt -> ncols * rank, Qhat -> ncols * rank, Rhat -> rank, rank */
     // [Qhat, Rhat] = qr(bt)
-    double * Qhat = (double*)calloc(ncols*rank, sizeof(double));
-    double * Rhat = (double*)calloc(rank*rank, sizeof(double));
-    compute_QR_compact_factorization(Bt, Qhat, Rhat, nrows, ncols, rank);
+    std::vector<double> Qhat(ncols*rank);
+    std::vector<double> Rhat(rank*rank);
+    compute_QR_compact_factorization(&Bt[0], &Qhat[0], &Rhat[0], nrows, ncols, rank);
 
     // compute SVD of Rhat
     // [Uhat, S, Vhat] = svd(Rhat);
-    double *Uhat = (double*)calloc(rank*rank, sizeof(double));
-    double *Sigmahat = (double*)calloc(rank, sizeof(double));
-    double *Vhat = (double*)calloc(rank*rank, sizeof(double));
-    calculate_svd(Uhat, Sigmahat, Vhat, Rhat, rank, rank, rank);
-    build_diagonal_matrix(Sigmahat, rank, S);
+    std::vector<double> Uhat(rank*rank);
+    std::vector<double> Shat(rank);
+    std::vector<double> Vhat(rank*rank);
+    calculate_svd(&Uhat[0], &Shat[0], &Vhat[0], &Rhat[0], rank, rank, rank);
+    build_diagonal_matrix(&Shat[0], rank, S);
 
     // Vhat = Vhat'
-    double *Vhat_t = (double*)calloc(rank*rank, sizeof(double));
-    transpose(Vhat, Vhat_t, rank, rank);
+    std::vector<double> Vhat_t(rank*rank);
+    transpose(&Vhat[0], &Vhat_t[0], rank, rank);
 
     // U = q * Vhat
-    matrix_matrix_mult(Q, Vhat_t, U, nrows, rank, rank, rank);
+    matrix_matrix_mult(&Q[0], &Vhat_t[0], &U[0], nrows, rank, rank, rank);
 
     // V = Qhat*Uhat
-    matrix_matrix_mult(Qhat, Uhat, V, ncols, rank, rank, rank);
-
-    free(Y);
-    free(Q);
-    free(Uhat);
-    free(Bt);
-    free(Vhat);
-    free(Vhat_t);
-    free(Sigmahat);
+    matrix_matrix_mult(&Qhat[0], &Uhat[0], &V[0], ncols, rank, rank, rank);
   }
 }

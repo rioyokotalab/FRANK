@@ -100,17 +100,44 @@ namespace hicma {
     return *this -= A.dense();
   }
 
-  const Dense Dense::operator*=(const Dense& B) {
-    Dense C(dim[0],B.dim[1]);
-    if (B.dim[1] == 1) {
-      cblas_dgemv(CblasRowMajor, CblasNoTrans, dim[0], dim[1], 1, &data[0], dim[1],
-                  &B[0], 1, 0, &C[0], 1);
+  const Dense Dense::operator*=(const Dense& A) {
+    assert(dim[1] == A.dim[0]);
+    Dense B(dim[0],A.dim[1]);
+    if (A.dim[1] == 1) {
+      cblas_dgemv(
+                  CblasRowMajor,
+                  CblasNoTrans,
+                  dim[0],
+                  dim[1],
+                  1,
+                  &data[0],
+                  dim[1],
+                  &A[0],
+                  1,
+                  0,
+                  &B[0],
+                  1
+                  );
     }
     else {
-      cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, C.dim[0], C.dim[1], dim[1], 1,
-                  &data[0], dim[1], &B[0], B.dim[1], 0, &C[0], C.dim[1]);
+      cblas_dgemm(
+                  CblasRowMajor,
+                  CblasNoTrans,
+                  CblasNoTrans,
+                  B.dim[0],
+                  B.dim[1],
+                  dim[1],
+                  1,
+                  &data[0],
+                  dim[1],
+                  &A[0],
+                  A.dim[1],
+                  0,
+                  &B[0],
+                  B.dim[1]
+                  );
     }
-    return C;
+    return B;
   }
 
   const LowRank Dense::operator*=(const LowRank& A) {
