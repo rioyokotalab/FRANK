@@ -165,6 +165,16 @@ namespace hicma {
     return boost::any_cast<Dense&>(data[i*dim[1]+j]);
   }
 
+  double Hierarchical::norm(){
+    double l2 = 0;
+    for (int i=0; i<dim[0]; i++) {
+      for (int j=0; j<dim[1]; j++) {
+        l2 += hicma::norm( (*this)(i,j) );
+      }
+    }
+    return l2;
+  }
+
   void Hierarchical::getrf() {
     for (int i=0; i<dim[0]; i++) {
       hicma::getrf((*this)(i,i));

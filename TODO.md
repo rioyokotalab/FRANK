@@ -1,6 +1,4 @@
 [Immediate]
-forward/back substitution
-Get timers to work across compile units
 
 [Development]
 H-matrix LU

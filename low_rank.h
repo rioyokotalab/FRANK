@@ -68,11 +68,13 @@ namespace hicma {
 
     Dense dense() const;
 
-    void mergeU(const LowRank&A, const LowRank& B);
+    double norm();
 
-    void mergeS(const LowRank&A, const LowRank& B);
+    void mergeU(const LowRank& A, const LowRank& B);
 
-    void mergeV(const LowRank&A, const LowRank& B);
+    void mergeS(const LowRank& A, const LowRank& B);
+
+    void mergeV(const LowRank& A, const LowRank& B);
 
     void trsm(const Dense& A, const char& uplo);
 

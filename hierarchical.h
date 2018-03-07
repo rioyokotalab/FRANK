@@ -94,6 +94,8 @@ namespace hicma {
 
     Dense& dense(const int i, const int j);
 
+    double norm();
+
     void getrf();
 
     void trsm(const Hierarchical& A, const char& uplo);

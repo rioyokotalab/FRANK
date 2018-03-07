@@ -33,11 +33,8 @@ int main(int argc, char** argv) {
   start("Backward substitution");
   b.trsm(A,'u');
   stop("Backward substitution");
-  double diff = 0, norm = 0;
-  for (int ic=0; ic<Nc; ic++) {
-    diff += (x.dense(ic) - b.dense(ic)).norm();
-    norm += x.dense(ic).norm();
-  }
+  double diff = (x - b).norm();
+  double norm = x.norm();
   print("Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
   return 0;

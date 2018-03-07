@@ -144,7 +144,11 @@ namespace hicma {
     return (U * S * V);
   }
 
-  void LowRank::mergeU(const LowRank&A, const LowRank& B) {
+  double LowRank::norm() {
+    return this->dense().norm();
+  }
+
+  void LowRank::mergeU(const LowRank& A, const LowRank& B) {
     assert(rank == A.rank + B.rank);
     for (int i=0; i<dim[0]; i++) {
       for (int j=0; j<A.rank; j++) {
@@ -156,7 +160,7 @@ namespace hicma {
     }
   }
 
-  void LowRank::mergeS(const LowRank&A, const LowRank& B) {
+  void LowRank::mergeS(const LowRank& A, const LowRank& B) {
     assert(rank == A.rank + B.rank);
     for (int i=0; i<A.rank; i++) {
       for (int j=0; j<A.rank; j++) {
@@ -176,7 +180,7 @@ namespace hicma {
     }
   }
 
-  void LowRank::mergeV(const LowRank&A, const LowRank& B) {
+  void LowRank::mergeV(const LowRank& A, const LowRank& B) {
     assert(rank == A.rank + B.rank);
     for (int i=0; i<A.rank; i++) {
       for (int j=0; j<dim[1]; j++) {
