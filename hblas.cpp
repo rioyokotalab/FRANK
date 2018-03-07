@@ -49,45 +49,6 @@ namespace hicma {
     }
   }
 
-  void gemv(const boost::any& A, const boost::any& b, boost::any& x) {
-    if (A.type() == typeid(Dense)) {
-      if (b.type() == typeid(Dense)) {
-        boost::any_cast<Dense&>(x).gemv(boost::any_cast<const Dense&>(A), boost::any_cast<const Dense&>(b));
-      }
-      else if (b.type() == typeid(Hierarchical)) {
-        fprintf(stderr,"Operation undefined 4.\n"); abort();
-      }
-      else {
-        fprintf(stderr,"Second value must be Dense or Hierarchical.\n"); abort();
-      }
-    }
-    else if (A.type() == typeid(LowRank)) {
-      if (b.type() == typeid(Dense)) {
-        boost::any_cast<Dense&>(x).gemv(boost::any_cast<const LowRank&>(A), boost::any_cast<const Dense&>(b));
-      }
-      else if (b.type() == typeid(Hierarchical)) {
-        fprintf(stderr,"Operation undefined 5.\n"); abort();
-      }
-      else {
-        fprintf(stderr,"Second value must be Dense or Hierarchical.\n"); abort();
-      }
-    }
-    else if (A.type() == typeid(Hierarchical)) {
-      if (b.type() == typeid(Dense)) {
-        fprintf(stderr,"Operation undefined 6.\n"); abort();
-      }
-      else if (b.type() == typeid(Hierarchical)) {
-        fprintf(stderr,"Operation undefined 7.\n"); abort();
-      }
-      else {
-        fprintf(stderr,"Second value must be Dense or Hierarchical.\n"); abort();
-      }
-    }
-    else {
-      fprintf(stderr,"First value must be Dense, LowRank or Hierarchical.\n"); abort();
-    }
-  }
-
   void gemm(const boost::any& A, const boost::any& B, boost::any& C) {
     if (A.type() == typeid(Dense)) {
       if (B.type() == typeid(Dense)) {

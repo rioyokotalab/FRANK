@@ -241,14 +241,6 @@ namespace hicma {
     }
   }
 
-  void Dense::gemv(const Dense& A, const Dense& b) {
-    *this -= A * b;
-  }
-
-  void Dense::gemv(const LowRank& A, const Dense& b) {
-    *this -= A * b;
-  }
-
   void Dense::gemm(const Dense& A, const Dense& B) {
     *this -= A * B;
   }

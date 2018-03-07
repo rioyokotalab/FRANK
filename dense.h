@@ -103,10 +103,6 @@ namespace hicma {
 
     void trsm(const Dense& A, const char& uplo);
 
-    void gemv(const Dense& A, const Dense& b);
-
-    void gemv(const LowRank& A, const Dense& b);
-
     void gemm(const Dense& A, const Dense& B);
 
     void gemm(const Dense& A, const LowRank& B);

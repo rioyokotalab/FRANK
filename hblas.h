@@ -9,8 +9,6 @@ namespace hicma {
 
   void trsm(const boost::any& Aii, boost::any& Aij, const char& uplo);
 
-  void gemv(const boost::any& A, const boost::any& b, boost::any& x);
-
   void gemm(const boost::any& A, const boost::any& B, boost::any& C);
 
   void add(const boost::any& A, const boost::any& B, boost::any& C);
