@@ -87,7 +87,7 @@ namespace hicma {
 
     std::vector<int> getrf();
 
-    void trsm(Dense& A, const char& uplo);
+    void trsm(const Dense& A, const char& uplo);
 
     void gemv(const Dense& A, const Dense& b);
 

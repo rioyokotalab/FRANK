@@ -62,7 +62,7 @@ namespace hicma {
 
     void mergeV(const LowRank&A, const LowRank& B);
 
-    void trsm(Dense& A, const char& uplo);
+    void trsm(const Dense& A, const char& uplo);
 
     void gemm(const Dense& A, const LowRank& B);
 

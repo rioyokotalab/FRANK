@@ -15,13 +15,13 @@ namespace hicma {
     return ipiv;
   }
 
-  void trsm(boost::any& Aii, boost::any& Aij, const char& uplo) {
+  void trsm(const boost::any& Aii, boost::any& Aij, const char& uplo) {
     if (Aii.type() == typeid(Dense)) {
       if (Aij.type() == typeid(Dense)) {
-        boost::any_cast<Dense&>(Aij).trsm(boost::any_cast<Dense&>(Aii), uplo);
+        boost::any_cast<Dense&>(Aij).trsm(boost::any_cast<const Dense&>(Aii), uplo);
       }
       else if (Aij.type() == typeid(LowRank)) {
-        boost::any_cast<LowRank&>(Aij).trsm(boost::any_cast<Dense&>(Aii), uplo);
+        boost::any_cast<LowRank&>(Aij).trsm(boost::any_cast<const Dense&>(Aii), uplo);
       }
       else if (Aij.type() == typeid(Hierarchical)) {
         fprintf(stderr,"Operation undefined 0.\n"); abort();
@@ -49,10 +49,10 @@ namespace hicma {
     }
   }
 
-  void gemv(boost::any& A, boost::any& b, boost::any& x) {
+  void gemv(const boost::any& A, const boost::any& b, boost::any& x) {
     if (A.type() == typeid(Dense)) {
       if (b.type() == typeid(Dense)) {
-        boost::any_cast<Dense&>(x).gemv(boost::any_cast<Dense&>(A), boost::any_cast<Dense&>(b));
+        boost::any_cast<Dense&>(x).gemv(boost::any_cast<const Dense&>(A), boost::any_cast<const Dense&>(b));
       }
       else if (b.type() == typeid(Hierarchical)) {
         fprintf(stderr,"Operation undefined 4.\n"); abort();
@@ -63,7 +63,7 @@ namespace hicma {
     }
     else if (A.type() == typeid(LowRank)) {
       if (b.type() == typeid(Dense)) {
-        boost::any_cast<Dense&>(x).gemv(boost::any_cast<LowRank&>(A), boost::any_cast<Dense&>(b));
+        boost::any_cast<Dense&>(x).gemv(boost::any_cast<const LowRank&>(A), boost::any_cast<const Dense&>(b));
       }
       else if (b.type() == typeid(Hierarchical)) {
         fprintf(stderr,"Operation undefined 5.\n"); abort();
@@ -88,11 +88,11 @@ namespace hicma {
     }
   }
 
-  void gemm(boost::any& A, boost::any& B, boost::any& C) {
+  void gemm(const boost::any& A, const boost::any& B, boost::any& C) {
     if (A.type() == typeid(Dense)) {
       if (B.type() == typeid(Dense)) {
         if (C.type() == typeid(Dense)) {
-          boost::any_cast<Dense&>(C).gemm(boost::any_cast<Dense&>(A), boost::any_cast<Dense&>(B));
+          boost::any_cast<Dense&>(C).gemm(boost::any_cast<const Dense&>(A), boost::any_cast<const Dense&>(B));
         }
         else if (C.type() == typeid(LowRank)) {
           fprintf(stderr,"Operation undefined 8.\n"); abort();
@@ -106,10 +106,10 @@ namespace hicma {
       }
       else if (B.type() == typeid(LowRank)) {
         if (C.type() == typeid(Dense)) {
-          boost::any_cast<Dense&>(C).gemm(boost::any_cast<Dense&>(A), boost::any_cast<LowRank&>(B));
+          boost::any_cast<Dense&>(C).gemm(boost::any_cast<const Dense&>(A), boost::any_cast<const LowRank&>(B));
         }
         else if (C.type() == typeid(LowRank)) {
-          boost::any_cast<LowRank&>(C).gemm(boost::any_cast<Dense&>(A), boost::any_cast<LowRank&>(B));
+          boost::any_cast<LowRank&>(C).gemm(boost::any_cast<const Dense&>(A), boost::any_cast<const LowRank&>(B));
         }
         else if (C.type() == typeid(Hierarchical)) {
           fprintf(stderr,"Operation undefined 12.\n"); abort();
@@ -139,10 +139,10 @@ namespace hicma {
     else if (A.type() == typeid(LowRank)) {
       if (B.type() == typeid(Dense)) {
         if (C.type() == typeid(Dense)) {
-          boost::any_cast<Dense&>(C).gemm(boost::any_cast<LowRank&>(A), boost::any_cast<Dense&>(B));
+          boost::any_cast<Dense&>(C).gemm(boost::any_cast<const LowRank&>(A), boost::any_cast<const Dense&>(B));
         }
         else if (C.type() == typeid(LowRank)) {
-          boost::any_cast<LowRank&>(C).gemm(boost::any_cast<LowRank&>(A), boost::any_cast<Dense&>(B));
+          boost::any_cast<LowRank&>(C).gemm(boost::any_cast<const LowRank&>(A), boost::any_cast<const Dense&>(B));
         }
         else if (C.type() == typeid(Hierarchical)) {
           fprintf(stderr,"Operation undefined 18.\n"); abort();
@@ -153,10 +153,10 @@ namespace hicma {
       }
       else if (B.type() == typeid(LowRank)) {
         if (C.type() == typeid(Dense)) {
-          boost::any_cast<Dense&>(C).gemm(boost::any_cast<LowRank&>(A), boost::any_cast<LowRank&>(B));
+          boost::any_cast<Dense&>(C).gemm(boost::any_cast<const LowRank&>(A), boost::any_cast<const LowRank&>(B));
         }
         else if (C.type() == typeid(LowRank)) {
-          boost::any_cast<LowRank&>(C).gemm(boost::any_cast<LowRank&>(A), boost::any_cast<LowRank&>(B));
+          boost::any_cast<LowRank&>(C).gemm(boost::any_cast<const LowRank&>(A), boost::any_cast<const LowRank&>(B));
         }
         else if (C.type() == typeid(Hierarchical)) {
           fprintf(stderr,"Operation undefined 21.\n"); abort();

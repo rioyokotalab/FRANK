@@ -7,10 +7,10 @@
 namespace hicma {
   std::vector<int> getrf(boost::any& A);
 
-  void trsm(boost::any& Aii, boost::any& Aij, const char& uplo);
+  void trsm(const boost::any& Aii, boost::any& Aij, const char& uplo);
 
-  void gemv(boost::any& A, boost::any& b, boost::any& x);
+  void gemv(const boost::any& A, const boost::any& b, boost::any& x);
 
-  void gemm(boost::any& A, boost::any& B, boost::any& C);
+  void gemm(const boost::any& A, const boost::any& B, boost::any& C);
 }
 #endif

@@ -219,7 +219,7 @@ namespace hicma {
     }
   }
 
-  void LowRank::trsm(Dense& A, const char& uplo) {
+  void LowRank::trsm(const Dense& A, const char& uplo) {
     switch (uplo) {
     case 'l' :
       U.trsm(A, uplo);

@@ -210,7 +210,7 @@ namespace hicma {
     return ipiv;
   }
 
-  void Dense::trsm(Dense& A, const char& uplo) {
+  void Dense::trsm(const Dense& A, const char& uplo) {
     if (dim[1] == 1) {
       switch (uplo) {
       case 'l' :
