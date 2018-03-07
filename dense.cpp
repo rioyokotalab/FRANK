@@ -1,6 +1,4 @@
-#include "dense.h"
-#include "low_rank.h"
-#include "hierarchical.h"
+#include "hblas.h"
 #include <iomanip>
 #include <lapacke.h>
 

@@ -1,0 +1,16 @@
+#ifndef hblas_h
+#define hblas_h
+#include "dense.h"
+#include "low_rank.h"
+#include "hierarchical.h"
+
+namespace hicma {
+  std::vector<int> getrf(boost::any& A);
+
+  void trsm(boost::any& Aii, boost::any& Aij, const char& uplo);
+
+  void gemv(boost::any& A, boost::any& b, boost::any& x);
+
+  void gemm(boost::any& A, boost::any& B, boost::any& C);
+}
+#endif

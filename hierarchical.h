@@ -2,8 +2,6 @@
 #define hierarchical_h
 #include <boost/any.hpp>
 
-typedef std::vector<double>::iterator Iter;
-
 namespace hicma {
   class Dense;
   class LowRank;

@@ -1,8 +1,4 @@
-#ifndef boost_any_wrapper_h
-#define boost_any_wrapper_h
-#include "dense.h"
-#include "low_rank.h"
-#include "hierarchical.h"
+#include "hblas.h"
 
 namespace hicma {
   std::vector<int> getrf(boost::any& A) {
@@ -239,4 +235,3 @@ namespace hicma {
     }
   }
 }
-#endif
