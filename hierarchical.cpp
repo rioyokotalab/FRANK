@@ -218,15 +218,17 @@ namespace hicma {
       case 'l' :
         for (int i=0; i<dim[0]; i++) {
           for (int j=0; j<i; j++) {
-            hicma::gemm(A(i,j),(*this)[j],(*this)[i]);
+            hicma::gemm(A(i,j),(*this)(j,j),(*this)(i,j));
+            hicma::trsm(A(i,i),(*this)(i,j),'l');
           }
-          hicma::trsm(A(i,i),(*this)[i],'l');
+          hicma::trsm(A(i,i),(*this)(i,i),'l');
         }
         break;
       case 'u' :
         for (int i=dim[0]-1; i>=0; i--) {
           for (int j=dim[0]-1; j>i; j--) {
-            hicma::gemm(A(i,j),(*this)[j],(*this)[i]);
+            hicma::gemm(A(i,j),(*this)(j,j),(*this)(i,j));
+            hicma::trsm(A(i,i),(*this)(i,j),'u');
           }
           hicma::trsm(A(i,i),(*this)[i],'u');
         }

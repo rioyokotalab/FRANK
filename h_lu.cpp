@@ -6,12 +6,11 @@
 
 using namespace hicma;
 
+#define BLOCK_LU 1
+
 int main(int argc, char** argv) {
   int N = 64;
-  int Nb = 16;
-  int Nc = N / Nb;
   int rank = 8;
-  int admis = Nc;
   std::vector<double> randx(N);
   for (int i=0; i<N; i++) {
     randx[i] = drand48();
@@ -19,9 +18,17 @@ int main(int argc, char** argv) {
   std::sort(randx.begin(), randx.end());
   print("Time");
   start("Init matrix");
-  Hierarchical A(laplace1d, randx, N, N, rank, Nb, admis, Nc, Nc, 0, 0, 0, 0, 0);
-  Hierarchical x(rand, randx, N, 1, rank, Nb, admis, Nc, 1, 0, 0, 0, 0, 0);
-  Hierarchical b(zeros, randx, N, 1, rank, Nb, admis, Nc, 1, 0, 0, 0, 0, 0);
+#if BLOCK_LU
+  int nleaf = 16; // 4 x 4 leafs
+  int nblocks = N / nleaf; // 1 level
+  int admis = nblocks; // Full rank
+#elif HODFR
+#elif BLR
+#elif H-LU
+#endif
+  Hierarchical A(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
+  Hierarchical x(rand, randx, N, 1, rank, nleaf, admis, nblocks, 1);
+  Hierarchical b(zeros, randx, N, 1, rank, nleaf, admis, nblocks, 1);
   b -= A * x;
   stop("Init matrix");
   start("LU decomposition");
