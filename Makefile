@@ -15,7 +15,7 @@ blr_lu: blr_lu.o $(SOURCES)
 
 h_lu: h_lu.o $(SOURCES)
 	$(CXX) $? -lblas -llapacke
-	valgrind ./a.out 0
+	valgrind ./a.out 1
 
 clean:
 	$(RM) *.o *.out

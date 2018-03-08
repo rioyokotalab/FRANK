@@ -29,7 +29,20 @@ int main(int argc, char** argv) {
   Hierarchical A(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   Hierarchical x(rand, randx, N, 1, rank, nleaf, admis, nblocks, 1);
   Hierarchical b(zeros, randx, N, 1, rank, nleaf, admis, nblocks, 1);
+  std::cout << "b" << std::endl;
+  b.print();
+  std::cout << "A" << std::endl;
+  A.print();
+  std::cout << "x" << std::endl;
+  x.print();
   b -= A * x;
+  if (atoi(argv[1]) == 0) {
+    D_t(b[0]).print();
+  }
+  else {
+    D_t(H_t(b[0])[0]).print();
+  }
+  /*
   stop("Init matrix");
   start("LU decomposition");
   A.getrf();
@@ -44,5 +57,6 @@ int main(int argc, char** argv) {
   double norm = x.norm();
   print("Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
+  */
   return 0;
 }

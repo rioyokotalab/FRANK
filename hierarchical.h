@@ -51,6 +51,8 @@ namespace hicma {
 
     const boost::any& operator()(const int i, const int j) const;
 
+    const Hierarchical& operator=(const double a);
+
     const Hierarchical& operator=(const Hierarchical& A);
 
     const Dense operator+=(const Dense& A);
@@ -98,6 +100,8 @@ namespace hicma {
     Dense& dense(const int i, const int j);
 
     double norm();
+
+    void print() const;
 
     void getrf();
 

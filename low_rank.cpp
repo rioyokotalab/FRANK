@@ -26,8 +26,8 @@ namespace hicma {
     randomized_low_rank_svd2(A.data, rank, U.data, S.data, V.data, m, n);
   }
 
-  const LowRank& LowRank::operator=(const double v) {
-    assert(v == 0);
+  const LowRank& LowRank::operator=(const double a) {
+    assert(a == 0);
     U = 0;
     S = 0;
     V = 0;
@@ -61,7 +61,7 @@ namespace hicma {
       this->mergeV(A,B);
     }
 #if DEBUG
-    std::cout << "L += L @ " << this->i_abs << " " << this->j_abs << " " << this->level << std::endl;
+    std::cout << "L += L : C(" << this->i_abs << "," << this->j_abs << ") = A(" << A.i_abs << "," << A.j_abs << ") + B(" << B.i_abs << "," << B.j_abs << ") @ lev " << this->level << std::endl;
     this->print();
 #endif
     return *this;
@@ -85,7 +85,7 @@ namespace hicma {
       this->mergeV(A,-B);
     }
 #if DEBUG
-    std::cout << "L -= L @ " << this->i_abs << " " << this->j_abs << " " << this->level << std::endl;
+    std::cout << "L -= L : C(" << this->i_abs << "," << this->j_abs << ") = A(" << A.i_abs << "," << A.j_abs << ") - B(" << B.i_abs << "," << B.j_abs << ") @ lev " << this->level << std::endl;
     this->print();
 #endif
     return *this;
@@ -98,7 +98,7 @@ namespace hicma {
     B.S = S;
     B.V = V * A;
 #if DEBUG
-    std::cout << "L *= D @ " << this->i_abs << " " << this->j_abs << " " << this->level << std::endl;
+    std::cout << "L *= D : C(" << B.i_abs << "," << B.j_abs << ") = A(" << this->i_abs << "," << this->j_abs << ") - B(" << A.i_abs << "," << A.j_abs << ") @ lev " << this->level << std::endl;
     this->print();
 #endif
     return B;
@@ -111,7 +111,7 @@ namespace hicma {
     B.S = S * (V * A.U) * A.S;
     B.V = A.V;
 #if DEBUG
-    std::cout << "L *= L @ " << this->i_abs << " " << this->j_abs << " " << this->level << std::endl;
+    std::cout << "L *= L : C(" << B.i_abs << "," << B.j_abs << ") = A(" << this->i_abs << "," << this->j_abs << ") - B(" << A.i_abs << "," << A.j_abs << ") @ lev " << this->level << std::endl;
     this->print();
 #endif
     return B;

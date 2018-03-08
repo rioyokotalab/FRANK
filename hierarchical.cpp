@@ -132,6 +132,15 @@ namespace hicma {
     return data[i*dim[1]+j];
   }
 
+  const Hierarchical& Hierarchical::operator=(const double a) {
+    for (int i=0; i<dim[0]; i++) {
+      for (int j=0; j<dim[1]; j++) {
+        hicma::assign((*this)(i,j), a);
+      }
+    }
+    return *this;
+  }
+
   const Hierarchical& Hierarchical::operator=(const Hierarchical& A) {
     dim[0]=A.dim[0]; dim[1]=A.dim[1];
     data.resize(dim[0]*dim[1]);
@@ -141,7 +150,8 @@ namespace hicma {
 
   const Hierarchical Hierarchical::operator+=(const Hierarchical& A) {
 #if DEBUG
-    std::cout << "H += H @ " << this->i_abs << " " << this->j_abs << " " << this->level << std::endl;
+    std::cout << "H += H : C(" << this->i_abs << "," << this->j_abs << ") = A(" << this->i_abs << "," << this->j_abs << ") + B(" << A.i_abs << "," << A.j_abs << ") @ lev " << this->level << std::endl;
+    std::cout << "----------------------------------------------------------------------------------" << std::endl;
 #endif
     assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
     for (int i=0; i<dim[0]; i++) {
@@ -154,7 +164,8 @@ namespace hicma {
 
   const Hierarchical Hierarchical::operator-=(const Hierarchical& A) {
 #if DEBUG
-    std::cout << "H -= H @ " << this->i_abs << " " << this->j_abs << " " << this->level << std::endl;
+    std::cout << "H -= H : C(" << this->i_abs << "," << this->j_abs << ") = A(" << this->i_abs << "," << this->j_abs << ") - B(" << A.i_abs << "," << A.j_abs << ") @ lev " << this->level << std::endl;
+    std::cout << "----------------------------------------------------------------------------------" << std::endl;
 #endif
     assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
     for (int i=0; i<dim[0]; i++)
@@ -164,11 +175,13 @@ namespace hicma {
   }
 
   const Hierarchical Hierarchical::operator*=(const Hierarchical& A) {
-#if DEBUG
-    std::cout << "H *= H @ " << this->i_abs << " " << this->j_abs << " " << this->level << std::endl;
-#endif
     assert(dim[1] == A.dim[0]);
-    Hierarchical B(dim[0],A.dim[1]);
+    Hierarchical B(A);
+    B=0;
+#if DEBUG
+    std::cout << "H *= H : C(" << B.i_abs << "," << B.j_abs << ") = A(" << this->i_abs << "," << this->j_abs << ") * B(" << A.i_abs << "," << A.j_abs << ") @ lev " << this->level << std::endl;
+    std::cout << "----------------------------------------------------------------------------------" << std::endl;
+#endif
     for (int i=0; i<dim[0]; i++)
       for (int j=0; j<A.dim[1]; j++)
         for (int k=0; k<dim[1]; k++)
@@ -208,9 +221,31 @@ namespace hicma {
     return l2;
   }
 
+  void Hierarchical::print() const {
+    for (int i=0; i<dim[0]; i++) {
+      for (int j=0; j<dim[1]; j++) {
+        if ((*this)(i,j).type() == typeid(Dense)) {
+          std::cout << "D ";
+        }
+        else if ((*this)(i,j).type() == typeid(LowRank)) {
+          std::cout << "L ";
+        }
+        else if ((*this)(i,j).type() == typeid(Hierarchical)) {
+          std::cout << "H ";
+        }
+        else {
+          std::cout << "? ";
+        }
+      }
+      std::cout << std::endl;
+    }
+    std::cout << "----------------------------------------------------------------------------------" << std::endl;
+  }
+
   void Hierarchical::getrf() {
 #if DEBUG
     std::cout << "getrf  @ " << this->i_abs << " " << this->j_abs << " " << this->level << std::endl;
+    std::cout << "----------------------------------------------------------------------------------" << std::endl;
 #endif
     for (int i=0; i<dim[0]; i++) {
       hicma::getrf((*this)(i,i));
@@ -229,6 +264,7 @@ namespace hicma {
   void Hierarchical::trsm(const Hierarchical& A, const char& uplo) {
 #if DEBUG
     std::cout << "trsm   @ " << this->i_abs << " " << this->j_abs << " " << this->level << std::endl;
+    std::cout << "----------------------------------------------------------------------------------" << std::endl;
 #endif
     if (dim[1] == 1) {
       switch (uplo) {

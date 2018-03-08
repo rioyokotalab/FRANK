@@ -75,7 +75,9 @@ namespace hicma {
           fprintf(stderr,"H += D * D\n"); abort();
         }
         else {
-          Dense D(D_t(A).dim[0],D_t(B).dim[1]);
+          Dense D(D_t(A));
+          D.dim[1] = D_t(B).dim[1];
+          D = 0;
           C = D;
           D_t(C).gemm(D_t(A), D_t(B));
         }
@@ -91,7 +93,9 @@ namespace hicma {
           fprintf(stderr,"H += D * L\n"); abort();
         }
         else {
-          LowRank D(D_t(A).dim[0],L_t(B).dim[1],L_t(B).rank);
+          LowRank D(L_t(B));
+          D.dim[0] = D_t(A).dim[0];
+          D = 0;
           C = D;
           L_t(C).gemm(D_t(A), L_t(B));
         }
@@ -126,7 +130,8 @@ namespace hicma {
           fprintf(stderr,"H += L * D\n"); abort();
         }
         else {
-          LowRank D(L_t(A).dim[0],D_t(B).dim[1],L_t(A).rank);
+          LowRank D(L_t(A));
+          D.dim[1] = D_t(B).dim[1];
           C = D;
           L_t(C).gemm(L_t(A), D_t(B));
         }
@@ -142,7 +147,9 @@ namespace hicma {
           fprintf(stderr,"H += L * L\n"); abort();
         }
         else {
-          LowRank D(L_t(A).dim[0],L_t(B).dim[1],L_t(A).rank);
+          LowRank D(L_t(A));
+          D.dim[1] = L_t(A).dim[1];
+          D = 0;
           C = D;
           L_t(C).gemm(L_t(A), L_t(B));
         }
@@ -202,12 +209,10 @@ namespace hicma {
           fprintf(stderr,"L += H * H\n"); abort();
         }
         else if (C.type() == typeid(Hierarchical)) {
-          H_t(C) = H_t(A) * H_t(B);
+          H_t(C) += H_t(A) * H_t(B);
         }
         else {
-          Hierarchical D(H_t(A).dim[0],H_t(A).dim[1]);
-          C = D;
-          H_t(C) = H_t(A) * H_t(B);
+          fprintf(stderr,"Third value must be Dense, LowRank or Hierarchical.\n"); abort();
         }
       }
       else {
@@ -348,5 +353,20 @@ namespace hicma {
       fprintf(stderr,"Value must be Dense, LowRank or Hierarchical.\n"); abort();
     }
     return l2;
+  }
+
+  void assign(const boost::any& A, const double a) {
+    if (A.type() == typeid(Dense)) {
+      D_t(A) = a;
+    }
+    else if (A.type() == typeid(LowRank)) {
+      L_t(A) = a;
+    }
+    else if (A.type() == typeid(Hierarchical)) {
+      H_t(A) = a;
+    }
+    else {
+      fprintf(stderr,"Value must be Dense, LowRank or Hierarchical.\n"); abort();
+    }
   }
 }
