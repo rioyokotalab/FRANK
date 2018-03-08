@@ -15,10 +15,8 @@ namespace hicma {
     dim[0]=m; dim[1]=n; data.resize(dim[0]*dim[1]);
   }
 
-  Dense::Dense(const Dense& A) {
+  Dense::Dense(const Dense& A) : data(A.data) {
     dim[0]=A.dim[0]; dim[1]=A.dim[1];
-    data.resize(dim[0]*dim[1]);
-    data = A.data;
   }
 
   Dense::Dense(

@@ -2,22 +2,20 @@
 #include "hblas.h"
 
 namespace hicma {
-  Hierarchical::Hierarchical() {
+  Hierarchical::Hierarchical() : i_abs(0), j_abs(0), level(0) {
     dim[0]=0; dim[1]=0;
   }
 
-  Hierarchical::Hierarchical(const int m) {
+  Hierarchical::Hierarchical(const int m) : i_abs(0), j_abs(0), level(0) {
     dim[0]=m; dim[1]=1; data.resize(dim[0]);
   }
 
-  Hierarchical::Hierarchical(const int m, const int n) {
+  Hierarchical::Hierarchical(const int m, const int n) : i_abs(0), j_abs(0), level(0) {
     dim[0]=m; dim[1]=n; data.resize(dim[0]*dim[1]);
   }
 
-  Hierarchical::Hierarchical(const Hierarchical& A) {
+  Hierarchical::Hierarchical(const Hierarchical& A) : i_abs(A.i_abs), j_abs(A.j_abs), level(A.level), data(A.data) {
     dim[0]=A.dim[0]; dim[1]=A.dim[1];
-    data.resize(dim[0]*dim[1]);
-    data = A.data;
   }
 
   Hierarchical::Hierarchical(
@@ -39,10 +37,10 @@ namespace hicma {
                              const int nj_level,
                              const int i_begin,
                              const int j_begin,
-                             const int i_abs,
-                             const int j_abs,
-                             const int level
-                             ) {
+                             const int _i_abs,
+                             const int _j_abs,
+                             const int _level
+                             ) : i_abs(_i_abs), j_abs(_j_abs), level(_level) {
     if ( !level ) {
       assert(int(x.size()) == std::max(ni,nj));
       std::sort(x.begin(),x.end());

@@ -7,6 +7,9 @@ namespace hicma {
   class LowRank;
   class Hierarchical {
   public:
+    int i_abs;
+    int j_abs;
+    int level;
     int dim[2];
     std::vector<boost::any> data;
 

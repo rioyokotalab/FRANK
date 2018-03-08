@@ -6,8 +6,8 @@
 
 using namespace hicma;
 
-#define BLOCK_LU 1
-#define HODFR    0
+#define BLOCK_LU 0
+#define HODFR    1
 #define BLR      0
 #define H_LU     0
 
