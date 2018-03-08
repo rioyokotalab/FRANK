@@ -10,7 +10,7 @@ namespace hicma {
   class Node;
   class LowRank;
   class Hierarchical;
-  class Dense {
+  class Dense : public Node {
   public:
     std::vector<double> data;
     int dim[2];
@@ -36,7 +36,10 @@ namespace hicma {
           const int ni,
           const int nj,
           const int i_begin,
-          const int j_begin
+          const int j_begin,
+          const int _i_abs,
+          const int _j_abs,
+          const int level
           );
 
     double& operator[](const int i);

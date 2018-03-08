@@ -8,7 +8,7 @@ namespace hicma {
   class Node;
   class Dense;
   class Hierarchical;
-  class LowRank {
+  class LowRank : public Node {
   public:
     Dense U, S, V;
     int dim[2];

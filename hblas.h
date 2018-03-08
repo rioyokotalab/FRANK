@@ -1,8 +1,11 @@
 #ifndef hblas_h
 #define hblas_h
+#include "node.h"
 #include "dense.h"
 #include "low_rank.h"
 #include "hierarchical.h"
+
+#define DEBUG 1
 
 namespace hicma {
   Dense& D_t(const boost::any& A);

@@ -2,19 +2,19 @@
 #include "hblas.h"
 
 namespace hicma {
-  Hierarchical::Hierarchical() : i_abs(0), j_abs(0), level(0) {
+  Hierarchical::Hierarchical() {
     dim[0]=0; dim[1]=0;
   }
 
-  Hierarchical::Hierarchical(const int m) : i_abs(0), j_abs(0), level(0) {
+  Hierarchical::Hierarchical(const int m) {
     dim[0]=m; dim[1]=1; data.resize(dim[0]);
   }
 
-  Hierarchical::Hierarchical(const int m, const int n) : i_abs(0), j_abs(0), level(0) {
+  Hierarchical::Hierarchical(const int m, const int n) {
     dim[0]=m; dim[1]=n; data.resize(dim[0]*dim[1]);
   }
 
-  Hierarchical::Hierarchical(const Hierarchical& A) : i_abs(A.i_abs), j_abs(A.j_abs), level(A.level), data(A.data) {
+  Hierarchical::Hierarchical(const Hierarchical& A) : Node(A.i_abs,A.j_abs,A.level), data(A.data) {
     dim[0]=A.dim[0]; dim[1]=A.dim[1];
   }
 
@@ -40,7 +40,7 @@ namespace hicma {
                              const int _i_abs,
                              const int _j_abs,
                              const int _level
-                             ) : i_abs(_i_abs), j_abs(_j_abs), level(_level) {
+                             ) : Node(_i_abs,_j_abs,_level) {
     if ( !level ) {
       assert(int(x.size()) == std::max(ni,nj));
       std::sort(x.begin(),x.end());
@@ -60,7 +60,17 @@ namespace hicma {
         int j_abs_child = j_abs * dim[1] + j;
         if ( std::abs(i_abs_child - j_abs_child) <= admis ) { // TODO: use x in admissibility condition
           if ( ni_child <= nleaf && nj_child <= nleaf ) {
-            Dense D(func, x, ni_child, nj_child, i_begin_child, j_begin_child);
+            Dense D(
+                    func,
+                    x,
+                    ni_child,
+                    nj_child,
+                    i_begin_child,
+                    j_begin_child,
+                    i_abs_child,
+                    j_abs_child,
+                    level+1
+                     );
             (*this)(i,j) = D;
           }
           else {
@@ -84,7 +94,17 @@ namespace hicma {
           }
         }
         else {
-          Dense D(func, x, ni_child, nj_child, i_begin_child, j_begin_child);
+          Dense D(
+                  func,
+                  x,
+                  ni_child,
+                  nj_child,
+                  i_begin_child,
+                  j_begin_child,
+                  i_abs_child,
+                  j_abs_child,
+                  level+1
+                  );
           LowRank LR(D, rank); // TODO : create a LowRank constructor that does ID with x
           (*this)(i,j) = LR;
         }
@@ -120,6 +140,9 @@ namespace hicma {
   }
 
   const Hierarchical Hierarchical::operator+=(const Hierarchical& A) {
+#if DEBUG
+    std::cout << "H += H @ " << this->i_abs << " " << this->j_abs << " " << this->level << std::endl;
+#endif
     assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
     for (int i=0; i<dim[0]; i++) {
       for (int j=0; j<dim[1]; j++) {
@@ -130,6 +153,9 @@ namespace hicma {
   }
 
   const Hierarchical Hierarchical::operator-=(const Hierarchical& A) {
+#if DEBUG
+    std::cout << "H -= H @ " << this->i_abs << " " << this->j_abs << " " << this->level << std::endl;
+#endif
     assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
     for (int i=0; i<dim[0]; i++)
       for (int j=0; j<dim[1]; j++)
@@ -138,6 +164,9 @@ namespace hicma {
   }
 
   const Hierarchical Hierarchical::operator*=(const Hierarchical& A) {
+#if DEBUG
+    std::cout << "H *= H @ " << this->i_abs << " " << this->j_abs << " " << this->level << std::endl;
+#endif
     assert(dim[1] == A.dim[0]);
     Hierarchical B(dim[0],A.dim[1]);
     for (int i=0; i<dim[0]; i++)
@@ -180,6 +209,9 @@ namespace hicma {
   }
 
   void Hierarchical::getrf() {
+#if DEBUG
+    std::cout << "getrf  @ " << this->i_abs << " " << this->j_abs << " " << this->level << std::endl;
+#endif
     for (int i=0; i<dim[0]; i++) {
       hicma::getrf((*this)(i,i));
       for (int j=i+1; j<dim[0]; j++) {
@@ -195,6 +227,9 @@ namespace hicma {
   }
 
   void Hierarchical::trsm(const Hierarchical& A, const char& uplo) {
+#if DEBUG
+    std::cout << "trsm   @ " << this->i_abs << " " << this->j_abs << " " << this->level << std::endl;
+#endif
     if (dim[1] == 1) {
       switch (uplo) {
       case 'l' :

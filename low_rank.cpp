@@ -12,11 +12,11 @@ namespace hicma {
     V.resize(k,n);
   }
 
-  LowRank::LowRank(const LowRank &A) : U(A.U), S(A.S), V(A.V) {
+  LowRank::LowRank(const LowRank &A) : Node(A.i_abs,A.j_abs,A.level), U(A.U), S(A.S), V(A.V) {
     dim[0]=A.dim[0]; dim[1]=A.dim[1]; rank=A.rank;
   }
 
-  LowRank::LowRank(const Dense &A, const int k) {
+  LowRank::LowRank(const Dense &A, const int k) : Node(A.i_abs,A.j_abs,A.level) {
     int m = dim[0] = A.dim[0];
     int n = dim[1] = A.dim[1];
     rank = k;

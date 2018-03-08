@@ -15,7 +15,7 @@ namespace hicma {
     dim[0]=m; dim[1]=n; data.resize(dim[0]*dim[1]);
   }
 
-  Dense::Dense(const Dense& A) : data(A.data) {
+  Dense::Dense(const Dense& A) : Node(A.i_abs,A.j_abs,A.level), data(A.data) {
     dim[0]=A.dim[0]; dim[1]=A.dim[1];
   }
 
@@ -32,8 +32,11 @@ namespace hicma {
                const int ni,
                const int nj,
                const int i_begin,
-               const int j_begin
-               ) {
+               const int j_begin,
+               const int _i_abs,
+               const int _j_abs,
+               const int _level
+               ) : Node(_i_abs,_j_abs,_level) {
     dim[0] = ni; dim[1] = nj;
     data.resize(dim[0]*dim[1]);
     func(data, x, ni, nj, i_begin, j_begin);
@@ -76,6 +79,10 @@ namespace hicma {
     assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
     for (int i=0; i<dim[0]*dim[1]; i++)
       data[i] += A.data[i];
+#if DEBUG
+    std::cout << "D += D" << std::endl;
+    this->print();
+#endif
     return *this;
   }
 
@@ -88,6 +95,10 @@ namespace hicma {
     assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
     for (int i=0; i<dim[0]*dim[1]; i++)
       this->data[i] -= A.data[i];
+#if DEBUG
+    std::cout << "D -= D" << std::endl;
+    this->print();
+#endif
     return *this;
   }
 
@@ -133,6 +144,10 @@ namespace hicma {
                   B.dim[1]
                   );
     }
+#if DEBUG
+    std::cout << "D *= D" << std::endl;
+    B.print();
+#endif
     return B;
   }
 
