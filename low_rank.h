@@ -70,6 +70,8 @@ namespace hicma {
 
     double norm();
 
+    void print() const;
+
     void mergeU(const LowRank& A, const LowRank& B);
 
     void mergeS(const LowRank& A, const LowRank& B);

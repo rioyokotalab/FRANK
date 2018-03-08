@@ -60,6 +60,10 @@ namespace hicma {
       this->mergeS(A,B);
       this->mergeV(A,B);
     }
+#if DEBUG
+    std::cout << "L += L @ " << this->i_abs << " " << this->j_abs << " " << this->level << std::endl;
+    this->print();
+#endif
     return *this;
   }
 
@@ -80,6 +84,10 @@ namespace hicma {
       this->mergeS(A,-B);
       this->mergeV(A,-B);
     }
+#if DEBUG
+    std::cout << "L -= L @ " << this->i_abs << " " << this->j_abs << " " << this->level << std::endl;
+    this->print();
+#endif
     return *this;
   }
 
@@ -89,6 +97,10 @@ namespace hicma {
     B.U = U;
     B.S = S;
     B.V = V * A;
+#if DEBUG
+    std::cout << "L *= D @ " << this->i_abs << " " << this->j_abs << " " << this->level << std::endl;
+    this->print();
+#endif
     return B;
   }
 
@@ -98,6 +110,10 @@ namespace hicma {
     B.U = U;
     B.S = S * (V * A.U) * A.S;
     B.V = A.V;
+#if DEBUG
+    std::cout << "L *= L @ " << this->i_abs << " " << this->j_abs << " " << this->level << std::endl;
+    this->print();
+#endif
     return B;
   }
 
@@ -146,6 +162,16 @@ namespace hicma {
 
   double LowRank::norm() {
     return this->dense().norm();
+  }
+
+  void LowRank::print() const {
+    std::cout << "U : ------------------------------------------------------------------------------" << std::endl;
+    U.print();
+    std::cout << "S : ------------------------------------------------------------------------------" << std::endl;
+    S.print();
+    std::cout << "V : ------------------------------------------------------------------------------" << std::endl;
+    V.print();
+    std::cout << "----------------------------------------------------------------------------------" << std::endl;
   }
 
   void LowRank::mergeU(const LowRank& A, const LowRank& B) {

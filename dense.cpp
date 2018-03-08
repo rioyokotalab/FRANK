@@ -80,7 +80,7 @@ namespace hicma {
     for (int i=0; i<dim[0]*dim[1]; i++)
       data[i] += A.data[i];
 #if DEBUG
-    std::cout << "D += D" << std::endl;
+    std::cout << "D += D @ " << this->i_abs << " " << this->j_abs << " " << this->level << std::endl;
     this->print();
 #endif
     return *this;
@@ -96,7 +96,7 @@ namespace hicma {
     for (int i=0; i<dim[0]*dim[1]; i++)
       this->data[i] -= A.data[i];
 #if DEBUG
-    std::cout << "D -= D" << std::endl;
+    std::cout << "D -= D @ " << this->i_abs << " " << this->j_abs << " " << this->level << std::endl;
     this->print();
 #endif
     return *this;
@@ -145,8 +145,8 @@ namespace hicma {
                   );
     }
 #if DEBUG
-    std::cout << "D *= D" << std::endl;
-    B.print();
+    std::cout << "D *= D @ " << this->i_abs << " " << this->j_abs << " " << this->level << std::endl;
+    this->print();
 #endif
     return B;
   }
