@@ -5,6 +5,12 @@
 #include "hierarchical.h"
 
 namespace hicma {
+  Dense& D_t(const boost::any& A);
+
+  LowRank& L_t(const boost::any& A);
+
+  Hierarchical& H_t(const boost::any& A);
+
   void getrf(boost::any& A);
 
   void trsm(const boost::any& Aii, boost::any& Aij, const char& uplo);

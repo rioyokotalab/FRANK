@@ -119,7 +119,7 @@ namespace hicma {
     assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
     for (int i=0; i<dim[0]; i++) {
       for (int j=0; j<dim[1]; j++) {
-        add((*this)(i,j), A(i,j), (*this)(i,j));
+        hicma::add((*this)(i,j), A(i,j), (*this)(i,j));
       }
     }
     return *this;
@@ -129,7 +129,7 @@ namespace hicma {
     assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
     for (int i=0; i<dim[0]; i++)
       for (int j=0; j<dim[1]; j++)
-        sub((*this)(i,j), A(i,j), (*this)(i,j));
+        hicma::sub((*this)(i,j), A(i,j), (*this)(i,j));
     return *this;
   }
 
@@ -139,7 +139,7 @@ namespace hicma {
     for (int i=0; i<dim[0]; i++)
       for (int j=0; j<A.dim[1]; j++)
         for (int k=0; k<dim[1]; k++)
-          gemm((*this)(i,k), A(k,j), B(i,j));
+          hicma::gemm((*this)(i,k), A(k,j), B(i,j));
     return B;
   }
 

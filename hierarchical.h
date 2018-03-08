@@ -99,6 +99,8 @@ namespace hicma {
     void getrf();
 
     void trsm(const Hierarchical& A, const char& uplo);
+
+    void gemm(const Hierarchical& A, const Hierarchical& B);
   };
 }
 #endif
