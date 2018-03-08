@@ -28,14 +28,14 @@ namespace hicma {
   void trsm(const boost::any& Aii, boost::any& Aij, const char& uplo) {
     if (Aii.type() == typeid(Dense)) {
       if (Aij.type() == typeid(Dense)) {
-        D_t(Aij).trsm(boost::any_cast<const Dense&>(Aii), uplo);
+        D_t(Aij).trsm(D_t(Aii), uplo);
       }
       else if (Aij.type() == typeid(LowRank)) {
-        L_t(Aij).trsm(boost::any_cast<const Dense&>(Aii), uplo);
+        L_t(Aij).trsm(D_t(Aii), uplo);
       }
       else if (Aij.type() == typeid(Hierarchical)) {
         fprintf(stderr,"H /= D\n"); abort();
-        //H_t(Aij).trsm(boost::any_cast<const Dense&>(Aii), uplo);
+        //H_t(Aij).trsm(D_t(Aii), uplo);
       }
       else {
         fprintf(stderr,"Second value must be Dense, LowRank or Hierarchical.\n"); abort();
@@ -44,14 +44,14 @@ namespace hicma {
     else if (Aii.type() == typeid(Hierarchical)) {
       if (Aij.type() == typeid(Dense)) {
         fprintf(stderr,"D /= H\n"); abort();
-        //D_t(Aij).trsm(boost::any_cast<const Hierarchical&>(Aii), uplo);
+        //D_t(Aij).trsm(H_t(Aii), uplo);
       }
       else if (Aij.type() == typeid(LowRank)) {
         fprintf(stderr,"L /= H\n"); abort();
-        //L_t(Aij).trsm(boost::any_cast<const Hierarchical&>(Aii), uplo);
+        //L_t(Aij).trsm(H_t(Aii), uplo);
       }
       else if (Aij.type() == typeid(Hierarchical)) {
-        H_t(Aij).trsm(boost::any_cast<const Hierarchical&>(Aii), uplo);
+        H_t(Aij).trsm(H_t(Aii), uplo);
       }
       else {
         fprintf(stderr,"Second value must be Dense, LowRank or Hierarchical.\n"); abort();
@@ -66,7 +66,7 @@ namespace hicma {
     if (A.type() == typeid(Dense)) {
       if (B.type() == typeid(Dense)) {
         if (C.type() == typeid(Dense)) {
-          D_t(C).gemm(boost::any_cast<const Dense&>(A), boost::any_cast<const Dense&>(B));
+          D_t(C).gemm(D_t(A), D_t(B));
         }
         else if (C.type() == typeid(LowRank)) {
           fprintf(stderr,"L += D * D\n"); abort();
@@ -75,25 +75,25 @@ namespace hicma {
           fprintf(stderr,"H += D * D\n"); abort();
         }
         else {
-          Dense D(boost::any_cast<const Dense&>(A).dim[0],boost::any_cast<const Dense&>(B).dim[1]);
+          Dense D(D_t(A).dim[0],D_t(B).dim[1]);
           C = D;
-          D_t(C).gemm(boost::any_cast<const Dense&>(A), boost::any_cast<const Dense&>(B));
+          D_t(C).gemm(D_t(A), D_t(B));
         }
       }
       else if (B.type() == typeid(LowRank)) {
         if (C.type() == typeid(Dense)) {
-          D_t(C).gemm(boost::any_cast<const Dense&>(A), boost::any_cast<const LowRank&>(B));
+          D_t(C).gemm(D_t(A), L_t(B));
         }
         else if (C.type() == typeid(LowRank)) {
-          L_t(C).gemm(boost::any_cast<const Dense&>(A), boost::any_cast<const LowRank&>(B));
+          L_t(C).gemm(D_t(A), L_t(B));
         }
         else if (C.type() == typeid(Hierarchical)) {
           fprintf(stderr,"H += D * L\n"); abort();
         }
         else {
-          LowRank D(boost::any_cast<const Dense&>(A).dim[0],boost::any_cast<const LowRank&>(B).dim[1],boost::any_cast<const LowRank&>(B).rank);
+          LowRank D(D_t(A).dim[0],L_t(B).dim[1],L_t(B).rank);
           C = D;
-          L_t(C).gemm(boost::any_cast<const Dense&>(A), boost::any_cast<const LowRank&>(B));
+          L_t(C).gemm(D_t(A), L_t(B));
         }
       }
       else if (B.type() == typeid(Hierarchical)) {
@@ -117,34 +117,34 @@ namespace hicma {
     else if (A.type() == typeid(LowRank)) {
       if (B.type() == typeid(Dense)) {
         if (C.type() == typeid(Dense)) {
-          D_t(C).gemm(boost::any_cast<const LowRank&>(A), boost::any_cast<const Dense&>(B));
+          D_t(C).gemm(L_t(A), D_t(B));
         }
         else if (C.type() == typeid(LowRank)) {
-          L_t(C).gemm(boost::any_cast<const LowRank&>(A), boost::any_cast<const Dense&>(B));
+          L_t(C).gemm(L_t(A), D_t(B));
         }
         else if (C.type() == typeid(Hierarchical)) {
           fprintf(stderr,"H += L * D\n"); abort();
         }
         else {
-          LowRank D(boost::any_cast<const LowRank&>(A).dim[0],boost::any_cast<const Dense&>(B).dim[1],boost::any_cast<const LowRank&>(A).rank);
+          LowRank D(L_t(A).dim[0],D_t(B).dim[1],L_t(A).rank);
           C = D;
-          L_t(C).gemm(boost::any_cast<const LowRank&>(A), boost::any_cast<const Dense&>(B));
+          L_t(C).gemm(L_t(A), D_t(B));
         }
       }
       else if (B.type() == typeid(LowRank)) {
         if (C.type() == typeid(Dense)) {
-          D_t(C).gemm(boost::any_cast<const LowRank&>(A), boost::any_cast<const LowRank&>(B));
+          D_t(C).gemm(L_t(A), L_t(B));
         }
         else if (C.type() == typeid(LowRank)) {
-          L_t(C).gemm(boost::any_cast<const LowRank&>(A), boost::any_cast<const LowRank&>(B));
+          L_t(C).gemm(L_t(A), L_t(B));
         }
         else if (C.type() == typeid(Hierarchical)) {
           fprintf(stderr,"H += L * L\n"); abort();
         }
         else {
-          LowRank D(boost::any_cast<const LowRank&>(A).dim[0],boost::any_cast<const LowRank&>(B).dim[1],boost::any_cast<const LowRank&>(A).rank);
+          LowRank D(L_t(A).dim[0],L_t(B).dim[1],L_t(A).rank);
           C = D;
-          L_t(C).gemm(boost::any_cast<const LowRank&>(A), boost::any_cast<const LowRank&>(B));
+          L_t(C).gemm(L_t(A), L_t(B));
         }
       }
       else if (B.type() == typeid(Hierarchical)) {
@@ -202,12 +202,12 @@ namespace hicma {
           fprintf(stderr,"L += H * H\n"); abort();
         }
         else if (C.type() == typeid(Hierarchical)) {
-          H_t(C) = boost::any_cast<const Hierarchical&>(A) * boost::any_cast<const Hierarchical&>(B);
+          H_t(C) = H_t(A) * H_t(B);
         }
         else {
-          Hierarchical D(boost::any_cast<const Hierarchical&>(A).dim[0],boost::any_cast<const Hierarchical&>(A).dim[1]);
+          Hierarchical D(H_t(A).dim[0],H_t(A).dim[1]);
           C = D;
-          H_t(C) = boost::any_cast<const Hierarchical&>(A) * boost::any_cast<const Hierarchical&>(B);
+          H_t(C) = H_t(A) * H_t(B);
         }
       }
       else {
@@ -223,11 +223,11 @@ namespace hicma {
     if (A.type() == typeid(Dense)) {
       if (B.type() == typeid(Dense)) {
         assert(C.type() == typeid(Dense));
-        D_t(C) = boost::any_cast<const Dense&>(A) + boost::any_cast<const Dense&>(B);
+        D_t(C) = D_t(A) + D_t(B);
       }
       else if (B.type() == typeid(LowRank)) {
         assert(C.type() == typeid(Dense));
-        D_t(C) = boost::any_cast<const Dense&>(A) + boost::any_cast<const LowRank&>(B);
+        D_t(C) = D_t(A) + L_t(B);
       }
       else if (B.type() == typeid(Hierarchical)) {
         assert(C.type() == typeid(Hierarchical));
@@ -240,11 +240,11 @@ namespace hicma {
     else if (A.type() == typeid(LowRank)) {
       if (B.type() == typeid(Dense)) {
         assert(C.type() == typeid(Dense));
-        D_t(C) = boost::any_cast<const LowRank&>(A) + boost::any_cast<const Dense&>(B);
+        D_t(C) = L_t(A) + D_t(B);
       }
       else if (B.type() == typeid(LowRank)) {
         assert(C.type() == typeid(LowRank));
-        L_t(C) = boost::any_cast<const LowRank&>(A) + boost::any_cast<const LowRank&>(B);
+        L_t(C) = L_t(A) + L_t(B);
       }
       else if (B.type() == typeid(Hierarchical)) {
         assert(C.type() == typeid(LowRank));
@@ -280,11 +280,11 @@ namespace hicma {
     if (A.type() == typeid(Dense)) {
       if (B.type() == typeid(Dense)) {
         assert(C.type() == typeid(Dense));
-        D_t(C) = boost::any_cast<const Dense&>(A) - boost::any_cast<const Dense&>(B);
+        D_t(C) = D_t(A) - D_t(B);
       }
       else if (B.type() == typeid(LowRank)) {
         assert(C.type() == typeid(Dense));
-        D_t(C) = boost::any_cast<const Dense&>(A) - boost::any_cast<const LowRank&>(B);
+        D_t(C) = D_t(A) - L_t(B);
       }
       else if (B.type() == typeid(Hierarchical)) {
         assert(C.type() == typeid(Hierarchical));
@@ -297,11 +297,11 @@ namespace hicma {
     else if (A.type() == typeid(LowRank)) {
       if (B.type() == typeid(Dense)) {
         assert(C.type() == typeid(Dense));
-        D_t(C) = boost::any_cast<const LowRank&>(A) - boost::any_cast<const Dense&>(B);
+        D_t(C) = L_t(A) - D_t(B);
       }
       else if (B.type() == typeid(LowRank)) {
         assert(C.type() == typeid(LowRank));
-        L_t(C) = boost::any_cast<const LowRank&>(A) - boost::any_cast<const LowRank&>(B);
+        L_t(C) = L_t(A) - L_t(B);
       }
       else if (B.type() == typeid(Hierarchical)) {
         assert(C.type() == typeid(LowRank));
@@ -322,7 +322,7 @@ namespace hicma {
       }
       else if (B.type() == typeid(Hierarchical)) {
         assert(C.type() == typeid(Hierarchical));
-        H_t(C) = boost::any_cast<const Hierarchical&>(A) - boost::any_cast<const Hierarchical&>(B);
+        H_t(C) = H_t(A) - H_t(B);
       }
       else {
         fprintf(stderr,"Second value must be Dense, LowRank or Hierarchical.\n"); abort();

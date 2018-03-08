@@ -157,12 +157,12 @@ namespace hicma {
 
   Dense& Hierarchical::dense(const int i) {
     assert(i<dim[0]*dim[1]);
-    return boost::any_cast<Dense&>(data[i]);
+    return D_t(data[i]);
   }
 
   Dense& Hierarchical::dense(const int i, const int j) {
     assert(i<dim[0] && j<dim[1]);
-    return boost::any_cast<Dense&>(data[i*dim[1]+j]);
+    return D_t(data[i*dim[1]+j]);
   }
 
   double Hierarchical::norm(){
