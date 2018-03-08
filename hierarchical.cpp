@@ -14,6 +14,12 @@ namespace hicma {
     dim[0]=m; dim[1]=n; data.resize(dim[0]*dim[1]);
   }
 
+  Hierarchical::Hierarchical(const Hierarchical& A) {
+    dim[0]=A.dim[0]; dim[1]=A.dim[1];
+    data.resize(dim[0]*dim[1]);
+    data = A.data;
+  }
+
   Hierarchical::Hierarchical(
                              void (*func)(
                                           std::vector<double>& data,

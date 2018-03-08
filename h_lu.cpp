@@ -35,7 +35,11 @@ int main(int argc, char** argv) {
   Hierarchical x(rand, randx, N, 1, rank, nleaf, admis, nblocks, 1);
   Hierarchical b(zeros, randx, N, 1, rank, nleaf, admis, nblocks, 1);
   b -= A * x;
-  //D_t(H_t(b[0])[0]).print();
+#if BLOCK_LU
+  D_t(b[0]).print();
+#elif HODFR
+  D_t(H_t(b[0])[0]).print();
+#endif
   stop("Init matrix");
   start("LU decomposition");
   A.getrf();
