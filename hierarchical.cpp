@@ -244,7 +244,7 @@ namespace hicma {
 
   void Hierarchical::getrf() {
 #if DEBUG
-    std::cout << "getrf  @ " << this->i_abs << " " << this->j_abs << " " << this->level << std::endl;
+    std::cout << "getrf(H(" << this->i_abs << "," << this->j_abs << ")) @ lev " << this->level << std::endl;
     std::cout << "----------------------------------------------------------------------------------" << std::endl;
 #endif
     for (int i=0; i<dim[0]; i++) {
@@ -263,7 +263,7 @@ namespace hicma {
 
   void Hierarchical::trsm(const Hierarchical& A, const char& uplo) {
 #if DEBUG
-    std::cout << "trsm   @ " << this->i_abs << " " << this->j_abs << " " << this->level << std::endl;
+    std::cout << "trsm(H(" << this->i_abs << "," << this->j_abs << "),H(" << A.i_abs << "," << A.j_abs << ")) @ lev " << this->level << std::endl;
     std::cout << "----------------------------------------------------------------------------------" << std::endl;
 #endif
     if (dim[1] == 1) {

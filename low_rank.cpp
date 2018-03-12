@@ -229,6 +229,11 @@ namespace hicma {
       V.trsm(A, uplo);
       break;
     }
+#if DEBUG
+    std::cout << "trsm(L(" << this->i_abs << "," << this->j_abs << "),D(" << A.i_abs << "," << A.j_abs << ")) @ lev " << this->level << std::endl;
+    std::cout << "----------------------------------------------------------------------------------" << std::endl;
+    this->print();
+#endif
   }
 
   void LowRank::gemm(const LowRank& A, const Dense& B) {

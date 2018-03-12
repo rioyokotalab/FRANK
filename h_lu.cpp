@@ -42,7 +42,6 @@ int main(int argc, char** argv) {
   else {
     D_t(H_t(b[0])[0]).print();
   }
-  /*
   stop("Init matrix");
   start("LU decomposition");
   A.getrf();
@@ -57,6 +56,5 @@ int main(int argc, char** argv) {
   double norm = x.norm();
   print("Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
-  */
   return 0;
 }

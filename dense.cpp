@@ -220,6 +220,11 @@ namespace hicma {
   void Dense::getrf() {
     std::vector<int> ipiv(std::min(dim[0],dim[1]));
     LAPACKE_dgetrf(LAPACK_ROW_MAJOR, dim[0], dim[1], &data[0], dim[1], &ipiv[0]);
+#if DEBUG
+    std::cout << "getrf(D(" << this->i_abs << "," << this->j_abs << ")) @ lev " << this->level << std::endl;
+    std::cout << "----------------------------------------------------------------------------------" << std::endl;
+    this->print();
+#endif
   }
 
   void Dense::trsm(const Dense& A, const char& uplo) {
@@ -251,6 +256,11 @@ namespace hicma {
         fprintf(stderr,"Second argument must be 'l' for lower, 'u' for upper.\n"); abort();
       }
     }
+#if DEBUG
+    std::cout << "trsm(D(" << this->i_abs << "," << this->j_abs << "),D(" << A.i_abs << "," << A.j_abs << ")) @ lev " << this->level << std::endl;
+    std::cout << "----------------------------------------------------------------------------------" << std::endl;
+    this->print();
+#endif
   }
 
   void Dense::gemm(const Dense& A, const Dense& B) {
