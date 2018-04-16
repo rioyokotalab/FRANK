@@ -37,9 +37,9 @@ namespace hicma {
           const int nj,
           const int i_begin,
           const int j_begin,
-          const int _i_abs,
-          const int _j_abs,
-          const int level
+          const int _i_abs=0,
+          const int _j_abs=0,
+          const int level=0
           );
 
     double& operator[](const int i);

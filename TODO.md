@@ -1,12 +1,8 @@
-[Immediate]
-Fix low rank copy consturctor
 
-[Development]
+Fix low rank copy consturctor
 H-matrix LU
 MPI version
 Asyncronous communication
-
-[After SIAM]
 Clean randomized id.cpp
 typedef any_cast
 H^2-matrix LU
@@ -14,6 +10,7 @@ ID with controllable precision
 Template over float/double
 Pivots inside diagonal blocks
 Non-square matrices
+Write operator-=() using operator+=()
 
 [Results]
 Compare {FullRank, LowRank, Hierarchical}, {A, L, U} types with op. overloading
