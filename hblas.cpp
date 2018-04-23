@@ -369,4 +369,19 @@ namespace hicma {
       fprintf(stderr,"Value must be Dense, LowRank or Hierarchical.\n"); abort();
     }
   }
+
+  void printmat(const boost::any& A) {
+    if (A.type() == typeid(Dense)) {
+      D_t(A).print();
+    }
+    else if (A.type() == typeid(LowRank)) {
+      L_t(A).print();
+    }
+    else if (A.type() == typeid(Hierarchical)) {
+      H_t(A).print();
+    }
+    else {
+      fprintf(stderr,"Value must be Dense, LowRank or Hierarchical.\n"); abort();
+    }
+  }
 }

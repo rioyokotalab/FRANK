@@ -12,7 +12,7 @@ int main(int argc, char** argv) {
   int rank = 2;
   std::vector<double> randx(N);
   for (int i=0; i<N; i++) {
-    randx[i] = drand48();
+    randx[i] = i;
   }
   std::sort(randx.begin(), randx.end());
   print("Time");

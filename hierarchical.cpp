@@ -225,17 +225,18 @@ namespace hicma {
     for (int i=0; i<dim[0]; i++) {
       for (int j=0; j<dim[1]; j++) {
         if ((*this)(i,j).type() == typeid(Dense)) {
-          std::cout << "D ";
+          std::cout << "D (" << i << "," << j << ")" << std::endl;
         }
         else if ((*this)(i,j).type() == typeid(LowRank)) {
-          std::cout << "L ";
+          std::cout << "L (" << i << "," << j << ")" << std::endl;
         }
         else if ((*this)(i,j).type() == typeid(Hierarchical)) {
-          std::cout << "H ";
+          std::cout << "H (" << i << "," << j << ")" << std::endl;
         }
         else {
-          std::cout << "? ";
+          std::cout << "? (" << i << "," << j << ")" << std::endl;
         }
+        hicma::printmat( (*this)(i,j) );
       }
       std::cout << std::endl;
     }

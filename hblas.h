@@ -5,7 +5,7 @@
 #include "low_rank.h"
 #include "hierarchical.h"
 
-#define DEBUG 1
+#define DEBUG 0
 
 namespace hicma {
   Dense& D_t(const boost::any& A);
@@ -27,5 +27,7 @@ namespace hicma {
   double norm(boost::any& A);
 
   void assign(const boost::any& A, const double a);
+
+  void printmat(const boost::any& A);
 }
 #endif
