@@ -138,7 +138,7 @@ class HMat(Node):
                 self.blocks[i][j].update_position(self, (i, j))
 
     def get_dense(self):
-        return np.block([
+        return np.bmat([
             [
                 self.blocks[i][j].get_dense()
                 for j in range(0, 2)
@@ -202,7 +202,7 @@ class HMat(Node):
             # NOTE Not working because off_diag data is used by accident.
             # Find way to add zero matrix for off diagonal without doing
             # additional calculation
-            return np.block(
+            return np.bmat(
                 [
                     [
                         (L[0, 0] @ U[0, 0]).get_dense(),

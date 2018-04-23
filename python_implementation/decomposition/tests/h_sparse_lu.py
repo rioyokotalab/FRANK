@@ -10,19 +10,20 @@ np.set_printoptions(formatter={'float': '{: 0.2f}'.format})
 
 
 def main():
-    n = 2**6 + 5
+    n = 2**4
     max_n_leaf = 8
     k = 8
     p = 1
     # Generate random positions
-    block_s = int(n/max_n_leaf)
-    n_blocks = int(n/block_s)
-    x = np.hstack([
-            (np.random.random(block_s).astype(float)*0.3 + i)
-            for i in range(0, n_blocks)
-    ])
-    # x = np.arange(n).astype(float)
+    # block_s = int(n/max_n_leaf)
+    # n_blocks = int(n/block_s)
+    # x = np.hstack([
+    #         (np.random.random(block_s).astype(float)*0.3 + i)
+    #         for i in range(0, n_blocks)
+    # ])
+    x = np.arange(n).astype(float)
     arr = green_mesh(x)
+    print(arr)
     arr_check = np.copy(arr)
     t0 = time.time()
     h_arr = HMat(arr=arr, max_n_leaf=max_n_leaf, k=k, p=p)

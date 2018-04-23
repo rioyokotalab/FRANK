@@ -37,7 +37,8 @@ def green_mesh(x):
     mesh = np.vstack([x]*n)
     abs_diff = np.abs(mesh - mesh.transpose())
     # Avoid division by zero
-    np.fill_diagonal(abs_diff, 1)
+    # np.fill_diagonal(abs_diff, 1)
+    abs_diff += 0.001
     arr = np.reciprocal(abs_diff)
     np.fill_diagonal(arr, 4)
     return arr

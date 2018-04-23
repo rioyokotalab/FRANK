@@ -5,3 +5,4 @@ TAGS
 
 # Python ignores
 **/__pycache__
+**/*.pyc
