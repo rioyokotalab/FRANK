@@ -2,3 +2,6 @@
 *.out
 TAGS
 *~
+
+# Python ignores
+**/__pycache__
