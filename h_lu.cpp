@@ -12,7 +12,7 @@ int main(int argc, char** argv) {
   int rank = 2;
   std::vector<double> randx(N);
   for (int i=0; i<N; i++) {
-    randx[i] = i;
+    randx[i] = drand48();
   }
   std::sort(randx.begin(), randx.end());
   print("Time");
@@ -27,14 +27,14 @@ int main(int argc, char** argv) {
     admis = N / nleaf; // Full rank
   }
   Hierarchical A(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
-  Hierarchical x(rand, randx, N, 1, rank, nleaf, admis, nblocks, 1);
+  Hierarchical x(arange, randx, N, 1, rank, nleaf, admis, nblocks, 1);
   Hierarchical b(zeros, randx, N, 1, rank, nleaf, admis, nblocks, 1);
-  std::cout << "b" << std::endl;
-  b.print();
-  std::cout << "A" << std::endl;
-  A.print();
-  std::cout << "x" << std::endl;
-  x.print();
+  // std::cout << "b" << std::endl;
+  // b.print();
+  // std::cout << "A" << std::endl;
+  // A.print();
+  // std::cout << "x" << std::endl;
+  // x.print();
   b -= A * x;
   if (atoi(argv[1]) == 0) {
     D_t(b[0]).print();

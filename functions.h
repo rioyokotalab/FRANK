@@ -35,6 +35,21 @@ namespace hicma {
     }
   }
 
+  void arange(
+            std::vector<double>& data,
+            std::vector<double>& x,
+            const int& ni,
+            const int& nj,
+            const int& i_begin,
+            const int& j_begin
+            ) {
+    for (int i=0; i<ni; i++) {
+      for (int j=0; j<nj; j++) {
+        data[i*nj+j] = (double)(i*nj+j);
+      }
+    }
+  }
+
   void laplace1d(
                  std::vector<double>& data,
                  std::vector<double>& x,

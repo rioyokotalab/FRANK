@@ -250,6 +250,7 @@ namespace hicma {
 #endif
     for (int i=0; i<dim[0]; i++) {
       hicma::getrf((*this)(i,i));
+      // TODO print and cross check with python
       for (int j=i+1; j<dim[0]; j++) {
         hicma::trsm((*this)(i,i),(*this)(i,j),'l');
         hicma::trsm((*this)(i,i),(*this)(j,i),'u');
@@ -289,6 +290,28 @@ namespace hicma {
         fprintf(stderr,"Second argument must be 'l' for lower, 'u' for upper.\n"); abort();
       }
     }
+    // Fix for dim=[2, 2]
+    else if (dim[0] == 2 && dim[1] == 2) {
+      switch (uplo) {
+      case 'l' :
+        for (int j=0; j<dim[1]; ++j) {
+          hicma::trsm(A(0,0),(*this)(0,j),'l');
+          hicma::gemm(A(1,0),(*this)(0,j),(*this)(1,j));
+          hicma::trsm(A(1,1),(*this)(1,j),'l');
+        }
+        break;
+      case 'u':
+        for (int i=0; i<dim[0]; ++i) {
+          hicma::trsm(A(0,0),(*this)(i,0),'u');
+          hicma::gemm((*this)(i,0),A(0,1),(*this)(i,1));
+          hicma::trsm(A(1,1),(*this)(i,1),'u');
+        }
+        break;
+      default :
+        fprintf(stderr,"Second argument must be 'l' for lower, 'u' for upper.\n"); abort();
+      }
+    }
+    // TODO Still broken
     else {
       switch (uplo) {
       case 'l' :
@@ -306,7 +329,7 @@ namespace hicma {
             hicma::gemm(A(i,j),(*this)(j,j),(*this)(i,j));
             hicma::trsm(A(i,i),(*this)(i,j),'u');
           }
-          hicma::trsm(A(i,i),(*this)[i],'u');
+          hicma::trsm(A(i,i),(*this)(i, i),'u');
         }
         break;
       default :
