@@ -27,7 +27,7 @@ int main(int argc, char** argv) {
     admis = N / nleaf; // Full rank
   }
   Hierarchical A(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
-  Hierarchical x(arange, randx, N, 1, rank, nleaf, admis, nblocks, 1);
+  Hierarchical x(rand, randx, N, 1, rank, nleaf, admis, nblocks, 1);
   Hierarchical b(zeros, randx, N, 1, rank, nleaf, admis, nblocks, 1);
   // std::cout << "b" << std::endl;
   // b.print();

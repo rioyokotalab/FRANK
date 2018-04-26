@@ -290,46 +290,32 @@ namespace hicma {
         fprintf(stderr,"Second argument must be 'l' for lower, 'u' for upper.\n"); abort();
       }
     }
-    // Fix for dim=[2, 2]
-    else if (dim[0] == 2 && dim[1] == 2) {
-      switch (uplo) {
-      case 'l' :
-        for (int j=0; j<dim[1]; ++j) {
-          hicma::trsm(A(0,0),(*this)(0,j),'l');
-          hicma::gemm(A(1,0),(*this)(0,j),(*this)(1,j));
-          hicma::trsm(A(1,1),(*this)(1,j),'l');
-        }
-        break;
-      case 'u':
-        for (int i=0; i<dim[0]; ++i) {
-          hicma::trsm(A(0,0),(*this)(i,0),'u');
-          hicma::gemm((*this)(i,0),A(0,1),(*this)(i,1));
-          hicma::trsm(A(1,1),(*this)(i,1),'u');
-        }
-        break;
-      default :
-        fprintf(stderr,"Second argument must be 'l' for lower, 'u' for upper.\n"); abort();
-      }
-    }
-    // TODO Still broken
     else {
       switch (uplo) {
       case 'l' :
-        for (int i=0; i<dim[0]; i++) {
-          for (int j=0; j<i; j++) {
-            hicma::gemm(A(i,j),(*this)(j,j),(*this)(i,j));
+        // Loop over cols, same calculation for all
+        for (int j=0; j<dim[1]; j++) {
+          // Loop over rows, getting new results
+          for (int i=0; i<dim[0]; i++) {
+            // Loop over previously calculated row, accumulate results
+            for (int i_old=0; i_old<i; i_old++) {
+              hicma::gemm(A(i,i_old),(*this)(i_old,j),(*this)(i,j));
+            }
             hicma::trsm(A(i,i),(*this)(i,j),'l');
           }
-          hicma::trsm(A(i,i),(*this)(i,i),'l');
         }
         break;
       case 'u' :
-        for (int i=dim[0]-1; i>=0; i--) {
-          for (int j=dim[0]-1; j>i; j--) {
-            hicma::gemm(A(i,j),(*this)(j,j),(*this)(i,j));
-            hicma::trsm(A(i,i),(*this)(i,j),'u');
+        // Loop over rows, same calculation for all
+        for (int i=0; i<dim[0]; i++) {
+          // Loop over cols, getting new results
+          for (int j=0; j<dim[1]; j++) {
+            // Loop over previously calculated col, accumulate results
+            for (int j_old=0; j_old<j; j_old++) {
+              hicma::gemm((*this)(i,j_old),A(j_old,j),(*this)(i,j));
+            }
+            hicma::trsm(A(j,j),(*this)(i, j),'u');
           }
-          hicma::trsm(A(i,i),(*this)(i, i),'u');
         }
         break;
       default :
