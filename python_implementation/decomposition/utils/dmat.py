@@ -3,6 +3,7 @@ import numpy as np
 from scipy.linalg import solve_triangular
 
 from decomposition.utils.node import Node
+from decomposition.lu import lup_factorize
 
 
 class DMat(Node):
@@ -29,6 +30,9 @@ class DMat(Node):
             np.triu(self.arr)
         )
 
+    def getrf(self):
+        lup_factorize(self.arr)
+
     def upper_trsm(self, other):
         a = self.get_dense()
         b = other.get_dense().transpose()
@@ -36,9 +40,9 @@ class DMat(Node):
             a,
             b,
             lower=False,
-            trans='T',
             unit_diagonal=False,
-            overwrite_b=False
+            overwrite_b=True,
+            trans='T'
         ).transpose()
         return DMat(x)
 

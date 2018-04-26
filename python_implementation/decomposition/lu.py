@@ -12,7 +12,7 @@ from decomposition.utils.multiplications import (
     sparse_dense,
     sparse_sparse
 )
-from decomposition.utils.dmat import DMat
+# from decomposition.utils.dmat import DMat
 from decomposition.svd import rsvd
 
 
@@ -292,6 +292,7 @@ def h_sparse_lu(h_arr, k, p):
         lup_factorize(h_arr[0, 0].arr)
     else:
         h_sparse_lu(h_arr[0, 0], k, p)
+    print("getrf() result\n", h_arr[0, 0].get_dense(), "\nend\n")
     # Update rest of matrix
     h_arr[0, 1] = h_arr[0, 0].lower_trsm(h_arr[0, 1])
     h_arr[1, 0] = h_arr[0, 0].upper_trsm(h_arr[1, 0])
@@ -301,3 +302,4 @@ def h_sparse_lu(h_arr, k, p):
         lup_factorize(h_arr[1, 1].arr)
     else:
         h_sparse_lu(h_arr[1, 1], k, p)
+    print("getrf() result\n", h_arr[1, 1].get_dense(), "\nend\n")

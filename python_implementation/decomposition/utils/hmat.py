@@ -102,7 +102,7 @@ class HMat(Node):
                         i*ni_subarr:i_max,
                         j*nj_subarr:j_max
                     ]
-                    if abs(row - col) <= admis:
+                    if abs(row - col) >= admis:
                         if min(ni_subarr, nj_subarr) <= self.max_n_leaf:
                             self[i, j] = DMat(
                                 subarr,
@@ -217,13 +217,33 @@ class HMat(Node):
         else:
             raise ValueError
 
+    def getrf(self):
+        """
+        Calculate the LU decomposition recursively
+
+        Arguments
+        ---------
+        """
+        for i in range(len(self.blocks)):
+            self[i, i].getrf()
+            for j in range(i+1, len(self.blocks)):
+                self[i, j] = self[i, i].lower_trsm(self[i, j])
+            for j in range(i+1, len(self.blocks[0])):
+                self[j, i] = self[i, i].upper_trsm(self[j, i])
+            for j in range(i+1, len(self.blocks)):
+                for k in range(i+1, len(self.blocks[0])):
+                    self[j, k] -= DMat(
+                        (self[j, i] @ self[i, k]).get_dense()
+                    )
+
+
     def lower_trsm(self, other):
         """
         Multiply other with invert of lower triagonal of self.
 
         Uses the following formula
         inv( |A  | ) = |         inv(A)           0   |
-           ( |C D| )   |-(inv(D) @ B @ inv(A))  inv(D)|
+           ( |C D| )   |-(inv(D) @ C @ inv(A))  inv(D)|
         inv(A) and inv(D) are computed in recursion. The lowest level is
         handled in the DMat class and uses the level 3 BLAS function trsm.
         On the HMat level, only multiplications and additions are called.
@@ -304,8 +324,8 @@ class HMat(Node):
         Multiply other with invert of upper triagonal of self.
 
         Uses the following formula
-        inv( |A B| ) = |inv(A)  -(inv(A) @ B inv(D)) |
-           ( |0 D| )   |  0             inv(D)       |
+        inv( |A B| ) = |inv(A)  -(inv(A) @ B @ inv(D)) |
+           ( |0 D| )   |  0              inv(D)        |
         inv(A) and inv(D) are computed in recursion. The lowest level is
         handled in the DMat class and uses the level 3 BLAS function trsm.
         On the HMat level, only multiplications and additions are called.
@@ -624,6 +644,13 @@ class HMat(Node):
     def __isub__(self, other):
         # HMat -= LRMat
         if isinstance(other, LRMat):
+            return HMat(
+                arr=self.get_dense() - other.get_dense(),
+                parent=self.parent,
+                pos=self.pos
+            )
+        # HMat -= DMat
+        elif isinstance(other, DMat):
             return HMat(
                 arr=self.get_dense() - other.get_dense(),
                 parent=self.parent,

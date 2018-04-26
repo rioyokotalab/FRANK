@@ -40,5 +40,5 @@ def green_mesh(x):
     # np.fill_diagonal(abs_diff, 1)
     abs_diff += 0.001
     arr = np.reciprocal(abs_diff)
-    np.fill_diagonal(arr, 4)
+    # np.fill_diagonal(arr, 4)
     return arr
