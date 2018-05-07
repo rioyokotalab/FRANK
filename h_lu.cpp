@@ -7,7 +7,7 @@
 using namespace hicma;
 
 int main(int argc, char** argv) {
-  int N = 8;
+  int N = 16;
   int nleaf = 2;
   int rank = 2;
   std::vector<double> randx(N);
@@ -26,22 +26,14 @@ int main(int argc, char** argv) {
     nblocks = 2; // Hierarchical (log_2(N/nleaf) levels)
     admis = N / nleaf; // Full rank
   }
+  else if (atoi(argv[1]) == 2) {
+    nblocks = 4; // Hierarchical (log_4(N/nleaf) levels)
+    admis = N / nleaf; // Full rank
+  }
   Hierarchical A(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   Hierarchical x(rand, randx, N, 1, rank, nleaf, admis, nblocks, 1);
   Hierarchical b(zeros, randx, N, 1, rank, nleaf, admis, nblocks, 1);
-  // std::cout << "b" << std::endl;
-  // b.print();
-  // std::cout << "A" << std::endl;
-  // A.print();
-  // std::cout << "x" << std::endl;
-  // x.print();
   b -= A * x;
-  if (atoi(argv[1]) == 0) {
-    D_t(b[0]).print();
-  }
-  else {
-    D_t(H_t(b[0])[0]).print();
-  }
   stop("Init matrix");
   start("LU decomposition");
   A.getrf();

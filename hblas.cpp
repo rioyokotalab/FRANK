@@ -34,8 +34,7 @@ namespace hicma {
         L_t(Aij).trsm(D_t(Aii), uplo);
       }
       else if (Aij.type() == typeid(Hierarchical)) {
-        fprintf(stderr,"H /= D\n"); abort();
-        //H_t(Aij).trsm(D_t(Aii), uplo);
+        fprintf(stderr,"H /= D undefined.\n"); abort();
       }
       else {
         fprintf(stderr,"Second value must be Dense, LowRank or Hierarchical.\n"); abort();
@@ -43,12 +42,10 @@ namespace hicma {
     }
     else if (Aii.type() == typeid(Hierarchical)) {
       if (Aij.type() == typeid(Dense)) {
-        fprintf(stderr,"D /= H\n"); abort();
-        //D_t(Aij).trsm(H_t(Aii), uplo);
+        fprintf(stderr,"D /= H undefined.\n"); abort();
       }
       else if (Aij.type() == typeid(LowRank)) {
-        fprintf(stderr,"L /= H\n"); abort();
-        //L_t(Aij).trsm(H_t(Aii), uplo);
+        fprintf(stderr,"L /= H undefined.\n"); abort();
       }
       else if (Aij.type() == typeid(Hierarchical)) {
         H_t(Aij).trsm(H_t(Aii), uplo);
@@ -69,10 +66,10 @@ namespace hicma {
           D_t(C).gemm(D_t(A), D_t(B));
         }
         else if (C.type() == typeid(LowRank)) {
-          fprintf(stderr,"L += D * D\n"); abort();
+          fprintf(stderr,"L += D * D undefined.\n"); abort();
         }
         else if (C.type() == typeid(Hierarchical)) {
-          fprintf(stderr,"H += D * D\n"); abort();
+          fprintf(stderr,"H += D * D undefined.\n"); abort();
         }
         else {
           Dense D(D_t(A));
@@ -90,7 +87,7 @@ namespace hicma {
           L_t(C).gemm(D_t(A), L_t(B));
         }
         else if (C.type() == typeid(Hierarchical)) {
-          fprintf(stderr,"H += D * L\n"); abort();
+          fprintf(stderr,"H += D * L undefined.\n"); abort();
         }
         else {
           LowRank D(L_t(B));
@@ -102,16 +99,16 @@ namespace hicma {
       }
       else if (B.type() == typeid(Hierarchical)) {
         if (C.type() == typeid(Dense)) {
-          fprintf(stderr,"D += D * H\n"); abort();
+          fprintf(stderr,"D += D * H undefined.\n"); abort();
         }
         else if (C.type() == typeid(LowRank)) {
-          fprintf(stderr,"L += D * H\n"); abort();
+          fprintf(stderr,"L += D * H undefined.\n"); abort();
         }
         else if (C.type() == typeid(Hierarchical)) {
-          fprintf(stderr,"H += D * H\n"); abort();
+          fprintf(stderr,"H += D * H undefined.\n"); abort();
         }
         else {
-          fprintf(stderr,"D += D * H\n"); abort();
+          fprintf(stderr,"D += D * H undefined.\n"); abort();
         }
       }
       else {
@@ -127,7 +124,7 @@ namespace hicma {
           L_t(C).gemm(L_t(A), D_t(B));
         }
         else if (C.type() == typeid(Hierarchical)) {
-          fprintf(stderr,"H += L * D\n"); abort();
+          fprintf(stderr,"H += L * D undefined.\n"); abort();
         }
         else {
           LowRank D(L_t(A));
@@ -144,7 +141,7 @@ namespace hicma {
           L_t(C).gemm(L_t(A), L_t(B));
         }
         else if (C.type() == typeid(Hierarchical)) {
-          fprintf(stderr,"H += L * L\n"); abort();
+          fprintf(stderr,"H += L * L undefined.\n"); abort();
         }
         else {
           LowRank D(L_t(A));
@@ -156,16 +153,16 @@ namespace hicma {
       }
       else if (B.type() == typeid(Hierarchical)) {
         if (C.type() == typeid(Dense)) {
-          fprintf(stderr,"D += L * H\n"); abort();
+          fprintf(stderr,"D += L * H undefined.\n"); abort();
         }
         else if (C.type() == typeid(LowRank)) {
-          fprintf(stderr,"L += L * H\n"); abort();
+          fprintf(stderr,"L += L * H undefined.\n"); abort();
         }
         else if (C.type() == typeid(Hierarchical)) {
-          fprintf(stderr,"H += L * H\n"); abort();
+          fprintf(stderr,"H += L * H undefined.\n"); abort();
         }
         else {
-          fprintf(stderr,"L += L * H\n"); abort();
+          fprintf(stderr,"L += L * H undefined.\n"); abort();
         }
       }
       else {
@@ -175,38 +172,38 @@ namespace hicma {
     else if (A.type() == typeid(Hierarchical)) {
       if (B.type() == typeid(Dense)) {
         if (C.type() == typeid(Dense)) {
-          fprintf(stderr,"D += H * D\n"); abort();
+          fprintf(stderr,"D += H * D undefined.\n"); abort();
         }
         else if (C.type() == typeid(LowRank)) {
-          fprintf(stderr,"L += H * D\n"); abort();
+          fprintf(stderr,"L += H * D undefined.\n"); abort();
         }
         else if (C.type() == typeid(Hierarchical)) {
-          fprintf(stderr,"H += H * D\n"); abort();
+          fprintf(stderr,"H += H * D undefined.\n"); abort();
         }
         else {
-          fprintf(stderr,"D += H * D\n"); abort();
+          fprintf(stderr,"D += H * D undefined.\n"); abort();
         }
       }
       else if (B.type() == typeid(LowRank)) {
         if (C.type() == typeid(Dense)) {
-          fprintf(stderr,"D += H * L\n"); abort();
+          fprintf(stderr,"D += H * L undefined.\n"); abort();
         }
         else if (C.type() == typeid(LowRank)) {
-          fprintf(stderr,"L += H * L\n"); abort();
+          fprintf(stderr,"L += H * L undefined.\n"); abort();
         }
         else if (C.type() == typeid(Hierarchical)) {
-          fprintf(stderr,"H += H * L\n"); abort();
+          fprintf(stderr,"H += H * L undefined.\n"); abort();
         }
         else {
-          fprintf(stderr,"L += H * L\n"); abort();
+          fprintf(stderr,"L += H * L undefined.\n"); abort();
         }
       }
       else if (B.type() == typeid(Hierarchical)) {
         if (C.type() == typeid(Dense)) {
-          fprintf(stderr,"D += H * H\n"); abort();
+          fprintf(stderr,"D += H * H undefined.\n"); abort();
         }
         else if (C.type() == typeid(LowRank)) {
-          fprintf(stderr,"L += H * H\n"); abort();
+          fprintf(stderr,"L += H * H undefined.\n"); abort();
         }
         else if (C.type() == typeid(Hierarchical)) {
           H_t(C) += H_t(A) * H_t(B);
@@ -236,7 +233,7 @@ namespace hicma {
       }
       else if (B.type() == typeid(Hierarchical)) {
         assert(C.type() == typeid(Hierarchical));
-        fprintf(stderr,"H = D + H\n"); abort();
+        fprintf(stderr,"H = D + H undefined.\n"); abort();
       }
       else {
         fprintf(stderr,"Second value must be Dense, LowRank or Hierarchical.\n"); abort();
@@ -253,7 +250,7 @@ namespace hicma {
       }
       else if (B.type() == typeid(Hierarchical)) {
         assert(C.type() == typeid(LowRank));
-        fprintf(stderr,"L = L + H\n"); abort();
+        fprintf(stderr,"L = L + H undefined.\n"); abort();
       }
       else {
         fprintf(stderr,"Second value must be Dense, LowRank or Hierarchical.\n"); abort();
@@ -262,15 +259,15 @@ namespace hicma {
     else if (A.type() == typeid(Hierarchical)) {
       if (B.type() == typeid(Dense)) {
         assert(C.type() == typeid(Dense));
-        fprintf(stderr,"D = H + D\n"); abort();
+        fprintf(stderr,"D = H + D undefined.\n"); abort();
       }
       else if (B.type() == typeid(LowRank)) {
         assert(C.type() == typeid(LowRank));
-        fprintf(stderr,"L = H + L\n"); abort();
+        fprintf(stderr,"L = H + L undefined.\n"); abort();
       }
       else if (B.type() == typeid(Hierarchical)) {
         assert(C.type() == typeid(Hierarchical));
-        fprintf(stderr,"H = H + H\n"); abort();
+        fprintf(stderr,"H = H + H undefined.\n"); abort();
       }
       else {
         fprintf(stderr,"Second value must be Dense, LowRank or Hierarchical.\n"); abort();
@@ -293,7 +290,7 @@ namespace hicma {
       }
       else if (B.type() == typeid(Hierarchical)) {
         assert(C.type() == typeid(Hierarchical));
-        fprintf(stderr,"H = D - H\n"); abort();
+        fprintf(stderr,"H = D - H undefined.\n"); abort();
       }
       else {
         fprintf(stderr,"Second value must be Dense, LowRank or Hierarchical.\n"); abort();
@@ -310,7 +307,7 @@ namespace hicma {
       }
       else if (B.type() == typeid(Hierarchical)) {
         assert(C.type() == typeid(LowRank));
-        fprintf(stderr,"L = L - H\n"); abort();
+        fprintf(stderr,"L = L - H undefined.\n"); abort();
       }
       else {
         fprintf(stderr,"Second value must be Dense, LowRank or Hierarchical.\n"); abort();
@@ -319,11 +316,11 @@ namespace hicma {
     else if (A.type() == typeid(Hierarchical)) {
       if (B.type() == typeid(Dense)) {
         assert(C.type() == typeid(Dense));
-        fprintf(stderr,"D = H - D\n"); abort();
+        fprintf(stderr,"D = H - D undefined.\n"); abort();
       }
       else if (B.type() == typeid(LowRank)) {
         assert(C.type() == typeid(LowRank));
-        fprintf(stderr,"L = H - L\n"); abort();
+        fprintf(stderr,"L = H - L undefined.\n"); abort();
       }
       else if (B.type() == typeid(Hierarchical)) {
         assert(C.type() == typeid(Hierarchical));
