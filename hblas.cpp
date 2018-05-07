@@ -267,7 +267,7 @@ namespace hicma {
       }
       else if (B.type() == typeid(Hierarchical)) {
         assert(C.type() == typeid(Hierarchical));
-        fprintf(stderr,"H = H + H undefined.\n"); abort();
+        H_t(C) = H_t(A) + H_t(B);
       }
       else {
         fprintf(stderr,"Second value must be Dense, LowRank or Hierarchical.\n"); abort();

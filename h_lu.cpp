@@ -7,7 +7,7 @@
 using namespace hicma;
 
 int main(int argc, char** argv) {
-  int N = 16;
+  int N = 32;
   int nleaf = 2;
   int rank = 2;
   std::vector<double> randx(N);
