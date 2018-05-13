@@ -58,7 +58,11 @@ namespace hicma {
         int j_begin_child = j_begin + nj/dim[1] * j;
         int i_abs_child = i_abs * dim[0] + i;
         int j_abs_child = j_abs * dim[1] + j;
-        if ( std::abs(i_abs_child - j_abs_child) <= admis ) { // TODO: use x in admissibility condition
+        if (
+            // Check regular admissibility
+            std::abs(i_abs_child - j_abs_child) <= admis
+            // Check if vector, and if so do not use LowRank
+            || (nj == 1 || ni == 1) /* Check if vector */ ) { // TODO: use x in admissibility condition
           if ( ni_child <= nleaf && nj_child <= nleaf ) {
             Dense D(
                     func,
