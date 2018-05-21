@@ -13,6 +13,7 @@ np.set_printoptions(
     threshold=np.nan
 )
 
+
 def main():
     n = 2**3
     max_n_leaf = 2
@@ -25,6 +26,7 @@ def main():
     #         (np.random.random(block_s).astype(float)*0.3 + i)
     #         for i in range(0, n_blocks)
     # ])
+    x = np.arange(n).astype(float)
     t0 = time.time()
     seed = np.arange(n).astype(np.float64)
     arr = green_mesh(seed)
