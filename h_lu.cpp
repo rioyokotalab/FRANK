@@ -34,6 +34,10 @@ int main(int argc, char** argv) {
     nblocks = N / nleaf; // 1 level
     admis = 1; // Weak admissibility
   }
+  else if (atoi(argv[1]) == 4) {
+    nblocks = N / nleaf; // 1 level
+    admis = 2; // Strong admissibility
+  }
   Hierarchical A(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   Hierarchical x(rand, randx, N, 1, rank, nleaf, admis, nblocks, 1);
   Hierarchical b(zeros, randx, N, 1, rank, nleaf, admis, nblocks, 1);
