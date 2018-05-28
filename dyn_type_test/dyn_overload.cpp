@@ -15,7 +15,7 @@ class Node {
     int i;
     Node(const int i_) : i(i_) {}
 
-    ~Node() {
+    virtual ~Node() {
       std::cout << "Node destructor" << std::endl;
     }
 
@@ -34,10 +34,6 @@ class Node {
 class Dense : public Node{
   public:
     Dense(const int i) : Node(i) {}
-
-    ~Dense() {
-      std::cout << "Dense destructor" << std::endl;
-    }
 
     virtual const bool is(const int enum_id) const override {
       return enum_id == HICMA_DENSE;
@@ -63,10 +59,6 @@ class Dense : public Node{
 class LowRank : public Node{
   public:
     LowRank(const int i) : Node(i) {}
-
-    ~LowRank() {
-      std::cout << "LowRank destructor" << std::endl;
-    }
 
     virtual const bool is(const int enum_id) const override {
       return enum_id == HICMA_LOWRANK;
@@ -99,13 +91,13 @@ class Hierarchical : public Node{
         if (j%2 == 0) {
           data[j] = std::unique_ptr<Node>(new Dense(j));
         } else {
-          data[j] = std::unique_ptr<Node>(new LowRank(j));
+          if (j>2) {
+            data[j] = std::unique_ptr<Node>(new Hierarchical(j, dim/2));
+          } else {
+            data[j] = std::unique_ptr<Node>(new LowRank(j));
+          }
         }
       }
-    }
-
-    ~Hierarchical() {
-      std::cout << "Hierarchical destructor" << std::endl;
     }
 
     virtual const bool is(const int enum_id) const override {
@@ -166,7 +158,7 @@ const Node operator+=(Node& A, const Node& B) {
 
 int
 main(int argc, char** argv) {
-  Hierarchical hierarchical(2, 4);
+  Hierarchical hierarchical(2, 8);
 
   std::cout << hierarchical[0].i << std::endl;
 

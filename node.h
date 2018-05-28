@@ -1,5 +1,7 @@
 #ifndef node_h
 #define node_h
+#include <iostream>
+
 namespace hicma {
   enum {
     HICMA_NODE,
@@ -15,6 +17,8 @@ namespace hicma {
     const int level;
     Node() : i_abs(0), j_abs(0), level(0) {}
     Node(const int _i_abs, const int _j_abs, const int _level) : i_abs(_i_abs), j_abs(_j_abs), level(_level) {}
+
+    virtual ~Node() {}
 
     virtual const bool is(const int enum_id) const {
       return enum_id == HICMA_NODE;
