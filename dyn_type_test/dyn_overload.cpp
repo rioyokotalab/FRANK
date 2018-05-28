@@ -15,6 +15,10 @@ class Node {
     int i;
     Node(const int i_) : i(i_) {}
 
+    ~Node() {
+      std::cout << "Node destructor" << std::endl;
+    }
+
     virtual const bool is(const int enum_id) const {
       return enum_id == HICMA_NODE;
     }
@@ -30,6 +34,10 @@ class Node {
 class Dense : public Node{
   public:
     Dense(const int i) : Node(i) {}
+
+    ~Dense() {
+      std::cout << "Dense destructor" << std::endl;
+    }
 
     virtual const bool is(const int enum_id) const override {
       return enum_id == HICMA_DENSE;
@@ -55,6 +63,10 @@ class Dense : public Node{
 class LowRank : public Node{
   public:
     LowRank(const int i) : Node(i) {}
+
+    ~LowRank() {
+      std::cout << "LowRank destructor" << std::endl;
+    }
 
     virtual const bool is(const int enum_id) const override {
       return enum_id == HICMA_LOWRANK;
@@ -90,6 +102,10 @@ class Hierarchical : public Node{
           data[j] = std::unique_ptr<Node>(new LowRank(j));
         }
       }
+    }
+
+    ~Hierarchical() {
+      std::cout << "Hierarchical destructor" << std::endl;
     }
 
     virtual const bool is(const int enum_id) const override {
