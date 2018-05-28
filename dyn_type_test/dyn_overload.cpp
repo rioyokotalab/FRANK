@@ -35,7 +35,7 @@ class Dense : public Node{
       return enum_id == HICMA_DENSE;
     }
 
-    virtual const char* is_string() const { return "Dense"; }
+    virtual const char* is_string() const override { return "Dense"; }
 
     Node add(const Node& B) override {
       if (B.is(HICMA_DENSE)) {
@@ -60,7 +60,7 @@ class LowRank : public Node{
       return enum_id == HICMA_LOWRANK;
     }
 
-    virtual const char* is_string() const { return "LowRank"; }
+    virtual const char* is_string() const override { return "LowRank"; }
 
     Node add(const Node& B) override {
       if (B.is(HICMA_LOWRANK)) {
@@ -96,7 +96,7 @@ class Hierarchical : public Node{
       return enum_id == HICMA_HIERARCHICAL;
     }
 
-    virtual const char* is_string() const { return "Hierarchical"; }
+    virtual const char* is_string() const override { return "Hierarchical"; }
 
     Node& operator[](const int i) {
       if (i > dim - 1) throw;

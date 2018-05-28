@@ -22,6 +22,10 @@ namespace hicma {
 
     LowRank(const Dense &A, const int k);
 
+    virtual const bool is(const int enum_id) const override;
+
+    virtual const char* is_string() const override;
+
     const LowRank& operator=(const double v);
 
     const LowRank& operator=(const LowRank A);

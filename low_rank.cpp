@@ -26,6 +26,12 @@ namespace hicma {
     randomized_low_rank_svd2(A.data, rank, U.data, S.data, V.data, m, n);
   }
 
+  const bool LowRank::is(const int enum_id) const {
+    return enum_id == HICMA_LOWRANK;
+  }
+
+  const char* LowRank::is_string() const { return "LowRank"; }
+
   const LowRank& LowRank::operator=(const double a) {
     assert(a == 0);
     U = 0;

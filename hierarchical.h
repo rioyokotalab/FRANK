@@ -45,6 +45,10 @@ namespace hicma {
                  const int level=0
                  );
 
+    virtual const bool is(const int enum_id) const override;
+
+    virtual const char* is_string() const override;
+
     boost::any& operator[](const int i);
 
     const boost::any& operator[](const int i) const;

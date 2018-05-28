@@ -151,6 +151,12 @@ namespace hicma {
     }
   }
 
+  const bool Hierarchical::is(const int enum_id) const {
+    return enum_id == HICMA_HIERARCHICAL;
+  }
+
+  const char* Hierarchical::is_string() const { return "HIERARCHICAL"; }
+
   boost::any& Hierarchical::operator[](const int i) {
     assert(i<dim[0]*dim[1]);
     return data[i];

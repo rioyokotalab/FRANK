@@ -42,6 +42,12 @@ namespace hicma {
     func(data, x, ni, nj, i_begin, j_begin);
   }
 
+  const bool Dense::is(const int enum_id) const {
+    return enum_id == HICMA_DENSE;
+  }
+
+  const char* Dense::is_string() const { return "Dense"; }
+
   double& Dense::operator[](const int i) {
     assert(i<dim[0]*dim[1]);
     return data[i];
