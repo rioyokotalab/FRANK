@@ -1,6 +1,7 @@
 #ifndef hierarchical_h
 #define hierarchical_h
 #include <boost/any.hpp>
+#include <memory>
 
 namespace hicma {
   class Node;
@@ -10,6 +11,7 @@ namespace hicma {
   public:
     int dim[2];
     std::vector<boost::any> data;
+    std::vector<std::unique_ptr<Node>> data_test;
 
     Hierarchical();
 

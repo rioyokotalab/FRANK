@@ -1,16 +1,21 @@
 
-Fix low rank copy consturctor
-H-matrix LU
-MPI version
-Asyncronous communication
 Clean randomized id.cpp
-typedef any_cast
-H^2-matrix LU
+H^2-matrix LU (nested basis)
+Recompress low_rank after add/sub (after H^2 mat)
 ID with controllable precision
-Template over float/double
 Pivots inside diagonal blocks
 Non-square matrices
 Write operator-=() using operator+=()
+
+[Remove dependency on boost any]
+Make a few realistic test cases in prototype (return types of add etc)
+Get Hierarchical constructor working (commit to new branch if working)
+Get rid of string comparison (A.is() == "LowRank"), use enum
+
+[Features to implement]
+MPI version
+Asyncronous communication
+Template over float/double
 
 [Results]
 Compare {FullRank, LowRank, Hierarchical}, {A, L, U} types with op. overloading

@@ -1,5 +1,6 @@
 #include <algorithm>
 #include "hblas.h"
+#include <memory>
 
 namespace hicma {
   Hierarchical::Hierarchical() {
@@ -48,6 +49,7 @@ namespace hicma {
     dim[0] = std::min(ni_level,ni);
     dim[1] = std::min(nj_level,nj);
     data.resize(dim[0]*dim[1]);
+    data_test.resize(dim[0]*dim[1]);
     for ( int i=0; i<dim[0]; i++ ) {
       for ( int j=0; j<dim[1]; j++ ) {
         int ni_child = ni/dim[0];
@@ -76,6 +78,18 @@ namespace hicma {
                     level+1
                      );
             (*this)(i,j) = D;
+            (*this).data_test[i*dim[1]+j] = std::unique_ptr<Node>(
+                new Dense(
+                  func,
+                  x,
+                  ni_child,
+                  nj_child,
+                  i_begin_child,
+                  j_begin_child,
+                  i_abs_child,
+                  j_abs_child,
+                  level+1)
+                );
           }
           else {
             Hierarchical H(
@@ -95,6 +109,25 @@ namespace hicma {
                            level+1
                            );
             (*this)(i,j) = H;
+            (*this).data_test[i*dim[1]+j] = std::unique_ptr<Node>(
+                new Hierarchical(
+                           func,
+                           x,
+                           ni_child,
+                           nj_child,
+                           rank,
+                           nleaf,
+                           admis,
+                           ni_level,
+                           nj_level,
+                           i_begin_child,
+                           j_begin_child,
+                           i_abs_child,
+                           j_abs_child,
+                           level+1
+                           )
+                );
+
           }
         }
         else {
@@ -111,6 +144,8 @@ namespace hicma {
                   );
           LowRank LR(D, rank); // TODO : create a LowRank constructor that does ID with x
           (*this)(i,j) = LR;
+          (*this).data_test[i*dim[1]+j] = std::unique_ptr<Node>(
+              new LowRank(D, rank));
         }
       }
     }

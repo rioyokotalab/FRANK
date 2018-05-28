@@ -1,4 +1,4 @@
-CXX = mpicxx -ggdb3 -Wall -O3 -fopenmp -I.
+CXX = mpicxx -std=c++11 -ggdb3 -Wall -O3 -fopenmp -I.
 
 SOURCES = hblas.o dense.o id.o low_rank.o hierarchical.o
 
