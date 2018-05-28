@@ -10,7 +10,6 @@ Write operator-=() using operator+=()
 [Remove dependency on boost any]
 Make a few realistic test cases in prototype (return types of add etc)
 Get Hierarchical constructor working (commit to new branch if working)
-Get rid of string comparison (A.is() == "LowRank"), use enum
 
 [Features to implement]
 MPI version

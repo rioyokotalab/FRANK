@@ -3,14 +3,25 @@
 #include <memory>
 #include <iostream>
 
+enum {
+  HICMA_NODE,
+  HICMA_HIERARCHICAL,
+  HICMA_DENSE,
+  HICMA_LOWRANK
+};
+
 class Node {
   public:
     int i;
     Node(const int i_) : i(i_) {}
 
-    virtual const char* is() const { return "Node"; }
+    virtual const bool is(const int enum_id) const {
+      return enum_id == HICMA_NODE;
+    }
 
-    virtual Node add(const Node& A) {
+    virtual const char* is_string() const { return "Node"; }
+
+    virtual Node add(const Node& B) {
       std::cout << "Not implemented!!" << std::endl;
     };
 };
@@ -20,15 +31,20 @@ class Dense : public Node{
   public:
     Dense(const int i) : Node(i) {}
 
-    virtual const char* is() const override { return "Dense"; }
+    virtual const bool is(const int enum_id) const override {
+      return enum_id == HICMA_DENSE;
+    }
 
-    Node add(const Node& A) override {
-      if (A.is() == "Dense") {
-        std::cout << this->is() << " + " << A.is() << " works!" << std::endl;
-        Dense temp(this->i + A.i);
+    virtual const char* is_string() const { return "Dense"; }
+
+    Node add(const Node& B) override {
+      if (B.is(HICMA_DENSE)) {
+        std::cout << this->is_string() << " + " << B.is_string();
+        std::cout  << " works!" << std::endl;
+        Dense temp(this->i + B.i);
         return temp;
       } else {
-        std::cout << this->is() << " + " << A.is();
+        std::cout << this->is_string() << " + " << B.is_string();
         std::cout << " is undefined!" << std::endl;
         return *this;
       }
@@ -40,15 +56,20 @@ class LowRank : public Node{
   public:
     LowRank(const int i) : Node(i) {}
 
-    virtual const char* is() const override { return "LowRank"; }
+    virtual const bool is(const int enum_id) const override {
+      return enum_id == HICMA_LOWRANK;
+    }
 
-    Node add(const Node& A) override {
-      if (A.is() == "LowRank") {
-        std::cout << this->is() << " + " << A.is() << " works!" << std::endl;
-        LowRank temp(this->i + A.i);
+    virtual const char* is_string() const { return "LowRank"; }
+
+    Node add(const Node& B) override {
+      if (B.is(HICMA_LOWRANK)) {
+        std::cout << this->is_string() << " + " << B.is_string();
+        std::cout  << " works!" << std::endl;
+        LowRank temp(this->i + B.i);
         return temp;
       } else {
-        std::cout << this->is() << " + " << A.is();
+        std::cout << this->is_string() << " + " << B.is_string();
         std::cout << " is undefined!" << std::endl;
         return *this;
       }
@@ -71,7 +92,11 @@ class Hierarchical : public Node{
       }
     }
 
-    virtual const char* is() const override { return "Hierarchical"; }
+    virtual const bool is(const int enum_id) const override {
+      return enum_id == HICMA_HIERARCHICAL;
+    }
+
+    virtual const char* is_string() const { return "Hierarchical"; }
 
     Node& operator[](const int i) {
       if (i > dim - 1) throw;
@@ -90,23 +115,24 @@ class Hierarchical : public Node{
     //}
 
     Node add(const Node& B) override {
-      if (B.is() == "Hierarchical") {
-        std::cout << this->is() << " + " << B.is() << " works!" << std::endl;
+      if (B.is(HICMA_HIERARCHICAL)) {
+        std::cout << this->is_string() << " + " << B.is_string();
+        std::cout  << " works!" << std::endl;
         const Hierarchical* ap = static_cast<const Hierarchical*>(&B);
 
         Hierarchical temp(this->i + B.i, this->dim + ap->dim );
 
         return temp;
-      } else if (B.is() == "Dense") {
-        std::cout << this->is() << " + " << B.is() << " works!" << std::endl;
+      } else if (B.is(HICMA_DENSE)) {
+        std::cout << this->is_string() << " + " << B.is_string();
+        std::cout  << " works!" << std::endl;
         const Hierarchical* ap = static_cast<const Hierarchical*>(&B);
 
         Dense temp(this->i + B.i);
 
         return temp;
-
       } else {
-        std::cout << this->is() << " + " << B.is();
+        std::cout << this->is_string() << " + " << B.is_string();
         std::cout << " is undefined!" << std::endl;
         return *this;
       }
@@ -132,7 +158,5 @@ main(int argc, char** argv) {
   hierarchical[0] += hierarchical[2];
 
   std::cout << hierarchical[0].i << std::endl;
-  //std::cout << hierarchical.i << std::endl;
-
 }
 
