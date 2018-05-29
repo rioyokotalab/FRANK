@@ -274,7 +274,15 @@ namespace hicma {
   }
 
   void Dense::trsm_test(const Node& A, const char& uplo) {
-    std::cout << "Dense trsm" << std::endl;
+    if (A.is(HICMA_DENSE)) {
+      std::cout << this->is_string() << " /= " << A.is_string();
+      std::cout << " works!" << std::endl;
+    } else {
+      fprintf(
+          stderr,"%s /= %s undefined.\n",
+          this->is_string(), A.is_string());
+      abort();
+    }
   }
 
   void Dense::gemm(const Dense& A, const Dense& B) {
@@ -294,6 +302,41 @@ namespace hicma {
   }
 
   void Dense::gemm_test(const Node& A, const Node& B) {
-    std::cout << "Dense gemm" << std::endl;
+    if (A.is(HICMA_DENSE)) {
+      if (B.is(HICMA_DENSE)) {
+        std::cout << this->is_string() << " += ";
+        std::cout << A.is_string() << " * " << B.is_string();
+        std::cout << " works!" << std::endl;
+      } else if (B.is(HICMA_LOWRANK)) {
+        std::cout << this->is_string() << " += ";
+        std::cout << A.is_string() << " * " << B.is_string();
+        std::cout << " works!" << std::endl;
+      } else if (B.is(HICMA_HIERARCHICAL)) {
+        fprintf(
+            stderr,"%s += %s * %s undefined.\n",
+            this->is_string(), A.is_string(), B.is_string());
+        abort();
+      }
+    } else if (A.is(HICMA_LOWRANK)) {
+      if (B.is(HICMA_DENSE)) {
+        std::cout << this->is_string() << " += ";
+        std::cout << A.is_string() << " * " << B.is_string();
+        std::cout << " works!" << std::endl;
+      } else if (B.is(HICMA_LOWRANK)) {
+        std::cout << this->is_string() << " += ";
+        std::cout << A.is_string() << " * " << B.is_string();
+        std::cout << " works!" << std::endl;
+      } else if (B.is(HICMA_HIERARCHICAL)) {
+        fprintf(
+            stderr,"%s += %s * %s undefined.\n",
+            this->is_string(), A.is_string(), B.is_string());
+        abort();
+      }
+    } else {
+      fprintf(
+          stderr,"%s += %s * %s undefined.\n",
+          this->is_string(), A.is_string(), B.is_string());
+      abort();
+    }
   }
 }

@@ -155,7 +155,7 @@ namespace hicma {
     return enum_id == HICMA_HIERARCHICAL;
   }
 
-  const char* Hierarchical::is_string() const { return "HIERARCHICAL"; }
+  const char* Hierarchical::is_string() const { return "Hierarchical"; }
 
   boost::any& Hierarchical::operator[](const int i) {
     assert(i<dim[0]*dim[1]);
@@ -395,10 +395,34 @@ namespace hicma {
   }
 
   void Hierarchical::trsm_test(const Node& A, const char& uplo) {
-    std::cout << "Hierarchical trsm" << std::endl;
+    if (A.is(HICMA_HIERARCHICAL)) {
+      std::cout << this->is_string() << " /= " << A.is_string();
+      std::cout << " works!" << std::endl;
+    } else {
+      fprintf(
+          stderr,"%s /= %s undefined.\n",
+          this->is_string(), A.is_string());
+      abort();
+    }
   }
 
   void Hierarchical::gemm_test(const Node& A, const Node& B) {
-    std::cout << "Hierarchical gemm" << std::endl;
+    if (A.is(HICMA_HIERARCHICAL)) {
+      if (B.is(HICMA_HIERARCHICAL)) {
+        std::cout << this->is_string() << " += ";
+        std::cout << A.is_string() << " * " << B.is_string();
+        std::cout << " works!" << std::endl;
+      } else {
+        fprintf(
+            stderr,"%s += %s * %s undefined.\n",
+            this->is_string(), A.is_string(), B.is_string());
+        abort();
+      }
+    } else {
+      fprintf(
+          stderr,"%s += %s * %s undefined.\n",
+          this->is_string(), A.is_string(), B.is_string());
+      abort();
+    }
   }
 }
