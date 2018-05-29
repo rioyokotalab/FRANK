@@ -292,4 +292,8 @@ namespace hicma {
   void Dense::gemm(const LowRank& A, const LowRank& B) {
     *this -= A * B;
   }
+
+  void Dense::gemm_test(const Node& A, const Node& B) {
+    std::cout << "Dense gemm" << std::endl;
+  }
 }

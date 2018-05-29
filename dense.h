@@ -121,6 +121,8 @@ namespace hicma {
     void gemm(const LowRank& A, const Dense& B);
 
     void gemm(const LowRank& A, const LowRank& B);
+
+    void gemm_test(const Node& A, const Node& B);
   };
 }
 #endif

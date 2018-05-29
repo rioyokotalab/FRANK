@@ -263,4 +263,8 @@ namespace hicma {
     D.gemm(A, B);
     *this = LowRank(D, this->rank);
   }
+
+  void LowRank::gemm_test(const Node& A, const Node& B) {
+    std::cout << "LowRank gemm" << std::endl;
+  }
 }

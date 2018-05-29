@@ -327,7 +327,7 @@ namespace hicma {
       }
       for (int j=i+1; j<dim[0]; j++) {
         for (int k=i+1; k<dim[0]; k++) {
-          //hicma::gemm((*this)(j,i),(*this)(i,k),(*this)(j,k));
+          (*this)("",j,k).gemm_test((*this)("",j,i),(*this)("",i,k));
         }
       }
     }
@@ -396,5 +396,9 @@ namespace hicma {
 
   void Hierarchical::trsm_test(const Node& A, const char& uplo) {
     std::cout << "Hierarchical trsm" << std::endl;
+  }
+
+  void Hierarchical::gemm_test(const Node& A, const Node& B) {
+    std::cout << "Hierarchical gemm" << std::endl;
   }
 }

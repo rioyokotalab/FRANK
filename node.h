@@ -32,6 +32,8 @@ namespace hicma {
     virtual void getrf_test() {};
 
     virtual void trsm_test(const Node& A, const char& uplo) {};
+
+    virtual void gemm_test(const Node& A, const Node& B) {};
   };
 }
 #endif

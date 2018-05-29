@@ -122,6 +122,8 @@ namespace hicma {
     void trsm_test(const Node& A, const char& uplo) override;
 
     void gemm(const Hierarchical& A, const Hierarchical& B);
+
+    void gemm_test(const Node& A, const Node& B);
   };
 }
 #endif
