@@ -45,6 +45,7 @@ int main(int argc, char** argv) {
   stop("Init matrix");
   start("LU decomposition");
   A.getrf();
+  A.getrf_test();
   stop("LU decomposition");
   start("Forward substitution");
   b.trsm(A,'l');

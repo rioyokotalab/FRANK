@@ -233,6 +233,10 @@ namespace hicma {
 #endif
   }
 
+  void Dense::getrf_test() {
+    std::cout << "Dense getrf" << std::endl;
+  }
+
   void Dense::trsm(const Dense& A, const char& uplo) {
     if (dim[1] == 1) {
       switch (uplo) {
@@ -267,6 +271,10 @@ namespace hicma {
     std::cout << "----------------------------------------------------------------------------------" << std::endl;
     this->print();
 #endif
+  }
+
+  void Dense::trsm_test(const Node& A, const char& uplo) {
+    std::cout << "Dense trsm" << std::endl;
   }
 
   void Dense::gemm(const Dense& A, const Dense& B) {

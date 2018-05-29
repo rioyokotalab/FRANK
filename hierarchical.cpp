@@ -177,6 +177,16 @@ namespace hicma {
     return data[i*dim[1]+j];
   }
 
+  Node& Hierarchical::operator()(const char* test, const int i, const int j) {
+    assert(i<dim[0] && j<dim[1]);
+    return *data_test[i*dim[1]+j];
+  }
+
+  const Node& Hierarchical::operator()(const char* test, const int i, const int j) const {
+    assert(i<dim[0] && j<dim[1]);
+    return *data_test[i*dim[1]+j];
+  }
+
   const Hierarchical& Hierarchical::operator=(const double a) {
     for (int i=0; i<dim[0]; i++) {
       for (int j=0; j<dim[1]; j++) {
@@ -308,6 +318,21 @@ namespace hicma {
     }
   }
 
+  void Hierarchical::getrf_test() {
+    for (int i=0; i<dim[0]; i++) {
+      (*this)("",i,i).getrf_test();
+      for (int j=i+1; j<dim[0]; j++) {
+        (*this)("",i,j).trsm_test((*this)("",i,i),'l');
+        (*this)("",j,i).trsm_test((*this)("",i,i),'u');
+      }
+      for (int j=i+1; j<dim[0]; j++) {
+        for (int k=i+1; k<dim[0]; k++) {
+          //hicma::gemm((*this)(j,i),(*this)(i,k),(*this)(j,k));
+        }
+      }
+    }
+  }
+
   void Hierarchical::trsm(const Hierarchical& A, const char& uplo) {
 #if DEBUG
     std::cout << "trsm(H(" << this->i_abs << "," << this->j_abs << "),H(" << A.i_abs << "," << A.j_abs << ")) @ lev " << this->level << std::endl;
@@ -367,5 +392,9 @@ namespace hicma {
         fprintf(stderr,"Second argument must be 'l' for lower, 'u' for upper.\n"); abort();
       }
     }
+  }
+
+  void Hierarchical::trsm_test(const Node& A, const char& uplo) {
+    std::cout << "Hierarchical trsm" << std::endl;
   }
 }

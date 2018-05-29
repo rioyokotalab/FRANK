@@ -108,7 +108,11 @@ namespace hicma {
 
     void getrf();
 
+    void getrf_test() override;
+
     void trsm(const Dense& A, const char& uplo);
+
+    void trsm_test(const Node& A, const char& uplo) override;
 
     void gemm(const Dense& A, const Dense& B);
 

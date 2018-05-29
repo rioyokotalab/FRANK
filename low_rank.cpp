@@ -242,6 +242,10 @@ namespace hicma {
 #endif
   }
 
+  void LowRank::trsm_test(const Node& A, const char& uplo) {
+    std::cout << "LowRank trsm" << std::endl;
+  }
+
   void LowRank::gemm(const LowRank& A, const Dense& B) {
     Dense D = this->dense();
     D.gemm(A, B);

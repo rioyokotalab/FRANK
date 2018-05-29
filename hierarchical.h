@@ -57,6 +57,10 @@ namespace hicma {
 
     const boost::any& operator()(const int i, const int j) const;
 
+    Node& operator()(const char*, const int i, const int j);
+
+    const Node& operator()(const char*, const int i, const int j) const;
+
     const Hierarchical& operator=(const double a);
 
     const Hierarchical& operator=(const Hierarchical& A);
@@ -111,7 +115,11 @@ namespace hicma {
 
     void getrf();
 
+    void getrf_test() override;
+
     void trsm(const Hierarchical& A, const char& uplo);
+
+    void trsm_test(const Node& A, const char& uplo) override;
 
     void gemm(const Hierarchical& A, const Hierarchical& B);
   };

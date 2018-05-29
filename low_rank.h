@@ -84,6 +84,8 @@ namespace hicma {
 
     void trsm(const Dense& A, const char& uplo);
 
+    void trsm_test(const Node& A, const char& uplo) override;
+
     void gemm(const Dense& A, const LowRank& B);
 
     void gemm(const LowRank& A, const Dense& B);
