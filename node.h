@@ -1,13 +1,15 @@
 #ifndef node_h
 #define node_h
 #include <iostream>
+#include <memory>
 
 namespace hicma {
+
   enum {
     HICMA_NODE,
     HICMA_HIERARCHICAL,
-    HICMA_DENSE,
-    HICMA_LOWRANK
+    HICMA_LOWRANK,
+    HICMA_DENSE
   };
 
   class Node {
@@ -21,19 +23,26 @@ namespace hicma {
         const int _j_abs,
         const int _level) : i_abs(_i_abs), j_abs(_j_abs), level(_level) {}
 
-    virtual ~Node() {};
+    virtual ~Node();
 
-    virtual const bool is(const int enum_id) const {
-      return enum_id == HICMA_NODE;
-    }
+    virtual const Node& operator=(std::unique_ptr<Node> A);
 
-    virtual const char* is_string() const { return "Node"; }
+    virtual const bool is(const int enum_id) const;
 
-    virtual void getrf_test() {};
+    virtual const char* is_string() const;
 
-    virtual void trsm_test(const Node& A, const char& uplo) {};
+    virtual std::unique_ptr<Node> add(const Node& B) const;
 
-    virtual void gemm_test(const Node& A, const Node& B) {};
+    virtual std::unique_ptr<Node> sub(const Node& B) const;
+
+    virtual std::unique_ptr<Node> mul(const Node& B) const;
+
+    virtual void getrf_test();
+
+    virtual void trsm(const Node& A, const char& uplo);
+
+    virtual void gemm(const Node& A, const Node& B);
   };
+
 }
 #endif

@@ -242,7 +242,7 @@ namespace hicma {
 #endif
   }
 
-  void LowRank::trsm_test(const Node& A, const char& uplo) {
+  void LowRank::trsm(const Node& A, const char& uplo) {
     if (A.is(HICMA_DENSE)) {
       std::cout << this->is_string() << " /= " << A.is_string();
       std::cout << " works!" << std::endl;
@@ -272,7 +272,7 @@ namespace hicma {
     *this = LowRank(D, this->rank);
   }
 
-  void LowRank::gemm_test(const Node& A, const Node& B) {
+  void LowRank::gemm(const Node& A, const Node& B) {
     if (A.is(HICMA_DENSE)) {
       if (B.is(HICMA_DENSE)) {
         fprintf(

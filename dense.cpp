@@ -273,7 +273,7 @@ namespace hicma {
 #endif
   }
 
-  void Dense::trsm_test(const Node& A, const char& uplo) {
+  void Dense::trsm(const Node& A, const char& uplo) {
     if (A.is(HICMA_DENSE)) {
       std::cout << this->is_string() << " /= " << A.is_string();
       std::cout << " works!" << std::endl;
@@ -301,7 +301,7 @@ namespace hicma {
     *this -= A * B;
   }
 
-  void Dense::gemm_test(const Node& A, const Node& B) {
+  void Dense::gemm(const Node& A, const Node& B) {
     if (A.is(HICMA_DENSE)) {
       if (B.is(HICMA_DENSE)) {
         std::cout << this->is_string() << " += ";

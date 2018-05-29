@@ -322,12 +322,12 @@ namespace hicma {
     for (int i=0; i<dim[0]; i++) {
       (*this)("",i,i).getrf_test();
       for (int j=i+1; j<dim[0]; j++) {
-        (*this)("",i,j).trsm_test((*this)("",i,i),'l');
-        (*this)("",j,i).trsm_test((*this)("",i,i),'u');
+        (*this)("",i,j).trsm((*this)("",i,i),'l');
+        (*this)("",j,i).trsm((*this)("",i,i),'u');
       }
       for (int j=i+1; j<dim[0]; j++) {
         for (int k=i+1; k<dim[0]; k++) {
-          (*this)("",j,k).gemm_test((*this)("",j,i),(*this)("",i,k));
+          (*this)("",j,k).gemm((*this)("",j,i),(*this)("",i,k));
         }
       }
     }
@@ -394,7 +394,7 @@ namespace hicma {
     }
   }
 
-  void Hierarchical::trsm_test(const Node& A, const char& uplo) {
+  void Hierarchical::trsm(const Node& A, const char& uplo) {
     if (A.is(HICMA_HIERARCHICAL)) {
       std::cout << this->is_string() << " /= " << A.is_string();
       std::cout << " works!" << std::endl;
@@ -406,7 +406,7 @@ namespace hicma {
     }
   }
 
-  void Hierarchical::gemm_test(const Node& A, const Node& B) {
+  void Hierarchical::gemm(const Node& A, const Node& B) {
     if (A.is(HICMA_HIERARCHICAL)) {
       if (B.is(HICMA_HIERARCHICAL)) {
         std::cout << this->is_string() << " += ";
