@@ -32,6 +32,8 @@ namespace hicma {
 
     const Node& operator=(const Node& A) override;
 
+    const Node& operator=(const std::shared_ptr<Node> A) override;
+
     const Dense operator+=(const Dense& D);
 
     const LowRank operator+=(const LowRank& A);
