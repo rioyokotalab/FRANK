@@ -49,6 +49,8 @@ namespace hicma {
     return *this;
   }
 
+  const Node& LowRank::operator=(const Node& A) {}
+
   const Dense LowRank::operator+=(const Dense& A) {
     assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
     return this->dense() + A;
@@ -154,6 +156,12 @@ namespace hicma {
     A.V = -V;
     return A;
   }
+
+  std::shared_ptr<Node> LowRank::add(const Node& B) const {}
+
+  std::shared_ptr<Node> LowRank::sub(const Node& B) const {}
+
+  std::shared_ptr<Node> LowRank::mul(const Node& B) const {}
 
   void LowRank::resize(int m, int n, int k) {
     dim[0]=m; dim[1]=n; rank=k;

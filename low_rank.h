@@ -22,13 +22,15 @@ namespace hicma {
 
     LowRank(const Dense &A, const int k);
 
-    virtual const bool is(const int enum_id) const override;
+    const bool is(const int enum_id) const override;
 
-    virtual const char* is_string() const override;
+    const char* is_string() const override;
 
     const LowRank& operator=(const double v);
 
     const LowRank& operator=(const LowRank A);
+
+    const Node& operator=(const Node& A) override;
 
     const Dense operator+=(const Dense& D);
 
@@ -67,6 +69,12 @@ namespace hicma {
     LowRank operator*(const Hierarchical& A) const;
 
     LowRank operator-() const;
+
+    std::shared_ptr<Node> add(const Node& B) const override;
+
+    std::shared_ptr<Node> sub(const Node& B) const override;
+
+    std::shared_ptr<Node> mul(const Node& B) const override;
 
     void resize(int m, int n, int k);
 

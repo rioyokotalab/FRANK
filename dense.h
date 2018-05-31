@@ -42,9 +42,9 @@ namespace hicma {
           const int level=0
           );
 
-    virtual const bool is(const int enum_id) const override;
+    const bool is(const int enum_id) const override;
 
-    virtual const char* is_string() const override;
+    const char* is_string() const override;
 
     double& operator[](const int i);
 
@@ -57,6 +57,10 @@ namespace hicma {
     const Dense operator=(const double v);
 
     const Dense operator=(const Dense A);
+
+    const Node& operator=(const Node& A) override;
+
+    const Node& operator=(const std::shared_ptr<Node> A) override;
 
     const Dense operator+=(const Dense& A);
 
@@ -95,6 +99,12 @@ namespace hicma {
     Dense operator*(const Hierarchical& A) const;
 
     Dense operator-() const;
+
+    std::shared_ptr<Node> add(const Node& B) const override;
+
+    std::shared_ptr<Node> sub(const Node& B) const override;
+
+    std::shared_ptr<Node> mul(const Node& B) const override;
 
     void resize(int i);
 

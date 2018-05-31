@@ -81,6 +81,23 @@ namespace hicma {
     return *this;
   }
 
+  const Node& Dense::operator=(const Node& A) {};
+
+  const Node& Dense::operator=(const std::shared_ptr<Node> B_) {
+    const Node& B = *B_.get();
+    if (B.is(HICMA_DENSE)) {
+      const Dense& BR = static_cast<const Dense&>(B);
+      dim[0] = BR.dim[0]; dim[1] = BR.dim[1];
+      data.resize(dim[0]*dim[1]);
+      data = BR.data;
+      return *this;
+    } else {
+      std::cout << this->is_string() << " = " << B.is_string();
+      std::cout << " not implemented!" << std::endl;
+      return *this;
+    }
+  }
+
   const Dense Dense::operator+=(const Dense& A) {
     assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
     for (int i=0; i<dim[0]*dim[1]; i++)
@@ -191,6 +208,100 @@ namespace hicma {
     Dense D(dim[0],dim[1]);
     for (int i=0; i<dim[0]*dim[1]; i++) D[i] = -data[i];
     return D;
+  }
+
+  std::shared_ptr<Node> Dense::add(const Node& B_) const {
+    if (B_.is(HICMA_LOWRANK)) {
+      const LowRank& B = static_cast<const LowRank&>(B_);
+      assert(dim[0] == B.dim[0] && dim[1] == B.dim[1]);
+      return (*this).add(B.dense());
+    } else if (B_.is(HICMA_DENSE)) {
+      const Dense& B = static_cast<const Dense&>(B_);
+      assert(dim[0] == B.dim[0] && dim[1] == B.dim[1]);
+      Dense* temp = new Dense(*this);
+      for (int i=0; i<dim[0]*dim[1]; i++) {
+        temp->data[i] += B.data[i];
+      }
+      return std::shared_ptr<Node>(temp);
+    } else {
+      std::cout << this->is_string() << " + " << B_.is_string();
+      std::cout << " is undefined!" << std::endl;
+      return std::shared_ptr<Node>(nullptr);
+    }
+  }
+
+  std::shared_ptr<Node> Dense::sub(const Node& B_) const {
+    if (B_.is(HICMA_LOWRANK)) {
+      const LowRank& B = static_cast<const LowRank&>(B_);
+      assert(dim[0] == B.dim[0] && dim[1] == B.dim[1]);
+      return (*this).sub(B.dense());
+    } else if (B_.is(HICMA_DENSE)) {
+      const Dense& B = static_cast<const Dense&>(B_);
+      assert(dim[0] == B.dim[0] && dim[1] == B.dim[1]);
+      std::shared_ptr<Dense> Out = std::shared_ptr<Dense>(new Dense(*this));
+      for (int i=0; i<dim[0]*dim[1]; i++) {
+        (*Out).data[i] -= B.data[i];
+      }
+      return Out;
+    } else {
+      std::cout << this->is_string() << " + " << B_.is_string();
+      std::cout << " is undefined!" << std::endl;
+      return std::shared_ptr<Node>(nullptr);
+    }
+  }
+
+  std::shared_ptr<Node> Dense::mul(const Node& B_) const {
+    if (B_.is(HICMA_LOWRANK)) {
+      const LowRank& B = static_cast<const LowRank&>(B_);
+      assert(dim[0] == B.dim[0] && dim[1] == B.dim[1]);
+      LowRank* C = new LowRank(B);
+      C->U = *this * B.U;
+      return std::shared_ptr<Node>(C);
+    } else if (B_.is(HICMA_DENSE)) {
+      const Dense& B = static_cast<const Dense&>(B_);
+      assert(dim[1] == B.dim[0]);
+      std::shared_ptr<Dense> C = std::shared_ptr<Dense>(
+          new Dense(dim[0],B.dim[1]));
+      if (B.dim[1] == 1) {
+        cblas_dgemv(
+                    CblasRowMajor,
+                    CblasNoTrans,
+                    dim[0],
+                    dim[1],
+                    1,
+                    &data[0],
+                    dim[1],
+                    &B[0],
+                    1,
+                    0,
+                    &(*C)[0],
+                    1
+                    );
+      }
+      else {
+        cblas_dgemm(
+                    CblasRowMajor,
+                    CblasNoTrans,
+                    CblasNoTrans,
+                    (*C).dim[0],
+                    (*C).dim[1],
+                    dim[1],
+                    1,
+                    &data[0],
+                    dim[1],
+                    &B[0],
+                    B.dim[1],
+                    0,
+                    &(*C)[0],
+                    (*C).dim[1]
+                    );
+      }
+      return C;
+    } else {
+      std::cout << this->is_string() << " + " << B_.is_string();
+      std::cout << " is undefined!" << std::endl;
+      return std::shared_ptr<Node>(nullptr);
+    }
   }
 
   void Dense::resize(int i) {
@@ -307,6 +418,7 @@ namespace hicma {
         std::cout << this->is_string() << " += ";
         std::cout << A.is_string() << " * " << B.is_string();
         std::cout << " works!" << std::endl;
+        //*this -= A * B;
       } else if (B.is(HICMA_LOWRANK)) {
         std::cout << this->is_string() << " += ";
         std::cout << A.is_string() << " * " << B.is_string();

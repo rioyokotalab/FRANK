@@ -78,7 +78,7 @@ namespace hicma {
                     level+1
                      );
             (*this)(i,j) = D;
-            (*this).data_test[i*dim[1]+j] = std::unique_ptr<Node>(
+            (*this).data_test[i*dim[1]+j] = std::shared_ptr<Dense>(
                 new Dense(
                   func,
                   x,
@@ -109,7 +109,7 @@ namespace hicma {
                            level+1
                            );
             (*this)(i,j) = H;
-            (*this).data_test[i*dim[1]+j] = std::unique_ptr<Node>(
+            (*this).data_test[i*dim[1]+j] = std::shared_ptr<Hierarchical>(
                 new Hierarchical(
                            func,
                            x,
@@ -144,7 +144,7 @@ namespace hicma {
                   );
           LowRank LR(D, rank); // TODO : create a LowRank constructor that does ID with x
           (*this)(i,j) = LR;
-          (*this).data_test[i*dim[1]+j] = std::unique_ptr<Node>(
+          (*this).data_test[i*dim[1]+j] = std::shared_ptr<LowRank>(
               new LowRank(D, rank));
         }
       }
@@ -203,6 +203,25 @@ namespace hicma {
     return *this;
   }
 
+  const Node& Hierarchical::operator=(const Node& A) {
+    if (A.is(HICMA_HIERARCHICAL)) {
+      // This can be avoided if Node has data and dim members!
+      const Hierarchical& AR = static_cast<const Hierarchical&>(A);
+      dim[0]=AR.dim[0]; dim[1]=AR.dim[1];
+      data_test.resize(dim[0]*dim[1]);
+      data_test = AR.data_test;
+      return *this;
+    } else {
+      std::cout << this->is_string() << " = " << A.is_string();
+      std::cout << " not implemented!" << std::endl;
+      return *this;
+    }
+  }
+
+  const Node& Hierarchical::operator=(const std::shared_ptr<Node> A) {
+    return *this = *A;
+  }
+
   const Hierarchical Hierarchical::operator+=(const Hierarchical& A) {
 #if DEBUG
     std::cout << "H += H : C(" << this->i_abs << "," << this->j_abs << ") = A(" << this->i_abs << "," << this->j_abs << ") + B(" << A.i_abs << "," << A.j_abs << ") @ lev " << this->level << std::endl;
@@ -254,6 +273,73 @@ namespace hicma {
 
   Hierarchical Hierarchical::operator*(const Hierarchical& A) const {
     return Hierarchical(*this) *= A;
+  }
+
+  std::shared_ptr<Node> Hierarchical::add(const Node& B) const {
+    if (B.is(HICMA_HIERARCHICAL)) {
+      const Hierarchical& BR = static_cast<const Hierarchical&>(B);
+      assert(dim[0]==BR.dim[0] && dim[1]==BR.dim[1]);
+      std::shared_ptr<Hierarchical> Out = std::shared_ptr<Hierarchical>(
+          new Hierarchical(*this));
+      for (int i=0; i<dim[0]; i++)
+        for (int j=0; j<dim[1]; j++)
+          (*Out)("",i,j) = (*this)("",i,j) + BR("",i,j);
+      return Out;
+    } else {
+        std::cout << this->is_string() << " + " << B.is_string();
+        std::cout << " is undefined!" << std::endl;
+        return std::shared_ptr<Node>(nullptr);
+    }
+  }
+
+  const Node& Hierarchical::iadd(const Node& B){
+    *this = (*this).add(B);
+    return *this;
+  }
+
+  std::shared_ptr<Node> Hierarchical::sub(const Node& B) const {
+    if (B.is(HICMA_HIERARCHICAL)) {
+      const Hierarchical& BR = static_cast<const Hierarchical&>(B);
+      assert(dim[0]==BR.dim[0] && dim[1]==BR.dim[1]);
+      std::shared_ptr<Hierarchical> Out = std::shared_ptr<Hierarchical>(
+          new Hierarchical(*this));
+      for (int i=0; i<dim[0]; i++)
+        for (int j=0; j<dim[1]; j++)
+          (*Out)("",i,j) = (*this)("",i,j) - BR("",i,j);
+      return Out;
+    } else {
+        std::cout << this->is_string() << " - " << B.is_string();
+        std::cout << " is undefined!" << std::endl;
+        return std::shared_ptr<Node>(nullptr);
+    }
+  }
+
+  const Node& Hierarchical::isub(const Node& B) {
+    *this = (*this).sub(B);
+    return *this;
+  }
+
+  std::shared_ptr<Node> Hierarchical::mul(const Node& B) const {
+    if (B.is(HICMA_HIERARCHICAL)) {
+      const Hierarchical& BR = static_cast<const Hierarchical&>(B);
+      assert(dim[1] == BR.dim[0]);
+      std::shared_ptr<Hierarchical> Out = std::shared_ptr<Hierarchical>(
+          new Hierarchical(*this));
+      for (int i=0; i<dim[0]; i++)
+        for (int j=0; j<BR.dim[1]; j++)
+          for (int k=0; k<dim[1]; k++)
+            (*Out)("",i,j) = (*this)("",i,k) * BR("",k,j);
+      return Out;
+    } else {
+        std::cout << this->is_string() << " * " << B.is_string();
+        std::cout << " is undefined!" << std::endl;
+        return std::shared_ptr<Node>(nullptr);
+    }
+  }
+
+  const Node& Hierarchical::imul(const Node& B) {
+    *this = (*this).mul(B);
+    return *this;
   }
 
   Dense& Hierarchical::dense(const int i) {
@@ -408,10 +494,18 @@ namespace hicma {
 
   void Hierarchical::gemm(const Node& A, const Node& B) {
     if (A.is(HICMA_HIERARCHICAL)) {
+      const Hierarchical& AR = static_cast<const Hierarchical&>(A);
       if (B.is(HICMA_HIERARCHICAL)) {
+        const Hierarchical& BR = static_cast<const Hierarchical&>(B);
         std::cout << this->is_string() << " += ";
         std::cout << A.is_string() << " * " << B.is_string();
         std::cout << " works!" << std::endl;
+        assert(dim[0]==AR.dim[0] && dim[1]==AR.dim[1]);
+        for (int i=0; i<dim[0]; i++) {
+          for (int j=0; j<dim[1]; j++) {
+            (*this)("",i,j).gemm(AR("",i,j), BR("", i, j));
+          }
+        }
       } else {
         fprintf(
             stderr,"%s += %s * %s undefined.\n",

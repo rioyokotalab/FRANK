@@ -6,8 +6,12 @@ namespace hicma {
 
   Node::~Node() {};
 
-  const Node& Node::operator=(std::unique_ptr<Node> A) {
+  const Node& Node::operator=(const Node& A) {
     return *this;
+  }
+
+  const Node& Node::operator=(const std::shared_ptr<Node> A) {
+    return *this = *A;
   }
 
   const bool Node::is(const int enum_id) const {
@@ -16,19 +20,34 @@ namespace hicma {
 
   const char* Node::is_string() const { return "Node"; }
 
-  std::unique_ptr<Node> Node::add(const Node& B) const {
-    std::cout << "Not implemented!!" << std::endl;
-    return std::unique_ptr<Node>(nullptr);
+  std::shared_ptr<Node> Node::add(const Node& B) const {
+    std::cout << "Not implemented!!" << std::endl; abort();
+    return std::shared_ptr<Node>(nullptr);
   };
 
-  std::unique_ptr<Node> Node::sub(const Node& B) const {
-    std::cout << "Not implemented!!" << std::endl;
-    return std::unique_ptr<Node>(nullptr);
+  const Node& Node::iadd(const Node& B) {
+    std::cout << "Not implemented!!" << std::endl; abort();
+    return *this;
   };
 
-  std::unique_ptr<Node> Node::mul(const Node& B) const {
-    std::cout << "Not implemented!!" << std::endl;
-    return std::unique_ptr<Node>(nullptr);
+  std::shared_ptr<Node> Node::sub(const Node& B) const {
+    std::cout << "Not implemented!!" << std::endl; abort();
+    return std::shared_ptr<Node>(nullptr);
+  };
+
+  const Node& Node::isub(const Node& B) {
+    std::cout << "Not implemented!!" << std::endl; abort();
+    return *this;
+  };
+
+  std::shared_ptr<Node> Node::mul(const Node& B) const {
+    std::cout << "Not implemented!!" << std::endl; abort();
+    return std::shared_ptr<Node>(nullptr);
+  };
+
+  const Node& Node::imul(const Node& B) {
+    std::cout << "Not implemented!!" << std::endl; abort();
+    return *this;
   };
 
   void Node::getrf_test() {};
@@ -37,31 +56,40 @@ namespace hicma {
 
   void Node::gemm(const Node& A, const Node& B) {};
 
-  std::unique_ptr<Node> operator+(const Node& A, const Node& B) {
+  std::shared_ptr<Node> operator+(const Node& A, const Node& B) {
     return A.add(B);
   }
 
-  const Node operator+=(Node& A, const Node& B) {
-    A = A + B;
-    return A;
+  const Node& operator+=(Node& A, const std::shared_ptr<Node> B) {
+    return A.iadd(*B);
   }
 
-  std::unique_ptr<Node> operator-(const Node& A, const Node& B) {
+  const Node& operator+=(Node& A, const Node& B) {
+    return A.iadd(B);
+  }
+
+  std::shared_ptr<Node> operator-(const Node& A, const Node& B) {
     return A.sub(B);
   }
 
-  const Node operator-=(Node& A, const Node& B) {
-    A = A - B;
-    return A;
+  const Node& operator-=(Node& A, const std::shared_ptr<Node> B) {
+    return A.isub(*B);
   }
 
-  std::unique_ptr<Node> operator*(const Node& A, const Node& B) {
+  const Node& operator-=(Node& A, const Node& B) {
+    return A.isub(B);
+  }
+
+  std::shared_ptr<Node> operator*(const Node& A, const Node& B) {
     return A.mul(B);
   }
 
-  const Node operator*=(Node& A, const Node& B) {
-    A = A * B;
-    return A;
+  const Node& operator*=(Node& A, const std::shared_ptr<Node> B) {
+    return A.imul(*B);
+  }
+
+  const Node& operator*=(Node& A, const Node& B) {
+    return A.imul(B);
   }
 
 }

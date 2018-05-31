@@ -11,7 +11,7 @@ namespace hicma {
   public:
     int dim[2];
     std::vector<boost::any> data;
-    std::vector<std::unique_ptr<Node>> data_test;
+    std::vector<std::shared_ptr<Node>> data_test;
 
     Hierarchical();
 
@@ -45,9 +45,9 @@ namespace hicma {
                  const int level=0
                  );
 
-    virtual const bool is(const int enum_id) const override;
+    const bool is(const int enum_id) const override;
 
-    virtual const char* is_string() const override;
+    const char* is_string() const override;
 
     boost::any& operator[](const int i);
 
@@ -64,6 +64,10 @@ namespace hicma {
     const Hierarchical& operator=(const double a);
 
     const Hierarchical& operator=(const Hierarchical& A);
+
+    const Node& operator=(const Node& A) override;
+
+    const Node& operator=(const std::shared_ptr<Node> A) override;
 
     const Dense operator+=(const Dense& A);
 
@@ -100,6 +104,18 @@ namespace hicma {
     LowRank operator*(const LowRank& A) const;
 
     Hierarchical operator*(const Hierarchical& A) const;
+
+    std::shared_ptr<Node> add(const Node& B) const override;
+
+    const Node& iadd(const Node& B) override;
+
+    std::shared_ptr<Node> sub(const Node& B) const override;
+
+    const Node& isub(const Node& B) override;
+
+    std::shared_ptr<Node> mul(const Node& B) const override;
+
+    const Node& imul(const Node& B) override;
 
     Dense dense() const;
 

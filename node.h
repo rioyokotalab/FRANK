@@ -25,17 +25,25 @@ namespace hicma {
 
     virtual ~Node();
 
-    virtual const Node& operator=(std::unique_ptr<Node> A);
+    virtual const Node& operator=(const Node& A);
+
+    virtual const Node& operator=(const std::shared_ptr<Node> A);
 
     virtual const bool is(const int enum_id) const;
 
     virtual const char* is_string() const;
 
-    virtual std::unique_ptr<Node> add(const Node& B) const;
+    virtual std::shared_ptr<Node> add(const Node& B) const;
 
-    virtual std::unique_ptr<Node> sub(const Node& B) const;
+    virtual const Node& iadd(const Node& B);
 
-    virtual std::unique_ptr<Node> mul(const Node& B) const;
+    virtual std::shared_ptr<Node> sub(const Node& B) const;
+
+    virtual const Node& isub(const Node& B);
+
+    virtual std::shared_ptr<Node> mul(const Node& B) const;
+
+    virtual const Node& imul(const Node& B);
 
     virtual void getrf_test();
 
@@ -43,6 +51,24 @@ namespace hicma {
 
     virtual void gemm(const Node& A, const Node& B);
   };
+
+  std::shared_ptr<Node> operator+(const Node& A, const Node& B);
+
+  const Node& operator+=(Node& A, const std::shared_ptr<Node> B);
+
+  const Node& operator+=(Node& A, const Node& B);
+
+  std::shared_ptr<Node> operator-(const Node& A, const Node& B);
+
+  const Node& operator*=(Node& A, const std::shared_ptr<Node> B);
+
+  const Node& operator-=(Node& A, const Node& B);
+
+  std::shared_ptr<Node> operator*(const Node& A, const Node& B);
+
+  const Node& operator*=(Node& A, const std::shared_ptr<Node> B);
+
+  const Node& operator*=(Node& A, const Node& B);
 
 }
 #endif
