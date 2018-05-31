@@ -25,29 +25,14 @@ namespace hicma {
     return std::shared_ptr<Node>(nullptr);
   };
 
-  const Node& Node::iadd(const Node& B) {
-    std::cout << "Not implemented!!" << std::endl; abort();
-    return *this;
-  };
-
   std::shared_ptr<Node> Node::sub(const Node& B) const {
     std::cout << "Not implemented!!" << std::endl; abort();
     return std::shared_ptr<Node>(nullptr);
   };
 
-  const Node& Node::isub(const Node& B) {
-    std::cout << "Not implemented!!" << std::endl; abort();
-    return *this;
-  };
-
   std::shared_ptr<Node> Node::mul(const Node& B) const {
     std::cout << "Not implemented!!" << std::endl; abort();
     return std::shared_ptr<Node>(nullptr);
-  };
-
-  const Node& Node::imul(const Node& B) {
-    std::cout << "Not implemented!!" << std::endl; abort();
-    return *this;
   };
 
   void Node::getrf_test() {};
@@ -61,11 +46,12 @@ namespace hicma {
   }
 
   const Node& operator+=(Node& A, const std::shared_ptr<Node> B) {
-    return A.iadd(*B);
+    return A += *B;
   }
 
   const Node& operator+=(Node& A, const Node& B) {
-    return A.iadd(B);
+    A = A.add(B);
+    return A;
   }
 
   std::shared_ptr<Node> operator-(const Node& A, const Node& B) {
@@ -73,11 +59,12 @@ namespace hicma {
   }
 
   const Node& operator-=(Node& A, const std::shared_ptr<Node> B) {
-    return A.isub(*B);
+    return A -= *B;
   }
 
   const Node& operator-=(Node& A, const Node& B) {
-    return A.isub(B);
+    A = A.sub(B);
+    return A;
   }
 
   std::shared_ptr<Node> operator*(const Node& A, const Node& B) {
@@ -85,11 +72,12 @@ namespace hicma {
   }
 
   const Node& operator*=(Node& A, const std::shared_ptr<Node> B) {
-    return A.imul(*B);
+    return A *= *B;
   }
 
   const Node& operator*=(Node& A, const Node& B) {
-    return A.imul(B);
+    A = A.mul(B);
+    return A;
   }
 
 }

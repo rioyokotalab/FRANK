@@ -292,11 +292,6 @@ namespace hicma {
     }
   }
 
-  const Node& Hierarchical::iadd(const Node& B){
-    *this = (*this).add(B);
-    return *this;
-  }
-
   std::shared_ptr<Node> Hierarchical::sub(const Node& B) const {
     if (B.is(HICMA_HIERARCHICAL)) {
       const Hierarchical& BR = static_cast<const Hierarchical&>(B);
@@ -312,11 +307,6 @@ namespace hicma {
         std::cout << " is undefined!" << std::endl;
         return std::shared_ptr<Node>(nullptr);
     }
-  }
-
-  const Node& Hierarchical::isub(const Node& B) {
-    *this = (*this).sub(B);
-    return *this;
   }
 
   std::shared_ptr<Node> Hierarchical::mul(const Node& B) const {
@@ -335,11 +325,6 @@ namespace hicma {
         std::cout << " is undefined!" << std::endl;
         return std::shared_ptr<Node>(nullptr);
     }
-  }
-
-  const Node& Hierarchical::imul(const Node& B) {
-    *this = (*this).mul(B);
-    return *this;
   }
 
   Dense& Hierarchical::dense(const int i) {

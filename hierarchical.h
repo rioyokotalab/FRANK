@@ -107,15 +107,9 @@ namespace hicma {
 
     std::shared_ptr<Node> add(const Node& B) const override;
 
-    const Node& iadd(const Node& B) override;
-
     std::shared_ptr<Node> sub(const Node& B) const override;
 
-    const Node& isub(const Node& B) override;
-
     std::shared_ptr<Node> mul(const Node& B) const override;
-
-    const Node& imul(const Node& B) override;
 
     Dense dense() const;
 

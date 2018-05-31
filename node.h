@@ -35,15 +35,9 @@ namespace hicma {
 
     virtual std::shared_ptr<Node> add(const Node& B) const;
 
-    virtual const Node& iadd(const Node& B);
-
     virtual std::shared_ptr<Node> sub(const Node& B) const;
 
-    virtual const Node& isub(const Node& B);
-
     virtual std::shared_ptr<Node> mul(const Node& B) const;
-
-    virtual const Node& imul(const Node& B);
 
     virtual void getrf_test();
 
