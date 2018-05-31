@@ -167,6 +167,16 @@ namespace hicma {
     return data[i];
   }
 
+  Node& Hierarchical::operator()(const char* test, const int i) {
+    assert(i<dim[0]*dim[1]);
+    return *data_test[i];
+  }
+
+  const Node& Hierarchical::operator()(const char* test, const int i) const {
+    assert(i<dim[0]*dim[1]);
+    return *data_test[i];
+  }
+
   boost::any& Hierarchical::operator()(const int i, const int j) {
     assert(i<dim[0] && j<dim[1]);
     return data[i*dim[1]+j];
@@ -467,8 +477,61 @@ namespace hicma {
 
   void Hierarchical::trsm(const Node& A, const char& uplo) {
     if (A.is(HICMA_HIERARCHICAL)) {
-      std::cout << this->is_string() << " /= " << A.is_string();
-      std::cout << " works!" << std::endl;
+      const Hierarchical& AR = static_cast<const Hierarchical&>(A);
+      if (dim[1] == 1) {
+        switch (uplo) {
+        case 'l' :
+          for (int i=0; i<dim[0]; i++) {
+            for (int j=0; j<i; j++) {
+              (*this)("",i).gemm(AR("",i,j), (*this)("",j));
+            }
+            (*this)("",i).trsm(AR("",i,i),'l');
+          }
+          break;
+        case 'u' :
+          for (int i=dim[0]-1; i>=0; i--) {
+            for (int j=dim[0]-1; j>i; j--) {
+              (*this)("",i).gemm(AR("",i,j), (*this)("",j));
+            }
+            (*this)("",i).trsm(AR("",i,i),'u');
+          }
+          break;
+        default :
+          fprintf(stderr,"Second argument must be 'l' for lower, 'u' for upper.\n"); abort();
+        }
+      }
+      else {
+        switch (uplo) {
+        case 'l' :
+          // Loop over cols, same calculation for all
+          for (int j=0; j<dim[1]; j++) {
+            // Loop over rows, getting new results
+            for (int i=0; i<dim[0]; i++) {
+              // Loop over previously calculated row, accumulate results
+              for (int i_old=0; i_old<i; i_old++) {
+                (*this)("",i,j).gemm(AR("",i,i_old), (*this)("",i_old,j));
+              }
+              (*this)("",i,j).trsm(AR("",i,i),'l');
+            }
+          }
+          break;
+        case 'u' :
+          // Loop over rows, same calculation for all
+          for (int i=0; i<dim[0]; i++) {
+            // Loop over cols, getting new results
+            for (int j=0; j<dim[1]; j++) {
+              // Loop over previously calculated col, accumulate results
+              for (int j_old=0; j_old<j; j_old++) {
+                (*this)("",i,j).gemm((*this)("",i,j_old),AR("",j_old,j));
+              }
+              (*this)("",i,j).trsm(AR("",j,j),'u');
+            }
+          }
+          break;
+        default :
+          fprintf(stderr,"Second argument must be 'l' for lower, 'u' for upper.\n"); abort();
+        }
+      }
     } else {
       fprintf(
           stderr,"%s /= %s undefined.\n",
@@ -482,9 +545,6 @@ namespace hicma {
       const Hierarchical& AR = static_cast<const Hierarchical&>(A);
       if (B.is(HICMA_HIERARCHICAL)) {
         const Hierarchical& BR = static_cast<const Hierarchical&>(B);
-        std::cout << this->is_string() << " += ";
-        std::cout << A.is_string() << " * " << B.is_string();
-        std::cout << " works!" << std::endl;
         assert(dim[0]==AR.dim[0] && dim[1]==AR.dim[1]);
         for (int i=0; i<dim[0]; i++) {
           for (int j=0; j<dim[1]; j++) {

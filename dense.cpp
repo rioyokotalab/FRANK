@@ -346,7 +346,8 @@ namespace hicma {
   }
 
   void Dense::getrf_test() {
-    std::cout << "Dense getrf" << std::endl;
+    std::vector<int> ipiv(std::min(dim[0],dim[1]));
+    LAPACKE_dgetrf(LAPACK_ROW_MAJOR, dim[0], dim[1], &data[0], dim[1], &ipiv[0]);
   }
 
   void Dense::trsm(const Dense& A, const char& uplo) {
@@ -387,8 +388,35 @@ namespace hicma {
 
   void Dense::trsm(const Node& A, const char& uplo) {
     if (A.is(HICMA_DENSE)) {
-      std::cout << this->is_string() << " /= " << A.is_string();
-      std::cout << " works!" << std::endl;
+      const Dense& AR = static_cast<const Dense&>(A);
+      if (dim[1] == 1) {
+        switch (uplo) {
+        case 'l' :
+          cblas_dtrsm(CblasRowMajor, CblasLeft, CblasLower, CblasNoTrans, CblasUnit,
+                      dim[0], dim[1], 1, &AR[0], AR.dim[1], &data[0], dim[1]);
+          break;
+        case 'u' :
+          cblas_dtrsm(CblasRowMajor, CblasLeft, CblasUpper, CblasNoTrans, CblasNonUnit,
+                      dim[0], dim[1], 1, &AR[0], AR.dim[1], &data[0], dim[1]);
+          break;
+        default :
+          fprintf(stderr,"Second argument must be 'l' for lower, 'u' for upper.\n"); abort();
+        }
+      }
+      else {
+        switch (uplo) {
+        case 'l' :
+          cblas_dtrsm(CblasRowMajor, CblasLeft, CblasLower, CblasNoTrans, CblasUnit,
+                      dim[0], dim[1], 1, &AR[0], AR.dim[1], &data[0], dim[1]);
+          break;
+        case 'u' :
+          cblas_dtrsm(CblasRowMajor, CblasRight, CblasUpper, CblasNoTrans, CblasNonUnit,
+                      dim[0], dim[1], 1, &AR[0], AR.dim[1], &data[0], dim[1]);
+          break;
+        default :
+          fprintf(stderr,"Second argument must be 'l' for lower, 'u' for upper.\n"); abort();
+        }
+      }
     } else {
       fprintf(
           stderr,"%s /= %s undefined.\n",
@@ -416,14 +444,9 @@ namespace hicma {
   void Dense::gemm(const Node& A, const Node& B) {
     if (A.is(HICMA_DENSE)) {
       if (B.is(HICMA_DENSE)) {
-        std::cout << this->is_string() << " += ";
-        std::cout << A.is_string() << " * " << B.is_string();
-        std::cout << " works!" << std::endl;
-        //*this -= A * B;
+        *this -= A * B;
       } else if (B.is(HICMA_LOWRANK)) {
-        std::cout << this->is_string() << " += ";
-        std::cout << A.is_string() << " * " << B.is_string();
-        std::cout << " works!" << std::endl;
+        *this -= A * B;
       } else if (B.is(HICMA_HIERARCHICAL)) {
         fprintf(
             stderr,"%s += %s * %s undefined.\n",
@@ -432,13 +455,9 @@ namespace hicma {
       }
     } else if (A.is(HICMA_LOWRANK)) {
       if (B.is(HICMA_DENSE)) {
-        std::cout << this->is_string() << " += ";
-        std::cout << A.is_string() << " * " << B.is_string();
-        std::cout << " works!" << std::endl;
+        *this -= A * B;
       } else if (B.is(HICMA_LOWRANK)) {
-        std::cout << this->is_string() << " += ";
-        std::cout << A.is_string() << " * " << B.is_string();
-        std::cout << " works!" << std::endl;
+        *this -= A * B;
       } else if (B.is(HICMA_HIERARCHICAL)) {
         fprintf(
             stderr,"%s += %s * %s undefined.\n",

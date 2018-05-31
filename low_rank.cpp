@@ -179,12 +179,14 @@ namespace hicma {
     if (B.is(HICMA_LOWRANK)) {
       const LowRank& BR = static_cast<const LowRank&>(B);
       assert(dim[0]==BR.dim[0] && dim[1]==BR.dim[1]);
-      std::shared_ptr<LowRank> Out = std::shared_ptr<LowRank>(
-          new LowRank(dim[0], dim[1], rank+BR.rank));
+      std::shared_ptr<LowRank> Out;
       if (rank+BR.rank >= dim[0]) {
-        *Out = LowRank((*this).dense() + BR.dense(), rank);
+        Out = std::shared_ptr<LowRank>(
+            new LowRank((*this).dense() + BR.dense(), rank));
       }
       else {
+        Out = std::shared_ptr<LowRank>(
+          new LowRank(dim[0], dim[1], rank+BR.rank));
         (*Out).mergeU(*this,BR);
         (*Out).mergeS(*this,BR);
         (*Out).mergeV(*this,BR);
@@ -205,12 +207,14 @@ namespace hicma {
     if (B.is(HICMA_LOWRANK)) {
       const LowRank& BR = static_cast<const LowRank&>(B);
       assert(dim[0]==BR.dim[0] && dim[1]==BR.dim[1]);
-      std::shared_ptr<LowRank> Out = std::shared_ptr<LowRank>(
-          new LowRank(dim[0], dim[1], rank+BR.rank));
+      std::shared_ptr<LowRank> Out;
       if (rank+BR.rank >= dim[0]) {
-        *Out = LowRank((*this).dense() - BR.dense(), rank);
+        Out = std::shared_ptr<LowRank>(
+            new LowRank((*this).dense() - BR.dense(), rank));
       }
       else {
+        Out = std::shared_ptr<LowRank>(
+          new LowRank(dim[0], dim[1], rank+BR.rank));
         (*Out).mergeU(*this,-BR);
         (*Out).mergeS(*this,-BR);
         (*Out).mergeV(*this,-BR);
@@ -342,8 +346,15 @@ namespace hicma {
 
   void LowRank::trsm(const Node& A, const char& uplo) {
     if (A.is(HICMA_DENSE)) {
-      std::cout << this->is_string() << " /= " << A.is_string();
-      std::cout << " works!" << std::endl;
+      const Dense& AR = static_cast<const Dense&>(A);
+      switch (uplo) {
+      case 'l' :
+        U.trsm(AR, uplo);
+        break;
+      case 'u' :
+        V.trsm(AR, uplo);
+        break;
+      }
     } else {
       fprintf(
           stderr,"%s /= %s undefined.\n",
@@ -378,9 +389,7 @@ namespace hicma {
             this->is_string(), A.is_string(), B.is_string());
         abort();
       } else if (B.is(HICMA_LOWRANK)) {
-        std::cout << this->is_string() << " += ";
-        std::cout << A.is_string() << " * " << B.is_string();
-        std::cout << " works!" << std::endl;
+        *this -= A * B;
       } else if (B.is(HICMA_HIERARCHICAL)) {
         fprintf(
             stderr,"%s += %s * %s undefined.\n",
@@ -389,13 +398,9 @@ namespace hicma {
       }
     } else if (A.is(HICMA_LOWRANK)) {
       if (B.is(HICMA_DENSE)) {
-        std::cout << this->is_string() << " += ";
-        std::cout << A.is_string() << " * " << B.is_string();
-        std::cout << " works!" << std::endl;
+        *this -= A * B;
       } else if (B.is(HICMA_LOWRANK)) {
-        std::cout << this->is_string() << " += ";
-        std::cout << A.is_string() << " * " << B.is_string();
-        std::cout << " works!" << std::endl;
+        *this -= A * B;
       } else if (B.is(HICMA_HIERARCHICAL)) {
         fprintf(
             stderr,"%s += %s * %s undefined.\n",

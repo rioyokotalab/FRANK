@@ -53,6 +53,10 @@ namespace hicma {
 
     const boost::any& operator[](const int i) const;
 
+    Node& operator()(const char*, const int i);
+
+    const Node& operator()(const char*, const int i) const;
+
     boost::any& operator()(const int i, const int j);
 
     const boost::any& operator()(const int i, const int j) const;
