@@ -398,7 +398,6 @@ namespace hicma {
 #endif
     for (int i=0; i<dim[0]; i++) {
       hicma::getrf((*this)(i,i));
-      // TODO print and cross check with python
       for (int j=i+1; j<dim[0]; j++) {
         hicma::trsm((*this)(i,i),(*this)(i,j),'l');
         hicma::trsm((*this)(i,i),(*this)(j,i),'u');
@@ -561,12 +560,14 @@ namespace hicma {
     if (A.is(HICMA_HIERARCHICAL)) {
       const Hierarchical& AR = static_cast<const Hierarchical&>(A);
       if (B.is(HICMA_HIERARCHICAL)) {
-        std::cout << "hi" << std::endl;
         const Hierarchical& BR = static_cast<const Hierarchical&>(B);
-        assert(dim[0]==AR.dim[0] && dim[1]==AR.dim[1]);
+        assert(dim[0]==AR.dim[0] && dim[1]==BR.dim[1]);
+        assert(AR.dim[1] == BR.dim[0]);
         for (int i=0; i<dim[0]; i++) {
           for (int j=0; j<dim[1]; j++) {
-            (*this)("",i,j).gemm(AR("",i,j), BR("", i, j));
+            for (int k=0; k<AR.dim[1]; k++) {
+              (*this)("",i,j).gemm(AR("",i,k), BR("", k, j));
+            }
           }
         }
       } else {
