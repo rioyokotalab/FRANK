@@ -6,6 +6,14 @@ namespace hicma {
 
   Node::~Node() {};
 
+  Node* Node::clone() const {
+    return new Node(*this);
+  }
+
+  const Node& Node::assign(const double a) {
+    return *this;
+  }
+
   const Node& Node::operator=(const Node& A) {
     return *this;
   }
@@ -35,7 +43,7 @@ namespace hicma {
     return std::shared_ptr<Node>(nullptr);
   };
 
-  double Node::norm_test() {
+  double Node::norm_test() const {
     std::cout << "Not implemented!!" << std::endl; abort();
     return 0.0;
   };

@@ -45,6 +45,8 @@ namespace hicma {
                  const int level=0
                  );
 
+    Hierarchical* clone() const override;
+
     const bool is(const int enum_id) const override;
 
     const char* is_string() const override;
@@ -66,6 +68,8 @@ namespace hicma {
     const Node& operator()(const char*, const int i, const int j) const;
 
     const Hierarchical& operator=(const double a);
+
+    const Node& assign(const double a) override;
 
     const Hierarchical& operator=(const Hierarchical& A);
 
@@ -123,9 +127,9 @@ namespace hicma {
 
     Dense& dense(const int i, const int j);
 
-    double norm();
+    double norm() const;
 
-    double norm_test() override;
+    double norm_test() const override;
 
     void print() const;
 

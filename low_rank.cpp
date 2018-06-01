@@ -26,6 +26,10 @@ namespace hicma {
     randomized_low_rank_svd2(A.data, rank, U.data, S.data, V.data, m, n);
   }
 
+  LowRank* LowRank::clone() const {
+    return new LowRank(*this);
+  }
+
   const bool LowRank::is(const int enum_id) const {
     return enum_id == HICMA_LOWRANK;
   }
@@ -33,6 +37,14 @@ namespace hicma {
   const char* LowRank::is_string() const { return "LowRank"; }
 
   const LowRank& LowRank::operator=(const double a) {
+    assert(a == 0);
+    U = 0;
+    S = 0;
+    V = 0;
+    return *this;
+  }
+
+  const Node& LowRank::assign(const double a) {
     assert(a == 0);
     U = 0;
     S = 0;
@@ -268,11 +280,11 @@ namespace hicma {
     return (U * S * V);
   }
 
-  double LowRank::norm() {
+  double LowRank::norm() const {
     return this->dense().norm();
   }
 
-  double LowRank::norm_test() {
+  double LowRank::norm_test() const {
     return this->dense().norm_test();
   }
 

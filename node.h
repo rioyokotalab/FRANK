@@ -25,6 +25,11 @@ namespace hicma {
 
     virtual ~Node();
 
+    virtual Node* clone() const;
+
+    // TODO Change this once other = is not needed anymore
+    virtual const Node& assign(const double a);
+
     virtual const Node& operator=(const Node& A);
 
     virtual const Node& operator=(const std::shared_ptr<Node> A);
@@ -39,7 +44,7 @@ namespace hicma {
 
     virtual std::shared_ptr<Node> mul(const Node& B) const;
 
-    virtual double norm_test();
+    virtual double norm_test() const;
 
     virtual void getrf_test();
 

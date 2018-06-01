@@ -42,6 +42,10 @@ namespace hicma {
     func(data, x, ni, nj, i_begin, j_begin);
   }
 
+  Dense* Dense::clone() const {
+    return new Dense(*this);
+  }
+
   const bool Dense::is(const int enum_id) const {
     return enum_id == HICMA_DENSE;
   }
@@ -69,6 +73,12 @@ namespace hicma {
   }
 
   const Dense Dense::operator=(const double a) {
+    for (int i=0; i<dim[0]*dim[1]; i++)
+      data[i] = a;
+    return *this;
+  }
+
+  const Node& Dense::assign(const double a) {
     for (int i=0; i<dim[0]*dim[1]; i++)
       data[i] = a;
     return *this;
@@ -245,7 +255,7 @@ namespace hicma {
       }
       return Out;
     } else {
-      std::cout << this->is_string() << " + " << B.is_string();
+      std::cout << this->is_string() << " - " << B.is_string();
       std::cout << " is undefined!" << std::endl;
       return std::shared_ptr<Node>(nullptr);
     }
@@ -299,7 +309,7 @@ namespace hicma {
       }
       return Out;
     } else {
-      std::cout << this->is_string() << " + " << B.is_string();
+      std::cout << this->is_string() << " * " << B.is_string();
       std::cout << " is undefined!" << std::endl;
       return std::shared_ptr<Node>(nullptr);
     }
@@ -315,7 +325,7 @@ namespace hicma {
     data.resize(dim[0]*dim[1]);
   }
 
-  double Dense::norm() {
+  double Dense::norm() const {
     double l2 = 0;
     for (int i=0; i<dim[0]; i++) {
       for (int j=0; j<dim[1]; j++) {
@@ -325,7 +335,7 @@ namespace hicma {
     return l2;
   }
 
-  double Dense::norm_test() {
+  double Dense::norm_test() const {
     return (*this).norm();
   }
 
@@ -453,7 +463,7 @@ namespace hicma {
         *this -= A * B;
       } else if (B.is(HICMA_HIERARCHICAL)) {
         fprintf(
-            stderr,"%s += %s * %s undefined.\n",
+            stderr,"%s -= %s * %s undefined.\n",
             this->is_string(), A.is_string(), B.is_string());
         abort();
       }
@@ -464,13 +474,13 @@ namespace hicma {
         *this -= A * B;
       } else if (B.is(HICMA_HIERARCHICAL)) {
         fprintf(
-            stderr,"%s += %s * %s undefined.\n",
+            stderr,"%s -= %s * %s undefined.\n",
             this->is_string(), A.is_string(), B.is_string());
         abort();
       }
     } else {
       fprintf(
-          stderr,"%s += %s * %s undefined.\n",
+          stderr,"%s -= %s * %s undefined.\n",
           this->is_string(), A.is_string(), B.is_string());
       abort();
     }

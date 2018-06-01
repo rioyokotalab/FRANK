@@ -17,7 +17,13 @@ namespace hicma {
 
   Hierarchical::Hierarchical(const Hierarchical& A) : Node(A.i_abs,A.j_abs,A.level), data(A.data) {
     dim[0]=A.dim[0]; dim[1]=A.dim[1];
-    data_test = A.data_test;
+    data_test.resize(dim[0]*dim[1]);
+    for ( int i=0; i<dim[0]; i++ ) {
+      for ( int j=0; j<dim[1]; j++ ) {
+        data_test[i*dim[1] + j] = std::shared_ptr<Node>(
+            (*A.data_test[i*dim[1] + j]).clone());
+      }
+    }
   }
 
   Hierarchical::Hierarchical(
@@ -126,6 +132,10 @@ namespace hicma {
     }
   }
 
+  Hierarchical* Hierarchical::clone() const {
+    return new Hierarchical(*this);
+  }
+
   const bool Hierarchical::is(const int enum_id) const {
     return enum_id == HICMA_HIERARCHICAL;
   }
@@ -179,6 +189,16 @@ namespace hicma {
       }
     }
     return *this;
+  }
+
+  const Node& Hierarchical::assign(const double a) {
+    for (int i=0; i<dim[0]; i++) {
+      for (int j=0; j<dim[1]; j++) {
+        (*this)("",i,j).assign(a);
+      }
+    }
+    return *this;
+
   }
 
   const Hierarchical& Hierarchical::operator=(const Hierarchical& A) {
@@ -300,9 +320,13 @@ namespace hicma {
       assert(dim[1] == BR.dim[0]);
       std::shared_ptr<Hierarchical> Out = std::shared_ptr<Hierarchical>(
           new Hierarchical(BR));
+      //std::cout << BR.norm_test() << std::endl;
+      (*Out).assign(0);
+      //std::cout << BR.norm_test() << std::endl;
       for (int i=0; i<dim[0]; i++) {
         for (int j=0; j<BR.dim[1]; j++) {
           for (int k=0; k<dim[1]; k++) {
+            //std::cout << (*((*this)("",i,k) * BR("",k,j))).norm_test() << std::endl;
             (*Out)("",i,j) += (*this)("",i,k) * BR("",k,j);
           }
         }
@@ -325,7 +349,7 @@ namespace hicma {
     return D_t(data[i*dim[1]+j]);
   }
 
-  double Hierarchical::norm(){
+  double Hierarchical::norm() const{
     double l2 = 0;
     for (int i=0; i<dim[0]; i++) {
       for (int j=0; j<dim[1]; j++) {
@@ -335,7 +359,7 @@ namespace hicma {
     return l2;
   }
 
-  double Hierarchical::norm_test(){
+  double Hierarchical::norm_test() const{
     double l2 = 0;
     for (int i=0; i<dim[0]; i++) {
       for (int j=0; j<dim[1]; j++) {

@@ -22,11 +22,15 @@ namespace hicma {
 
     LowRank(const Dense &A, const int k);
 
+    LowRank* clone() const override;
+
     const bool is(const int enum_id) const override;
 
     const char* is_string() const override;
 
     const LowRank& operator=(const double v);
+
+    const Node& assign(const double a) override;
 
     const LowRank& operator=(const LowRank A);
 
@@ -82,9 +86,9 @@ namespace hicma {
 
     Dense dense() const;
 
-    double norm();
+    double norm() const;
 
-    double norm_test() override;
+    double norm_test() const override;
 
     void print() const;
 

@@ -24,7 +24,7 @@ namespace hicma {
 
   void sub(const boost::any& A, const boost::any& B, boost::any& C);
 
-  double norm(boost::any& A);
+  double norm(const boost::any& A);
 
   void assign(const boost::any& A, const double a);
 

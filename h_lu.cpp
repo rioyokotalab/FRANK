@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
   Hierarchical b(zeros, randx, N, 1, rank, nleaf, admis, nblocks, 1);
   Hierarchical b_test(zeros, randx, N, 1, rank, nleaf, admis, nblocks, 1);
   b -= A * x;
-  b_test -= A_test.mul(x);
+  b_test += A_test.mul(x);
   stop("Init matrix");
   start("LU decomposition");
   A.getrf();

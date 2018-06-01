@@ -42,6 +42,8 @@ namespace hicma {
           const int level=0
           );
 
+    Dense* clone() const override;
+
     const bool is(const int enum_id) const override;
 
     const char* is_string() const override;
@@ -55,6 +57,8 @@ namespace hicma {
     const double& operator()(const int i, const int j) const;
 
     const Dense operator=(const double v);
+
+    const Node& assign(const double a) override;
 
     const Dense operator=(const Dense A);
 
@@ -112,9 +116,9 @@ namespace hicma {
 
     Dense extract(int i, int j, int ni, int nj);
 
-    double norm();
+    double norm() const;
 
-    double norm_test() override;
+    double norm_test() const override;
 
     void print() const;
 

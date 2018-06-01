@@ -335,7 +335,7 @@ namespace hicma {
     }
   }
 
-  double norm(boost::any& A) {
+  double norm(const boost::any& A) {
     double l2 = 0;
     if (A.type() == typeid(Dense)) {
       l2 += D_t(A).norm();
