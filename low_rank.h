@@ -84,6 +84,8 @@ namespace hicma {
 
     double norm();
 
+    double norm_test() override;
+
     void print() const;
 
     void mergeU(const LowRank& A, const LowRank& B);

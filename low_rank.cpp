@@ -272,6 +272,10 @@ namespace hicma {
     return this->dense().norm();
   }
 
+  double LowRank::norm_test() {
+    return this->dense().norm_test();
+  }
+
   void LowRank::print() const {
     std::cout << "U : ------------------------------------------------------------------------------" << std::endl;
     U.print();

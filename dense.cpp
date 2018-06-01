@@ -325,6 +325,10 @@ namespace hicma {
     return l2;
   }
 
+  double Dense::norm_test() {
+    return (*this).norm();
+  }
+
   void Dense::print() const {
     for (int i=0; i<dim[0]; i++) {
       for (int j=0; j<dim[1]; j++) {

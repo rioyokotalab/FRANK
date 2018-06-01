@@ -114,6 +114,8 @@ namespace hicma {
 
     double norm();
 
+    double norm_test() override;
+
     void print() const;
 
     void getrf();

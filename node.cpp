@@ -35,6 +35,11 @@ namespace hicma {
     return std::shared_ptr<Node>(nullptr);
   };
 
+  double Node::norm_test() {
+    std::cout << "Not implemented!!" << std::endl; abort();
+    return 0.0;
+  };
+
   void Node::getrf_test() {};
 
   void Node::trsm(const Node& A, const char& uplo) {};

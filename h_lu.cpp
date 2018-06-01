@@ -39,23 +39,31 @@ int main(int argc, char** argv) {
     admis = 2; // Strong admissibility
   }
   Hierarchical A(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
+  Hierarchical A_test(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   Hierarchical x(rand, randx, N, 1, rank, nleaf, admis, nblocks, 1);
   Hierarchical b(zeros, randx, N, 1, rank, nleaf, admis, nblocks, 1);
+  Hierarchical b_test(zeros, randx, N, 1, rank, nleaf, admis, nblocks, 1);
   b -= A * x;
+  b_test -= A_test.mul(x);
   stop("Init matrix");
   start("LU decomposition");
   A.getrf();
-  A.getrf_test();
+  A_test.getrf_test();
   stop("LU decomposition");
   start("Forward substitution");
   b.trsm(A,'l');
+  b_test.trsm_test(A_test,'l');
   stop("Forward substitution");
   start("Backward substitution");
   b.trsm(A,'u');
+  b_test.trsm_test(A_test,'u');
   stop("Backward substitution");
   double diff = (x - b).norm();
+  double diff_test = (*x.sub(b_test)).norm_test();
   double norm = x.norm();
+  double norm_test = x.norm_test();
   print("Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
+  print("Rel. L2 Error", std::sqrt(diff_test/norm_test), false);
   return 0;
 }

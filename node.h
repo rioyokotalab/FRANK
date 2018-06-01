@@ -39,6 +39,8 @@ namespace hicma {
 
     virtual std::shared_ptr<Node> mul(const Node& B) const;
 
+    virtual double norm_test();
+
     virtual void getrf_test();
 
     virtual void trsm(const Node& A, const char& uplo);

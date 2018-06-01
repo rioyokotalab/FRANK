@@ -17,6 +17,7 @@ namespace hicma {
 
   Hierarchical::Hierarchical(const Hierarchical& A) : Node(A.i_abs,A.j_abs,A.level), data(A.data) {
     dim[0]=A.dim[0]; dim[1]=A.dim[1];
+    data_test = A.data_test;
   }
 
   Hierarchical::Hierarchical(
@@ -79,17 +80,7 @@ namespace hicma {
                      );
             (*this)(i,j) = D;
             (*this).data_test[i*dim[1]+j] = std::shared_ptr<Dense>(
-                new Dense(
-                  func,
-                  x,
-                  ni_child,
-                  nj_child,
-                  i_begin_child,
-                  j_begin_child,
-                  i_abs_child,
-                  j_abs_child,
-                  level+1)
-                );
+                new Dense(D));
           }
           else {
             Hierarchical H(
@@ -110,23 +101,7 @@ namespace hicma {
                            );
             (*this)(i,j) = H;
             (*this).data_test[i*dim[1]+j] = std::shared_ptr<Hierarchical>(
-                new Hierarchical(
-                           func,
-                           x,
-                           ni_child,
-                           nj_child,
-                           rank,
-                           nleaf,
-                           admis,
-                           ni_level,
-                           nj_level,
-                           i_begin_child,
-                           j_begin_child,
-                           i_abs_child,
-                           j_abs_child,
-                           level+1
-                           )
-                );
+                new Hierarchical(H));
 
           }
         }
@@ -293,7 +268,7 @@ namespace hicma {
           new Hierarchical(*this));
       for (int i=0; i<dim[0]; i++)
         for (int j=0; j<dim[1]; j++)
-          (*Out)("",i,j) = (*this)("",i,j) + BR("",i,j);
+          (*Out)("",i,j) += BR("",i,j);
       return Out;
     } else {
         std::cout << this->is_string() << " + " << B.is_string();
@@ -310,7 +285,7 @@ namespace hicma {
           new Hierarchical(*this));
       for (int i=0; i<dim[0]; i++)
         for (int j=0; j<dim[1]; j++)
-          (*Out)("",i,j) = (*this)("",i,j) - BR("",i,j);
+          (*Out)("",i,j) -= BR("",i,j);
       return Out;
     } else {
         std::cout << this->is_string() << " - " << B.is_string();
@@ -324,11 +299,14 @@ namespace hicma {
       const Hierarchical& BR = static_cast<const Hierarchical&>(B);
       assert(dim[1] == BR.dim[0]);
       std::shared_ptr<Hierarchical> Out = std::shared_ptr<Hierarchical>(
-          new Hierarchical(*this));
-      for (int i=0; i<dim[0]; i++)
-        for (int j=0; j<BR.dim[1]; j++)
-          for (int k=0; k<dim[1]; k++)
-            (*Out)("",i,j) = (*this)("",i,k) * BR("",k,j);
+          new Hierarchical(BR));
+      for (int i=0; i<dim[0]; i++) {
+        for (int j=0; j<BR.dim[1]; j++) {
+          for (int k=0; k<dim[1]; k++) {
+            (*Out)("",i,j) += (*this)("",i,k) * BR("",k,j);
+          }
+        }
+      }
       return Out;
     } else {
         std::cout << this->is_string() << " * " << B.is_string();
@@ -352,6 +330,16 @@ namespace hicma {
     for (int i=0; i<dim[0]; i++) {
       for (int j=0; j<dim[1]; j++) {
         l2 += hicma::norm( (*this)(i,j) );
+      }
+    }
+    return l2;
+  }
+
+  double Hierarchical::norm_test(){
+    double l2 = 0;
+    for (int i=0; i<dim[0]; i++) {
+      for (int j=0; j<dim[1]; j++) {
+        l2 += (*this)("",i,j).norm_test();
       }
     }
     return l2;
@@ -475,6 +463,11 @@ namespace hicma {
     }
   }
 
+  void Hierarchical::trsm_test(const Node& A, const char& uplo) {
+    trsm(A, uplo);
+    return;
+  }
+
   void Hierarchical::trsm(const Node& A, const char& uplo) {
     if (A.is(HICMA_HIERARCHICAL)) {
       const Hierarchical& AR = static_cast<const Hierarchical&>(A);
@@ -544,6 +537,7 @@ namespace hicma {
     if (A.is(HICMA_HIERARCHICAL)) {
       const Hierarchical& AR = static_cast<const Hierarchical&>(A);
       if (B.is(HICMA_HIERARCHICAL)) {
+        std::cout << "hi" << std::endl;
         const Hierarchical& BR = static_cast<const Hierarchical&>(B);
         assert(dim[0]==AR.dim[0] && dim[1]==AR.dim[1]);
         for (int i=0; i<dim[0]; i++) {

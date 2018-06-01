@@ -125,6 +125,8 @@ namespace hicma {
 
     double norm();
 
+    double norm_test() override;
+
     void print() const;
 
     void getrf();
@@ -132,6 +134,8 @@ namespace hicma {
     void getrf_test() override;
 
     void trsm(const Hierarchical& A, const char& uplo);
+
+    void trsm_test(const Node& A, const char& uplo);
 
     void trsm(const Node& A, const char& uplo) override;
 
