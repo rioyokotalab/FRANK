@@ -5,11 +5,9 @@
 #include <cstdlib>
 #include <iostream>
 #include <vector>
+#include "node.h"
 
 namespace hicma {
-  class Node;
-  class LowRank;
-  class Hierarchical;
   class Dense : public Node {
   public:
     std::vector<double> data;
@@ -56,51 +54,11 @@ namespace hicma {
 
     const double& operator()(const int i, const int j) const;
 
-    const Dense operator=(const double v);
-
-    const Node& assign(const double a) override;
-
-    const Dense operator=(const Dense A);
+    const Node& operator=(const double a) override;
 
     const Node& operator=(const Node& A) override;
 
     const Node& operator=(const std::shared_ptr<Node> A) override;
-
-    const Dense operator+=(const Dense& A);
-
-    const Dense operator+=(const LowRank& A);
-
-    const Dense operator+=(const Hierarchical& A);
-
-    const Dense operator-=(const Dense& A);
-
-    const Dense operator-=(const LowRank& A);
-
-    const Dense operator-=(const Hierarchical& A);
-
-    const Dense operator*=(const Dense& A);
-
-    const LowRank operator*=(const LowRank& A);
-
-    const Dense operator*=(const Hierarchical& A);
-
-    Dense operator+(const Dense& A) const;
-
-    Dense operator+(const LowRank& A) const;
-
-    Dense operator+(const Hierarchical& A) const;
-
-    Dense operator-(const Dense& A) const;
-
-    Dense operator-(const LowRank& A) const;
-
-    Dense operator-(const Hierarchical& A) const;
-
-    Dense operator*(const Dense& A) const;
-
-    LowRank operator*(const LowRank& A) const;
-
-    Dense operator*(const Hierarchical& A) const;
 
     Dense operator-() const;
 
@@ -116,27 +74,13 @@ namespace hicma {
 
     Dense extract(int i, int j, int ni, int nj);
 
-    double norm() const;
+    double norm() const override;
 
-    double norm_test() const override;
+    void print() const override;
 
-    void print() const;
-
-    void getrf();
-
-    void getrf_test() override;
-
-    void trsm(const Dense& A, const char& uplo);
+    void getrf() override;
 
     void trsm(const Node& A, const char& uplo) override;
-
-    void gemm(const Dense& A, const Dense& B);
-
-    void gemm(const Dense& A, const LowRank& B);
-
-    void gemm(const LowRank& A, const Dense& B);
-
-    void gemm(const LowRank& A, const LowRank& B);
 
     void gemm(const Node& A, const Node& B);
   };

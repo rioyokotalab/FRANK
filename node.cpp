@@ -10,7 +10,7 @@ namespace hicma {
     return new Node(*this);
   }
 
-  const Node& Node::assign(const double a) {
+  const Node& Node::operator=(const double a) {
     return *this;
   }
 
@@ -43,12 +43,14 @@ namespace hicma {
     return std::shared_ptr<Node>(nullptr);
   };
 
-  double Node::norm_test() const {
+  double Node::norm() const {
     std::cout << "Not implemented!!" << std::endl; abort();
     return 0.0;
   };
 
-  void Node::getrf_test() {};
+  void Node::print() const {};
+
+  void Node::getrf() {};
 
   void Node::trsm(const Node& A, const char& uplo) {};
 

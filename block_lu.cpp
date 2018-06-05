@@ -1,8 +1,11 @@
+#include <algorithm>
 #include "mpi_utils.h"
 #include "functions.h"
-#include "hblas.h"
 #include "print.h"
 #include "timer.h"
+#include "hierarchical.h"
+#include "dense.h"
+#include "node.h"
 
 using namespace hicma;
 
@@ -33,9 +36,11 @@ int main(int argc, char** argv) {
   for (int ic=0; ic<Nc; ic++) {
     for (int jc=0; jc<Nc; jc++) {
       Dense Aij(laplace1d, randx, Nb, Nb, Nb*ic, Nb*jc);
+      Dense& b_ic_r = static_cast<Dense&>(b[ic]);
+      Dense& x_jc_r = static_cast<Dense&>(x[jc]);
       for (int ib=0; ib<Nb; ib++) {
         for (int jb=0; jb<Nb; jb++) {
-          b.dense(ic)[ib] += Aij(ib,jb) * x.dense(jc)[jb];
+          b_ic_r[ib] += Aij(ib,jb) * x_jc_r[jb];
         }
       }
       A(ic,jc) = Aij;
@@ -45,18 +50,18 @@ int main(int argc, char** argv) {
   start("LU decomposition");
   for (int ic=0; ic<Nc; ic++) {
     start("-DGETRF");
-    getrf(A(ic,ic));
+    A(ic,ic).getrf();
     stop("-DGETRF", false);
     for (int jc=ic+1; jc<Nc; jc++) {
       start("-DTRSM");
-      trsm(A(ic,ic),A(ic,jc),'l');
-      trsm(A(ic,ic),A(jc,ic),'u');
+      A(ic,jc).trsm(A(ic,ic),'l');
+      A(jc,ic).trsm(A(ic,ic),'u');
       stop("-DTRSM", false);
     }
     for (int jc=ic+1; jc<Nc; jc++) {
       for (int kc=ic+1; kc<Nc; kc++) {
         start("-DGEMM");
-        gemm(A(jc,ic),A(ic,kc),A(jc,kc));
+        A(jc,kc).gemm(A(jc,ic),A(ic,kc));
         stop("-DGEMM", false);
       }
     }
@@ -68,23 +73,23 @@ int main(int argc, char** argv) {
   start("Forward substitution");
   for (int ic=0; ic<Nc; ic++) {
     for (int jc=0; jc<ic; jc++) {
-      gemm(A(ic,jc),b[jc],b[ic]);
+      b[ic].gemm(A(ic,jc),b[jc]);
     }
-    trsm(A(ic,ic),b[ic],'l');
+    b[ic].trsm(A(ic,ic),'l');
   }
   stop("Forward substitution");
   start("Backward substitution");
   for (int ic=Nc-1; ic>=0; ic--) {
     for (int jc=Nc-1; jc>ic; jc--) {
-      gemm(A(ic,jc),b[jc],b[ic]);
+      b[ic].gemm(A(ic,jc),b[jc]);
     }
-    trsm(A(ic,ic),b[ic],'u');
+    b[ic].trsm(A(ic,ic),'u');
   }
   stop("Backward substitution");
   double diff = 0, norm = 0;
   for (int ic=0; ic<Nc; ic++) {
-    diff += (x.dense(ic) - b.dense(ic)).norm();
-    norm += x.dense(ic).norm();
+    diff += (x[ic] - b[ic])->norm();
+    norm += x[ic].norm();
   }
   print("Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);

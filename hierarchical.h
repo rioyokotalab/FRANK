@@ -1,17 +1,14 @@
 #ifndef hierarchical_h
 #define hierarchical_h
-#include <boost/any.hpp>
 #include <memory>
+#include "node.h"
 
 namespace hicma {
-  class Node;
   class Dense;
-  class LowRank;
   class Hierarchical : public Node {
   public:
     int dim[2];
-    std::vector<boost::any> data;
-    std::vector<std::shared_ptr<Node>> data_test;
+    std::vector<std::shared_ptr<Node>> data;
 
     Hierarchical();
 
@@ -51,67 +48,19 @@ namespace hicma {
 
     const char* is_string() const override;
 
-    boost::any& operator[](const int i);
+    Node& operator[](const int i);
 
-    const boost::any& operator[](const int i) const;
+    const Node& operator[](const int i) const;
 
-    Node& operator()(const char*, const int i);
+    Node& operator()(const int i, const int j);
 
-    const Node& operator()(const char*, const int i) const;
+    const Node& operator()(const int i, const int j) const;
 
-    boost::any& operator()(const int i, const int j);
-
-    const boost::any& operator()(const int i, const int j) const;
-
-    Node& operator()(const char*, const int i, const int j);
-
-    const Node& operator()(const char*, const int i, const int j) const;
-
-    const Hierarchical& operator=(const double a);
-
-    const Node& assign(const double a) override;
-
-    const Hierarchical& operator=(const Hierarchical& A);
+    const Node& operator=(const double a) override;
 
     const Node& operator=(const Node& A) override;
 
     const Node& operator=(const std::shared_ptr<Node> A) override;
-
-    const Dense operator+=(const Dense& A);
-
-    const LowRank operator+=(const LowRank& A);
-
-    const Hierarchical operator+=(const Hierarchical& A);
-
-    const Dense operator-=(const Dense& A);
-
-    const LowRank operator-=(const LowRank& A);
-
-    const Hierarchical operator-=(const Hierarchical& A);
-
-    const Dense operator*=(const Dense& A);
-
-    const LowRank operator*=(const LowRank& A);
-
-    const Hierarchical operator*=(const Hierarchical& A);
-
-    Dense operator+(const Dense& A) const;
-
-    LowRank operator+(const LowRank& A) const;
-
-    Hierarchical operator+(const Hierarchical& A) const;
-
-    Dense operator-(const Dense& A) const;
-
-    LowRank operator-(const LowRank& A) const;
-
-    Hierarchical operator-(const Hierarchical& A) const;
-
-    Dense operator*(const Dense& A) const;
-
-    LowRank operator*(const LowRank& A) const;
-
-    Hierarchical operator*(const Hierarchical& A) const;
 
     std::shared_ptr<Node> add(const Node& B) const override;
 
@@ -119,31 +68,13 @@ namespace hicma {
 
     std::shared_ptr<Node> mul(const Node& B) const override;
 
-    Dense dense() const;
+    double norm() const override;
 
-    Dense lowRank() const;
+    void print() const override;
 
-    Dense& dense(const int i);
-
-    Dense& dense(const int i, const int j);
-
-    double norm() const;
-
-    double norm_test() const override;
-
-    void print() const;
-
-    void getrf();
-
-    void getrf_test() override;
-
-    void trsm(const Hierarchical& A, const char& uplo);
-
-    void trsm_test(const Node& A, const char& uplo);
+    void getrf() override;
 
     void trsm(const Node& A, const char& uplo) override;
-
-    void gemm(const Hierarchical& A, const Hierarchical& B);
 
     void gemm(const Node& A, const Node& B);
   };

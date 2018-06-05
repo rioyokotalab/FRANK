@@ -1,6 +1,7 @@
-#include "hblas.h"
 #include <iomanip>
 #include <lapacke.h>
+#include "dense.h"
+#include "low_rank.h"
 
 namespace hicma {
   Dense::Dense() {
@@ -72,22 +73,9 @@ namespace hicma {
     return data[i*dim[1]+j];
   }
 
-  const Dense Dense::operator=(const double a) {
+  const Node& Dense::operator=(const double a) {
     for (int i=0; i<dim[0]*dim[1]; i++)
       data[i] = a;
-    return *this;
-  }
-
-  const Node& Dense::assign(const double a) {
-    for (int i=0; i<dim[0]*dim[1]; i++)
-      data[i] = a;
-    return *this;
-  }
-
-  const Dense Dense::operator=(const Dense A) {
-    dim[0]=A.dim[0]; dim[1]=A.dim[1];
-    data.resize(dim[0]*dim[1]);
-    data = A.data;
     return *this;
   }
 
@@ -107,112 +95,6 @@ namespace hicma {
 
   const Node& Dense::operator=(const std::shared_ptr<Node> A) {
     return *this = *A;
-  }
-
-  const Dense Dense::operator+=(const Dense& A) {
-    assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
-    for (int i=0; i<dim[0]*dim[1]; i++)
-      data[i] += A.data[i];
-#if DEBUG
-    std::cout << "D += D : C(" << this->i_abs << "," << this->j_abs << ") = A(" << this->i_abs << "," << this->j_abs << ") + B(" << A.i_abs << "," << A.j_abs << ") @ lev " << this->level << std::endl;
-    this->print();
-#endif
-    return *this;
-  }
-
-  const Dense Dense::operator+=(const LowRank& A) {
-    assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
-    return *this += A.dense();
-  }
-
-  const Dense Dense::operator-=(const Dense& A) {
-    assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
-    for (int i=0; i<dim[0]*dim[1]; i++)
-      this->data[i] -= A.data[i];
-#if DEBUG
-    std::cout << "D -= D : C(" << this->i_abs << "," << this->j_abs << ") = A(" << this->i_abs << "," << this->j_abs << ") - B(" << A.i_abs << "," << A.j_abs << ") @ lev " << this->level << std::endl;
-    this->print();
-#endif
-    return *this;
-  }
-
-  const Dense Dense::operator-=(const LowRank& A) {
-    assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
-    return *this -= A.dense();
-  }
-
-  const Dense Dense::operator*=(const Dense& A) {
-    assert(dim[1] == A.dim[0]);
-    Dense B(dim[0],A.dim[1]);
-    if (A.dim[1] == 1) {
-      cblas_dgemv(
-                  CblasRowMajor,
-                  CblasNoTrans,
-                  dim[0],
-                  dim[1],
-                  1,
-                  &data[0],
-                  dim[1],
-                  &A[0],
-                  1,
-                  0,
-                  &B[0],
-                  1
-                  );
-    }
-    else {
-      cblas_dgemm(
-                  CblasRowMajor,
-                  CblasNoTrans,
-                  CblasNoTrans,
-                  B.dim[0],
-                  B.dim[1],
-                  dim[1],
-                  1,
-                  &data[0],
-                  dim[1],
-                  &A[0],
-                  A.dim[1],
-                  0,
-                  &B[0],
-                  B.dim[1]
-                  );
-    }
-#if DEBUG
-    std::cout << "D *= D : C(" << this->i_abs << "," << this->j_abs << ") = A(" << this->i_abs << "," << this->j_abs << ") * B(" << A.i_abs << "," << A.j_abs << ") @ lev " << this->level << std::endl;
-    this->print();
-#endif
-    return B;
-  }
-
-  const LowRank Dense::operator*=(const LowRank& A) {
-    LowRank B(A);
-    B.U = *this * A.U;
-    return B;
-  }
-
-  Dense Dense::operator+(const Dense& A) const {
-    return Dense(*this) += A;
-  }
-
-  Dense Dense::operator+(const LowRank& A) const {
-    return Dense(*this) += A;
-  }
-
-  Dense Dense::operator-(const Dense& A) const {
-    return Dense(*this) -= A;
-  }
-
-  Dense Dense::operator-(const LowRank& A) const {
-    return Dense(*this) -= A;
-  }
-
-  Dense Dense::operator*(const Dense& A) const {
-    return Dense(*this) *= A;
-  }
-
-  LowRank Dense::operator*(const LowRank& A) const {
-    return Dense(*this) *= A;
   }
 
   Dense Dense::operator-() const {
@@ -335,10 +217,6 @@ namespace hicma {
     return l2;
   }
 
-  double Dense::norm_test() const {
-    return (*this).norm();
-  }
-
   void Dense::print() const {
     for (int i=0; i<dim[0]; i++) {
       for (int j=0; j<dim[1]; j++) {
@@ -352,52 +230,6 @@ namespace hicma {
   void Dense::getrf() {
     std::vector<int> ipiv(std::min(dim[0],dim[1]));
     LAPACKE_dgetrf(LAPACK_ROW_MAJOR, dim[0], dim[1], &data[0], dim[1], &ipiv[0]);
-#if DEBUG
-    std::cout << "getrf(D(" << this->i_abs << "," << this->j_abs << ")) @ lev " << this->level << std::endl;
-    std::cout << "----------------------------------------------------------------------------------" << std::endl;
-    this->print();
-#endif
-  }
-
-  void Dense::getrf_test() {
-    std::vector<int> ipiv(std::min(dim[0],dim[1]));
-    LAPACKE_dgetrf(LAPACK_ROW_MAJOR, dim[0], dim[1], &data[0], dim[1], &ipiv[0]);
-  }
-
-  void Dense::trsm(const Dense& A, const char& uplo) {
-    if (dim[1] == 1) {
-      switch (uplo) {
-      case 'l' :
-        cblas_dtrsm(CblasRowMajor, CblasLeft, CblasLower, CblasNoTrans, CblasUnit,
-                    dim[0], dim[1], 1, &A[0], A.dim[1], &data[0], dim[1]);
-        break;
-      case 'u' :
-        cblas_dtrsm(CblasRowMajor, CblasLeft, CblasUpper, CblasNoTrans, CblasNonUnit,
-                    dim[0], dim[1], 1, &A[0], A.dim[1], &data[0], dim[1]);
-        break;
-      default :
-        fprintf(stderr,"Second argument must be 'l' for lower, 'u' for upper.\n"); abort();
-      }
-    }
-    else {
-      switch (uplo) {
-      case 'l' :
-        cblas_dtrsm(CblasRowMajor, CblasLeft, CblasLower, CblasNoTrans, CblasUnit,
-                    dim[0], dim[1], 1, &A[0], A.dim[1], &data[0], dim[1]);
-        break;
-      case 'u' :
-        cblas_dtrsm(CblasRowMajor, CblasRight, CblasUpper, CblasNoTrans, CblasNonUnit,
-                    dim[0], dim[1], 1, &A[0], A.dim[1], &data[0], dim[1]);
-        break;
-      default :
-        fprintf(stderr,"Second argument must be 'l' for lower, 'u' for upper.\n"); abort();
-      }
-    }
-#if DEBUG
-    std::cout << "trsm(D(" << this->i_abs << "," << this->j_abs << "),D(" << A.i_abs << "," << A.j_abs << ")) @ lev " << this->level << std::endl;
-    std::cout << "----------------------------------------------------------------------------------" << std::endl;
-    this->print();
-#endif
   }
 
   void Dense::trsm(const Node& A, const char& uplo) {
@@ -437,22 +269,6 @@ namespace hicma {
           this->is_string(), A.is_string());
       abort();
     }
-  }
-
-  void Dense::gemm(const Dense& A, const Dense& B) {
-    *this -= A * B;
-  }
-
-  void Dense::gemm(const Dense& A, const LowRank& B) {
-    *this -= A * B;
-  }
-
-  void Dense::gemm(const LowRank& A, const Dense& B) {
-    *this -= A * B;
-  }
-
-  void Dense::gemm(const LowRank& A, const LowRank& B) {
-    *this -= A * B;
   }
 
   void Dense::gemm(const Node& A, const Node& B) {

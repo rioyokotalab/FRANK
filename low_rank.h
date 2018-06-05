@@ -1,12 +1,12 @@
 #ifndef low_rank_h
 #define low_rank_h
 #include <cassert>
-#include "id.h"
 #include <vector>
+#include "id.h"
+#include "node.h"
+#include "dense.h"
 
 namespace hicma {
-  class Node;
-  class Dense;
   class Hierarchical;
   class LowRank : public Node {
   public:
@@ -28,51 +28,11 @@ namespace hicma {
 
     const char* is_string() const override;
 
-    const LowRank& operator=(const double v);
-
-    const Node& assign(const double a) override;
-
-    const LowRank& operator=(const LowRank A);
+    const Node& operator=(const double a) override;
 
     const Node& operator=(const Node& A) override;
 
     const Node& operator=(const std::shared_ptr<Node> A) override;
-
-    const Dense operator+=(const Dense& D);
-
-    const LowRank operator+=(const LowRank& A);
-
-    const LowRank operator+=(const Hierarchical& A);
-
-    const Dense operator-=(const Dense& D);
-
-    const LowRank operator-=(const LowRank& A);
-
-    const LowRank operator-=(const Hierarchical& A);
-
-    const LowRank operator*=(const Dense& D);
-
-    const LowRank operator*=(const LowRank& A);
-
-    const LowRank operator*=(const Hierarchical& A);
-
-    Dense operator+(const Dense& D) const;
-
-    LowRank operator+(const LowRank& A) const;
-
-    LowRank operator+(const Hierarchical& A) const;
-
-    Dense operator-(const Dense& D) const;
-
-    LowRank operator-(const LowRank& A) const;
-
-    LowRank operator-(const Hierarchical& A) const;
-
-    LowRank operator*(const Dense& D) const;
-
-    LowRank operator*(const LowRank& A) const;
-
-    LowRank operator*(const Hierarchical& A) const;
 
     LowRank operator-() const;
 
@@ -86,11 +46,9 @@ namespace hicma {
 
     Dense dense() const;
 
-    double norm() const;
+    double norm() const override;
 
-    double norm_test() const override;
-
-    void print() const;
+    void print() const override;
 
     void mergeU(const LowRank& A, const LowRank& B);
 
@@ -98,15 +56,7 @@ namespace hicma {
 
     void mergeV(const LowRank& A, const LowRank& B);
 
-    void trsm(const Dense& A, const char& uplo);
-
     void trsm(const Node& A, const char& uplo) override;
-
-    void gemm(const Dense& A, const LowRank& B);
-
-    void gemm(const LowRank& A, const Dense& B);
-
-    void gemm(const LowRank& A, const LowRank& B);
 
     void gemm(const Node& A, const Node& B);
   };
