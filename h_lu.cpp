@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
   Hierarchical A(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   Hierarchical x(rand, randx, N, 1, rank, nleaf, admis, nblocks, 1);
   Hierarchical b(zeros, randx, N, 1, rank, nleaf, admis, nblocks, 1);
-  b -= A * x;
+  b += A * x;
   stop("Init matrix");
   start("LU decomposition");
   A.getrf();
