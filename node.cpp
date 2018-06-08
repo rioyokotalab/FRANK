@@ -60,6 +60,24 @@ namespace hicma {
     return A.add(B);
   }
 
+  std::shared_ptr<Node> operator+(
+      const Node& A,
+      const std::shared_ptr<Node> B) {
+    return A.add(*B);
+  }
+
+  std::shared_ptr<Node> operator+(
+      const std::shared_ptr<Node> A,
+      const Node& B) {
+    return A->add(B);
+  }
+
+  std::shared_ptr<Node> operator+(
+      const std::shared_ptr<Node> A,
+      const std::shared_ptr<Node> B) {
+    return A->add(*B);
+  }
+
   const Node& operator+=(Node& A, const std::shared_ptr<Node> B) {
     return A += *B;
   }
@@ -73,6 +91,24 @@ namespace hicma {
     return A.sub(B);
   }
 
+  std::shared_ptr<Node> operator-(
+      const Node& A,
+      const std::shared_ptr<Node> B) {
+    return A.sub(*B);
+  }
+
+  std::shared_ptr<Node> operator-(
+      const std::shared_ptr<Node> A,
+      const Node& B) {
+    return A->sub(B);
+  }
+
+  std::shared_ptr<Node> operator-(
+      const std::shared_ptr<Node> A,
+      const std::shared_ptr<Node> B) {
+    return A->sub(*B);
+  }
+
   const Node& operator-=(Node& A, const std::shared_ptr<Node> B) {
     return A -= *B;
   }
@@ -84,6 +120,24 @@ namespace hicma {
 
   std::shared_ptr<Node> operator*(const Node& A, const Node& B) {
     return A.mul(B);
+  }
+
+  std::shared_ptr<Node> operator*(
+      const Node& A,
+      const std::shared_ptr<Node> B) {
+    return A.mul(*B);
+  }
+
+  std::shared_ptr<Node> operator*(
+      const std::shared_ptr<Node> A,
+      const Node& B) {
+    return A->mul(B);
+  }
+
+  std::shared_ptr<Node> operator*(
+      const std::shared_ptr<Node> A,
+      const std::shared_ptr<Node> B) {
+    return A->mul(*B);
   }
 
   const Node& operator*=(Node& A, const std::shared_ptr<Node> B) {

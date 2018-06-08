@@ -21,6 +21,8 @@ namespace hicma {
 
     Dense(const Dense& A);
 
+    Dense(const Dense* A);
+
     Dense(
           void (*func)(
                        std::vector<double>& data,

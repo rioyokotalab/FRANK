@@ -20,7 +20,11 @@ namespace hicma {
 
     LowRank(const LowRank &A);
 
+    LowRank(const LowRank *A);
+
     LowRank(const Dense &A, const int k);
+
+    LowRank(const std::shared_ptr<Node> A, const int k);
 
     LowRank* clone() const override;
 
@@ -44,7 +48,7 @@ namespace hicma {
 
     void resize(int m, int n, int k);
 
-    Dense dense() const;
+    const std::shared_ptr<Node> dense() const;
 
     double norm() const override;
 

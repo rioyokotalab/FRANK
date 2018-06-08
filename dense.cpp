@@ -20,6 +20,10 @@ namespace hicma {
     dim[0]=A.dim[0]; dim[1]=A.dim[1];
   }
 
+  Dense::Dense(const Dense* A) : Node(A->i_abs,A->j_abs,A->level), data(A->data) {
+    dim[0]=A->dim[0]; dim[1]=A->dim[1];
+  }
+
   Dense::Dense(
                void (*func)(
                             std::vector<double>& data,
@@ -107,11 +111,11 @@ namespace hicma {
     if (B.is(HICMA_LOWRANK)) {
       const LowRank& BR = static_cast<const LowRank&>(B);
       assert(dim[0] == BR.dim[0] && dim[1] == BR.dim[1]);
-      return (*this).add(BR.dense());
+      return (*this).add(*BR.dense());
     } else if (B.is(HICMA_DENSE)) {
       const Dense& BR = static_cast<const Dense&>(B);
       assert(dim[0] == BR.dim[0] && dim[1] == BR.dim[1]);
-      std::shared_ptr<Dense> Out = std::shared_ptr<Dense>(new Dense(*this));
+      std::shared_ptr<Dense> Out = std::make_shared<Dense>(new Dense(*this));
       for (int i=0; i<dim[0]*dim[1]; i++) {
         (*Out).data[i] += BR.data[i];
       }
@@ -127,11 +131,11 @@ namespace hicma {
     if (B.is(HICMA_LOWRANK)) {
       const LowRank& BR = static_cast<const LowRank&>(B);
       assert(dim[0] == BR.dim[0] && dim[1] == BR.dim[1]);
-      return (*this).sub(BR.dense());
+      return (*this).sub(*BR.dense());
     } else if (B.is(HICMA_DENSE)) {
       const Dense& BR = static_cast<const Dense&>(B);
       assert(dim[0] == BR.dim[0] && dim[1] == BR.dim[1]);
-      std::shared_ptr<Dense> Out = std::shared_ptr<Dense>(new Dense(*this));
+      std::shared_ptr<Dense> Out = std::make_shared<Dense>(new Dense(*this));
       for (int i=0; i<dim[0]*dim[1]; i++) {
         (*Out).data[i] -= BR.data[i];
       }
@@ -147,13 +151,13 @@ namespace hicma {
     if (B.is(HICMA_LOWRANK)) {
       const LowRank& BR = static_cast<const LowRank&>(B);
       assert(dim[0] == BR.dim[0] && dim[1] == BR.dim[1]);
-      std::shared_ptr<LowRank> Out = std::shared_ptr<LowRank>(new LowRank(BR));
+      std::shared_ptr<LowRank> Out = std::make_shared<LowRank>(new LowRank(BR));
       (*Out).U = *this * BR.U;
       return Out;
     } else if (B.is(HICMA_DENSE)) {
       const Dense& BR = static_cast<const Dense&>(B);
       assert(dim[1] == BR.dim[0]);
-      std::shared_ptr<Dense> Out = std::shared_ptr<Dense>(
+      std::shared_ptr<Dense> Out = std::make_shared<Dense>(
           new Dense(dim[0],BR.dim[1]));
       if (BR.dim[1] == 1) {
         cblas_dgemv(

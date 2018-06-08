@@ -30,6 +30,17 @@ namespace hicma {
     }
   }
 
+  Hierarchical::Hierarchical(const Hierarchical* A) : Node(A->i_abs,A->j_abs,A->level), data(A->data) {
+    dim[0]=A->dim[0]; dim[1]=A->dim[1];
+    data.resize(dim[0]*dim[1]);
+    for ( int i=0; i<dim[0]; i++ ) {
+      for ( int j=0; j<dim[1]; j++ ) {
+        data[i*dim[1] + j] = std::shared_ptr<Node>(
+            (*A->data[i*dim[1] + j]).clone());
+      }
+    }
+  }
+
   Hierarchical::Hierarchical(
                              void (*func)(
                                           std::vector<double>& data,
@@ -76,7 +87,7 @@ namespace hicma {
             // Check if vector, and if so do not use LowRank
             || (nj == 1 || ni == 1) /* Check if vector */ ) { // TODO: use x in admissibility condition
           if ( ni_child <= nleaf && nj_child <= nleaf ) {
-            (*this).data[i*dim[1]+j] = std::shared_ptr<Dense>(
+            (*this).data[i*dim[1]+j] = std::make_shared<Dense>(
               new Dense(
                 func,
                 x,
@@ -89,7 +100,7 @@ namespace hicma {
                 level+1));
           }
           else {
-            (*this).data[i*dim[1]+j] = std::shared_ptr<Hierarchical>(
+            (*this).data[i*dim[1]+j] = std::make_shared<Hierarchical>(
               new Hierarchical(
                 func,
                 x,
@@ -109,7 +120,7 @@ namespace hicma {
           }
         }
         else {
-          (*this).data[i*dim[1]+j] = std::shared_ptr<LowRank>(
+          (*this).data[i*dim[1]+j] = std::make_shared<LowRank>(
             new LowRank(Dense(
                   func,
                   x,
@@ -188,7 +199,7 @@ namespace hicma {
     if (B.is(HICMA_HIERARCHICAL)) {
       const Hierarchical& BR = static_cast<const Hierarchical&>(B);
       assert(dim[0]==BR.dim[0] && dim[1]==BR.dim[1]);
-      std::shared_ptr<Hierarchical> Out = std::shared_ptr<Hierarchical>(
+      std::shared_ptr<Hierarchical> Out = std::make_shared<Hierarchical>(
           new Hierarchical(*this));
       for (int i=0; i<dim[0]; i++)
         for (int j=0; j<dim[1]; j++)
@@ -205,7 +216,7 @@ namespace hicma {
     if (B.is(HICMA_HIERARCHICAL)) {
       const Hierarchical& BR = static_cast<const Hierarchical&>(B);
       assert(dim[0]==BR.dim[0] && dim[1]==BR.dim[1]);
-      std::shared_ptr<Hierarchical> Out = std::shared_ptr<Hierarchical>(
+      std::shared_ptr<Hierarchical> Out = std::make_shared<Hierarchical>(
           new Hierarchical(*this));
       for (int i=0; i<dim[0]; i++)
         for (int j=0; j<dim[1]; j++)
@@ -222,7 +233,7 @@ namespace hicma {
     if (B.is(HICMA_HIERARCHICAL)) {
       const Hierarchical& BR = static_cast<const Hierarchical&>(B);
       assert(dim[1] == BR.dim[0]);
-      std::shared_ptr<Hierarchical> Out = std::shared_ptr<Hierarchical>(
+      std::shared_ptr<Hierarchical> Out = std::make_shared<Hierarchical>(
           new Hierarchical(BR));
       //std::cout << BR.norm_test() << std::endl;
       (*Out) = 0;

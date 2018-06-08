@@ -57,17 +57,41 @@ namespace hicma {
 
   std::shared_ptr<Node> operator+(const Node& A, const Node& B);
 
+  std::shared_ptr<Node> operator+(const Node& A, const std::shared_ptr<Node> B);
+
+  std::shared_ptr<Node> operator+(const std::shared_ptr<Node> A, const Node& B);
+
+  std::shared_ptr<Node> operator+(
+      const std::shared_ptr<Node> A,
+      const std::shared_ptr<Node> B);
+
   const Node& operator+=(Node& A, const std::shared_ptr<Node> B);
 
   const Node& operator+=(Node& A, const Node& B);
 
   std::shared_ptr<Node> operator-(const Node& A, const Node& B);
 
+  std::shared_ptr<Node> operator-(const Node& A, const std::shared_ptr<Node> B);
+
+  std::shared_ptr<Node> operator-(const std::shared_ptr<Node> A, const Node& B);
+
+  std::shared_ptr<Node> operator-(
+      const std::shared_ptr<Node> A,
+      const std::shared_ptr<Node> B);
+
   const Node& operator-=(Node& A, const std::shared_ptr<Node> B);
 
   const Node& operator-=(Node& A, const Node& B);
 
   std::shared_ptr<Node> operator*(const Node& A, const Node& B);
+
+  std::shared_ptr<Node> operator*(const Node& A, const std::shared_ptr<Node> B);
+
+  std::shared_ptr<Node> operator*(const std::shared_ptr<Node> A, const Node& B);
+
+  std::shared_ptr<Node> operator*(
+      const std::shared_ptr<Node> A,
+      const std::shared_ptr<Node> B);
 
   const Node& operator*=(Node& A, const std::shared_ptr<Node> B);
 
