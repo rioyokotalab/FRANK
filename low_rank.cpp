@@ -97,12 +97,10 @@ namespace hicma {
       assert(dim[0]==BR.dim[0] && dim[1]==BR.dim[1]);
       std::shared_ptr<LowRank> Out;
       if (rank+BR.rank >= dim[0]) {
-        Out = std::make_shared<LowRank>(
-            new LowRank((*this).dense() + BR.dense(), rank));
+        Out = std::make_shared<LowRank>((*this).dense() + BR.dense(), rank);
       }
       else {
-        Out = std::make_shared<LowRank>(
-          new LowRank(dim[0], dim[1], rank+BR.rank));
+        Out = std::make_shared<LowRank>(dim[0], dim[1], rank+BR.rank);
         (*Out).mergeU(*this,BR);
         (*Out).mergeS(*this,BR);
         (*Out).mergeV(*this,BR);
@@ -125,12 +123,10 @@ namespace hicma {
       assert(dim[0]==BR.dim[0] && dim[1]==BR.dim[1]);
       std::shared_ptr<LowRank> Out;
       if (rank+BR.rank >= dim[0]) {
-        Out = std::make_shared<LowRank>(
-            new LowRank((*this).dense() - BR.dense(), rank));
+        Out = std::make_shared<LowRank>((*this).dense() - BR.dense(), rank);
       }
       else {
-        Out = std::make_shared<LowRank>(
-          new LowRank(dim[0], dim[1], rank+BR.rank));
+        Out = std::make_shared<LowRank>(dim[0], dim[1], rank+BR.rank);
         (*Out).mergeU(*this,-BR);
         (*Out).mergeS(*this,-BR);
         (*Out).mergeV(*this,-BR);
@@ -152,7 +148,7 @@ namespace hicma {
       const LowRank& BR = static_cast<const LowRank&>(B);
       assert(dim[1] == BR.dim[0]);
       std::shared_ptr<LowRank> Out = std::make_shared<LowRank>(
-          new LowRank(dim[0],BR.dim[1],rank));
+        dim[0],BR.dim[1],rank);
       (*Out).U = U;
       (*Out).S = (S * (V * BR.U)) * BR.S;
       (*Out).V = BR.V;
@@ -161,7 +157,7 @@ namespace hicma {
       const Dense& BR = static_cast<const Dense&>(B);
       assert(dim[1] == BR.dim[0]);
       std::shared_ptr<LowRank> Out = std::make_shared<LowRank>(
-          new LowRank(dim[0],BR.dim[1],rank));
+          dim[0],BR.dim[1],rank);
       (*Out).U = U;
       (*Out).S = S;
       (*Out).V = V * BR;
