@@ -240,15 +240,14 @@ namespace hicma {
     }
   }
 
-  void LowRank::trsm(const Node& A, const char& uplo) {
+  void LowRank::trsm(const NodePtr& A, const char& uplo) {
     if (A.is(HICMA_DENSE)) {
-      const Dense& AR = static_cast<const Dense&>(A);
       switch (uplo) {
       case 'l' :
-        U.trsm(AR, uplo);
+        U.trsm(A, uplo);
         break;
       case 'u' :
-        V.trsm(AR, uplo);
+        V.trsm(A, uplo);
         break;
       }
     } else {
@@ -259,7 +258,7 @@ namespace hicma {
     }
   }
 
-  void LowRank::gemm(const Node& A, const Node& B) {
+  void LowRank::gemm(const NodePtr& A, const NodePtr& B) {
     if (A.is(HICMA_DENSE)) {
       if (B.is(HICMA_DENSE)) {
         fprintf(

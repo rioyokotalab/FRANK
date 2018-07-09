@@ -51,13 +51,17 @@ namespace hicma {
 
     const char* is_string() const override;
 
-    Node& operator[](const int i);
+    NodePtr operator[](const int i);
 
     const Node& operator[](const int i) const;
 
     Node& operator()(const int i, const int j);
 
+    NodePtr operator()(const int i, const int j, const char*);
+
     const Node& operator()(const int i, const int j) const;
+
+    const NodePtr operator()(const int i, const int j, const char*) const;
 
     const Node& operator=(const double a) override;
 
@@ -77,9 +81,9 @@ namespace hicma {
 
     void getrf() override;
 
-    void trsm(const Node& A, const char& uplo) override;
+    void trsm(const NodePtr& A, const char& uplo) override;
 
-    void gemm(const Node& A, const Node& B);
+    void gemm(const NodePtr& A, const NodePtr& B);
   };
 }
 #endif

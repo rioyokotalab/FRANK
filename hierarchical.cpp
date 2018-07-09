@@ -144,9 +144,9 @@ namespace hicma {
 
   const char* Hierarchical::is_string() const { return "Hierarchical"; }
 
-  Node& Hierarchical::operator[](const int i) {
+  NodePtr Hierarchical::operator[](const int i) {
     assert(i<dim[0]*dim[1]);
-    return *data[i];
+    return data[i];
   }
 
   const Node& Hierarchical::operator[](const int i) const {
@@ -159,9 +159,19 @@ namespace hicma {
     return *data[i*dim[1]+j];
   }
 
+  NodePtr Hierarchical::operator()(const int i, const int j, const char*) {
+    assert(i<dim[0] && j<dim[1]);
+    return data[i*dim[1]+j];
+  }
+
   const Node& Hierarchical::operator()(const int i, const int j) const {
     assert(i<dim[0] && j<dim[1]);
     return *data[i*dim[1]+j];
+  }
+
+  const NodePtr Hierarchical::operator()(const int i, const int j, const char*) const {
+    assert(i<dim[0] && j<dim[1]);
+    return data[i*dim[1]+j];
   }
 
   const Node& Hierarchical::operator=(const double a) {
@@ -281,36 +291,36 @@ namespace hicma {
     for (int i=0; i<dim[0]; i++) {
       (*this)(i,i).getrf();
       for (int j=i+1; j<dim[0]; j++) {
-        (*this)(i,j).trsm((*this)(i,i),'l');
-        (*this)(j,i).trsm((*this)(i,i),'u');
+        (*this)(i,j).trsm((*this)(i,i,""),'l');
+        (*this)(j,i).trsm((*this)(i,i,""),'u');
       }
       for (int j=i+1; j<dim[0]; j++) {
         for (int k=i+1; k<dim[0]; k++) {
-          (*this)(j,k).gemm((*this)(j,i),(*this)(i,k));
+          (*this)(j,k).gemm((*this)(j,i,""),(*this)(i,k,""));
         }
       }
     }
   }
 
-  void Hierarchical::trsm(const Node& A, const char& uplo) {
+  void Hierarchical::trsm(const NodePtr& A, const char& uplo) {
     if (A.is(HICMA_HIERARCHICAL)) {
-      const Hierarchical& AR = static_cast<const Hierarchical&>(A);
+      const Hierarchical& AR = static_cast<const Hierarchical&>(*A);
       if (dim[1] == 1) {
         switch (uplo) {
         case 'l' :
           for (int i=0; i<dim[0]; i++) {
             for (int j=0; j<i; j++) {
-              (*this)[i].gemm(AR(i,j), (*this)[j]);
+              (*this)[i].gemm(AR(i,j,""), (*this)[j]);
             }
-            (*this)[i].trsm(AR(i,i),'l');
+            (*this)[i].trsm(AR(i,i, ""),'l');
           }
           break;
         case 'u' :
           for (int i=dim[0]-1; i>=0; i--) {
             for (int j=dim[0]-1; j>i; j--) {
-              (*this)[i].gemm(AR(i,j), (*this)[j]);
+              (*this)[i].gemm(AR(i,j,""), (*this)[j]);
             }
-            (*this)[i].trsm(AR(i,i),'u');
+            (*this)[i].trsm(AR(i,i, ""),'u');
           }
           break;
         default :
@@ -326,9 +336,9 @@ namespace hicma {
             for (int i=0; i<dim[0]; i++) {
               // Loop over previously calculated row, accumulate results
               for (int i_old=0; i_old<i; i_old++) {
-                (*this)(i,j).gemm(AR(i,i_old), (*this)(i_old,j));
+                (*this)(i,j).gemm(AR(i,i_old,""), (*this)(i_old,j,""));
               }
-              (*this)(i,j).trsm(AR(i,i),'l');
+              (*this)(i,j).trsm(AR(i,i, ""),'l');
             }
           }
           break;
@@ -339,9 +349,9 @@ namespace hicma {
             for (int j=0; j<dim[1]; j++) {
               // Loop over previously calculated col, accumulate results
               for (int j_old=0; j_old<j; j_old++) {
-                (*this)(i,j).gemm((*this)(i,j_old),AR(j_old,j));
+                (*this)(i,j).gemm((*this)(i,j_old,""),AR(j_old,j,""));
               }
-              (*this)(i,j).trsm(AR(j,j),'u');
+              (*this)(i,j).trsm(AR(j,j, ""),'u');
             }
           }
           break;
@@ -357,17 +367,17 @@ namespace hicma {
     }
   }
 
-  void Hierarchical::gemm(const Node& A, const Node& B) {
+  void Hierarchical::gemm(const NodePtr& A, const NodePtr& B) {
     if (A.is(HICMA_HIERARCHICAL)) {
-      const Hierarchical& AR = static_cast<const Hierarchical&>(A);
+      const Hierarchical& AR = static_cast<const Hierarchical&>(*A);
       if (B.is(HICMA_HIERARCHICAL)) {
-        const Hierarchical& BR = static_cast<const Hierarchical&>(B);
+        const Hierarchical& BR = static_cast<const Hierarchical&>(*B);
         assert(dim[0]==AR.dim[0] && dim[1]==BR.dim[1]);
         assert(AR.dim[1] == BR.dim[0]);
         for (int i=0; i<dim[0]; i++) {
           for (int j=0; j<dim[1]; j++) {
             for (int k=0; k<AR.dim[1]; k++) {
-              (*this)(i,j).gemm(AR(i,k), BR(k,j));
+              (*this)(i,j).gemm(AR(i,k,""), BR(k,j,""));
             }
           }
         }

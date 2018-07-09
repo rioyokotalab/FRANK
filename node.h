@@ -52,9 +52,9 @@ namespace hicma {
 
     virtual void getrf();
 
-    virtual void trsm(const Node& A, const char& uplo);
+    virtual void trsm(const NodePtr& A, const char& uplo);
 
-    virtual void gemm(const Node& A, const Node& B);
+    virtual void gemm(const NodePtr& A, const NodePtr& B);
   };
 
   NodePtr operator+(const Node& A, const Node& B);
@@ -64,12 +64,15 @@ namespace hicma {
   NodePtr operator+(const NodePtr A, const Node& B);
 
   NodePtr operator+(
-      const NodePtr A,
-      const NodePtr B);
+      const NodePtr& A,
+      const NodePtr& B);
 
   const Node& operator+=(Node& A, const NodePtr B);
 
-  const NodePtr operator+=(NodePtr A, const NodePtr B);
+  // This version seems const correct, but
+  // const NodePtr& operator+=(const NodePtr& A, const NodePtr& B)
+  // also works and might be preferable (speed?)
+  NodePtr operator+=(NodePtr A, const NodePtr& B);
 
   const Node& operator+=(Node& A, const Node& B);
 
@@ -80,8 +83,8 @@ namespace hicma {
   NodePtr operator-(const NodePtr A, const Node& B);
 
   NodePtr operator-(
-      const NodePtr A,
-      const NodePtr B);
+      const NodePtr& A,
+      const NodePtr& B);
 
   const Node& operator-=(Node& A, const NodePtr B);
 
@@ -94,8 +97,8 @@ namespace hicma {
   NodePtr operator*(const NodePtr A, const Node& B);
 
   NodePtr operator*(
-      const NodePtr A,
-      const NodePtr B);
+      const NodePtr& A,
+      const NodePtr& B);
 
   const Node& operator*=(Node& A, const NodePtr B);
 

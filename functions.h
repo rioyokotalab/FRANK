@@ -20,7 +20,7 @@ namespace hicma {
     }
   }
 
-  void rand(
+  void rand_data(
             std::vector<double>& data,
             std::vector<double>& x,
             const int& ni,

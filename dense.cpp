@@ -235,9 +235,9 @@ namespace hicma {
     LAPACKE_dgetrf(LAPACK_ROW_MAJOR, dim[0], dim[1], &data[0], dim[1], &ipiv[0]);
   }
 
-  void Dense::trsm(const Node& A, const char& uplo) {
+  void Dense::trsm(const NodePtr& A, const char& uplo) {
     if (A.is(HICMA_DENSE)) {
-      const Dense& AR = static_cast<const Dense&>(A);
+      const Dense& AR = static_cast<const Dense&>(*A);
       if (dim[1] == 1) {
         switch (uplo) {
         case 'l' :
@@ -274,7 +274,7 @@ namespace hicma {
     }
   }
 
-  void Dense::gemm(const Node& A, const Node& B) {
+  void Dense::gemm(const NodePtr& A, const NodePtr& B) {
     if (A.is(HICMA_DENSE)) {
       if (B.is(HICMA_DENSE)) {
         *this -= A * B;

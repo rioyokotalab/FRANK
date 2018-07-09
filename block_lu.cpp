@@ -54,8 +54,8 @@ int main(int argc, char** argv) {
     stop("-DGETRF", false);
     for (int jc=ic+1; jc<Nc; jc++) {
       start("-DTRSM");
-      A(ic,jc).trsm(A(ic,ic),'l');
-      A(jc,ic).trsm(A(ic,ic),'u');
+      A(ic,jc).trsm(A(ic,ic,""),'l');
+      A(jc,ic).trsm(A(ic,ic,""),'u');
       stop("-DTRSM", false);
     }
     for (int jc=ic+1; jc<Nc; jc++) {
@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
     for (int jc=0; jc<ic; jc++) {
       b[ic].gemm(A(ic,jc),b[jc]);
     }
-    b[ic].trsm(A(ic,ic),'l');
+    b[ic].trsm(A(ic,ic,""),'l');
   }
   stop("Forward substitution");
   start("Backward substitution");
@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
     for (int jc=Nc-1; jc>ic; jc--) {
       b[ic].gemm(A(ic,jc),b[jc]);
     }
-    b[ic].trsm(A(ic,ic),'u');
+    b[ic].trsm(A(ic,ic,""),'u');
   }
   stop("Backward substitution");
   double diff = 0, norm = 0;

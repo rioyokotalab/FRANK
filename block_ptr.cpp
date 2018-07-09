@@ -18,12 +18,22 @@ namespace hicma {
   BlockPtr<T>::BlockPtr(T* ptr) : std::shared_ptr<T>(ptr) {};
 
   template <typename T>
-  double BlockPtr<T>::norm() {
+  const bool BlockPtr<T>::is(const int enum_id) const {
+    return this->get()->is(enum_id);
+  }
+
+  template <typename T>
+  const char* BlockPtr<T>::is_string() const {
+    return this->get()->is_string();
+  }
+
+  template <typename T>
+  double BlockPtr<T>::norm() const {
     return this->get()->norm();
   }
 
   template <typename T>
-  void BlockPtr<T>::print() {
+  void BlockPtr<T>::print() const {
     return this->get()->print();
   }
 
@@ -33,18 +43,13 @@ namespace hicma {
   }
 
   template <typename T>
-  void BlockPtr<T>::trsm(const Node& A, const char& uplo) {
+  void BlockPtr<T>::trsm(const BlockPtr<T>& A, const char& uplo) {
     return this->get()->trsm(A, uplo);
   }
 
   template <typename T>
-  void BlockPtr<T>::gemm(const Node& A, const Node& B) {
+  void BlockPtr<T>::gemm(const BlockPtr<T>& A, const BlockPtr<T>& B) {
     return this->get()->gemm(A, B);
-  }
-
-  template <typename T>
-  void BlockPtr<T>::gemm(const Node& A, BlockPtr<T> B) {
-    return this->get()->gemm(A, *B);
   }
 
 

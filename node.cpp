@@ -51,9 +51,9 @@ namespace hicma {
 
   void Node::getrf() {};
 
-  void Node::trsm(const Node& A, const char& uplo) {};
+  void Node::trsm(const NodePtr& A, const char& uplo) {};
 
-  void Node::gemm(const Node& A, const Node& B) {};
+  void Node::gemm(const NodePtr& A, const NodePtr& B) {};
 
   NodePtr operator+(const Node& A, const Node& B) {
     return A.add(B);
@@ -72,8 +72,8 @@ namespace hicma {
   }
 
   NodePtr operator+(
-      const NodePtr A,
-      const NodePtr B) {
+      const NodePtr& A,
+      const NodePtr& B) {
     return A->add(*B);
   }
 
@@ -86,8 +86,8 @@ namespace hicma {
     return A;
   }
 
-  const NodePtr operator+=(NodePtr A, const Node& B) {
-    A = (*A).add(B);
+  NodePtr operator+=(NodePtr A, const NodePtr& B) {
+    *A = *(*A).add(*B);
     return A;
   }
 
@@ -108,8 +108,8 @@ namespace hicma {
   }
 
   NodePtr operator-(
-      const NodePtr A,
-      const NodePtr B) {
+      const NodePtr& A,
+      const NodePtr& B) {
     return A->sub(*B);
   }
 
@@ -139,8 +139,8 @@ namespace hicma {
   }
 
   NodePtr operator*(
-      const NodePtr A,
-      const NodePtr B) {
+      const NodePtr& A,
+      const NodePtr& B) {
     return A->mul(*B);
   }
 

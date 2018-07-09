@@ -24,17 +24,19 @@ namespace hicma {
     template <typename U>
     BlockPtr(std::shared_ptr<U> ptr) : std::shared_ptr<T>(ptr) {};
 
-    double norm();
+    const bool is(const int) const;
 
-    void print();
+    const char* is_string() const;
+
+    double norm() const;
+
+    void print() const;
 
     void getrf();
 
-    void trsm(const Node&, const char&);
+    void trsm(const BlockPtr<T>&, const char&);
 
-    void gemm(const Node&, const Node&);
-
-    void gemm(const Node&, BlockPtr<T>);
+    void gemm(const BlockPtr<T>&, const BlockPtr<T>&);
   };
 
 }
