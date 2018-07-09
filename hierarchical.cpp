@@ -24,7 +24,7 @@ namespace hicma {
     data.resize(dim[0]*dim[1]);
     for ( int i=0; i<dim[0]; i++ ) {
       for ( int j=0; j<dim[1]; j++ ) {
-        data[i*dim[1] + j] = std::shared_ptr<Node>(
+        data[i*dim[1] + j] = NodePtr(
             (*A.data[i*dim[1] + j]).clone());
       }
     }
@@ -35,7 +35,7 @@ namespace hicma {
     data.resize(dim[0]*dim[1]);
     for ( int i=0; i<dim[0]; i++ ) {
       for ( int j=0; j<dim[1]; j++ ) {
-        data[i*dim[1] + j] = std::shared_ptr<Node>(
+        data[i*dim[1] + j] = NodePtr(
             (*A->data[i*dim[1] + j]).clone());
       }
     }
@@ -188,15 +188,15 @@ namespace hicma {
     }
   }
 
-  const Node& Hierarchical::operator=(const std::shared_ptr<Node> A) {
+  const Node& Hierarchical::operator=(const NodePtr A) {
     return *this = *A;
   }
 
-  std::shared_ptr<Node> Hierarchical::add(const Node& B) const {
+  NodePtr Hierarchical::add(const Node& B) const {
     if (B.is(HICMA_HIERARCHICAL)) {
       const Hierarchical& BR = static_cast<const Hierarchical&>(B);
       assert(dim[0]==BR.dim[0] && dim[1]==BR.dim[1]);
-      std::shared_ptr<Hierarchical> Out = std::make_shared<Hierarchical>(*this);
+      BlockPtr<Hierarchical> Out = std::make_shared<Hierarchical>(*this);
       for (int i=0; i<dim[0]; i++)
         for (int j=0; j<dim[1]; j++)
           (*Out)(i,j) += BR(i,j);
@@ -204,15 +204,15 @@ namespace hicma {
     } else {
         std::cout << this->is_string() << " + " << B.is_string();
         std::cout << " is undefined!" << std::endl;
-        return std::shared_ptr<Node>(nullptr);
+        return NodePtr(nullptr);
     }
   }
 
-  std::shared_ptr<Node> Hierarchical::sub(const Node& B) const {
+  NodePtr Hierarchical::sub(const Node& B) const {
     if (B.is(HICMA_HIERARCHICAL)) {
       const Hierarchical& BR = static_cast<const Hierarchical&>(B);
       assert(dim[0]==BR.dim[0] && dim[1]==BR.dim[1]);
-      std::shared_ptr<Hierarchical> Out = std::make_shared<Hierarchical>(*this);
+      BlockPtr<Hierarchical> Out = std::make_shared<Hierarchical>(*this);
       for (int i=0; i<dim[0]; i++)
         for (int j=0; j<dim[1]; j++)
           (*Out)(i,j) -= BR(i,j);
@@ -220,22 +220,19 @@ namespace hicma {
     } else {
         std::cout << this->is_string() << " - " << B.is_string();
         std::cout << " is undefined!" << std::endl;
-        return std::shared_ptr<Node>(nullptr);
+        return NodePtr(nullptr);
     }
   }
 
-  std::shared_ptr<Node> Hierarchical::mul(const Node& B) const {
+  NodePtr Hierarchical::mul(const Node& B) const {
     if (B.is(HICMA_HIERARCHICAL)) {
       const Hierarchical& BR = static_cast<const Hierarchical&>(B);
       assert(dim[1] == BR.dim[0]);
-      std::shared_ptr<Hierarchical> Out = std::make_shared<Hierarchical>(BR);
-      //std::cout << BR.norm_test() << std::endl;
+      BlockPtr<Hierarchical> Out = std::make_shared<Hierarchical>(BR);
       (*Out) = 0;
-      //std::cout << BR.norm_test() << std::endl;
       for (int i=0; i<dim[0]; i++) {
         for (int j=0; j<BR.dim[1]; j++) {
           for (int k=0; k<dim[1]; k++) {
-            //std::cout << (*((*this)(i,k) * BR(k,j))).norm_test() << std::endl;
             (*Out)(i,j) += (*this)(i,k) * BR(k,j);
           }
         }
@@ -244,7 +241,7 @@ namespace hicma {
     } else {
         std::cout << this->is_string() << " * " << B.is_string();
         std::cout << " is undefined!" << std::endl;
-        return std::shared_ptr<Node>(nullptr);
+        return NodePtr(nullptr);
     }
   }
 

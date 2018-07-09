@@ -1,6 +1,5 @@
 #include <iostream>
-#include <memory>
-#include <node.h>
+#include "node.h"
 
 namespace hicma {
 
@@ -18,7 +17,7 @@ namespace hicma {
     return *this;
   }
 
-  const Node& Node::operator=(const std::shared_ptr<Node> A) {
+  const Node& Node::operator=(const NodePtr A) {
     return *this = *A;
   }
 
@@ -28,19 +27,19 @@ namespace hicma {
 
   const char* Node::is_string() const { return "Node"; }
 
-  std::shared_ptr<Node> Node::add(const Node& B) const {
+  NodePtr Node::add(const Node& B) const {
     std::cout << "Not implemented!!" << std::endl; abort();
-    return std::shared_ptr<Node>(nullptr);
+    return NodePtr(nullptr);
   };
 
-  std::shared_ptr<Node> Node::sub(const Node& B) const {
+  NodePtr Node::sub(const Node& B) const {
     std::cout << "Not implemented!!" << std::endl; abort();
-    return std::shared_ptr<Node>(nullptr);
+    return NodePtr(nullptr);
   };
 
-  std::shared_ptr<Node> Node::mul(const Node& B) const {
+  NodePtr Node::mul(const Node& B) const {
     std::cout << "Not implemented!!" << std::endl; abort();
-    return std::shared_ptr<Node>(nullptr);
+    return NodePtr(nullptr);
   };
 
   double Node::norm() const {
@@ -56,29 +55,29 @@ namespace hicma {
 
   void Node::gemm(const Node& A, const Node& B) {};
 
-  std::shared_ptr<Node> operator+(const Node& A, const Node& B) {
+  NodePtr operator+(const Node& A, const Node& B) {
     return A.add(B);
   }
 
-  std::shared_ptr<Node> operator+(
+  NodePtr operator+(
       const Node& A,
-      const std::shared_ptr<Node> B) {
+      const NodePtr B) {
     return A.add(*B);
   }
 
-  std::shared_ptr<Node> operator+(
-      const std::shared_ptr<Node> A,
+  NodePtr operator+(
+      const NodePtr A,
       const Node& B) {
     return A->add(B);
   }
 
-  std::shared_ptr<Node> operator+(
-      const std::shared_ptr<Node> A,
-      const std::shared_ptr<Node> B) {
+  NodePtr operator+(
+      const NodePtr A,
+      const NodePtr B) {
     return A->add(*B);
   }
 
-  const Node& operator+=(Node& A, const std::shared_ptr<Node> B) {
+  const Node& operator+=(Node& A, const NodePtr B) {
     return A += *B;
   }
 
@@ -87,29 +86,34 @@ namespace hicma {
     return A;
   }
 
-  std::shared_ptr<Node> operator-(const Node& A, const Node& B) {
+  const NodePtr operator+=(NodePtr A, const Node& B) {
+    A = (*A).add(B);
+    return A;
+  }
+
+  NodePtr operator-(const Node& A, const Node& B) {
     return A.sub(B);
   }
 
-  std::shared_ptr<Node> operator-(
+  NodePtr operator-(
       const Node& A,
-      const std::shared_ptr<Node> B) {
+      const NodePtr B) {
     return A.sub(*B);
   }
 
-  std::shared_ptr<Node> operator-(
-      const std::shared_ptr<Node> A,
+  NodePtr operator-(
+      const NodePtr A,
       const Node& B) {
     return A->sub(B);
   }
 
-  std::shared_ptr<Node> operator-(
-      const std::shared_ptr<Node> A,
-      const std::shared_ptr<Node> B) {
+  NodePtr operator-(
+      const NodePtr A,
+      const NodePtr B) {
     return A->sub(*B);
   }
 
-  const Node& operator-=(Node& A, const std::shared_ptr<Node> B) {
+  const Node& operator-=(Node& A, const NodePtr B) {
     return A -= *B;
   }
 
@@ -118,29 +122,29 @@ namespace hicma {
     return A;
   }
 
-  std::shared_ptr<Node> operator*(const Node& A, const Node& B) {
+  NodePtr operator*(const Node& A, const Node& B) {
     return A.mul(B);
   }
 
-  std::shared_ptr<Node> operator*(
+  NodePtr operator*(
       const Node& A,
-      const std::shared_ptr<Node> B) {
+      const NodePtr B) {
     return A.mul(*B);
   }
 
-  std::shared_ptr<Node> operator*(
-      const std::shared_ptr<Node> A,
+  NodePtr operator*(
+      const NodePtr A,
       const Node& B) {
     return A->mul(B);
   }
 
-  std::shared_ptr<Node> operator*(
-      const std::shared_ptr<Node> A,
-      const std::shared_ptr<Node> B) {
+  NodePtr operator*(
+      const NodePtr A,
+      const NodePtr B) {
     return A->mul(*B);
   }
 
-  const Node& operator*=(Node& A, const std::shared_ptr<Node> B) {
+  const Node& operator*=(Node& A, const NodePtr B) {
     return A *= *B;
   }
 

@@ -1,6 +1,6 @@
 CXX = mpicxx -std=c++11 -ggdb3 -Wall -O3 -fopenmp -I.
 
-SOURCES = dense.o id.o low_rank.o hierarchical.o node.o
+SOURCES = dense.o id.o low_rank.o hierarchical.o node.o block_ptr.o
 
 .cpp.o:
 	$(CXX) -c $? -o $@

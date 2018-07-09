@@ -6,6 +6,7 @@
 #include <iostream>
 #include <vector>
 #include "node.h"
+#include "block_ptr.h"
 
 namespace hicma {
   class Dense : public Node {
@@ -60,15 +61,15 @@ namespace hicma {
 
     const Node& operator=(const Node& A) override;
 
-    const Node& operator=(const std::shared_ptr<Node> A) override;
+    const Node& operator=(const NodePtr A) override;
 
     Dense operator-() const;
 
-    std::shared_ptr<Node> add(const Node& B) const override;
+    NodePtr add(const Node& B) const override;
 
-    std::shared_ptr<Node> sub(const Node& B) const override;
+    NodePtr sub(const Node& B) const override;
 
-    std::shared_ptr<Node> mul(const Node& B) const override;
+    NodePtr mul(const Node& B) const override;
 
     void resize(int i);
 

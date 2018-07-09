@@ -2,13 +2,14 @@
 #define hierarchical_h
 #include <memory>
 #include "node.h"
+#include "block_ptr.h"
 
 namespace hicma {
   class Dense;
   class Hierarchical : public Node {
   public:
     int dim[2];
-    std::vector<std::shared_ptr<Node>> data;
+    std::vector<NodePtr> data;
 
     Hierarchical();
 
@@ -62,13 +63,13 @@ namespace hicma {
 
     const Node& operator=(const Node& A) override;
 
-    const Node& operator=(const std::shared_ptr<Node> A) override;
+    const Node& operator=(const NodePtr A) override;
 
-    std::shared_ptr<Node> add(const Node& B) const override;
+    NodePtr add(const Node& B) const override;
 
-    std::shared_ptr<Node> sub(const Node& B) const override;
+    NodePtr sub(const Node& B) const override;
 
-    std::shared_ptr<Node> mul(const Node& B) const override;
+    NodePtr mul(const Node& B) const override;
 
     double norm() const override;
 

@@ -5,6 +5,7 @@
 #include "id.h"
 #include "node.h"
 #include "dense.h"
+#include "block_ptr.h"
 
 namespace hicma {
   class Hierarchical;
@@ -24,7 +25,7 @@ namespace hicma {
 
     LowRank(const Dense &A, const int k);
 
-    LowRank(const std::shared_ptr<Node> A, const int k);
+    LowRank(const NodePtr A, const int k);
 
     LowRank* clone() const override;
 
@@ -36,19 +37,19 @@ namespace hicma {
 
     const Node& operator=(const Node& A) override;
 
-    const Node& operator=(const std::shared_ptr<Node> A) override;
+    const Node& operator=(const NodePtr A) override;
 
     LowRank operator-() const;
 
-    std::shared_ptr<Node> add(const Node& B) const override;
+    NodePtr add(const Node& B) const override;
 
-    std::shared_ptr<Node> sub(const Node& B) const override;
+    NodePtr sub(const Node& B) const override;
 
-    std::shared_ptr<Node> mul(const Node& B) const override;
+    NodePtr mul(const Node& B) const override;
 
     void resize(int m, int n, int k);
 
-    const std::shared_ptr<Node> dense() const;
+    const NodePtr dense() const;
 
     double norm() const override;
 

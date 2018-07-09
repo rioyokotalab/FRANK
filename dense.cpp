@@ -97,7 +97,7 @@ namespace hicma {
     }
   };
 
-  const Node& Dense::operator=(const std::shared_ptr<Node> A) {
+  const Node& Dense::operator=(const NodePtr A) {
     return *this = *A;
   }
 
@@ -107,7 +107,7 @@ namespace hicma {
     return D;
   }
 
-  std::shared_ptr<Node> Dense::add(const Node& B) const {
+  NodePtr Dense::add(const Node& B) const {
     if (B.is(HICMA_LOWRANK)) {
       const LowRank& BR = static_cast<const LowRank&>(B);
       assert(dim[0] == BR.dim[0] && dim[1] == BR.dim[1]);
@@ -115,7 +115,7 @@ namespace hicma {
     } else if (B.is(HICMA_DENSE)) {
       const Dense& BR = static_cast<const Dense&>(B);
       assert(dim[0] == BR.dim[0] && dim[1] == BR.dim[1]);
-      std::shared_ptr<Dense> Out = std::make_shared<Dense>(*this);
+      BlockPtr<Dense> Out = std::make_shared<Dense>(*this);
       for (int i=0; i<dim[0]*dim[1]; i++) {
         (*Out).data[i] += BR.data[i];
       }
@@ -123,11 +123,11 @@ namespace hicma {
     } else {
       std::cout << this->is_string() << " + " << B.is_string();
       std::cout << " is undefined!" << std::endl;
-      return std::shared_ptr<Node>(nullptr);
+      return NodePtr(nullptr);
     }
   }
 
-  std::shared_ptr<Node> Dense::sub(const Node& B) const {
+  NodePtr Dense::sub(const Node& B) const {
     if (B.is(HICMA_LOWRANK)) {
       const LowRank& BR = static_cast<const LowRank&>(B);
       assert(dim[0] == BR.dim[0] && dim[1] == BR.dim[1]);
@@ -135,7 +135,7 @@ namespace hicma {
     } else if (B.is(HICMA_DENSE)) {
       const Dense& BR = static_cast<const Dense&>(B);
       assert(dim[0] == BR.dim[0] && dim[1] == BR.dim[1]);
-      std::shared_ptr<Dense> Out = std::make_shared<Dense>(*this);
+      BlockPtr<Dense> Out = std::make_shared<Dense>(*this);
       for (int i=0; i<dim[0]*dim[1]; i++) {
         (*Out).data[i] -= BR.data[i];
       }
@@ -143,21 +143,21 @@ namespace hicma {
     } else {
       std::cout << this->is_string() << " - " << B.is_string();
       std::cout << " is undefined!" << std::endl;
-      return std::shared_ptr<Node>(nullptr);
+      return NodePtr(nullptr);
     }
   }
 
-  std::shared_ptr<Node> Dense::mul(const Node& B) const {
+  NodePtr Dense::mul(const Node& B) const {
     if (B.is(HICMA_LOWRANK)) {
       const LowRank& BR = static_cast<const LowRank&>(B);
       assert(dim[0] == BR.dim[0] && dim[1] == BR.dim[1]);
-      std::shared_ptr<LowRank> Out = std::make_shared<LowRank>(BR);
+      BlockPtr<LowRank> Out = std::make_shared<LowRank>(BR);
       (*Out).U = *this * BR.U;
       return Out;
     } else if (B.is(HICMA_DENSE)) {
       const Dense& BR = static_cast<const Dense&>(B);
       assert(dim[1] == BR.dim[0]);
-      std::shared_ptr<Dense> Out = std::make_shared<Dense>(dim[0],BR.dim[1]);
+      BlockPtr<Dense> Out = std::make_shared<Dense>(dim[0],BR.dim[1]);
       if (BR.dim[1] == 1) {
         cblas_dgemv(
                     CblasRowMajor,
@@ -196,7 +196,7 @@ namespace hicma {
     } else {
       std::cout << this->is_string() << " * " << B.is_string();
       std::cout << " is undefined!" << std::endl;
-      return std::shared_ptr<Node>(nullptr);
+      return NodePtr(nullptr);
     }
   }
 

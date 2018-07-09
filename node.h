@@ -1,7 +1,7 @@
 #ifndef node_h
 #define node_h
 #include <iostream>
-#include <memory>
+#include "block_ptr.h"
 
 namespace hicma {
 
@@ -11,6 +11,8 @@ namespace hicma {
     HICMA_LOWRANK,
     HICMA_DENSE
   };
+
+  typedef BlockPtr<Node> NodePtr;
 
   class Node {
   public:
@@ -32,17 +34,17 @@ namespace hicma {
 
     virtual const Node& operator=(const Node& A);
 
-    virtual const Node& operator=(const std::shared_ptr<Node> A);
+    virtual const Node& operator=(const NodePtr A);
 
     virtual const bool is(const int enum_id) const;
 
     virtual const char* is_string() const;
 
-    virtual std::shared_ptr<Node> add(const Node& B) const;
+    virtual NodePtr add(const Node& B) const;
 
-    virtual std::shared_ptr<Node> sub(const Node& B) const;
+    virtual NodePtr sub(const Node& B) const;
 
-    virtual std::shared_ptr<Node> mul(const Node& B) const;
+    virtual NodePtr mul(const Node& B) const;
 
     virtual double norm() const;
 
@@ -55,45 +57,47 @@ namespace hicma {
     virtual void gemm(const Node& A, const Node& B);
   };
 
-  std::shared_ptr<Node> operator+(const Node& A, const Node& B);
+  NodePtr operator+(const Node& A, const Node& B);
 
-  std::shared_ptr<Node> operator+(const Node& A, const std::shared_ptr<Node> B);
+  NodePtr operator+(const Node& A, const NodePtr B);
 
-  std::shared_ptr<Node> operator+(const std::shared_ptr<Node> A, const Node& B);
+  NodePtr operator+(const NodePtr A, const Node& B);
 
-  std::shared_ptr<Node> operator+(
-      const std::shared_ptr<Node> A,
-      const std::shared_ptr<Node> B);
+  NodePtr operator+(
+      const NodePtr A,
+      const NodePtr B);
 
-  const Node& operator+=(Node& A, const std::shared_ptr<Node> B);
+  const Node& operator+=(Node& A, const NodePtr B);
+
+  const NodePtr operator+=(NodePtr A, const NodePtr B);
 
   const Node& operator+=(Node& A, const Node& B);
 
-  std::shared_ptr<Node> operator-(const Node& A, const Node& B);
+  NodePtr operator-(const Node& A, const Node& B);
 
-  std::shared_ptr<Node> operator-(const Node& A, const std::shared_ptr<Node> B);
+  NodePtr operator-(const Node& A, const NodePtr B);
 
-  std::shared_ptr<Node> operator-(const std::shared_ptr<Node> A, const Node& B);
+  NodePtr operator-(const NodePtr A, const Node& B);
 
-  std::shared_ptr<Node> operator-(
-      const std::shared_ptr<Node> A,
-      const std::shared_ptr<Node> B);
+  NodePtr operator-(
+      const NodePtr A,
+      const NodePtr B);
 
-  const Node& operator-=(Node& A, const std::shared_ptr<Node> B);
+  const Node& operator-=(Node& A, const NodePtr B);
 
   const Node& operator-=(Node& A, const Node& B);
 
-  std::shared_ptr<Node> operator*(const Node& A, const Node& B);
+  NodePtr operator*(const Node& A, const Node& B);
 
-  std::shared_ptr<Node> operator*(const Node& A, const std::shared_ptr<Node> B);
+  NodePtr operator*(const Node& A, const NodePtr B);
 
-  std::shared_ptr<Node> operator*(const std::shared_ptr<Node> A, const Node& B);
+  NodePtr operator*(const NodePtr A, const Node& B);
 
-  std::shared_ptr<Node> operator*(
-      const std::shared_ptr<Node> A,
-      const std::shared_ptr<Node> B);
+  NodePtr operator*(
+      const NodePtr A,
+      const NodePtr B);
 
-  const Node& operator*=(Node& A, const std::shared_ptr<Node> B);
+  const Node& operator*=(Node& A, const NodePtr B);
 
   const Node& operator*=(Node& A, const Node& B);
 
