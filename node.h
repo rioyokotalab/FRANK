@@ -12,7 +12,14 @@ namespace hicma {
     HICMA_DENSE
   };
 
+  class Node;
   typedef BlockPtr<Node> NodePtr;
+  class Hierarchical;
+  typedef BlockPtr<Hierarchical> HierarchicalPtr;
+  class Dense;
+  typedef BlockPtr<Dense> DensePtr;
+  class LowRank;
+  typedef BlockPtr<LowRank> LowRankPtr;
 
   class Node {
   public:
@@ -37,6 +44,7 @@ namespace hicma {
     // TODO Change this once other = is not needed anymore
     virtual const Node& operator=(const double a);
 
+    // TODO remove
     virtual const Node& operator=(const Node& A);
 
     virtual const Node& operator=(const NodePtr A);
@@ -45,10 +53,13 @@ namespace hicma {
 
     virtual const char* is_string() const;
 
+    // TODO switch to NodePtr
     virtual NodePtr add(const Node& B) const;
 
+    // TODO switch to NodePtr
     virtual NodePtr sub(const Node& B) const;
 
+    // TODO switch to NodePtr
     virtual NodePtr mul(const Node& B) const;
 
     virtual double norm() const;
@@ -62,52 +73,36 @@ namespace hicma {
     virtual void gemm(const NodePtr& A, const NodePtr& B);
   };
 
-  NodePtr operator+(const Node& A, const Node& B);
-
-  NodePtr operator+(const Node& A, const NodePtr B);
-
-  NodePtr operator+(const NodePtr A, const Node& B);
-
-  NodePtr operator+(
-      const NodePtr& A,
-      const NodePtr& B);
-
-  const Node& operator+=(Node& A, const NodePtr B);
+  NodePtr operator+(const NodePtr& A, const NodePtr& B);
 
   // This version seems const correct, but
   // const NodePtr& operator+=(const NodePtr& A, const NodePtr& B)
   // also works and might be preferable (speed?)
   NodePtr operator+=(NodePtr A, const NodePtr& B);
 
-  const Node& operator+=(Node& A, const Node& B);
+  NodePtr operator-(const NodePtr& A, const NodePtr& B);
 
-  NodePtr operator-(const Node& A, const Node& B);
+  // TODO remove
+  const Node& operator-=(Node& A, const NodePtr& B);
 
-  NodePtr operator-(const Node& A, const NodePtr B);
-
-  NodePtr operator-(const NodePtr A, const Node& B);
-
-  NodePtr operator-(
-      const NodePtr& A,
-      const NodePtr& B);
-
-  const Node& operator-=(Node& A, const NodePtr B);
-
+  // TODO remove
   const Node& operator-=(Node& A, const Node& B);
 
+  // This version seems const correct, but
+  // const NodePtr& operator-=(const NodePtr& A, const NodePtr& B)
+  // also works and might be preferable (speed?)
+  NodePtr operator-=(NodePtr A, const NodePtr& B);
+
+  // TODO remove
   NodePtr operator*(const Node& A, const Node& B);
 
+  // TODO remove
   NodePtr operator*(const Node& A, const NodePtr B);
 
+  // TODO remove
   NodePtr operator*(const NodePtr A, const Node& B);
 
-  NodePtr operator*(
-      const NodePtr& A,
-      const NodePtr& B);
-
-  const Node& operator*=(Node& A, const NodePtr B);
-
-  const Node& operator*=(Node& A, const Node& B);
+  NodePtr operator*(const NodePtr& A, const NodePtr& B);
 
 }
 #endif

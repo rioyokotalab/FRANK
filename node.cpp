@@ -55,35 +55,8 @@ namespace hicma {
 
   void Node::gemm(const NodePtr& A, const NodePtr& B) {};
 
-  NodePtr operator+(const Node& A, const Node& B) {
-    return A.add(B);
-  }
-
-  NodePtr operator+(
-      const Node& A,
-      const NodePtr B) {
-    return A.add(*B);
-  }
-
-  NodePtr operator+(
-      const NodePtr A,
-      const Node& B) {
-    return A->add(B);
-  }
-
-  NodePtr operator+(
-      const NodePtr& A,
-      const NodePtr& B) {
+  NodePtr operator+(const NodePtr& A, const NodePtr& B) {
     return A->add(*B);
-  }
-
-  const Node& operator+=(Node& A, const NodePtr B) {
-    return A += *B;
-  }
-
-  const Node& operator+=(Node& A, const Node& B) {
-    A = A.add(B);
-    return A;
   }
 
   NodePtr operator+=(NodePtr A, const NodePtr& B) {
@@ -91,30 +64,13 @@ namespace hicma {
     return A;
   }
 
-  NodePtr operator-(const Node& A, const Node& B) {
-    return A.sub(B);
-  }
-
-  NodePtr operator-(
-      const Node& A,
-      const NodePtr B) {
-    return A.sub(*B);
-  }
-
-  NodePtr operator-(
-      const NodePtr A,
-      const Node& B) {
-    return A->sub(B);
-  }
-
-  NodePtr operator-(
-      const NodePtr& A,
-      const NodePtr& B) {
+  NodePtr operator-(const NodePtr& A, const NodePtr& B) {
     return A->sub(*B);
   }
 
-  const Node& operator-=(Node& A, const NodePtr B) {
-    return A -= *B;
+  const Node& operator-=(Node& A, const NodePtr& B) {
+    A = A.sub(*B);
+    return A;
   }
 
   const Node& operator-=(Node& A, const Node& B) {
@@ -122,35 +78,25 @@ namespace hicma {
     return A;
   }
 
+  NodePtr operator-=(NodePtr A, const NodePtr& B) {
+    *A = *(*A).sub(*B);
+    return A;
+  }
+
   NodePtr operator*(const Node& A, const Node& B) {
     return A.mul(B);
   }
 
-  NodePtr operator*(
-      const Node& A,
-      const NodePtr B) {
+  NodePtr operator*(const Node& A, const NodePtr B) {
     return A.mul(*B);
   }
 
-  NodePtr operator*(
-      const NodePtr A,
-      const Node& B) {
+  NodePtr operator*(const NodePtr A, const Node& B) {
     return A->mul(B);
   }
 
-  NodePtr operator*(
-      const NodePtr& A,
-      const NodePtr& B) {
+  NodePtr operator*(const NodePtr& A, const NodePtr& B) {
     return A->mul(*B);
-  }
-
-  const Node& operator*=(Node& A, const NodePtr B) {
-    return A *= *B;
-  }
-
-  const Node& operator*=(Node& A, const Node& B) {
-    A = A.mul(B);
-    return A;
   }
 
 }

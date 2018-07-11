@@ -211,7 +211,7 @@ namespace hicma {
       BlockPtr<Hierarchical> Out = std::make_shared<Hierarchical>(*this);
       for (int i=0; i<dim[0]; i++)
         for (int j=0; j<dim[1]; j++)
-          (*Out)(i,j) += BR(i,j);
+          (*Out)(i,j,"") += BR(i,j,"");
       return Out;
     } else {
         std::cout << this->is_string() << " + " << B.is_string();
@@ -245,7 +245,7 @@ namespace hicma {
       for (int i=0; i<dim[0]; i++) {
         for (int j=0; j<BR.dim[1]; j++) {
           for (int k=0; k<dim[1]; k++) {
-            (*Out)(i,j) += (*this)(i,k) * BR(k,j);
+            (*Out)(i,j,"") += (*this)(i,k) * BR(k,j);
           }
         }
       }

@@ -5,9 +5,7 @@
 
 namespace hicma {
 
-  class Node;
-
-  template <typename T = Node>
+  template <typename T>
   class BlockPtr : public std::shared_ptr<T> {
   public:
     template <typename U>

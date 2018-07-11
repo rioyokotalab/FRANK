@@ -6,3 +6,7 @@ TAGS
 # Python ignores
 **/__pycache__
 **/*.pyc
+
+# core dumps
+vgcore.[0-9]*
+
