@@ -34,7 +34,7 @@ namespace hicma {
                const NodePtr A,
                const int k
                ) : Node(A->i_abs,A->j_abs,A->level){
-    assert((*A).is(HICMA_DENSE));
+    assert(A.is(HICMA_DENSE));
     const Dense& AR = static_cast<Dense&>(*A);
     int m = dim[0] = AR.dim[0];
     int n = dim[1] = AR.dim[1];

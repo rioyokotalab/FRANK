@@ -189,6 +189,8 @@ namespace hicma {
       const Hierarchical& AR = static_cast<const Hierarchical&>(A);
       dim[0]=AR.dim[0]; dim[1]=AR.dim[1];
       data.resize(dim[0]*dim[1]);
+      // TODO Explicit constructor is called here! Make sure it's done right,
+      // including inheritance
       data = AR.data;
       return *this;
     } else {

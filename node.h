@@ -25,6 +25,11 @@ namespace hicma {
         const int _j_abs,
         const int _level) : i_abs(_i_abs), j_abs(_j_abs), level(_level) {}
 
+    // TODO Check if this is really necessary (became necessary when adding
+    // explicit constructor for BlockPtr using Args forwarding.
+    // Called when copying data = A.data in Hierarchical::mul
+    Node(NodePtr) : i_abs(0), j_abs(0), level(0) {}
+
     virtual ~Node();
 
     virtual Node* clone() const;

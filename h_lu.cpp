@@ -40,13 +40,13 @@ int main(int argc, char** argv) {
     nblocks = N / nleaf; // 1 level
     admis = 2; // Strong admissibility
   }
-  BlockPtr<Hierarchical> A = std::make_shared<Hierarchical>(
+  BlockPtr<Hierarchical> A(
       laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
 
-  BlockPtr<Hierarchical> b = std::make_shared<Hierarchical>(
+  BlockPtr<Hierarchical> b(
       zeros, randx, N, 1, rank, nleaf, admis, nblocks, 1);
 
-  BlockPtr<Hierarchical> x = std::make_shared<Hierarchical>(
+  BlockPtr<Hierarchical> x(
       rand_data, randx, N, 1, rank, nleaf, admis, nblocks, 1);
   b += A * x;
   stop("Init matrix");
