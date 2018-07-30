@@ -8,10 +8,10 @@ namespace hicma {
   template <class T>
   struct return_type{ typedef T type; };
 
-  // Specializations for Dense
-  class Dense;
+  // Specializations for _Dense
+  class _Dense;
   template <>
-  struct return_type<Dense>{ typedef double type; };
+  struct return_type<_Dense>{ typedef double type; };
 
   template <typename T>
   class BlockPtr : public std::shared_ptr<T> {
@@ -25,7 +25,7 @@ namespace hicma {
 
     BlockPtr(std::shared_ptr<T>);
 
-    // Conversions from Dense, LowRank, Hierarchical to Node.
+    // Conversions from _Dense, LowRank, Hierarchical to Node.
     // Other way around DOES NOT WORK
     // template <typename U>
     // BlockPtr(const std::shared_ptr<U>& ptr) : std::shared_ptr<T>(ptr) {};
@@ -35,7 +35,7 @@ namespace hicma {
 
     BlockPtr(T*);
 
-    // This forwards the = operator to Node, Dense, Hierarchical etc, isn't used
+    // This forwards the = operator to Node, _Dense, Hierarchical etc, isn't used
     // right now.
     template <typename U>
     const BlockPtr<T> operator=(const BlockPtr<U>& ptr) {
@@ -43,14 +43,14 @@ namespace hicma {
       return *this;
     };
 
-    // Operators necessary for making U, S, V of LowRank a DensePtr
+    // Operators necessary for making U, S, V of LowRank a _DensePtr
     const BlockPtr<T>& operator=(int);
     const BlockPtr<T>& operator-() const;
     typename return_type<T>::type& operator()(int, int);
     const typename return_type<T>::type& operator()(int, int) const;
 
     // Add constructor using arg list, forward to make_shared<T>
-    // Might have to make template specialization for Node, Dense etc...
+    // Might have to make template specialization for Node, _Dense etc...
     template <typename... Args>
     explicit BlockPtr(Args&&... args)
       : std::shared_ptr<T>(std::make_shared<T>(std::forward<Args>(args)...)) {};
@@ -78,15 +78,15 @@ namespace hicma {
   };
 
 
-  // Partial specializations for Dense
+  // Partial specializations for _Dense
   template <>
-  double& BlockPtr<Dense>::operator()(int, int);
+  double& BlockPtr<_Dense>::operator()(int, int);
 
   template<>
-  const double& BlockPtr<Dense>::operator()(int, int) const;
+  const double& BlockPtr<_Dense>::operator()(int, int) const;
 
   template<>
-  const BlockPtr<Dense>& BlockPtr<Dense>::operator-() const;
+  const BlockPtr<_Dense>& BlockPtr<_Dense>::operator-() const;
 }
 
 #endif

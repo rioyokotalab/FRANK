@@ -7,9 +7,9 @@ namespace hicma {
 
   LowRank::LowRank(const int m, const int n, const int k) {
     dim[0]=m; dim[1]=n; rank=k;
-    U = DensePtr(m,k);
-    S = DensePtr(k,k);
-    V = DensePtr(k,n);
+    U = Dense(m,k);
+    S = Dense(k,k);
+    V = Dense(k,n);
   }
 
   LowRank::LowRank(const LowRank &A) : _Node(A.i_abs,A.j_abs,A.level), U(A.U), S(A.S), V(A.V) {
@@ -20,13 +20,13 @@ namespace hicma {
     dim[0]=A->dim[0]; dim[1]=A->dim[1]; rank=A->rank;
   }
 
-  LowRank::LowRank(const Dense &A, const int k) : _Node(A.i_abs,A.j_abs,A.level) {
+  LowRank::LowRank(const _Dense &A, const int k) : _Node(A.i_abs,A.j_abs,A.level) {
     int m = dim[0] = A.dim[0];
     int n = dim[1] = A.dim[1];
     rank = k;
-    U = DensePtr(m,k);
-    S = DensePtr(k,k);
-    V = DensePtr(k,n);
+    U = Dense(m,k);
+    S = Dense(k,k);
+    V = Dense(k,n);
     randomized_low_rank_svd2(A.data, rank, (*U).data, (*S).data, (*V).data, m, n);
   }
 
@@ -35,13 +35,13 @@ namespace hicma {
                const int k
                ) : _Node(A->i_abs,A->j_abs,A->level){
     assert(A.is(HICMA_DENSE));
-    const Dense& AR = static_cast<Dense&>(*A);
+    const _Dense& AR = static_cast<_Dense&>(*A);
     int m = dim[0] = AR.dim[0];
     int n = dim[1] = AR.dim[1];
     rank = k;
-    U = DensePtr(m,k);
-    S = DensePtr(k,k);
-    V = DensePtr(k,n);
+    U = Dense(m,k);
+    S = Dense(k,k);
+    V = Dense(k,n);
     randomized_low_rank_svd2(AR.data, rank, (*U).data, (*S).data, (*V).data, m, n);
   }
 
@@ -113,7 +113,7 @@ namespace hicma {
       }
       return Out;
     } else if(B.is(HICMA_DENSE)) {
-      const Dense& BR = static_cast<const Dense&>(*B);
+      const _Dense& BR = static_cast<const _Dense&>(*B);
       assert(dim[0]==BR.dim[0] && dim[1]==BR.dim[1]);
       return this->dense()->add(B);
     } else {
@@ -139,7 +139,7 @@ namespace hicma {
       }
       return Out;
     } else if(B.is(HICMA_DENSE)) {
-      const Dense& BR = static_cast<const Dense&>(*B);
+      const _Dense& BR = static_cast<const _Dense&>(*B);
       assert(dim[0]==BR.dim[0] && dim[1]==BR.dim[1]);
       return this->dense()->sub(B);
     } else {
@@ -159,7 +159,7 @@ namespace hicma {
       (*Out).V = BR.V;
       return Out;
     } else if(B.is(HICMA_DENSE)) {
-      const Dense& BR = static_cast<const Dense&>(*B);
+      const _Dense& BR = static_cast<const _Dense&>(*B);
       assert(dim[1] == BR.dim[0]);
       LowRankPtr Out(dim[0], BR.dim[1], rank);
       (*Out).U = U;

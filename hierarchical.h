@@ -5,7 +5,7 @@
 #include "block_ptr.h"
 
 namespace hicma {
-  class Dense;
+  class _Dense;
   class Hierarchical : public _Node {
   public:
     int dim[2];

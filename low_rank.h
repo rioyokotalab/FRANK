@@ -2,16 +2,16 @@
 #define low_rank_h
 #include <cassert>
 #include <vector>
+#include "block_ptr.h"
 #include "id.h"
 #include "node.h"
 #include "dense.h"
-#include "block_ptr.h"
 
 namespace hicma {
   class Hierarchical;
   class LowRank : public _Node {
   public:
-    DensePtr U, S, V;
+    Dense U, S, V;
     int dim[2];
     int rank;
 
@@ -25,7 +25,7 @@ namespace hicma {
 
     LowRank(const LowRankPtr& A);
 
-    LowRank(const Dense &A, const int k);
+    LowRank(const _Dense &A, const int k);
 
     LowRank(const Node A, const int k);
 

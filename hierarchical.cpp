@@ -100,7 +100,7 @@ namespace hicma {
             // Check if vector, and if so do not use LowRank
             || (nj == 1 || ni == 1) /* Check if vector */ ) { // TODO: use x in admissibility condition
           if ( ni_child <= nleaf && nj_child <= nleaf ) {
-            (*this).data[i*dim[1]+j] = new Dense(
+            (*this).data[i*dim[1]+j] = new _Dense(
                 func,
                 x,
                 ni_child,
@@ -131,7 +131,7 @@ namespace hicma {
         }
         else {
           (*this).data[i*dim[1]+j] = new LowRank(
-            Dense(
+            _Dense(
                   func,
                   x,
                   ni_child,

@@ -9,24 +9,24 @@
 #include "block_ptr.h"
 
 namespace hicma {
-  class Dense : public _Node {
+  class _Dense : public _Node {
   public:
     std::vector<double> data;
     int dim[2];
 
-    Dense();
+    _Dense();
 
-    Dense(const int m);
+    _Dense(const int m);
 
-    Dense(const int m, const int n);
+    _Dense(const int m, const int n);
 
-    Dense(const Dense& A);
+    _Dense(const _Dense& A);
 
-    Dense(const Dense* A);
+    _Dense(const _Dense* A);
 
-    Dense(const DensePtr& A);
+    _Dense(const Dense& A);
 
-    Dense(
+    _Dense(
           void (*func)(
                        std::vector<double>& data,
                        std::vector<double>& x,
@@ -45,7 +45,7 @@ namespace hicma {
           const int level=0
           );
 
-    Dense* clone() const override;
+    _Dense* clone() const override;
 
     const bool is(const int enum_id) const override;
 
@@ -65,7 +65,7 @@ namespace hicma {
 
     const _Node& operator=(const Node& A) override;
 
-    Dense operator-() const;
+    _Dense operator-() const;
 
     Node add(const Node& B) const override;
 
@@ -77,7 +77,7 @@ namespace hicma {
 
     void resize(int i, int j);
 
-    Dense extract(int i, int j, int ni, int nj);
+    _Dense extract(int i, int j, int ni, int nj);
 
     double norm() const override;
 

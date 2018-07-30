@@ -30,18 +30,18 @@ namespace hicma {
   }
 
   template <>
-  const BlockPtr<Dense>& BlockPtr<Dense>::operator-() const {
+  const BlockPtr<_Dense>& BlockPtr<_Dense>::operator-() const {
     *(this->get()) = this->get()->operator-();
     return *this;
   }
 
   template <>
-  double& BlockPtr<Dense>::operator()(int i, int j) {
+  double& BlockPtr<_Dense>::operator()(int i, int j) {
     return (*this)(i, j);
   }
 
   template <>
-  const double& BlockPtr<Dense>::operator()(int i, int j) const {
+  const double& BlockPtr<_Dense>::operator()(int i, int j) const {
     return (*this)(i, j);
   }
 
@@ -56,12 +56,12 @@ namespace hicma {
   }
 
   template <>
-  void BlockPtr<Dense>::resize(int i) {
+  void BlockPtr<_Dense>::resize(int i) {
     this->get()->resize(i);
   }
 
   template <>
-  void BlockPtr<Dense>::resize(int i, int j) {
+  void BlockPtr<_Dense>::resize(int i, int j) {
     this->get()->resize(i, j);
   }
 
@@ -92,7 +92,7 @@ namespace hicma {
 
 
   template class BlockPtr<_Node>;
-  template class BlockPtr<Dense>;
+  template class BlockPtr<_Dense>;
   template class BlockPtr<LowRank>;
   template class BlockPtr<Hierarchical>;
 }
