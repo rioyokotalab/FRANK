@@ -8,9 +8,9 @@
 using namespace hicma;
 
 int main(int argc, char** argv) {
-  int N = 64;
-  int nleaf = 16;
-  int rank = 8;
+  int N = 256;
+  int nleaf = 32;
+  int rank = 16;
   std::vector<double> randx(N);
   for (int i=0; i<N; i++) {
     randx[i] = drand48();

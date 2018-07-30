@@ -12,15 +12,15 @@ namespace hicma {
     V = DensePtr(k,n);
   }
 
-  LowRank::LowRank(const LowRank &A) : Node(A.i_abs,A.j_abs,A.level), U(A.U), S(A.S), V(A.V) {
+  LowRank::LowRank(const LowRank &A) : _Node(A.i_abs,A.j_abs,A.level), U(A.U), S(A.S), V(A.V) {
     dim[0]=A.dim[0]; dim[1]=A.dim[1]; rank=A.rank;
   }
 
-  LowRank::LowRank(const LowRank *A) : Node(A->i_abs,A->j_abs,A->level), U(A->U), S(A->S), V(A->V) {
+  LowRank::LowRank(const LowRank *A) : _Node(A->i_abs,A->j_abs,A->level), U(A->U), S(A->S), V(A->V) {
     dim[0]=A->dim[0]; dim[1]=A->dim[1]; rank=A->rank;
   }
 
-  LowRank::LowRank(const Dense &A, const int k) : Node(A.i_abs,A.j_abs,A.level) {
+  LowRank::LowRank(const Dense &A, const int k) : _Node(A.i_abs,A.j_abs,A.level) {
     int m = dim[0] = A.dim[0];
     int n = dim[1] = A.dim[1];
     rank = k;
@@ -31,9 +31,9 @@ namespace hicma {
   }
 
   LowRank::LowRank(
-               const NodePtr A,
+               const Node A,
                const int k
-               ) : Node(A->i_abs,A->j_abs,A->level){
+               ) : _Node(A->i_abs,A->j_abs,A->level){
     assert(A.is(HICMA_DENSE));
     const Dense& AR = static_cast<Dense&>(*A);
     int m = dim[0] = AR.dim[0];
@@ -61,7 +61,7 @@ namespace hicma {
 
   const char* LowRank::is_string() const { return "LowRank"; }
 
-  const Node& LowRank::operator=(const double a) {
+  const _Node& LowRank::operator=(const double a) {
     assert(a == 0);
     U = 0;
     S = 0;
@@ -69,7 +69,7 @@ namespace hicma {
     return *this;
   }
 
-  const Node& LowRank::operator=(const Node& A) {
+  const _Node& LowRank::operator=(const _Node& A) {
     if (A.is(HICMA_LOWRANK)) {
       const LowRank& AR = static_cast<const LowRank&>(A);
       assert(dim[0]==AR.dim[0] && dim[1]==AR.dim[1] && rank==AR.rank);
@@ -85,7 +85,7 @@ namespace hicma {
     }
   }
 
-  const Node& LowRank::operator=(const NodePtr& A) {
+  const _Node& LowRank::operator=(const Node& A) {
     return *this = *A;
   }
 
@@ -97,7 +97,7 @@ namespace hicma {
     return A;
   }
 
-  NodePtr LowRank::add(const NodePtr& B) const {
+  Node LowRank::add(const Node& B) const {
     if (B.is(HICMA_LOWRANK)) {
       const LowRank& BR = static_cast<const LowRank&>(*B);
       assert(dim[0]==BR.dim[0] && dim[1]==BR.dim[1]);
@@ -119,11 +119,11 @@ namespace hicma {
     } else {
       std::cout << this->is_string() << " + " << B.is_string();
       std::cout << " is undefined!" << std::endl;
-      return NodePtr(nullptr);
+      return Node(nullptr);
     }
   }
 
-  NodePtr LowRank::sub(const NodePtr& B) const {
+  Node LowRank::sub(const Node& B) const {
     if (B.is(HICMA_LOWRANK)) {
       const LowRank& BR = static_cast<const LowRank&>(*B);
       assert(dim[0]==BR.dim[0] && dim[1]==BR.dim[1]);
@@ -145,11 +145,11 @@ namespace hicma {
     } else {
       std::cout << this->is_string() << " - " << B.is_string();
       std::cout << " is undefined!" << std::endl;
-      return NodePtr(nullptr);
+      return Node(nullptr);
     }
   }
 
-  NodePtr LowRank::mul(const NodePtr& B) const {
+  Node LowRank::mul(const Node& B) const {
     if (B.is(HICMA_LOWRANK)) {
       const LowRank& BR = static_cast<const LowRank&>(*B);
       assert(dim[1] == BR.dim[0]);
@@ -169,7 +169,7 @@ namespace hicma {
     } else {
       std::cout << this->is_string() << " * " << B.is_string();
       std::cout << " is undefined!" << std::endl;
-      return NodePtr(nullptr);
+      return Node(nullptr);
     }
   }
 
@@ -180,7 +180,7 @@ namespace hicma {
     V.resize(k,n);
   }
 
-  const NodePtr LowRank::dense() const {
+  const Node LowRank::dense() const {
     return U * S * V;
   }
 
@@ -244,7 +244,7 @@ namespace hicma {
     }
   }
 
-  void LowRank::trsm(const NodePtr& A, const char& uplo) {
+  void LowRank::trsm(const Node& A, const char& uplo) {
     if (A.is(HICMA_DENSE)) {
       switch (uplo) {
       case 'l' :
@@ -262,7 +262,7 @@ namespace hicma {
     }
   }
 
-  void LowRank::gemm(const NodePtr& A, const NodePtr& B) {
+  void LowRank::gemm(const Node& A, const Node& B) {
     if (A.is(HICMA_DENSE)) {
       if (B.is(HICMA_DENSE)) {
         fprintf(

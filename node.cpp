@@ -3,77 +3,77 @@
 
 namespace hicma {
 
-  Node::~Node() {};
+  _Node::~_Node() {};
 
-  Node* Node::clone() const {
-    return new Node(*this);
+  _Node* _Node::clone() const {
+    return new _Node(*this);
   }
 
-  const Node& Node::operator=(const double a) {
+  const _Node& _Node::operator=(const double a) {
     return *this;
   }
 
-  const Node& Node::operator=(const Node& A) {
+  const _Node& _Node::operator=(const _Node& A) {
     return *this;
   }
 
-  const Node& Node::operator=(const NodePtr& A) {
+  const _Node& _Node::operator=(const Node& A) {
     return *this = *A;
   }
 
-  const bool Node::is(const int enum_id) const {
+  const bool _Node::is(const int enum_id) const {
     return enum_id == HICMA_NODE;
   }
 
-  const char* Node::is_string() const { return "Node"; }
+  const char* _Node::is_string() const { return "_Node"; }
 
-  NodePtr Node::add(const NodePtr& B) const {
+  Node _Node::add(const Node& B) const {
     std::cout << "Not implemented!!" << std::endl; abort();
-    return NodePtr(nullptr);
+    return Node(nullptr);
   };
 
-  NodePtr Node::sub(const NodePtr& B) const {
+  Node _Node::sub(const Node& B) const {
     std::cout << "Not implemented!!" << std::endl; abort();
-    return NodePtr(nullptr);
+    return Node(nullptr);
   };
 
-  NodePtr Node::mul(const NodePtr& B) const {
+  Node _Node::mul(const Node& B) const {
     std::cout << "Not implemented!!" << std::endl; abort();
-    return NodePtr(nullptr);
+    return Node(nullptr);
   };
 
-  double Node::norm() const {
+  double _Node::norm() const {
     std::cout << "Not implemented!!" << std::endl; abort();
     return 0.0;
   };
 
-  void Node::print() const {};
+  void _Node::print() const {};
 
-  void Node::getrf() {};
+  void _Node::getrf() {};
 
-  void Node::trsm(const NodePtr& A, const char& uplo) {};
+  void _Node::trsm(const Node& A, const char& uplo) {};
 
-  void Node::gemm(const NodePtr& A, const NodePtr& B) {};
+  void _Node::gemm(const Node& A, const Node& B) {};
 
-  NodePtr operator+(const NodePtr& A, const NodePtr& B) {
+  Node operator+(const Node& A, const Node& B) {
     return A->add(B);
   }
 
-  const NodePtr operator+=(const NodePtr A, const NodePtr& B) {
+  const Node operator+=(const Node A, const Node& B) {
     *A = A->add(B);
     return A;
   }
 
-  NodePtr operator-(const NodePtr& A, const NodePtr& B) {
+  Node operator-(const Node& A, const Node& B) {
     return A->sub(B);
   }
 
-  NodePtr operator-=(NodePtr A, const NodePtr& B) {
+  Node operator-=(Node A, const Node& B) {
     *A = A->sub(B);
     return A;
   }
 
-  NodePtr operator*(const NodePtr& A, const NodePtr& B) {
+  Node operator*(const Node& A, const Node& B) {
     return A->mul(B);
   }
 

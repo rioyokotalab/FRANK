@@ -9,7 +9,7 @@
 
 namespace hicma {
   class Hierarchical;
-  class LowRank : public Node {
+  class LowRank : public _Node {
   public:
     DensePtr U, S, V;
     int dim[2];
@@ -27,7 +27,7 @@ namespace hicma {
 
     LowRank(const Dense &A, const int k);
 
-    LowRank(const NodePtr A, const int k);
+    LowRank(const Node A, const int k);
 
     LowRank* clone() const override;
 
@@ -35,23 +35,23 @@ namespace hicma {
 
     const char* is_string() const override;
 
-    const Node& operator=(const double a) override;
+    const _Node& operator=(const double a) override;
 
-    const Node& operator=(const Node& A) override;
+    const _Node& operator=(const _Node& A) override;
 
-    const Node& operator=(const NodePtr& A) override;
+    const _Node& operator=(const Node& A) override;
 
     LowRank operator-() const;
 
-    NodePtr add(const NodePtr& B) const override;
+    Node add(const Node& B) const override;
 
-    NodePtr sub(const NodePtr& B) const override;
+    Node sub(const Node& B) const override;
 
-    NodePtr mul(const NodePtr& B) const override;
+    Node mul(const Node& B) const override;
 
     void resize(int m, int n, int k);
 
-    const NodePtr dense() const;
+    const Node dense() const;
 
     double norm() const override;
 
@@ -63,9 +63,9 @@ namespace hicma {
 
     void mergeV(const LowRank& A, const LowRank& B);
 
-    void trsm(const NodePtr& A, const char& uplo) override;
+    void trsm(const Node& A, const char& uplo) override;
 
-    void gemm(const NodePtr& A, const NodePtr& B);
+    void gemm(const Node& A, const Node& B);
   };
 }
 #endif

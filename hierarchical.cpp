@@ -19,36 +19,36 @@ namespace hicma {
     dim[0]=m; dim[1]=n; data.resize(dim[0]*dim[1]);
   }
 
-  Hierarchical::Hierarchical(const Hierarchical& A) : Node(A.i_abs,A.j_abs,A.level), data(A.data) {
+  Hierarchical::Hierarchical(const Hierarchical& A) : _Node(A.i_abs,A.j_abs,A.level), data(A.data) {
     dim[0]=A.dim[0]; dim[1]=A.dim[1];
     data.resize(dim[0]*dim[1]);
     for ( int i=0; i<dim[0]; i++ ) {
       for ( int j=0; j<dim[1]; j++ ) {
-        data[i*dim[1] + j] = NodePtr(
+        data[i*dim[1] + j] = Node(
             (*A.data[i*dim[1] + j]).clone());
       }
     }
   }
 
-  Hierarchical::Hierarchical(const Hierarchical* A) : Node(A->i_abs,A->j_abs,A->level), data(A->data) {
+  Hierarchical::Hierarchical(const Hierarchical* A) : _Node(A->i_abs,A->j_abs,A->level), data(A->data) {
     dim[0]=A->dim[0]; dim[1]=A->dim[1];
     data.resize(dim[0]*dim[1]);
     for ( int i=0; i<dim[0]; i++ ) {
       for ( int j=0; j<dim[1]; j++ ) {
-        data[i*dim[1] + j] = NodePtr(
+        data[i*dim[1] + j] = Node(
             (*A->data[i*dim[1] + j]).clone());
       }
     }
   }
 
   Hierarchical::Hierarchical(const HierarchicalPtr& A)
-  : Node((*A).i_abs, (*A).j_abs, (*A).level) {
+  : _Node((*A).i_abs, (*A).j_abs, (*A).level) {
     printf("hi from Hierarchical\n");
     dim[0]=(*A).dim[0]; dim[1]=(*A).dim[1];
     data.resize(dim[0]*dim[1]);
     for ( int i=0; i<dim[0]; i++ ) {
       for ( int j=0; j<dim[1]; j++ ) {
-        data[i*dim[1] + j] = NodePtr((*(*A).data[i*dim[1] + j]).clone());
+        data[i*dim[1] + j] = Node((*(*A).data[i*dim[1] + j]).clone());
       }
     }
 
@@ -76,7 +76,7 @@ namespace hicma {
                              const int _i_abs,
                              const int _j_abs,
                              const int _level
-                             ) : Node(_i_abs,_j_abs,_level) {
+                             ) : _Node(_i_abs,_j_abs,_level) {
     if ( !level ) {
       assert(int(x.size()) == std::max(ni,nj));
       std::sort(x.begin(),x.end());
@@ -157,27 +157,27 @@ namespace hicma {
 
   const char* Hierarchical::is_string() const { return "Hierarchical"; }
 
-  NodePtr Hierarchical::operator[](const int i) {
+  Node Hierarchical::operator[](const int i) {
     assert(i<dim[0]*dim[1]);
     return data[i];
   }
 
-  const NodePtr& Hierarchical::operator[](const int i) const {
+  const Node& Hierarchical::operator[](const int i) const {
     assert(i<dim[0]*dim[1]);
     return data[i];
   }
 
-  NodePtr Hierarchical::operator()(const int i, const int j) {
+  Node Hierarchical::operator()(const int i, const int j) {
     assert(i<dim[0] && j<dim[1]);
     return data[i*dim[1]+j];
   }
 
-  const NodePtr& Hierarchical::operator()(const int i, const int j) const {
+  const Node& Hierarchical::operator()(const int i, const int j) const {
     assert(i<dim[0] && j<dim[1]);
     return data[i*dim[1]+j];
   }
 
-  const Node& Hierarchical::operator=(const double a) {
+  const _Node& Hierarchical::operator=(const double a) {
     for (int i=0; i<dim[0]; i++) {
       for (int j=0; j<dim[1]; j++) {
         (*this)(i,j) = a;
@@ -186,9 +186,9 @@ namespace hicma {
     return *this;
   }
 
-  const Node& Hierarchical::operator=(const Node& A) {
+  const _Node& Hierarchical::operator=(const _Node& A) {
     if (A.is(HICMA_HIERARCHICAL)) {
-      // This can be avoided if Node has data and dim members!
+      // This can be avoided if _Node has data and dim members!
       const Hierarchical& AR = static_cast<const Hierarchical&>(A);
       dim[0]=AR.dim[0]; dim[1]=AR.dim[1];
       data.resize(dim[0]*dim[1]);
@@ -203,11 +203,11 @@ namespace hicma {
     }
   }
 
-  const Node& Hierarchical::operator=(const NodePtr& A) {
+  const _Node& Hierarchical::operator=(const Node& A) {
     return *this = *A;
   }
 
-  NodePtr Hierarchical::add(const NodePtr& B) const {
+  Node Hierarchical::add(const Node& B) const {
     if (B.is(HICMA_HIERARCHICAL)) {
       const Hierarchical& BR = static_cast<const Hierarchical&>(*B);
       assert(dim[0]==BR.dim[0] && dim[1]==BR.dim[1]);
@@ -219,11 +219,11 @@ namespace hicma {
     } else {
         std::cout << this->is_string() << " + " << B.is_string();
         std::cout << " is undefined!" << std::endl;
-        return NodePtr(nullptr);
+        return Node(nullptr);
     }
   }
 
-  NodePtr Hierarchical::sub(const NodePtr& B) const {
+  Node Hierarchical::sub(const Node& B) const {
     if (B.is(HICMA_HIERARCHICAL)) {
       const Hierarchical& BR = static_cast<const Hierarchical&>(*B);
       assert(dim[0]==BR.dim[0] && dim[1]==BR.dim[1]);
@@ -235,11 +235,11 @@ namespace hicma {
     } else {
         std::cout << this->is_string() << " - " << B.is_string();
         std::cout << " is undefined!" << std::endl;
-        return NodePtr(nullptr);
+        return Node(nullptr);
     }
   }
 
-  NodePtr Hierarchical::mul(const NodePtr& B) const {
+  Node Hierarchical::mul(const Node& B) const {
     if (B.is(HICMA_HIERARCHICAL)) {
       const Hierarchical& BR = static_cast<const Hierarchical&>(*B);
       assert(dim[1] == BR.dim[0]);
@@ -256,7 +256,7 @@ namespace hicma {
     } else {
         std::cout << this->is_string() << " * " << B.is_string();
         std::cout << " is undefined!" << std::endl;
-        return NodePtr(nullptr);
+        return Node(nullptr);
     }
   }
 
@@ -307,7 +307,7 @@ namespace hicma {
     }
   }
 
-  void Hierarchical::trsm(const NodePtr& A, const char& uplo) {
+  void Hierarchical::trsm(const Node& A, const char& uplo) {
     if (A.is(HICMA_HIERARCHICAL)) {
       const Hierarchical& AR = static_cast<const Hierarchical&>(*A);
       if (dim[1] == 1) {
@@ -372,7 +372,7 @@ namespace hicma {
     }
   }
 
-  void Hierarchical::gemm(const NodePtr& A, const NodePtr& B) {
+  void Hierarchical::gemm(const Node& A, const Node& B) {
     if (A.is(HICMA_HIERARCHICAL)) {
       const Hierarchical& AR = static_cast<const Hierarchical&>(*A);
       if (B.is(HICMA_HIERARCHICAL)) {

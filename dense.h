@@ -9,7 +9,7 @@
 #include "block_ptr.h"
 
 namespace hicma {
-  class Dense : public Node {
+  class Dense : public _Node {
   public:
     std::vector<double> data;
     int dim[2];
@@ -59,19 +59,19 @@ namespace hicma {
 
     const double& operator()(const int i, const int j) const;
 
-    const Node& operator=(const double a) override;
+    const _Node& operator=(const double a) override;
 
-    const Node& operator=(const Node& A) override;
+    const _Node& operator=(const _Node& A) override;
 
-    const Node& operator=(const NodePtr& A) override;
+    const _Node& operator=(const Node& A) override;
 
     Dense operator-() const;
 
-    NodePtr add(const NodePtr& B) const override;
+    Node add(const Node& B) const override;
 
-    NodePtr sub(const NodePtr& B) const override;
+    Node sub(const Node& B) const override;
 
-    NodePtr mul(const NodePtr& B) const override;
+    Node mul(const Node& B) const override;
 
     void resize(int i);
 
@@ -85,9 +85,9 @@ namespace hicma {
 
     void getrf() override;
 
-    void trsm(const NodePtr& A, const char& uplo) override;
+    void trsm(const Node& A, const char& uplo) override;
 
-    void gemm(const NodePtr& A, const NodePtr& B);
+    void gemm(const Node& A, const Node& B);
   };
 }
 #endif
