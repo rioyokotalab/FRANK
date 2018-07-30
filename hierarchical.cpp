@@ -97,7 +97,7 @@ namespace hicma {
         if (
             // Check regular admissibility
             std::abs(i_abs_child - j_abs_child) <= admis
-            // Check if vector, and if so do not use LowRank
+            // Check if vector, and if so do not use _LowRank
             || (nj == 1 || ni == 1) /* Check if vector */ ) { // TODO: use x in admissibility condition
           if ( ni_child <= nleaf && nj_child <= nleaf ) {
             (*this).data[i*dim[1]+j] = new _Dense(
@@ -130,7 +130,7 @@ namespace hicma {
           }
         }
         else {
-          (*this).data[i*dim[1]+j] = new LowRank(
+          (*this).data[i*dim[1]+j] = new _LowRank(
             _Dense(
                   func,
                   x,
@@ -141,7 +141,7 @@ namespace hicma {
                   i_abs_child,
                   j_abs_child,
                   level+1)
-            , rank);// TODO : create a LowRank constructor that does ID with x
+            , rank);// TODO : create a _LowRank constructor that does ID with x
         }
       }
     }

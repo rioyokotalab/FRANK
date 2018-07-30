@@ -9,27 +9,27 @@
 
 namespace hicma {
   class Hierarchical;
-  class LowRank : public _Node {
+  class _LowRank : public _Node {
   public:
     Dense U, S, V;
     int dim[2];
     int rank;
 
-    LowRank();
+    _LowRank();
 
-    LowRank(const int m, const int n, const int k);
+    _LowRank(const int m, const int n, const int k);
 
-    LowRank(const LowRank &A);
+    _LowRank(const _LowRank &A);
 
-    LowRank(const LowRank *A);
+    _LowRank(const _LowRank *A);
 
-    LowRank(const LowRankPtr& A);
+    _LowRank(const LowRank& A);
 
-    LowRank(const _Dense &A, const int k);
+    _LowRank(const _Dense &A, const int k);
 
-    LowRank(const Node A, const int k);
+    _LowRank(const Node A, const int k);
 
-    LowRank* clone() const override;
+    _LowRank* clone() const override;
 
     const bool is(const int enum_id) const override;
 
@@ -41,7 +41,7 @@ namespace hicma {
 
     const _Node& operator=(const Node& A) override;
 
-    LowRank operator-() const;
+    _LowRank operator-() const;
 
     Node add(const Node& B) const override;
 
@@ -57,11 +57,11 @@ namespace hicma {
 
     void print() const override;
 
-    void mergeU(const LowRank& A, const LowRank& B);
+    void mergeU(const _LowRank& A, const _LowRank& B);
 
-    void mergeS(const LowRank& A, const LowRank& B);
+    void mergeS(const _LowRank& A, const _LowRank& B);
 
-    void mergeV(const LowRank& A, const LowRank& B);
+    void mergeV(const _LowRank& A, const _LowRank& B);
 
     void trsm(const Node& A, const char& uplo) override;
 

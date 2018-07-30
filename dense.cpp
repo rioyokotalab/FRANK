@@ -109,7 +109,7 @@ namespace hicma {
 
   Node _Dense::add(const Node& B) const {
     if (B.is(HICMA_LOWRANK)) {
-      const LowRank& BR = static_cast<const LowRank&>(*B);
+      const _LowRank& BR = static_cast<const _LowRank&>(*B);
       assert(dim[0] == BR.dim[0] && dim[1] == BR.dim[1]);
       return this->add(BR.dense());
     } else if (B.is(HICMA_DENSE)) {
@@ -129,7 +129,7 @@ namespace hicma {
 
   Node _Dense::sub(const Node& B) const {
     if (B.is(HICMA_LOWRANK)) {
-      const LowRank& BR = static_cast<const LowRank&>(*B);
+      const _LowRank& BR = static_cast<const _LowRank&>(*B);
       assert(dim[0] == BR.dim[0] && dim[1] == BR.dim[1]);
       return this->sub(BR.dense());
     } else if (B.is(HICMA_DENSE)) {
@@ -149,9 +149,9 @@ namespace hicma {
 
   Node _Dense::mul(const Node& B) const {
     if (B.is(HICMA_LOWRANK)) {
-      const LowRank& BR = static_cast<const LowRank&>(*B);
+      const _LowRank& BR = static_cast<const _LowRank&>(*B);
       assert(dim[0] == BR.dim[0] && dim[1] == BR.dim[1]);
-      LowRankPtr Out(BR.clone());
+      LowRank Out(BR.clone());
       (*Out).U = this->mul(BR.U);
       return Out;
     } else if (B.is(HICMA_DENSE)) {
