@@ -41,6 +41,19 @@ namespace hicma {
     }
   }
 
+  Hierarchical::Hierarchical(const HierarchicalPtr& A)
+  : Node((*A).i_abs, (*A).j_abs, (*A).level) {
+    printf("hi from Hierarchical\n");
+    dim[0]=(*A).dim[0]; dim[1]=(*A).dim[1];
+    data.resize(dim[0]*dim[1]);
+    for ( int i=0; i<dim[0]; i++ ) {
+      for ( int j=0; j<dim[1]; j++ ) {
+        data[i*dim[1] + j] = NodePtr((*(*A).data[i*dim[1] + j]).clone());
+      }
+    }
+
+  }
+
   Hierarchical::Hierarchical(
                              void (*func)(
                                           std::vector<double>& data,
@@ -87,7 +100,7 @@ namespace hicma {
             // Check if vector, and if so do not use LowRank
             || (nj == 1 || ni == 1) /* Check if vector */ ) { // TODO: use x in admissibility condition
           if ( ni_child <= nleaf && nj_child <= nleaf ) {
-            (*this).data[i*dim[1]+j] = std::make_shared<Dense>(
+            (*this).data[i*dim[1]+j] = new Dense(
                 func,
                 x,
                 ni_child,
@@ -99,7 +112,7 @@ namespace hicma {
                 level+1);
           }
           else {
-            (*this).data[i*dim[1]+j] = std::make_shared<Hierarchical>(
+            (*this).data[i*dim[1]+j] = new Hierarchical(
                 func,
                 x,
                 ni_child,
@@ -117,7 +130,7 @@ namespace hicma {
           }
         }
         else {
-          (*this).data[i*dim[1]+j] = std::make_shared<LowRank>(
+          (*this).data[i*dim[1]+j] = new LowRank(
             Dense(
                   func,
                   x,
@@ -149,27 +162,17 @@ namespace hicma {
     return data[i];
   }
 
-  const Node& Hierarchical::operator[](const int i) const {
+  const NodePtr& Hierarchical::operator[](const int i) const {
     assert(i<dim[0]*dim[1]);
-    return *data[i];
+    return data[i];
   }
 
-  Node& Hierarchical::operator()(const int i, const int j) {
-    assert(i<dim[0] && j<dim[1]);
-    return *data[i*dim[1]+j];
-  }
-
-  NodePtr Hierarchical::operator()(const int i, const int j, const char*) {
+  NodePtr Hierarchical::operator()(const int i, const int j) {
     assert(i<dim[0] && j<dim[1]);
     return data[i*dim[1]+j];
   }
 
-  const Node& Hierarchical::operator()(const int i, const int j) const {
-    assert(i<dim[0] && j<dim[1]);
-    return *data[i*dim[1]+j];
-  }
-
-  const NodePtr Hierarchical::operator()(const int i, const int j, const char*) const {
+  const NodePtr& Hierarchical::operator()(const int i, const int j) const {
     assert(i<dim[0] && j<dim[1]);
     return data[i*dim[1]+j];
   }
@@ -200,18 +203,18 @@ namespace hicma {
     }
   }
 
-  const Node& Hierarchical::operator=(const NodePtr A) {
+  const Node& Hierarchical::operator=(const NodePtr& A) {
     return *this = *A;
   }
 
-  NodePtr Hierarchical::add(const Node& B) const {
+  NodePtr Hierarchical::add(const NodePtr& B) const {
     if (B.is(HICMA_HIERARCHICAL)) {
-      const Hierarchical& BR = static_cast<const Hierarchical&>(B);
+      const Hierarchical& BR = static_cast<const Hierarchical&>(*B);
       assert(dim[0]==BR.dim[0] && dim[1]==BR.dim[1]);
-      BlockPtr<Hierarchical> Out = std::make_shared<Hierarchical>(*this);
+      HierarchicalPtr Out(*this);
       for (int i=0; i<dim[0]; i++)
         for (int j=0; j<dim[1]; j++)
-          (*Out)(i,j,"") += BR(i,j,"");
+          (*Out)(i,j) += BR(i,j);
       return Out;
     } else {
         std::cout << this->is_string() << " + " << B.is_string();
@@ -220,11 +223,11 @@ namespace hicma {
     }
   }
 
-  NodePtr Hierarchical::sub(const Node& B) const {
+  NodePtr Hierarchical::sub(const NodePtr& B) const {
     if (B.is(HICMA_HIERARCHICAL)) {
-      const Hierarchical& BR = static_cast<const Hierarchical&>(B);
+      const Hierarchical& BR = static_cast<const Hierarchical&>(*B);
       assert(dim[0]==BR.dim[0] && dim[1]==BR.dim[1]);
-      BlockPtr<Hierarchical> Out = std::make_shared<Hierarchical>(*this);
+      HierarchicalPtr Out(*this);
       for (int i=0; i<dim[0]; i++)
         for (int j=0; j<dim[1]; j++)
           (*Out)(i,j) -= BR(i,j);
@@ -236,16 +239,16 @@ namespace hicma {
     }
   }
 
-  NodePtr Hierarchical::mul(const Node& B) const {
+  NodePtr Hierarchical::mul(const NodePtr& B) const {
     if (B.is(HICMA_HIERARCHICAL)) {
-      const Hierarchical& BR = static_cast<const Hierarchical&>(B);
+      const Hierarchical& BR = static_cast<const Hierarchical&>(*B);
       assert(dim[1] == BR.dim[0]);
-      BlockPtr<Hierarchical> Out = std::make_shared<Hierarchical>(BR);
+      HierarchicalPtr Out(BR);
       (*Out) = 0;
       for (int i=0; i<dim[0]; i++) {
         for (int j=0; j<BR.dim[1]; j++) {
           for (int k=0; k<dim[1]; k++) {
-            (*Out)(i,j,"") += (*this)(i,k) * BR(k,j);
+            (*Out)(i,j) += (*this)(i,k) * BR(k,j);
           }
         }
       }
@@ -293,12 +296,12 @@ namespace hicma {
     for (int i=0; i<dim[0]; i++) {
       (*this)(i,i).getrf();
       for (int j=i+1; j<dim[0]; j++) {
-        (*this)(i,j).trsm((*this)(i,i,""),'l');
-        (*this)(j,i).trsm((*this)(i,i,""),'u');
+        (*this)(i,j).trsm((*this)(i,i),'l');
+        (*this)(j,i).trsm((*this)(i,i),'u');
       }
       for (int j=i+1; j<dim[0]; j++) {
         for (int k=i+1; k<dim[0]; k++) {
-          (*this)(j,k).gemm((*this)(j,i,""),(*this)(i,k,""));
+          (*this)(j,k).gemm((*this)(j,i),(*this)(i,k));
         }
       }
     }
@@ -312,17 +315,17 @@ namespace hicma {
         case 'l' :
           for (int i=0; i<dim[0]; i++) {
             for (int j=0; j<i; j++) {
-              (*this)[i].gemm(AR(i,j,""), (*this)[j]);
+              (*this)[i].gemm(AR(i,j), (*this)[j]);
             }
-            (*this)[i].trsm(AR(i,i, ""),'l');
+            (*this)[i].trsm(AR(i,i),'l');
           }
           break;
         case 'u' :
           for (int i=dim[0]-1; i>=0; i--) {
             for (int j=dim[0]-1; j>i; j--) {
-              (*this)[i].gemm(AR(i,j,""), (*this)[j]);
+              (*this)[i].gemm(AR(i,j), (*this)[j]);
             }
-            (*this)[i].trsm(AR(i,i, ""),'u');
+            (*this)[i].trsm(AR(i,i),'u');
           }
           break;
         default :
@@ -338,9 +341,9 @@ namespace hicma {
             for (int i=0; i<dim[0]; i++) {
               // Loop over previously calculated row, accumulate results
               for (int i_old=0; i_old<i; i_old++) {
-                (*this)(i,j).gemm(AR(i,i_old,""), (*this)(i_old,j,""));
+                (*this)(i,j).gemm(AR(i,i_old), (*this)(i_old,j));
               }
-              (*this)(i,j).trsm(AR(i,i, ""),'l');
+              (*this)(i,j).trsm(AR(i,i),'l');
             }
           }
           break;
@@ -351,9 +354,9 @@ namespace hicma {
             for (int j=0; j<dim[1]; j++) {
               // Loop over previously calculated col, accumulate results
               for (int j_old=0; j_old<j; j_old++) {
-                (*this)(i,j).gemm((*this)(i,j_old,""),AR(j_old,j,""));
+                (*this)(i,j).gemm((*this)(i,j_old),AR(j_old,j));
               }
-              (*this)(i,j).trsm(AR(j,j, ""),'u');
+              (*this)(i,j).trsm(AR(j,j),'u');
             }
           }
           break;
@@ -379,7 +382,7 @@ namespace hicma {
         for (int i=0; i<dim[0]; i++) {
           for (int j=0; j<dim[1]; j++) {
             for (int k=0; k<AR.dim[1]; k++) {
-              (*this)(i,j).gemm(AR(i,k,""), BR(k,j,""));
+              (*this)(i,j).gemm(AR(i,k), BR(k,j));
             }
           }
         }

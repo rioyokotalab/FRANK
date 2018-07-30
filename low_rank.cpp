@@ -7,9 +7,9 @@ namespace hicma {
 
   LowRank::LowRank(const int m, const int n, const int k) {
     dim[0]=m; dim[1]=n; rank=k;
-    U.resize(m,k);
-    S.resize(k,k);
-    V.resize(k,n);
+    U = DensePtr(m,k);
+    S = DensePtr(k,k);
+    V = DensePtr(k,n);
   }
 
   LowRank::LowRank(const LowRank &A) : Node(A.i_abs,A.j_abs,A.level), U(A.U), S(A.S), V(A.V) {
@@ -24,10 +24,10 @@ namespace hicma {
     int m = dim[0] = A.dim[0];
     int n = dim[1] = A.dim[1];
     rank = k;
-    U.resize(m,k);
-    S.resize(k,k);
-    V.resize(k,n);
-    randomized_low_rank_svd2(A.data, rank, U.data, S.data, V.data, m, n);
+    U = DensePtr(m,k);
+    S = DensePtr(k,k);
+    V = DensePtr(k,n);
+    randomized_low_rank_svd2(A.data, rank, (*U).data, (*S).data, (*V).data, m, n);
   }
 
   LowRank::LowRank(
@@ -39,14 +39,20 @@ namespace hicma {
     int m = dim[0] = AR.dim[0];
     int n = dim[1] = AR.dim[1];
     rank = k;
-    U.resize(m,k);
-    S.resize(k,k);
-    V.resize(k,n);
-    randomized_low_rank_svd2(AR.data, rank, U.data, S.data, V.data, m, n);
+    U = DensePtr(m,k);
+    S = DensePtr(k,k);
+    V = DensePtr(k,n);
+    randomized_low_rank_svd2(AR.data, rank, (*U).data, (*S).data, (*V).data, m, n);
   }
 
   LowRank* LowRank::clone() const {
-    return new LowRank(*this);
+    LowRank* Out =  new LowRank(*this);
+    // The following lines are necessary since the constructor from a LowRank&
+    // does not do a deep copy
+    Out->U = U->clone();
+    Out->S = S->clone();
+    Out->V = V->clone();
+    return Out;
   }
 
   const bool LowRank::is(const int enum_id) const {
@@ -79,7 +85,7 @@ namespace hicma {
     }
   }
 
-  const Node& LowRank::operator=(const NodePtr A) {
+  const Node& LowRank::operator=(const NodePtr& A) {
     return *this = *A;
   }
 
@@ -91,25 +97,25 @@ namespace hicma {
     return A;
   }
 
-  NodePtr LowRank::add(const Node& B) const {
+  NodePtr LowRank::add(const NodePtr& B) const {
     if (B.is(HICMA_LOWRANK)) {
-      const LowRank& BR = static_cast<const LowRank&>(B);
+      const LowRank& BR = static_cast<const LowRank&>(*B);
       assert(dim[0]==BR.dim[0] && dim[1]==BR.dim[1]);
-      BlockPtr<LowRank> Out;
+      LowRankPtr Out;
       if (rank+BR.rank >= dim[0]) {
-        Out = std::make_shared<LowRank>((*this).dense() + BR.dense(), rank);
+        Out = LowRankPtr((*this).dense() + BR.dense(), rank);
       }
       else {
-        Out = std::make_shared<LowRank>(dim[0], dim[1], rank+BR.rank);
+        Out = LowRankPtr(dim[0], dim[1], rank+BR.rank);
         (*Out).mergeU(*this,BR);
         (*Out).mergeS(*this,BR);
         (*Out).mergeV(*this,BR);
       }
       return Out;
     } else if(B.is(HICMA_DENSE)) {
-      const Dense& BR = static_cast<const Dense&>(B);
+      const Dense& BR = static_cast<const Dense&>(*B);
       assert(dim[0]==BR.dim[0] && dim[1]==BR.dim[1]);
-      return this->dense()->add(BR);
+      return this->dense()->add(B);
     } else {
       std::cout << this->is_string() << " + " << B.is_string();
       std::cout << " is undefined!" << std::endl;
@@ -117,25 +123,25 @@ namespace hicma {
     }
   }
 
-  NodePtr LowRank::sub(const Node& B) const {
+  NodePtr LowRank::sub(const NodePtr& B) const {
     if (B.is(HICMA_LOWRANK)) {
-      const LowRank& BR = static_cast<const LowRank&>(B);
+      const LowRank& BR = static_cast<const LowRank&>(*B);
       assert(dim[0]==BR.dim[0] && dim[1]==BR.dim[1]);
-      BlockPtr<LowRank> Out;
+      LowRankPtr Out;
       if (rank+BR.rank >= dim[0]) {
-        Out = std::make_shared<LowRank>((*this).dense() - BR.dense(), rank);
+        Out = LowRankPtr((*this).dense() - BR.dense(), rank);
       }
       else {
-        Out = std::make_shared<LowRank>(dim[0], dim[1], rank+BR.rank);
+        Out = LowRankPtr(dim[0], dim[1], rank+BR.rank);
         (*Out).mergeU(*this,-BR);
         (*Out).mergeS(*this,-BR);
         (*Out).mergeV(*this,-BR);
       }
       return Out;
     } else if(B.is(HICMA_DENSE)) {
-      const Dense& BR = static_cast<const Dense&>(B);
+      const Dense& BR = static_cast<const Dense&>(*B);
       assert(dim[0]==BR.dim[0] && dim[1]==BR.dim[1]);
-      return this->dense()->sub(BR);
+      return this->dense()->sub(B);
     } else {
       std::cout << this->is_string() << " - " << B.is_string();
       std::cout << " is undefined!" << std::endl;
@@ -143,24 +149,22 @@ namespace hicma {
     }
   }
 
-  NodePtr LowRank::mul(const Node& B) const {
+  NodePtr LowRank::mul(const NodePtr& B) const {
     if (B.is(HICMA_LOWRANK)) {
-      const LowRank& BR = static_cast<const LowRank&>(B);
+      const LowRank& BR = static_cast<const LowRank&>(*B);
       assert(dim[1] == BR.dim[0]);
-      BlockPtr<LowRank> Out = std::make_shared<LowRank>(
-        dim[0],BR.dim[1],rank);
+      LowRankPtr Out(dim[0], BR.dim[1], rank);
       (*Out).U = U;
-      (*Out).S = (S * (V * BR.U)) * BR.S;
+      (*Out).S = S * (V * BR.U) * BR.S;
       (*Out).V = BR.V;
       return Out;
     } else if(B.is(HICMA_DENSE)) {
-      const Dense& BR = static_cast<const Dense&>(B);
+      const Dense& BR = static_cast<const Dense&>(*B);
       assert(dim[1] == BR.dim[0]);
-      BlockPtr<LowRank> Out = std::make_shared<LowRank>(
-          dim[0],BR.dim[1],rank);
+      LowRankPtr Out(dim[0], BR.dim[1], rank);
       (*Out).U = U;
       (*Out).S = S;
-      (*Out).V = V * BR;
+      (*Out).V = V->mul(B);
       return Out;
     } else {
       std::cout << this->is_string() << " * " << B.is_string();
@@ -266,7 +270,7 @@ namespace hicma {
             this->is_string(), A.is_string(), B.is_string());
         abort();
       } else if (B.is(HICMA_LOWRANK)) {
-        *this -= A * B;
+        *this = this->sub(A * B);
       } else if (B.is(HICMA_HIERARCHICAL)) {
         fprintf(
             stderr,"%s += %s * %s undefined.\n",
@@ -275,9 +279,9 @@ namespace hicma {
       }
     } else if (A.is(HICMA_LOWRANK)) {
       if (B.is(HICMA_DENSE)) {
-        *this -= A * B;
+        *this = this->sub(A * B);
       } else if (B.is(HICMA_LOWRANK)) {
-        *this -= A * B;
+        *this = this->sub(A * B);
       } else if (B.is(HICMA_HIERARCHICAL)) {
         fprintf(
             stderr,"%s += %s * %s undefined.\n",

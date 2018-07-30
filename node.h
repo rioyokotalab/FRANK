@@ -47,20 +47,17 @@ namespace hicma {
     // TODO remove
     virtual const Node& operator=(const Node& A);
 
-    virtual const Node& operator=(const NodePtr A);
+    virtual const Node& operator=(const NodePtr& A);
 
     virtual const bool is(const int enum_id) const;
 
     virtual const char* is_string() const;
 
-    // TODO switch to NodePtr
-    virtual NodePtr add(const Node& B) const;
+    virtual NodePtr add(const NodePtr& B) const;
 
-    // TODO switch to NodePtr
-    virtual NodePtr sub(const Node& B) const;
+    virtual NodePtr sub(const NodePtr& B) const;
 
-    // TODO switch to NodePtr
-    virtual NodePtr mul(const Node& B) const;
+    virtual NodePtr mul(const NodePtr& B) const;
 
     virtual double norm() const;
 
@@ -78,29 +75,14 @@ namespace hicma {
   // This version seems const correct, but
   // const NodePtr& operator+=(const NodePtr& A, const NodePtr& B)
   // also works and might be preferable (speed?)
-  NodePtr operator+=(NodePtr A, const NodePtr& B);
+  const NodePtr operator+=(const NodePtr A, const NodePtr& B);
 
   NodePtr operator-(const NodePtr& A, const NodePtr& B);
-
-  // TODO remove
-  const Node& operator-=(Node& A, const NodePtr& B);
-
-  // TODO remove
-  const Node& operator-=(Node& A, const Node& B);
 
   // This version seems const correct, but
   // const NodePtr& operator-=(const NodePtr& A, const NodePtr& B)
   // also works and might be preferable (speed?)
   NodePtr operator-=(NodePtr A, const NodePtr& B);
-
-  // TODO remove
-  NodePtr operator*(const Node& A, const Node& B);
-
-  // TODO remove
-  NodePtr operator*(const Node& A, const NodePtr B);
-
-  // TODO remove
-  NodePtr operator*(const NodePtr A, const Node& B);
 
   NodePtr operator*(const NodePtr& A, const NodePtr& B);
 

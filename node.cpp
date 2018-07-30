@@ -17,7 +17,7 @@ namespace hicma {
     return *this;
   }
 
-  const Node& Node::operator=(const NodePtr A) {
+  const Node& Node::operator=(const NodePtr& A) {
     return *this = *A;
   }
 
@@ -27,17 +27,17 @@ namespace hicma {
 
   const char* Node::is_string() const { return "Node"; }
 
-  NodePtr Node::add(const Node& B) const {
+  NodePtr Node::add(const NodePtr& B) const {
     std::cout << "Not implemented!!" << std::endl; abort();
     return NodePtr(nullptr);
   };
 
-  NodePtr Node::sub(const Node& B) const {
+  NodePtr Node::sub(const NodePtr& B) const {
     std::cout << "Not implemented!!" << std::endl; abort();
     return NodePtr(nullptr);
   };
 
-  NodePtr Node::mul(const Node& B) const {
+  NodePtr Node::mul(const NodePtr& B) const {
     std::cout << "Not implemented!!" << std::endl; abort();
     return NodePtr(nullptr);
   };
@@ -56,47 +56,25 @@ namespace hicma {
   void Node::gemm(const NodePtr& A, const NodePtr& B) {};
 
   NodePtr operator+(const NodePtr& A, const NodePtr& B) {
-    return A->add(*B);
+    return A->add(B);
   }
 
-  NodePtr operator+=(NodePtr A, const NodePtr& B) {
-    *A = *(*A).add(*B);
+  const NodePtr operator+=(const NodePtr A, const NodePtr& B) {
+    *A = A->add(B);
     return A;
   }
 
   NodePtr operator-(const NodePtr& A, const NodePtr& B) {
-    return A->sub(*B);
-  }
-
-  const Node& operator-=(Node& A, const NodePtr& B) {
-    A = A.sub(*B);
-    return A;
-  }
-
-  const Node& operator-=(Node& A, const Node& B) {
-    A = A.sub(B);
-    return A;
+    return A->sub(B);
   }
 
   NodePtr operator-=(NodePtr A, const NodePtr& B) {
-    *A = *(*A).sub(*B);
+    *A = A->sub(B);
     return A;
   }
 
-  NodePtr operator*(const Node& A, const Node& B) {
-    return A.mul(B);
-  }
-
-  NodePtr operator*(const Node& A, const NodePtr B) {
-    return A.mul(*B);
-  }
-
-  NodePtr operator*(const NodePtr A, const Node& B) {
-    return A->mul(B);
-  }
-
   NodePtr operator*(const NodePtr& A, const NodePtr& B) {
-    return A->mul(*B);
+    return A->mul(B);
   }
 
 }

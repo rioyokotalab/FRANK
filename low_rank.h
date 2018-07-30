@@ -11,7 +11,7 @@ namespace hicma {
   class Hierarchical;
   class LowRank : public Node {
   public:
-    Dense U, S, V;
+    DensePtr U, S, V;
     int dim[2];
     int rank;
 
@@ -22,6 +22,8 @@ namespace hicma {
     LowRank(const LowRank &A);
 
     LowRank(const LowRank *A);
+
+    LowRank(const LowRankPtr& A);
 
     LowRank(const Dense &A, const int k);
 
@@ -37,15 +39,15 @@ namespace hicma {
 
     const Node& operator=(const Node& A) override;
 
-    const Node& operator=(const NodePtr A) override;
+    const Node& operator=(const NodePtr& A) override;
 
     LowRank operator-() const;
 
-    NodePtr add(const Node& B) const override;
+    NodePtr add(const NodePtr& B) const override;
 
-    NodePtr sub(const Node& B) const override;
+    NodePtr sub(const NodePtr& B) const override;
 
-    NodePtr mul(const Node& B) const override;
+    NodePtr mul(const NodePtr& B) const override;
 
     void resize(int m, int n, int k);
 

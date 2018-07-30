@@ -21,6 +21,8 @@ namespace hicma {
 
     Hierarchical(const Hierarchical* A);
 
+    Hierarchical(const HierarchicalPtr& A);
+
     Hierarchical(
                  void (*func)(
                               std::vector<double>& data,
@@ -53,27 +55,23 @@ namespace hicma {
 
     NodePtr operator[](const int i);
 
-    const Node& operator[](const int i) const;
+    const NodePtr& operator[](const int i) const;
 
-    Node& operator()(const int i, const int j);
+    NodePtr operator()(const int i, const int j);
 
-    NodePtr operator()(const int i, const int j, const char*);
-
-    const Node& operator()(const int i, const int j) const;
-
-    const NodePtr operator()(const int i, const int j, const char*) const;
+    const NodePtr& operator()(const int i, const int j) const;
 
     const Node& operator=(const double a) override;
 
     const Node& operator=(const Node& A) override;
 
-    const Node& operator=(const NodePtr A) override;
+    const Node& operator=(const NodePtr& A) override;
 
-    NodePtr add(const Node& B) const override;
+    NodePtr add(const NodePtr& B) const override;
 
-    NodePtr sub(const Node& B) const override;
+    NodePtr sub(const NodePtr& B) const override;
 
-    NodePtr mul(const Node& B) const override;
+    NodePtr mul(const NodePtr& B) const override;
 
     double norm() const override;
 

@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <memory>
 #include "mpi_utils.h"
 #include "functions.h"
 #include "print.h"
@@ -41,8 +40,8 @@ int main(int argc, char** argv) {
     admis = 2; // Strong admissibility
   }
   HierarchicalPtr A(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
-  HierarchicalPtr b(zeros, randx, N, 1, rank, nleaf, admis, nblocks, 1);
   HierarchicalPtr x(rand_data, randx, N, 1, rank, nleaf, admis, nblocks, 1);
+  HierarchicalPtr b(zeros, randx, N, 1, rank, nleaf, admis, nblocks, 1);
   b += A * x;
   stop("Init matrix");
   start("LU decomposition");

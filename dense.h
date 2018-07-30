@@ -24,6 +24,8 @@ namespace hicma {
 
     Dense(const Dense* A);
 
+    Dense(const DensePtr& A);
+
     Dense(
           void (*func)(
                        std::vector<double>& data,
@@ -61,15 +63,15 @@ namespace hicma {
 
     const Node& operator=(const Node& A) override;
 
-    const Node& operator=(const NodePtr A) override;
+    const Node& operator=(const NodePtr& A) override;
 
     Dense operator-() const;
 
-    NodePtr add(const Node& B) const override;
+    NodePtr add(const NodePtr& B) const override;
 
-    NodePtr sub(const Node& B) const override;
+    NodePtr sub(const NodePtr& B) const override;
 
-    NodePtr mul(const Node& B) const override;
+    NodePtr mul(const NodePtr& B) const override;
 
     void resize(int i);
 

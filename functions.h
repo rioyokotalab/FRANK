@@ -30,7 +30,7 @@ namespace hicma {
             ) {
     for (int i=0; i<ni; i++) {
       for (int j=0; j<nj; j++) {
-        data[i*nj+j] = drand48();
+        data[i*nj+j] = 0.5; //drand48();
       }
     }
   }
