@@ -1,3 +1,13 @@
+# Hicma
+
+Library for distributed LU decomposition of hierarchical matrices.
+
+# Design decisions
+
+## Parallel paradigms
+
+## Classes and their details
+
 1. Choice of data structure for H-matrices  
 1.1 Basic data types  
 struct Node {  
