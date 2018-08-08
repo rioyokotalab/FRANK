@@ -8,7 +8,7 @@
 #include "dense.h"
 
 namespace hicma {
-  class Hierarchical;
+  class _Hierarchical;
   class _LowRank : public _Node {
   public:
     Dense U, S, V;

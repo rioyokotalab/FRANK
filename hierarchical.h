@@ -6,24 +6,24 @@
 
 namespace hicma {
   class _Dense;
-  class Hierarchical : public _Node {
+  class _Hierarchical : public _Node {
   public:
     int dim[2];
     std::vector<Node> data;
 
-    Hierarchical();
+    _Hierarchical();
 
-    Hierarchical(const int m);
+    _Hierarchical(const int m);
 
-    Hierarchical(const int m, const int n);
+    _Hierarchical(const int m, const int n);
 
-    Hierarchical(const Hierarchical& A);
+    _Hierarchical(const _Hierarchical& A);
 
-    Hierarchical(const Hierarchical* A);
+    _Hierarchical(const _Hierarchical* A);
 
-    Hierarchical(const HierarchicalPtr& A);
+    _Hierarchical(const Hierarchical& A);
 
-    Hierarchical(
+    _Hierarchical(
                  void (*func)(
                               std::vector<double>& data,
                               std::vector<double>& x,
@@ -47,7 +47,7 @@ namespace hicma {
                  const int level=0
                  );
 
-    Hierarchical* clone() const override;
+    _Hierarchical* clone() const override;
 
     const bool is(const int enum_id) const override;
 

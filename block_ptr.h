@@ -46,8 +46,12 @@ namespace hicma {
     // Operators necessary for making U, S, V of LowRank a _DensePtr
     const BlockPtr<T>& operator=(int);
     const BlockPtr<T>& operator-() const;
+
     typename return_type<T>::type& operator()(int, int);
     const typename return_type<T>::type& operator()(int, int) const;
+
+    typename return_type<T>::type& operator[](int);
+    const typename return_type<T>::type& operator[](int) const;
 
     // Add constructor using arg list, forward to make_shared<T>
     // Might have to make template specialization for Node, _Dense etc...

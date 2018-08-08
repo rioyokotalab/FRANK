@@ -94,5 +94,5 @@ namespace hicma {
   template class BlockPtr<_Node>;
   template class BlockPtr<_Dense>;
   template class BlockPtr<_LowRank>;
-  template class BlockPtr<Hierarchical>;
+  template class BlockPtr<_Hierarchical>;
 }

@@ -14,8 +14,8 @@ namespace hicma {
 
   class _Node;
   typedef BlockPtr<_Node> Node;
-  class Hierarchical;
-  typedef BlockPtr<Hierarchical> HierarchicalPtr;
+  class _Hierarchical;
+  typedef BlockPtr<_Hierarchical> Hierarchical;
   class _Dense;
   typedef BlockPtr<_Dense> Dense;
   class _LowRank;

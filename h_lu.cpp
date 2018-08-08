@@ -39,9 +39,9 @@ int main(int argc, char** argv) {
     nblocks = N / nleaf; // 1 level
     admis = 2; // Strong admissibility
   }
-  HierarchicalPtr A(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
-  HierarchicalPtr x(rand_data, randx, N, 1, rank, nleaf, admis, nblocks, 1);
-  HierarchicalPtr b(zeros, randx, N, 1, rank, nleaf, admis, nblocks, 1);
+  Hierarchical A(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
+  Hierarchical x(rand_data, randx, N, 1, rank, nleaf, admis, nblocks, 1);
+  Hierarchical b(zeros, randx, N, 1, rank, nleaf, admis, nblocks, 1);
   b += A * x;
   stop("Init matrix");
   start("LU decomposition");
