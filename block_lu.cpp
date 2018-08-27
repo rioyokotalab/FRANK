@@ -36,13 +36,13 @@ int main(int argc, char** argv) {
   for (int ic=0; ic<Nc; ic++) {
     for (int jc=0; jc<Nc; jc++) {
       Dense Aij(laplace1d, randx, Nb, Nb, Nb*ic, Nb*jc);
-      Dense& b_ic_r = static_cast<Dense&>(b[ic]);
-      Dense& x_jc_r = static_cast<Dense&>(x[jc]);
-      for (int ib=0; ib<Nb; ib++) {
-        for (int jb=0; jb<Nb; jb++) {
-          b_ic_r[ib] += Aij(ib,jb) * x_jc_r[jb];
-        }
-      }
+      // Dense b_ic_r = b[ic];
+      // Dense x_jc_r = x[jc];
+      // for (int ib=0; ib<Nb; ib++) {
+      //   for (int jb=0; jb<Nb; jb++) {
+      //     b_ic_r[ib] += Aij(ib,jb) * x_jc_r[jb];
+      //   }
+      // }
       A(ic,jc) = Aij;
     }
   }
@@ -54,8 +54,8 @@ int main(int argc, char** argv) {
     stop("-DGETRF", false);
     for (int jc=ic+1; jc<Nc; jc++) {
       start("-DTRSM");
-      A(ic,jc).trsm(A(ic,ic,""),'l');
-      A(jc,ic).trsm(A(ic,ic,""),'u');
+      A(ic,jc).trsm(A(ic,ic),'l');
+      A(jc,ic).trsm(A(ic,ic),'u');
       stop("-DTRSM", false);
     }
     for (int jc=ic+1; jc<Nc; jc++) {
@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
     for (int jc=0; jc<ic; jc++) {
       b[ic].gemm(A(ic,jc),b[jc]);
     }
-    b[ic].trsm(A(ic,ic,""),'l');
+    b[ic].trsm(A(ic,ic),'l');
   }
   stop("Forward substitution");
   start("Backward substitution");
@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
     for (int jc=Nc-1; jc>ic; jc--) {
       b[ic].gemm(A(ic,jc),b[jc]);
     }
-    b[ic].trsm(A(ic,ic,""),'u');
+    b[ic].trsm(A(ic,ic),'u');
   }
   stop("Backward substitution");
   double diff = 0, norm = 0;

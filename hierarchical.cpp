@@ -100,7 +100,7 @@ namespace hicma {
             // Check if vector, and if so do not use _LowRank
             || (nj == 1 || ni == 1) /* Check if vector */ ) { // TODO: use x in admissibility condition
           if ( ni_child <= nleaf && nj_child <= nleaf ) {
-            (*this).data[i*dim[1]+j] = new _Dense(
+            (*this).data[i*dim[1]+j] = std::make_shared<_Dense>(
                 func,
                 x,
                 ni_child,
@@ -112,7 +112,7 @@ namespace hicma {
                 level+1);
           }
           else {
-            (*this).data[i*dim[1]+j] = new _Hierarchical(
+            (*this).data[i*dim[1]+j] = std::make_shared<_Hierarchical>(
                 func,
                 x,
                 ni_child,
@@ -130,7 +130,7 @@ namespace hicma {
           }
         }
         else {
-          (*this).data[i*dim[1]+j] = new _LowRank(
+          (*this).data[i*dim[1]+j] = std::make_shared<_LowRank>(
             _Dense(
                   func,
                   x,

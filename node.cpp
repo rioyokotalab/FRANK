@@ -59,7 +59,7 @@ namespace hicma {
     return A->add(B);
   }
 
-  const Node operator+=(const Node A, const Node& B) {
+  const Node operator+=(const Node& A, const Node& B) {
     *A = A->add(B);
     return A;
   }
@@ -68,7 +68,7 @@ namespace hicma {
     return A->sub(B);
   }
 
-  Node operator-=(Node A, const Node& B) {
+  Node operator-=(const Node& A, const Node& B) {
     *A = A->sub(B);
     return A;
   }

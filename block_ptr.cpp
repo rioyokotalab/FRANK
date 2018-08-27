@@ -17,12 +17,6 @@ namespace hicma {
   template <typename T>
   BlockPtr<T>::BlockPtr(T* ptr) : std::shared_ptr<T>(ptr) {};
 
-  // template <typename T>
-  // const BlockPtr<T> BlockPtr<T>::operator=(const BlockPtr<T>& ptr) {
-  //   *(this->get()) = *(ptr.get());
-  //   return *this;
-  // };
-
   template <typename T>
   const BlockPtr<T>& BlockPtr<T>::operator=(int i) {
     *(this->get()) = i;
@@ -36,13 +30,39 @@ namespace hicma {
   }
 
   template <>
-  double& BlockPtr<_Dense>::operator()(int i, int j) {
-    return (*this)(i, j);
+  return_type<_Dense>::type BlockPtr<_Dense>::operator()(int i, int j) {
+    return (*this->get())(i, j);
+  }
+  template <>
+  const return_type<_Dense>::type BlockPtr<_Dense>::operator()(int i, int j) const {
+    return (*this->get())(i, j);
   }
 
   template <>
-  const double& BlockPtr<_Dense>::operator()(int i, int j) const {
-    return (*this)(i, j);
+  return_type<_Dense>::type BlockPtr<_Dense>::operator[](int i) {
+    return (*this->get())[i];
+  }
+  template <>
+  const return_type<_Dense>::type BlockPtr<_Dense>::operator[](int i) const {
+    return (*this->get())[i];
+  }
+
+  template <>
+  return_type<_Hierarchical>::type BlockPtr<_Hierarchical>::operator()(int i, int j) {
+    return (*this->get())(i, j);
+  }
+  template <>
+  const return_type<_Hierarchical>::type BlockPtr<_Hierarchical>::operator()(int i, int j) const {
+    return (*this->get())(i, j);
+  }
+
+  template <>
+  return_type<_Hierarchical>::type BlockPtr<_Hierarchical>::operator[](int i) {
+    return (*this->get())[i];
+  }
+  template <>
+  const return_type<_Hierarchical>::type BlockPtr<_Hierarchical>::operator[](int i) const {
+    return (*this->get())[i];
   }
 
   template <typename T>

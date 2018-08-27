@@ -75,14 +75,14 @@ namespace hicma {
   // This version seems const correct, but
   // const Node& operator+=(const Node& A, const Node& B)
   // also works and might be preferable (speed?)
-  const Node operator+=(const Node A, const Node& B);
+  const Node operator+=(const Node& A, const Node& B);
 
   Node operator-(const Node& A, const Node& B);
 
   // This version seems const correct, but
   // const Node& operator-=(const Node& A, const Node& B)
   // also works and might be preferable (speed?)
-  Node operator-=(Node A, const Node& B);
+  Node operator-=(const Node& A, const Node& B);
 
   Node operator*(const Node& A, const Node& B);
 

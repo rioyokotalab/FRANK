@@ -5,13 +5,20 @@
 
 namespace hicma {
 
+  class _Hierarchical;
+  class _Dense;
+  class _Node;
+  template <typename>
+  class BlockPtr;
+
   template <class T>
   struct return_type{ typedef T type; };
-
   // Specializations for _Dense
-  class _Dense;
   template <>
-  struct return_type<_Dense>{ typedef double type; };
+  struct return_type<_Dense>{ typedef double& type; };
+  // Specializations for _Hierarchical
+  template <>
+  struct return_type<_Hierarchical>{ typedef BlockPtr<_Node> type; };
 
   template <typename T>
   class BlockPtr : public std::shared_ptr<T> {
@@ -25,21 +32,25 @@ namespace hicma {
 
     BlockPtr(std::shared_ptr<T>);
 
-    // Conversions from _Dense, LowRank, Hierarchical to Node.
+    // Conversions from _Dense, _LowRank, _Hierarchical to _Node.
     // Other way around DOES NOT WORK
-    // template <typename U>
-    // BlockPtr(const std::shared_ptr<U>& ptr) : std::shared_ptr<T>(ptr) {};
-
     template <typename U>
-    BlockPtr(const BlockPtr<U>& ptr) : std::shared_ptr<T>(ptr) {};
+    BlockPtr(const std::shared_ptr<U>& ptr) : std::shared_ptr<T>(ptr) {};
+
+    // template <typename U>
+    // BlockPtr(const BlockPtr<U>& ptr) : std::shared_ptr<T>(ptr) {};
 
     BlockPtr(T*);
 
-    // This forwards the = operator to Node, _Dense, Hierarchical etc, isn't used
-    // right now.
+    // This forwards the = operator to _Node, _Dense, _Hierarchical etc
     template <typename U>
     const BlockPtr<T> operator=(const BlockPtr<U>& ptr) {
-      *(this->get()) = *(ptr.get());
+      if (this->get() == nullptr) {
+        this->reset(static_cast<T*>(ptr.get()->clone()));
+        std::cout << this->is_string() << std::endl;
+      } else {
+        *(this->get()) = *(ptr.get());
+      }
       return *this;
     };
 
@@ -47,11 +58,11 @@ namespace hicma {
     const BlockPtr<T>& operator=(int);
     const BlockPtr<T>& operator-() const;
 
-    typename return_type<T>::type& operator()(int, int);
-    const typename return_type<T>::type& operator()(int, int) const;
+    typename return_type<T>::type operator()(int, int);
+    const typename return_type<T>::type operator()(int, int) const;
 
-    typename return_type<T>::type& operator[](int);
-    const typename return_type<T>::type& operator[](int) const;
+    typename return_type<T>::type operator[](int);
+    const typename return_type<T>::type operator[](int) const;
 
     // Add constructor using arg list, forward to make_shared<T>
     // Might have to make template specialization for Node, _Dense etc...
@@ -80,17 +91,6 @@ namespace hicma {
 
     void gemm(const BlockPtr<T>&, const BlockPtr<T>&);
   };
-
-
-  // Partial specializations for _Dense
-  template <>
-  double& BlockPtr<_Dense>::operator()(int, int);
-
-  template<>
-  const double& BlockPtr<_Dense>::operator()(int, int) const;
-
-  template<>
-  const BlockPtr<_Dense>& BlockPtr<_Dense>::operator-() const;
 }
 
 #endif
