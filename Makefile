@@ -17,5 +17,9 @@ h_lu: h_lu.o $(SOURCES)
 	$(CXX) $? -lblas -llapacke
 	valgrind ./a.out 6
 
+rsvd: rsvd.o $(SOURCES)
+	$(CXX) $? -lblas -llapacke
+	valgrind ./a.out
+
 clean:
 	$(RM) *.o *.out
