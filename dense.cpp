@@ -1,5 +1,5 @@
 #include <iomanip>
-#include <lapacke.h>
+//#include <lapacke.h>
 #include "dense.h"
 #include "low_rank.h"
 
