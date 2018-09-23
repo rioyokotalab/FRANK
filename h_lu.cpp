@@ -8,9 +8,9 @@
 using namespace hicma;
 
 int main(int argc, char** argv) {
-  int N = 256;
-  int nleaf = 32;
-  int rank = 16;
+  int N = 64;
+  int nleaf = 16;
+  int rank = 8;
   std::vector<double> randx(N);
   for (int i=0; i<N; i++) {
     randx[i] = drand48();
@@ -37,6 +37,14 @@ int main(int argc, char** argv) {
   }
   else if (atoi(argv[1]) == 4) {
     nblocks = N / nleaf; // 1 level
+    admis = 2; // Strong admissibility
+  }
+  else if (atoi(argv[1]) == 5) {
+    nblocks = 2; // Hierarchical (log_2(N/nleaf) levels)
+    admis = 1; // Weak admissibility
+  }
+  else if (atoi(argv[1]) == 6) {
+    nblocks = 2; // Hierarchical (log_2(N/nleaf) levels)
     admis = 2; // Strong admissibility
   }
   Hierarchical A(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
