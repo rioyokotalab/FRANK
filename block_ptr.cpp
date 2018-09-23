@@ -15,7 +15,32 @@ namespace hicma {
   BlockPtr<T>::BlockPtr(std::shared_ptr<T> ptr) : std::shared_ptr<T>(ptr) {};
 
   template <typename T>
+  BlockPtr<T>::BlockPtr(const BlockPtr<T>& ptr) : std::shared_ptr<T>(ptr->clone()) {};
+
+  template <typename T>
   BlockPtr<T>::BlockPtr(T* ptr) : std::shared_ptr<T>(ptr) {};
+
+  template <typename T>
+  const BlockPtr<T>& BlockPtr<T>::operator=(const BlockPtr<T>& ptr) {
+    if (this->get() == nullptr) {
+      this->reset(static_cast<T*>(ptr.get()->clone()));
+      std::cout << "From copy assignment: " << this->is_string() << std::endl;
+    } else {
+      *(this->get()) = *(ptr.get());
+    }
+    return *this;
+  }
+
+  template <typename T>
+  const BlockPtr<T>& BlockPtr<T>::operator=(BlockPtr<T>&& ptr) {
+    if (this->get() == nullptr) {
+      this->reset(static_cast<T*>(ptr.get()->clone()));
+      std::cout << "From copy assignment: " << this->is_string() << std::endl;
+    } else {
+      *(this->get()) = *(ptr.get());
+    }
+    return *this;
+  }
 
   template <typename T>
   const BlockPtr<T>& BlockPtr<T>::operator=(int i) {
@@ -88,6 +113,10 @@ namespace hicma {
   template <typename T>
   double BlockPtr<T>::norm() const {
     return this->get()->norm();
+  }
+  template <typename T>
+  T* BlockPtr<T>::clone() const {
+    return this->get()->clone();
   }
 
   template <typename T>

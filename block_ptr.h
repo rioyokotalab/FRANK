@@ -18,7 +18,7 @@ namespace hicma {
   struct return_type<_Dense>{ typedef double& type; };
   // Specializations for _Hierarchical
   template <>
-  struct return_type<_Hierarchical>{ typedef BlockPtr<_Node> type; };
+  struct return_type<_Hierarchical>{ typedef BlockPtr<_Node>& type; };
 
   template <typename T>
   class BlockPtr : public std::shared_ptr<T> {
@@ -32,27 +32,37 @@ namespace hicma {
 
     BlockPtr(std::shared_ptr<T>);
 
+    BlockPtr(const BlockPtr<T>&);
+
     // Conversions from _Dense, _LowRank, _Hierarchical to _Node.
     // Other way around DOES NOT WORK
     template <typename U>
-    BlockPtr(const std::shared_ptr<U>& ptr) : std::shared_ptr<T>(ptr) {};
+    BlockPtr(const std::shared_ptr<U>& ptr)
+    : std::shared_ptr<T>(static_cast<T*>(ptr->clone())) {
+      std::cout << "BlockPtr copy ctor from: " << ptr->is_string() << std::endl;
+    }
 
-    // template <typename U>
-    // BlockPtr(const BlockPtr<U>& ptr) : std::shared_ptr<T>(ptr) {};
+    template <typename U>
+    BlockPtr(const BlockPtr<U>& ptr)
+    : std::shared_ptr<T>(static_cast<T*>(ptr.clone())) {
+      std::cout << "BlockPtr copy ctor from: " << ptr->is_string() << std::endl;
+    }
 
     BlockPtr(T*);
 
     // This forwards the = operator to _Node, _Dense, _Hierarchical etc
     template <typename U>
-    const BlockPtr<T> operator=(const BlockPtr<U>& ptr) {
+    const BlockPtr<T>& operator=(const BlockPtr<U>& ptr) {
       if (this->get() == nullptr) {
-        this->reset(static_cast<T*>(ptr.get()->clone()));
-        std::cout << this->is_string() << std::endl;
+        this->reset(static_cast<T*>(ptr.clone()));
+        // std::cout << "From tmp copy assignment: " << this->is_string() << std::endl;
       } else {
         *(this->get()) = *(ptr.get());
       }
       return *this;
-    };
+    }
+    const BlockPtr<T>& operator=(const BlockPtr<T>&);
+    const BlockPtr<T>& operator=(BlockPtr<T>&&);
 
     // Operators necessary for making U, S, V of LowRank a _DensePtr
     const BlockPtr<T>& operator=(int);
@@ -79,6 +89,8 @@ namespace hicma {
     void resize(int, int);
 
     double norm() const;
+
+    T* clone() const;
 
     void print() const;
 

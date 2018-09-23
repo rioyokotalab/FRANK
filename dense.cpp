@@ -24,6 +24,10 @@ namespace hicma {
     dim[0]=A->dim[0]; dim[1]=A->dim[1];
   }
 
+  _Dense::_Dense(const Dense& A) : _Node(A->i_abs,A->j_abs,A->level), data(A->data) {
+    dim[0]=A->dim[0]; dim[1]=A->dim[1];
+  }
+
   _Dense::_Dense(
                void (*func)(
                             std::vector<double>& data,

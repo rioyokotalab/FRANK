@@ -36,13 +36,13 @@ int main(int argc, char** argv) {
   for (int ic=0; ic<Nc; ic++) {
     for (int jc=0; jc<Nc; jc++) {
       Dense Aij(laplace1d, randx, Nb, Nb, Nb*ic, Nb*jc);
-      // Dense b_ic_r = b[ic];
-      // Dense x_jc_r = x[jc];
-      // for (int ib=0; ib<Nb; ib++) {
-      //   for (int jb=0; jb<Nb; jb++) {
-      //     b_ic_r[ib] += Aij(ib,jb) * x_jc_r[jb];
-      //   }
-      // }
+      Dense b_ic_r = b[ic];
+      Dense x_jc_r = x[jc];
+      for (int ib=0; ib<Nb; ib++) {
+        for (int jb=0; jb<Nb; jb++) {
+          b_ic_r[ib] += Aij(ib,jb) * x_jc_r[jb];
+        }
+      }
       A(ic,jc) = Aij;
     }
   }

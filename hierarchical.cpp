@@ -157,7 +157,7 @@ namespace hicma {
 
   const char* _Hierarchical::is_string() const { return "_Hierarchical"; }
 
-  Node _Hierarchical::operator[](const int i) {
+  Node& _Hierarchical::operator[](const int i) {
     assert(i<dim[0]*dim[1]);
     return data[i];
   }
@@ -167,7 +167,7 @@ namespace hicma {
     return data[i];
   }
 
-  Node _Hierarchical::operator()(const int i, const int j) {
+  Node& _Hierarchical::operator()(const int i, const int j) {
     assert(i<dim[0] && j<dim[1]);
     return data[i*dim[1]+j];
   }

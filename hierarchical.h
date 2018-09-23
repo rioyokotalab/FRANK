@@ -53,11 +53,11 @@ namespace hicma {
 
     const char* is_string() const override;
 
-    Node operator[](const int i);
+    Node& operator[](const int i);
 
     const Node& operator[](const int i) const;
 
-    Node operator()(const int i, const int j);
+    Node& operator()(const int i, const int j);
 
     const Node& operator()(const int i, const int j) const;
 
