@@ -6,27 +6,21 @@
 #include <iostream>
 #include <vector>
 #include "node.h"
-#include "block_ptr.h"
+#include "block.h"
 
 namespace hicma {
-  class _Dense : public _Node {
+  class Dense : public Node {
   public:
     std::vector<double> data;
     int dim[2];
 
-    _Dense();
+    Dense();
 
-    _Dense(const int m);
+    Dense(const int m);
 
-    _Dense(const int m, const int n);
+    Dense(const int m, const int n);
 
-    _Dense(const _Dense& A);
-
-    _Dense(const _Dense* A);
-
-    _Dense(const Dense& A);
-
-    _Dense(
+    Dense(
           void (*func)(
                        std::vector<double>& data,
                        std::vector<double>& x,
@@ -45,11 +39,37 @@ namespace hicma {
           const int level=0
           );
 
-    _Dense* clone() const override;
+    Dense(const Dense& A);
+    Dense(Dense&& A);
 
-    const bool is(const int enum_id) const override;
+    Dense(const Dense* A);
 
-    const char* is_string() const override;
+    Dense(const Block& A);
+
+    Dense* clone() const override;
+
+    friend void swap(Dense& first, Dense& second);
+
+    const Node& operator=(const Node& A) override;
+    const Node& operator=(Node&& A) override;
+    const Dense& operator=(Dense A);
+
+    const Node& operator=(Block A) override;
+
+    const Node& operator=(const double a) override;
+
+    Dense operator-() const;
+
+    Block operator+(const Node& B) const override;
+    Block operator+(Block&& B) const override;
+    const Node& operator+=(const Node& B) override;
+    const Node& operator+=(Block&& B) override;
+    Block operator-(const Node& B) const override;
+    Block operator-(Block&& B) const override;
+    const Node& operator-=(const Node& B) override;
+    const Node& operator-=(Block&& B) override;
+    Block operator*(const Node& B) const override;
+    Block operator*(Block&& B) const override;
 
     double& operator[](const int i);
 
@@ -59,25 +79,15 @@ namespace hicma {
 
     const double& operator()(const int i, const int j) const;
 
-    const _Node& operator=(const double a) override;
+    const bool is(const int enum_id) const override;
 
-    const _Node& operator=(const _Node& A) override;
-
-    const _Node& operator=(const Node& A) override;
-
-    _Dense operator-() const;
-
-    Node add(const Node& B) const override;
-
-    Node sub(const Node& B) const override;
-
-    Node mul(const Node& B) const override;
+    const char* is_string() const override;
 
     void resize(int i);
 
     void resize(int i, int j);
 
-    _Dense extract(int i, int j, int ni, int nj);
+    Dense extract(int i, int j, int ni, int nj);
 
     double norm() const override;
 

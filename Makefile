@@ -1,6 +1,6 @@
-CXX = mpicxx -std=c++11 -ggdb3 -Wall -O3 -fopenmp -I.
+CXX = mpicxx -std=c++14 -ggdb3 -Wall -O3 -fopenmp -I.
 
-SOURCES = dense.o id.o low_rank.o hierarchical.o node.o block_ptr.o
+SOURCES = dense.o id.o low_rank.o hierarchical.o node.o block.o
 
 .cpp.o:
 	$(CXX) -c $? -o $@
@@ -15,7 +15,7 @@ blr_lu: blr_lu.o $(SOURCES)
 
 h_lu: h_lu.o $(SOURCES)
 	$(CXX) $? -lblas -llapacke
-	valgrind ./a.out 6
+	valgrind ./a.out 4
 
 clean:
 	$(RM) *.o *.out

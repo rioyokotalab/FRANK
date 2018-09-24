@@ -30,8 +30,8 @@ int main(int argc, char** argv) {
       xi[ib] = randx[Nb*ic+ib];
       bj[ib] = 0;
     }
-    x[ic] = xi;
-    b[ic] = bj;
+    x[ic] = std::move(xi);
+    b[ic] = std::move(bj);
   }
   for (int ic=0; ic<Nc; ic++) {
     for (int jc=0; jc<Nc; jc++) {
@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
           b_ic_r[ib] += Aij(ib,jb) * x_jc_r[jb];
         }
       }
-      A(ic,jc) = Aij;
+      A(ic,jc) = std::move(Aij);
     }
   }
   stop("Init matrix");
@@ -88,7 +88,7 @@ int main(int argc, char** argv) {
   stop("Backward substitution");
   double diff = 0, norm = 0;
   for (int ic=0; ic<Nc; ic++) {
-    diff += (x[ic] - b[ic])->norm();
+    diff += (x[ic] - b[ic]).norm();
     norm += x[ic].norm();
   }
   print("Accuracy");

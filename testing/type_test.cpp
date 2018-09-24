@@ -82,6 +82,15 @@ class Dense : public Node {
 
     Dense(const int dim, const std::vector<float> data) : dim(dim), data(data) {}
 
+    Dense(const Block& x) {
+      assert(x.is(DENSE));
+      Dense* ptr = static_cast<Dense*>(x.ptr.get());
+      dim = ptr->dim;
+      data.resize(dim);
+      for (int i = 0; i < dim; ++i)
+        data[i] = ptr->data[i];
+    }
+
     Dense* clone() const override { return new Dense(*this); }
 
     Block operator+(const Node& rhs) const override{
@@ -177,13 +186,16 @@ int main(int argc, char** argv) {
   H[2] = H[0] + H[1];
   H[2].print();
 
-  Hierarchical H2(3);
-  H2[0] = Dense(4, std::vector<float>{0, 1, 2, 3});
-  H2[1] = Dense(4, std::vector<float>{0, 1, 2, 3});
-  H2[2] = H2[0] + H2[1];
-  // H2[2].print();
-  H[3] = H2;
-  H2[0] = Dense(4, std::vector<float>{4, 5, 6, 7});
-  H[3][0].print();
-  H2[0].print();
+  Dense D = H[0];
+  D.print();
+
+  // Hierarchical H2(3);
+  // H2[0] = Dense(4, std::vector<float>{0, 1, 2, 3});
+  // H2[1] = Dense(4, std::vector<float>{0, 1, 2, 3});
+  // H2[2] = H2[0] + H2[1];
+  // // H2[2].print();
+  // H[3] = H2;
+  // H2[0] = Dense(4, std::vector<float>{4, 5, 6, 7});
+  // H[3][0].print();
+  // H2[0].print();
 }

@@ -1,29 +1,22 @@
 #ifndef hierarchical_h
 #define hierarchical_h
-#include <memory>
 #include "node.h"
-#include "block_ptr.h"
+#include "block.h"
+#include <vector>
 
 namespace hicma {
-  class _Dense;
-  class _Hierarchical : public _Node {
+  class Hierarchical : public Node {
   public:
     int dim[2];
-    std::vector<Node> data;
+    std::vector<Block> data;
 
-    _Hierarchical();
+    Hierarchical();
 
-    _Hierarchical(const int m);
+    Hierarchical(const int m);
 
-    _Hierarchical(const int m, const int n);
+    Hierarchical(const int m, const int n);
 
-    _Hierarchical(const _Hierarchical& A);
-
-    _Hierarchical(const _Hierarchical* A);
-
-    _Hierarchical(const Hierarchical& A);
-
-    _Hierarchical(
+    Hierarchical(
                  void (*func)(
                               std::vector<double>& data,
                               std::vector<double>& x,
@@ -47,31 +40,45 @@ namespace hicma {
                  const int level=0
                  );
 
-    _Hierarchical* clone() const override;
+    Hierarchical(const Hierarchical& A);
+    Hierarchical(Hierarchical&& A);
+
+    Hierarchical(const Hierarchical* A);
+
+    Hierarchical(const Block& A);
+
+    Hierarchical* clone() const override;
+
+    friend void swap(Hierarchical& first, Hierarchical& second);
+
+    const Node& operator=(const Node& A) override;
+    const Node& operator=(Node&& A) override;
+    const Hierarchical& operator=(Hierarchical A);
+
+    const Node& operator=(Block A) override;
+
+    const Node& operator=(const double a) override;
+
+    Block operator+(const Node& B) const override;
+    Block operator+(Block&& B) const override;
+    const Node& operator+=(const Node& B) override;
+    const Node& operator+=(Block&& B) override;
+    Block operator-(const Node& B) const override;
+    Block operator-(Block&& B) const override;
+    const Node& operator-=(const Node& B) override;
+    const Node& operator-=(Block&& B) override;
+    Block operator*(const Node& B) const override;
+    Block operator*(Block&& B) const override;
+
+    const Node& operator[](const int i) const;
+    Block& operator[](const int i);
+
+    const Node& operator()(const int i, const int j) const;
+    Block& operator()(const int i, const int j);
 
     const bool is(const int enum_id) const override;
 
     const char* is_string() const override;
-
-    Node& operator[](const int i);
-
-    const Node& operator[](const int i) const;
-
-    Node& operator()(const int i, const int j);
-
-    const Node& operator()(const int i, const int j) const;
-
-    const _Node& operator=(const double a) override;
-
-    const _Node& operator=(const _Node& A) override;
-
-    const _Node& operator=(const Node& A) override;
-
-    Node add(const Node& B) const override;
-
-    Node sub(const Node& B) const override;
-
-    Node mul(const Node& B) const override;
 
     double norm() const override;
 

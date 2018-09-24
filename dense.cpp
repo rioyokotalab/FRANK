@@ -2,33 +2,22 @@
 //#include <lapacke.h>
 #include "dense.h"
 #include "low_rank.h"
+#include "block.h"
 
 namespace hicma {
-  _Dense::_Dense() {
+  Dense::Dense() {
     dim[0]=0; dim[1]=0;
   }
 
-  _Dense::_Dense(const int m) {
+  Dense::Dense(const int m) {
     dim[0]=m; dim[1]=1; data.resize(dim[0]);
   }
 
-  _Dense::_Dense(const int m, const int n) {
+  Dense::Dense(const int m, const int n) {
     dim[0]=m; dim[1]=n; data.resize(dim[0]*dim[1]);
   }
 
-  _Dense::_Dense(const _Dense& A) : _Node(A.i_abs,A.j_abs,A.level), data(A.data) {
-    dim[0]=A.dim[0]; dim[1]=A.dim[1];
-  }
-
-  _Dense::_Dense(const _Dense* A) : _Node(A->i_abs,A->j_abs,A->level), data(A->data) {
-    dim[0]=A->dim[0]; dim[1]=A->dim[1];
-  }
-
-  _Dense::_Dense(const Dense& A) : _Node(A->i_abs,A->j_abs,A->level), data(A->data) {
-    dim[0]=A->dim[0]; dim[1]=A->dim[1];
-  }
-
-  _Dense::_Dense(
+  Dense::Dense(
                void (*func)(
                             std::vector<double>& data,
                             std::vector<double>& x,
@@ -45,51 +34,54 @@ namespace hicma {
                const int _i_abs,
                const int _j_abs,
                const int _level
-               ) : _Node(_i_abs,_j_abs,_level) {
+               ) : Node(_i_abs,_j_abs,_level) {
     dim[0] = ni; dim[1] = nj;
     data.resize(dim[0]*dim[1]);
     func(data, x, ni, nj, i_begin, j_begin);
   }
 
-  _Dense* _Dense::clone() const {
-    return new _Dense(*this);
+  Dense::Dense(const Dense& A) : Node(A.i_abs,A.j_abs,A.level), data(A.data) {
+    dim[0]=A.dim[0]; dim[1]=A.dim[1];
   }
 
-  const bool _Dense::is(const int enum_id) const {
-    return enum_id == HICMA_DENSE;
+  Dense::Dense(Dense&& A) {
+    swap(*this, A);
   }
 
-  const char* _Dense::is_string() const { return "_Dense"; }
-
-  double& _Dense::operator[](const int i) {
-    assert(i<dim[0]*dim[1]);
-    return data[i];
+  Dense::Dense(const Dense* A) : Node(A->i_abs,A->j_abs,A->level), data(A->data) {
+    dim[0]=A->dim[0]; dim[1]=A->dim[1];
   }
 
-  const double& _Dense::operator[](const int i) const {
-    assert(i<dim[0]*dim[1]);
-    return data[i];
+  Dense::Dense(const Block& A)
+  : Node((*A.ptr).i_abs, (*A.ptr).j_abs, (*A.ptr).level) {
+    assert(A.is(HICMA_DENSE));
+    Dense& ref = static_cast<Dense&>(*A.ptr);
+    dim[0]=ref.dim[0]; dim[1]=ref.dim[1];
+    data = ref.data;
   }
 
-  double& _Dense::operator()(const int i, const int j) {
-    assert(i<dim[0] && j<dim[1]);
-    return data[i*dim[1]+j];
+  Dense* Dense::clone() const {
+    return new Dense(*this);
   }
 
-  const double& _Dense::operator()(const int i, const int j) const {
-    assert(i<dim[0] && j<dim[1]);
-    return data[i*dim[1]+j];
+  void swap(Dense& first, Dense& second) {
+    using std::swap;
+    swap(first.data, second.data);
+    swap(first.dim, second.dim);
+    swap(first.i_abs, second.i_abs);
+    swap(first.j_abs, second.j_abs);
+    swap(first.level, second.level);
   }
 
-  const _Node& _Dense::operator=(const double a) {
+  const Node& Dense::operator=(const double a) {
     for (int i=0; i<dim[0]*dim[1]; i++)
       data[i] = a;
     return *this;
   }
 
-  const _Node& _Dense::operator=(const _Node& A) {
+  const Node& Dense::operator=(const Node& A) {
     if (A.is(HICMA_DENSE)) {
-      const _Dense& AR = static_cast<const _Dense&>(A);
+      const Dense& AR = static_cast<const Dense&>(A);
       dim[0] = AR.dim[0]; dim[1] = AR.dim[1];
       data.resize(dim[0]*dim[1]);
       data = AR.data;
@@ -101,65 +93,101 @@ namespace hicma {
     }
   };
 
-  const _Node& _Dense::operator=(const Node& A) {
-    return *this = *A;
+  const Node& Dense::operator=(Node&& A) {
+    if (A.is(HICMA_DENSE)) {
+      swap(*this, static_cast<Dense&>(A));
+      return *this;
+    } else {
+      std::cout << this->is_string() << " = " << A.is_string();
+      std::cout << " not implemented!" << std::endl;
+      return *this;
+    }
+  };
+
+  const Dense& Dense::operator=(Dense A) {
+    swap(*this, A);
+    return *this;
   }
 
-  _Dense _Dense::operator-() const {
-    _Dense D(dim[0],dim[1]);
+  const Node& Dense::operator=(Block A) {
+    return *this = std::move(*A.ptr);
+  }
+
+  Dense Dense::operator-() const {
+    Dense D(dim[0],dim[1]);
     for (int i=0; i<dim[0]*dim[1]; i++) D[i] = -data[i];
     return D;
   }
 
-  Node _Dense::add(const Node& B) const {
+  Block Dense::operator+(const Node& B) const {
+    Block Out(*this);
+    Out += B;
+    return Out;
+  }
+  Block Dense::operator+(Block&& B) const {
+    return *this + *B.ptr;
+  }
+  const Node& Dense::operator+=(const Node& B) {
     if (B.is(HICMA_LOWRANK)) {
-      const _LowRank& BR = static_cast<const _LowRank&>(*B);
+      const LowRank& BR = static_cast<const LowRank&>(B);
       assert(dim[0] == BR.dim[0] && dim[1] == BR.dim[1]);
-      return this->add(BR.dense());
+      return *this += BR.dense();
     } else if (B.is(HICMA_DENSE)) {
-      const _Dense& BR = static_cast<const _Dense&>(*B);
+      const Dense& BR = static_cast<const Dense&>(B);
       assert(dim[0] == BR.dim[0] && dim[1] == BR.dim[1]);
-      Dense Out(*this);
       for (int i=0; i<dim[0]*dim[1]; i++) {
-        (*Out).data[i] += BR.data[i];
+        (*this)[i] += BR[i];
       }
-      return Out;
+      return *this;
     } else {
       std::cout << this->is_string() << " + " << B.is_string();
       std::cout << " is undefined!" << std::endl;
-      return Node(nullptr);
+      return *this;
     }
   }
+  const Node& Dense::operator+=(Block&& B) {
+    return *this += *B.ptr;
+  }
 
-  Node _Dense::sub(const Node& B) const {
+  Block Dense::operator-(const Node& B) const {
+    Block Out(*this);
+    Out -= B;
+    return Out;
+  }
+  Block Dense::operator-(Block&& B) const {
+    return *this - *B.ptr;
+  }
+  const Node& Dense::operator-=(const Node& B) {
     if (B.is(HICMA_LOWRANK)) {
-      const _LowRank& BR = static_cast<const _LowRank&>(*B);
+      const LowRank& BR = static_cast<const LowRank&>(B);
       assert(dim[0] == BR.dim[0] && dim[1] == BR.dim[1]);
-      return this->sub(BR.dense());
+      return *this -= BR.dense();
     } else if (B.is(HICMA_DENSE)) {
-      const _Dense& BR = static_cast<const _Dense&>(*B);
+      const Dense& BR = static_cast<const Dense&>(B);
       assert(dim[0] == BR.dim[0] && dim[1] == BR.dim[1]);
-      Dense Out(*this);
       for (int i=0; i<dim[0]*dim[1]; i++) {
-        (*Out).data[i] -= BR.data[i];
+        (*this)[i] -= BR[i];
       }
-      return Out;
+      return *this;
     } else {
       std::cout << this->is_string() << " - " << B.is_string();
       std::cout << " is undefined!" << std::endl;
-      return Node(nullptr);
+      return *this;
     }
   }
+  const Node& Dense::operator-=(Block&& B) {
+    return *this -= *B.ptr;
+  }
 
-  Node _Dense::mul(const Node& B) const {
+  Block Dense::operator*(const Node& B) const {
     if (B.is(HICMA_LOWRANK)) {
-      const _LowRank& BR = static_cast<const _LowRank&>(*B);
+      const LowRank& BR = static_cast<const LowRank&>(B);
       assert(dim[0] == BR.dim[0] && dim[1] == BR.dim[1]);
-      LowRank Out(BR.clone());
-      (*Out).U = this->mul(BR.U);
+      LowRank Out(BR);
+      Out.U = *this * BR.U;
       return Out;
     } else if (B.is(HICMA_DENSE)) {
-      const _Dense& BR = static_cast<const _Dense&>(*B);
+      const Dense& BR = static_cast<const Dense&>(B);
       assert(dim[1] == BR.dim[0]);
       Dense Out(dim[0], BR.dim[1]);
       if (BR.dim[1] == 1) {
@@ -174,7 +202,7 @@ namespace hicma {
                     &BR[0],
                     1,
                     0,
-                    &(*Out)[0],
+                    &Out[0],
                     1
                     );
       }
@@ -183,8 +211,8 @@ namespace hicma {
                     CblasRowMajor,
                     CblasNoTrans,
                     CblasNoTrans,
-                    (*Out).dim[0],
-                    (*Out).dim[1],
+                    Out.dim[0],
+                    Out.dim[1],
                     dim[1],
                     1,
                     &data[0],
@@ -192,29 +220,58 @@ namespace hicma {
                     &BR[0],
                     BR.dim[1],
                     0,
-                    &(*Out)[0],
-                    (*Out).dim[1]
+                    &Out[0],
+                    Out.dim[1]
                     );
       }
       return Out;
     } else {
       std::cout << this->is_string() << " * " << B.is_string();
       std::cout << " is undefined!" << std::endl;
-      return Node(nullptr);
+      return Block();
     }
   }
+  Block Dense::operator*(Block&& B) const {
+    return *this * *B.ptr;
+  }
 
-  void _Dense::resize(int i) {
+  double& Dense::operator[](const int i) {
+    assert(i<dim[0]*dim[1]);
+    return data[i];
+  }
+
+  const double& Dense::operator[](const int i) const {
+    assert(i<dim[0]*dim[1]);
+    return data[i];
+  }
+
+  double& Dense::operator()(const int i, const int j) {
+    assert(i<dim[0] && j<dim[1]);
+    return data[i*dim[1]+j];
+  }
+
+  const double& Dense::operator()(const int i, const int j) const {
+    assert(i<dim[0] && j<dim[1]);
+    return data[i*dim[1]+j];
+  }
+
+  const bool Dense::is(const int enum_id) const {
+    return enum_id == HICMA_DENSE;
+  }
+
+  const char* Dense::is_string() const { return "Dense"; }
+
+  void Dense::resize(int i) {
     dim[0]=i; dim[1]=1;
     data.resize(dim[0]*dim[1]);
   }
 
-  void _Dense::resize(int i, int j) {
+  void Dense::resize(int i, int j) {
     dim[0]=i; dim[1]=j;
     data.resize(dim[0]*dim[1]);
   }
 
-  double _Dense::norm() const {
+  double Dense::norm() const {
     double l2 = 0;
     for (int i=0; i<dim[0]; i++) {
       for (int j=0; j<dim[1]; j++) {
@@ -224,7 +281,7 @@ namespace hicma {
     return l2;
   }
 
-  void _Dense::print() const {
+  void Dense::print() const {
     for (int i=0; i<dim[0]; i++) {
       for (int j=0; j<dim[1]; j++) {
         std::cout << std::setw(20) << std::setprecision(15) << data[i*dim[1]+j] << ' ';
@@ -234,14 +291,14 @@ namespace hicma {
     std::cout << "----------------------------------------------------------------------------------" << std::endl;
   }
 
-  void _Dense::getrf() {
+  void Dense::getrf() {
     std::vector<int> ipiv(std::min(dim[0],dim[1]));
     LAPACKE_dgetrf(LAPACK_ROW_MAJOR, dim[0], dim[1], &data[0], dim[1], &ipiv[0]);
   }
 
-  void _Dense::trsm(const Node& A, const char& uplo) {
+  void Dense::trsm(const Node& A, const char& uplo) {
     if (A.is(HICMA_DENSE)) {
-      const _Dense& AR = static_cast<const _Dense&>(*A);
+      const Dense& AR = static_cast<const Dense&>(A);
       if (dim[1] == 1) {
         switch (uplo) {
         case 'l' :
@@ -278,12 +335,12 @@ namespace hicma {
     }
   }
 
-  void _Dense::gemm(const Node& A, const Node& B) {
+  void Dense::gemm(const Node& A, const Node& B) {
     if (A.is(HICMA_DENSE)) {
       if (B.is(HICMA_DENSE)) {
-        *this = this->sub(A * B);
+        *this = *this - (A * B);
       } else if (B.is(HICMA_LOWRANK)) {
-        *this = this->sub(A * B);
+        *this = *this - (A * B);
       } else if (B.is(HICMA_HIERARCHICAL)) {
         fprintf(
             stderr,"%s -= %s * %s undefined.\n",
@@ -292,9 +349,9 @@ namespace hicma {
       }
     } else if (A.is(HICMA_LOWRANK)) {
       if (B.is(HICMA_DENSE)) {
-        *this = this->sub(A * B);
+        *this = *this - (A * B);
       } else if (B.is(HICMA_LOWRANK)) {
-        *this = this->sub(A * B);
+        *this = *this - (A * B);
       } else if (B.is(HICMA_HIERARCHICAL)) {
         fprintf(
             stderr,"%s -= %s * %s undefined.\n",
