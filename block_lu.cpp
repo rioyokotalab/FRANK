@@ -43,6 +43,7 @@ int main(int argc, char** argv) {
           b_ic_r[ib] += Aij(ib,jb) * x_jc_r[jb];
         }
       }
+      b[ic] = std::move(b_ic_r);
       A(ic,jc) = std::move(Aij);
     }
   }

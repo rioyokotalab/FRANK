@@ -23,8 +23,9 @@ namespace hicma {
     randomized_low_rank_svd2(A.data, rank, U.data, S.data, V.data, m, n);
   }
 
+  // TODO: This constructor is called A LOT. Work that out
   LowRank::LowRank(
-               const Block A,
+               const Block& A,
                const int k
                ) : Node(A.ptr->i_abs,A.ptr->j_abs,A.ptr->level){
     assert(A.is(HICMA_DENSE));
@@ -51,13 +52,7 @@ namespace hicma {
   }
 
   LowRank* LowRank::clone() const {
-    LowRank* Out = new LowRank(*this);
-    // The following lines are necessary since the constructor from a LowRank&
-    // does not do a deep copy
-    Out->U = U;
-    Out->S = S;
-    Out->V = V;
-    return Out;
+    return new LowRank(*this);
   }
 
   void swap(LowRank& first, LowRank& second) {
@@ -324,7 +319,7 @@ namespace hicma {
             this->is_string(), A.is_string(), B.is_string());
         abort();
       } else if (B.is(HICMA_LOWRANK)) {
-        *this = *this - (A * B);
+        *this -= A * B;
       } else if (B.is(HICMA_HIERARCHICAL)) {
         fprintf(
             stderr,"%s += %s * %s undefined.\n",
@@ -333,9 +328,9 @@ namespace hicma {
       }
     } else if (A.is(HICMA_LOWRANK)) {
       if (B.is(HICMA_DENSE)) {
-        *this = *this - (A * B);
+        *this -= A * B;
       } else if (B.is(HICMA_LOWRANK)) {
-        *this = *this - (A * B);
+        *this -= A * B;
       } else if (B.is(HICMA_HIERARCHICAL)) {
         fprintf(
             stderr,"%s += %s * %s undefined.\n",

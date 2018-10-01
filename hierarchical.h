@@ -89,6 +89,11 @@ namespace hicma {
     void trsm(const Node& A, const char& uplo) override;
 
     void gemm(const Node& A, const Node& B);
+
+    void gemm_row(
+        const Hierarchical& A,
+        const Hierarchical& B,
+        const int i, const int j, const int k_min, const int k_max);
   };
 }
 #endif

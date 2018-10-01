@@ -20,7 +20,7 @@ namespace hicma {
 
     LowRank(const Dense& A, const int k);
 
-    LowRank(const Block A, const int k);
+    LowRank(const Block& A, const int k);
 
     LowRank(const LowRank& A);
     LowRank(LowRank&& A);

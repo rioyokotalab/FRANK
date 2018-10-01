@@ -210,9 +210,9 @@ namespace hicma {
           (*this)(i, j) += BR(i, j);
       return *this;
     } else {
-        std::cout << this->is_string() << " + " << B.is_string();
-        std::cout << " is undefined!" << std::endl;
-        return *this;
+      std::cout << this->is_string() << " + " << B.is_string();
+      std::cout << " is undefined!" << std::endl;
+      return *this;
     }
   }
   const Node& Hierarchical::operator+=(Block&& B) {
@@ -236,9 +236,9 @@ namespace hicma {
           (*this)(i, j) -= BR(i, j);
       return *this;
     } else {
-        std::cout << this->is_string() << " - " << B.is_string();
-        std::cout << " is undefined!" << std::endl;
-        return *this;
+      std::cout << this->is_string() << " - " << B.is_string();
+      std::cout << " is undefined!" << std::endl;
+      return *this;
     }
   }
   const Node& Hierarchical::operator-=(Block&& B) {
@@ -253,16 +253,27 @@ namespace hicma {
       for (int i=0; i<dim[0]; i++) {
         for (int j=0; j<BR.dim[1]; j++) {
           Out(i, j) = (*this)(i, 0) * BR(0, j);
+          int rank = -1;
+          // Avoid unnecessary recompression by making it dense now
+          // and later recompressing it only once
+          if (Out(i, j).is(HICMA_LOWRANK)) {
+            rank = static_cast<LowRank&>(*Out(i, j).ptr).rank;
+            Out(i, j) = static_cast<LowRank&>(*Out(i, j).ptr).dense();
+          }
           for (int k=1; k<dim[1]; k++) {
             Out(i, j) += (*this)(i, k) * BR(k, j);
+          }
+          // If it was LowRank earlier, return it to LowRank now
+          if (rank != -1) {
+            Out(i, j) = LowRank(Out(i, j), rank);
           }
         }
       }
       return Out;
     } else {
-        std::cout << this->is_string() << " * " << B.is_string();
-        std::cout << " is undefined!" << std::endl;
-        return Block();
+      std::cout << this->is_string() << " * " << B.is_string();
+      std::cout << " is undefined!" << std::endl;
+      return Block();
     }
   }
   Block Hierarchical::operator*(Block&& B) const {
@@ -373,9 +384,10 @@ namespace hicma {
             // Loop over rows, getting new results
             for (int i=0; i<dim[0]; i++) {
               // Loop over previously calculated row, accumulate results
-              for (int i_old=0; i_old<i; i_old++) {
-                (*this)(i,j).gemm(AR(i,i_old), (*this)(i_old,j));
-              }
+              (*this).gemm_row(AR, *this, i, j, 0, i);
+              // for (int i_old=0; i_old<i; i_old++) {
+              //   (*this)(i,j).gemm(AR(i,i_old), (*this)(i_old,j));
+              // }
               (*this)(i,j).trsm(AR(i,i),'l');
             }
           }
@@ -386,9 +398,10 @@ namespace hicma {
             // Loop over cols, getting new results
             for (int j=0; j<dim[1]; j++) {
               // Loop over previously calculated col, accumulate results
-              for (int j_old=0; j_old<j; j_old++) {
-                (*this)(i,j).gemm((*this)(i,j_old),AR(j_old,j));
-              }
+              (*this).gemm_row(*this, AR, i, j, 0, j);
+              // for (int j_old=0; j_old<j; j_old++) {
+              //   (*this)(i,j).gemm((*this)(i,j_old),AR(j_old,j));
+              // }
               (*this)(i,j).trsm(AR(j,j),'u');
             }
           }
@@ -414,9 +427,10 @@ namespace hicma {
         assert(AR.dim[1] == BR.dim[0]);
         for (int i=0; i<dim[0]; i++) {
           for (int j=0; j<dim[1]; j++) {
-            for (int k=0; k<AR.dim[1]; k++) {
-              (*this)(i,j).gemm(AR(i,k), BR(k,j));
-            }
+            (*this).gemm_row(AR, BR, i, j, 0, AR.dim[1]);
+            // for (int k=0; k<AR.dim[1]; k++) {
+            //   (*this)(i,j).gemm(AR(i,k), BR(k,j));
+            // }
           }
         }
       } else {
@@ -432,4 +446,24 @@ namespace hicma {
       abort();
     }
   }
+
+  // TODO: Check if this really avoids recompression
+  void Hierarchical::gemm_row(
+      const Hierarchical& A, const Hierarchical& B,
+      const int i, const int j, const int k_min, const int k_max)
+  {
+    int rank = -1;
+    if ((*this)(i, j).is(HICMA_LOWRANK)) {
+      rank = static_cast<LowRank&>(*(*this)(i, j).ptr).rank;
+      (*this)(i, j) = static_cast<LowRank&>(*(*this)(i, j).ptr).dense();
+    }
+    for (int k=k_min; k<k_max; k++) {
+      (*this)(i, j).gemm(A(i, k), B(k, j));
+    }
+    // If it was LowRank earlier, return it to LowRank now
+    if (rank != -1) {
+      (*this)(i, j) = LowRank((*this)(i, j), rank);
+    }
+  }
+
 }
