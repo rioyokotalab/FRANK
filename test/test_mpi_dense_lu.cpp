@@ -1,5 +1,6 @@
 #include "catch.hpp"
 #include "mpi_utils.h"
+#include "errors.h"
 #include "functions.h"
 #include "timer.h"
 #include "hierarchical.h"

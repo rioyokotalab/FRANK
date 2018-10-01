@@ -25,20 +25,22 @@ TEST_CASE("Simple dense matrix block splitting and creation", "dense-only") {
       randx[i] = drand48();
     }
 
-    REQUIRE ( A.get_map() == NULL );
+    REQUIRE ( A.get_map().empty() );
 
     // this will basically duplicate the entire N*N matrix across P*Q processes.
     // the create_dense_block in this case will populate the entire Hierarchical
     //   structure with one huge dense block.
     A.create_dense_block(randx);
 
+    // TODO: comparisons can only happen between blocks. Not between raw data and
+    // matrix types.
     REQUIRE ( A.get_data() == randx );
-  } 
+  }
 
   SECTION("split blocks on single process") {
     Hierarchical A(N, N, NB, NB, P, Q, MPI_COMM_WORLD);
 
-    REQUIRE ( A.get_map() == NULL );
+    REQUIRE ( A.get_map().empty() );
 
     // supply process number on which all the blocks should lie.
     A.single_process_split(0);
@@ -91,7 +93,7 @@ TEST_CASE("Simple dense matrix block splitting and creation", "dense-only") {
     Hierarchical A(N, N, NB, NB, P, Q, MPI_COMM_WORLD);
 
     // initialize map to nil so this matrix is not split yet.
-    REQUIRE ( A.get_map() == NULL );
+    REQUIRE ( A.get_map().empty() );
 
     // split the matrix across P*Q processes.
     A.multi_process_split();

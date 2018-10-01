@@ -99,4 +99,18 @@ namespace hicma {
 
   void Node::gemm(const Node& A, const Node& B) {};
 
+  const block_map_t& Node::get_map(void) const
+  {
+    return this.block_map;
+  };
+
+  void create_dense_block(std::vector<double> &data) {};
+
+  std::vector<Block> get_data(void) {};
+
+  bool has_block(const int i, const int j) const {};
+
+  void single_process_split(const int proc_id) {};
+
+  void multi_process_split(void) {};
 }

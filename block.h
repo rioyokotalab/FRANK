@@ -65,6 +65,10 @@ class Block {
     void gemm(const Block&, const Block&);
     void gemm(const Node&, const Node&);
 };
+
+ // This typedef holds the map that contains the locations of various blocks within
+ //   the matrix. If the Block does not exist, it will be assigned to nullptr.
+ typedef std::map< std::tuple<int, int>, std::tuple<int, Block *> > block_map_t;
 }
 
 #endif
