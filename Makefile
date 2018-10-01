@@ -1,6 +1,7 @@
 CXX = mpicxx -std=c++14 -ggdb3 -Wall -O3 -fopenmp -I.
 
 SOURCES = dense.o id.o low_rank.o hierarchical.o node.o block.o
+TEST_SOURCES = test/test_helper.o test/test_mpi_block_creation.o test/test_mpi_dense_lu.o
 
 .cpp.o:
 	$(CXX) -c $? -o $@
@@ -16,6 +17,10 @@ blr_lu: blr_lu.o $(SOURCES)
 h_lu: h_lu.o $(SOURCES)
 	$(CXX) $? -lblas -llapacke
 	valgrind ./a.out 4
+
+test:  $(TEST_SOURCES) $(SOURCES) 
+	$(CXX) $? -lblas -llapacke
+	mpirun -np 4 ./a.out
 
 clean:
 	$(RM) *.o *.out

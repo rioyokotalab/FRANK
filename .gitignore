@@ -10,3 +10,7 @@ TAGS
 # core dumps
 vgcore.[0-9]*
 
+GPATH
+GRPATH
+GTAGS
+GRTAGS
