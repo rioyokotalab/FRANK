@@ -1,5 +1,7 @@
-#include <iostream>
 #include "node.h"
+
+#include <iostream>
+#include <vector>
 
 namespace hicma {
   Node::Node() : i_abs(0), j_abs(0), level(0) {}
@@ -99,18 +101,13 @@ namespace hicma {
 
   void Node::gemm(const Node& A, const Node& B) {};
 
-  const block_map_t& Node::get_map(void) const
-  {
-    return this.block_map;
+  void Node::create_dense_block(std::vector<double> &data) {};
+
+  bool Node::has_block(const int i, const int j) const {
+    return false;
   };
 
-  void create_dense_block(std::vector<double> &data) {};
+  void Node::single_process_split(const int proc_id) {};
 
-  std::vector<Block> get_data(void) {};
-
-  bool has_block(const int i, const int j) const {};
-
-  void single_process_split(const int proc_id) {};
-
-  void multi_process_split(void) {};
+  void Node::multi_process_split(void) {};
 }

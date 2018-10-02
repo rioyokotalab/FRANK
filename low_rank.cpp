@@ -1,5 +1,13 @@
 #include "low_rank.h"
+
 #include "dense.h"
+#include "id.h"
+
+#include <cstdio>
+#include <iostream>
+#include <vector>
+#include <cassert>
+#include <cstdlib>
 
 namespace hicma {
   LowRank::LowRank() {

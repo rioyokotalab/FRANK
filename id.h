@@ -6,16 +6,7 @@
  * You MUST tranpose V that you get from the ID function after the computation is done.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <cblas.h>
-#include <math.h>
-#include <string.h>
-#include <sys/time.h>
-#include <boost/random.hpp>
-#include <boost/random/normal_distribution.hpp>
-#include <lapacke.h>
+#include <vector>
 
 namespace hicma {
   /*

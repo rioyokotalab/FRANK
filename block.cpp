@@ -1,12 +1,17 @@
 #include "block.h"
+
 #include "node.h"
 #include "hierarchical.h"
 #include "low_rank.h"
 #include "dense.h"
 
+#include <iostream>
 #include <cassert>
+#include <memory>
 
 namespace hicma {
+
+Block::Block() = default;
 
 Block::Block(const Block& lvalue) : ptr(lvalue.ptr->clone()) {}
 Block::Block(Block&& rvalue) : ptr() {
@@ -28,8 +33,11 @@ Block::Block(Node&& ref) {
   }
 }
 
+Block::~Block() = default;
+
 void swap(Block& first, Block& second) {
-  std::swap(first.ptr, second.ptr);
+  using std::swap;
+  swap(first.ptr, second.ptr);
 }
 
 const Block& Block::operator=(Block lvalue) {

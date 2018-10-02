@@ -1,10 +1,15 @@
-#include <algorithm>
-#include <memory>
-#include <cassert>
+#include "hierarchical.h"
+
+#include "block.h"
 #include "node.h"
 #include "dense.h"
 #include "low_rank.h"
-#include "hierarchical.h"
+
+#include <cstdio>
+#include <iostream>
+#include <algorithm>
+#include <memory>
+#include <cassert>
 
 namespace hicma {
   Hierarchical::Hierarchical() {
@@ -110,12 +115,6 @@ namespace hicma {
         }
       }
     }
-  }
-
-  Hierarchical::Hierarchical(const int M, const int N, const int MB,
-                             const int NB, const int P, const int Q, MPI_Comm mpi_comm)
-  {
-    dim[0] = M; dim[1] = N;
   }
 
   Hierarchical::Hierarchical(const Hierarchical& A)
@@ -472,28 +471,13 @@ namespace hicma {
     }
   }
 
-  void Hierarchical::create_dense_block(std::vector<double> &data)
-  {
-    
+  void Hierarchical::create_dense_block(std::vector<double> &data) {};
+
+  bool Hierarchical::has_block(const int i, const int j) const {
+    return false;
   };
 
-  std::vector<Block> get_data(void)
-  {
-    
-  };
+  void Hierarchical::single_process_split(const int proc_id) {};
 
-  bool has_block(const int i, const int j)
-  {
-    
-  };
-
-  void single_process_split(const int proc_id)
-  {
-    
-  };
-
-  void multi_process_split(void)
-  {
-    
-  };
+  void Hierarchical::multi_process_split(void) {};
 }

@@ -1,5 +1,17 @@
 #include "id.h"
 
+#include <vector>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <cblas.h>
+#include <math.h>
+#include <string.h>
+#include <sys/time.h>
+#include <boost/random.hpp>
+#include <boost/random/normal_distribution.hpp>
+#include <lapacke.h>
+
 #define min(x,y) (((x) < (y)) ? (x) : (y))
 #define max(x,y) (((x) > (y)) ? (x) : (y))
 //using namespace std;

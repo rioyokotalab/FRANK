@@ -1,11 +1,11 @@
 #ifndef low_rank_h
 #define low_rank_h
-#include <cassert>
-#include <vector>
 #include "block.h"
-#include "id.h"
 #include "node.h"
 #include "dense.h"
+
+#include <vector>
+
 
 namespace hicma {
   class LowRank : public Node {
@@ -31,6 +31,7 @@ namespace hicma {
 
     LowRank* clone() const override;
 
+    // NOTE: Take care to add members new members to swap
     friend void swap(LowRank& first, LowRank& second);
 
     const Node& operator=(const Node& A) override;

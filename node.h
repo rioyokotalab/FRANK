@@ -1,10 +1,8 @@
 #ifndef node_h
 #define node_h
-#include "mpi_utils.h"
-#include <iostream>
-#include <map>
-#include <tuple>
 #include "block.h"
+
+#include <vector>
 
 namespace hicma {
 
@@ -18,11 +16,13 @@ namespace hicma {
 
   class Node {
   public:
+    /// Row number of the node on the current recursion level
     int i_abs;
+    /// Column number of the node on the current recursion level
     int j_abs;
+    /// Recursion level of the node
     int level;
-    block_map_t block_map;
-    
+
     Node();
     Node(const int _i_abs, const int _j_abs, const int _level);
 
@@ -32,6 +32,7 @@ namespace hicma {
 
     virtual Node* clone() const;
 
+    // NOTE: Take care to add members new members to swap
     friend void swap(Node& first, Node& second);
 
     virtual const Node& operator=(const double a);
@@ -66,11 +67,7 @@ namespace hicma {
 
     virtual void gemm(const Node& A, const Node& B);
 
-    const block_map_t& get_map(void) const;
-
     virtual void create_dense_block(std::vector<double> &data);
-
-    virtual std::vector<Block> get_data(void) const;
 
     virtual bool has_block(const int i, const int j) const;
 

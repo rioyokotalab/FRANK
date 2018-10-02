@@ -1,6 +1,5 @@
 #ifndef block
 #define block
-#include <iostream>
 #include <memory>
 
 namespace hicma {
@@ -11,15 +10,16 @@ class Block {
   public:
     std::unique_ptr<Node> ptr;
 
-    Block() = default;
+    Block();
 
     Block(const Block& ref);
     Block(Block&& ref);
     Block(const Node& ref);
     Block(Node&& ref);
 
-    ~Block() = default;
+    ~Block();
 
+    // NOTE: Take care to add members new members to swap
     friend void swap(Block& first, Block& second);
 
     const Block& operator=(Block val);
@@ -65,10 +65,6 @@ class Block {
     void gemm(const Block&, const Block&);
     void gemm(const Node&, const Node&);
 };
-
- // This typedef holds the map that contains the locations of various blocks within
- //   the matrix. If the Block does not exist, it will be assigned to nullptr.
- typedef std::map< std::tuple<int, int>, std::tuple<int, Block *> > block_map_t;
 }
 
 #endif

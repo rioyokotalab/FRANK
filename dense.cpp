@@ -1,8 +1,14 @@
-#include <iomanip>
-//#include <lapacke.h>
 #include "dense.h"
-#include "low_rank.h"
+
 #include "block.h"
+#include "low_rank.h"
+
+#include <cstdio>
+#include <iostream>
+#include <iomanip>
+#include <cassert>
+#include <lapacke.h>
+#include <cblas.h>
 
 namespace hicma {
   Dense::Dense() {

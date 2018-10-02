@@ -1,12 +1,9 @@
 #ifndef dense_h
 #define dense_h
-#include <cassert>
-#include <cstdio>
-#include <cstdlib>
-#include <iostream>
-#include <vector>
-#include "node.h"
 #include "block.h"
+#include "node.h"
+
+#include <vector>
 
 namespace hicma {
   class Dense : public Node {
@@ -48,6 +45,7 @@ namespace hicma {
 
     Dense* clone() const override;
 
+    // NOTE: Take care to add members new members to swap
     friend void swap(Dense& first, Dense& second);
 
     const Node& operator=(const Node& A) override;

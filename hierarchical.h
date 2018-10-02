@@ -2,6 +2,7 @@
 #define hierarchical_h
 #include "node.h"
 #include "block.h"
+
 #include <vector>
 
 namespace hicma {
@@ -40,9 +41,6 @@ namespace hicma {
                  const int level=0
                  );
 
-    Hierarchical(const int M, const int N, const int MB, const int NB,
-                 const int P, const int Q, MPI_Comm mpi_comm);
-
     Hierarchical(const Hierarchical& A);
     Hierarchical(Hierarchical&& A);
 
@@ -52,6 +50,7 @@ namespace hicma {
 
     Hierarchical* clone() const override;
 
+    // NOTE: Take care to add members new members to swap
     friend void swap(Hierarchical& first, Hierarchical& second);
 
     const Node& operator=(const Node& A) override;
@@ -99,8 +98,6 @@ namespace hicma {
         const int i, const int j, const int k_min, const int k_max);
 
     void create_dense_block(std::vector<double> &data) override;
-
-    std::vector<Block> get_data(void) const override;
 
     bool has_block(const int i, const int j) const override;
 
