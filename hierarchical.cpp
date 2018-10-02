@@ -269,7 +269,7 @@ namespace hicma {
             Out(i, j) += (*this)(i, k) * BR(k, j);
           }
           // If it was LowRank earlier, return it to LowRank now
-          if (rank != -1) {
+          if (rank != -1 && BR.dim[1] >= rank) {
             Out(i, j) = LowRank(Out(i, j), rank);
           }
         }
