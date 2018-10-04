@@ -31,21 +31,22 @@ int main(int argc, char** argv) {
       xi[ib] = randx[Nb*ic+ib];
       bj[ib] = 0;
     }
-    x[ic] = xi;
-    b[ic] = bj;
+    x[ic] = std::move(xi);
+    b[ic] = std::move(bj);
   }
   for (int ic=0; ic<Nc; ic++) {
     for (int jc=0; jc<Nc; jc++) {
       Dense Aij(laplace1d, randx, Nb, Nb, Nb*ic, Nb*jc);
-      Dense& b_ic_r = static_cast<Dense&>(b[ic]);
-      Dense& x_jc_r = static_cast<Dense&>(x[jc]);
+      Dense b_ic_r = b[ic];
+      Dense x_jc_r = x[jc];
       for (int ib=0; ib<Nb; ib++) {
         for (int jb=0; jb<Nb; jb++) {
           b_ic_r[ib] += Aij(ib,jb) * x_jc_r[jb];
         }
       }
+      b[ic] = std::move(b_ic_r);
       if (std::abs(ic - jc) <= 1) {
-        A(ic,jc) = Aij;
+        A(ic,jc) = std::move(Aij);
       }
       else {
         A(ic,jc) = LowRank(Aij, rank);
@@ -95,7 +96,7 @@ int main(int argc, char** argv) {
 
   double diff = 0, norm = 0;
   for (int ic=0; ic<Nc; ic++) {
-    diff += (x[ic] - b[ic])->norm();
+    diff += (x[ic] - b[ic]).norm();
     norm += x[ic].norm();
   }
   print("Accuracy");
