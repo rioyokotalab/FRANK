@@ -54,8 +54,8 @@ namespace hicma {
     dim[0] = std::min(ni_level,ni);
     dim[1] = std::min(nj_level,nj);
     data.resize(dim[0]*dim[1]);
-    for ( int i=0; i<dim[0]; i++ ) {
-      for ( int j=0; j<dim[1]; j++ ) {
+    for (int i=0; i<dim[0]; i++) {
+      for (int j=0; j<dim[1]; j++) {
         int ni_child = ni/dim[0];
         if ( i == dim[0]-1 ) ni_child = ni - (ni/dim[0]) * (dim[0]-1);
         int nj_child = nj/dim[1];
@@ -71,68 +71,69 @@ namespace hicma {
             || (nj == 1 || ni == 1) /* Check if vector */ ) { // TODO: use x in admissibility condition
           if ( ni_child <= nleaf && nj_child <= nleaf ) {
             (*this).data[i*dim[1]+j] = Dense(
-                func,
-                x,
-                ni_child,
-                nj_child,
-                i_begin_child,
-                j_begin_child,
-                i_abs_child,
-                j_abs_child,
-                level+1);
+                                             func,
+                                             x,
+                                             ni_child,
+                                             nj_child,
+                                             i_begin_child,
+                                             j_begin_child,
+                                             i_abs_child,
+                                             j_abs_child,
+                                             level+1);
           }
           else {
             (*this).data[i*dim[1]+j] = Hierarchical(
-                func,
-                x,
-                ni_child,
-                nj_child,
-                rank,
-                nleaf,
-                admis,
-                ni_level,
-                nj_level,
-                i_begin_child,
-                j_begin_child,
-                i_abs_child,
-                j_abs_child,
-                level+1);
+                                                    func,
+                                                    x,
+                                                    ni_child,
+                                                    nj_child,
+                                                    rank,
+                                                    nleaf,
+                                                    admis,
+                                                    ni_level,
+                                                    nj_level,
+                                                    i_begin_child,
+                                                    j_begin_child,
+                                                    i_abs_child,
+                                                    j_abs_child,
+                                                    level+1);
           }
         }
         else {
           (*this).data[i*dim[1]+j] = LowRank(
-            Dense(
-                  func,
-                  x,
-                  ni_child,
-                  nj_child,
-                  i_begin_child,
-                  j_begin_child,
-                  i_abs_child,
-                  j_abs_child,
-                  level+1)
-            , rank);// TODO : create a LowRank constructor that does ID with x
+                                             Dense(
+                                                   func,
+                                                   x,
+                                                   ni_child,
+                                                   nj_child,
+                                                   i_begin_child,
+                                                   j_begin_child,
+                                                   i_abs_child,
+                                                   j_abs_child,
+                                                   level+1)
+                                             , rank);// TODO : create a LowRank constructor that does ID with x
         }
       }
     }
   }
 
   Hierarchical::Hierarchical(const Hierarchical& A)
-  : Node(A.i_abs,A.j_abs,A.level), data(A.data) {
+    : Node(A.i_abs,A.j_abs,A.level), data(A.data) {
     dim[0]=A.dim[0]; dim[1]=A.dim[1];
   }
+
   Hierarchical::Hierarchical(Hierarchical&& A) {
     swap(*this, A);
   }
 
   Hierarchical::Hierarchical(const Hierarchical* A)
-  : Node(A->i_abs,A->j_abs,A->level), data(A->data) {
+    : Node(A->i_abs,A->j_abs,A->level), data(A->data) {
     dim[0]=A->dim[0]; dim[1]=A->dim[1];
     data = A->data;
   }
 
   Hierarchical::Hierarchical(const Block& A)
-  : Node((*A.ptr).i_abs, (*A.ptr).j_abs, (*A.ptr).level) {
+    : Node((*A.ptr).i_abs, (*A.ptr).j_abs, (*A.ptr).level) {
     assert(A.is(HICMA_HIERARCHICAL));
     Hierarchical& ref = static_cast<Hierarchical&>(*A.ptr);
     dim[0]=ref.dim[0]; dim[1]=ref.dim[1];
@@ -143,28 +144,28 @@ namespace hicma {
     return new Hierarchical(*this);
   }
 
-  void swap(Hierarchical& first, Hierarchical& second) {
+  void swap(Hierarchical& A, Hierarchical& B) {
     using std::swap;
-    swap(first.data, second.data);
-    swap(first.dim, second.dim);
-    swap(first.i_abs, second.i_abs);
-    swap(first.j_abs, second.j_abs);
-    swap(first.level, second.level);
+    swap(A.data, B.data);
+    swap(A.dim, B.dim);
+    swap(A.i_abs, B.i_abs);
+    swap(A.j_abs, B.j_abs);
+    swap(A.level, B.level);
   }
 
   const Node& Hierarchical::operator=(const Node& A) {
     if (A.is(HICMA_HIERARCHICAL)) {
       // This can be avoided if Node has data and dim members!
-      const Hierarchical& AR = static_cast<const Hierarchical&>(A);
-      dim[0]=AR.dim[0]; dim[1]=AR.dim[1];
+      const Hierarchical& B = static_cast<const Hierarchical&>(A);
+      dim[0]=B.dim[0]; dim[1]=B.dim[1];
       data.resize(dim[0]*dim[1]);
       // TODO Explicit constructor is called here! Make sure it's done right,
       // including inheritance
-      data = AR.data;
+      data = B.data;
       return *this;
     } else {
-      std::cout << this->is_string() << " = " << A.is_string();
-      std::cout << " not implemented!" << std::endl;
+      std::cerr << this->is_string() << " = " << A.is_string();
+      std::cerr << " is undefined." << std::endl;
       return *this;
     }
   }
@@ -174,8 +175,8 @@ namespace hicma {
       swap(*this, static_cast<Hierarchical&>(A));
       return *this;
     } else {
-      std::cout << this->is_string() << " = " << A.is_string();
-      std::cout << " not implemented!" << std::endl;
+      std::cerr << this->is_string() << " = " << A.is_string();
+      std::cerr << " is undefined." << std::endl;
       return *this;
     }
   }
@@ -198,97 +199,103 @@ namespace hicma {
     return *this;
   }
 
-  Block Hierarchical::operator+(const Node& B) const {
-    Block Out(*this);
-    Out += B;
-    return Out;
+  Block Hierarchical::operator+(const Node& A) const {
+    Block B(*this);
+    B += A;
+    return B;
   }
-  Block Hierarchical::operator+(Block&& B) const {
-    return *this + *B.ptr;
+
+  Block Hierarchical::operator+(Block&& A) const {
+    return *this + *A.ptr;
   }
-  const Node& Hierarchical::operator+=(const Node& B) {
-    if (B.is(HICMA_HIERARCHICAL)) {
-      const Hierarchical& BR = static_cast<const Hierarchical&>(B);
-      assert(dim[0]==BR.dim[0] && dim[1]==BR.dim[1]);
+  const Node& Hierarchical::operator+=(const Node& A) {
+    if (A.is(HICMA_HIERARCHICAL)) {
+      const Hierarchical& B = static_cast<const Hierarchical&>(A);
+      assert(dim[0]==B.dim[0] && dim[1]==B.dim[1]);
       for (int i=0; i<dim[0]; i++)
         for (int j=0; j<dim[1]; j++)
-          (*this)(i, j) += BR(i, j);
+          (*this)(i, j) += B(i, j);
       return *this;
     } else {
-      std::cout << this->is_string() << " + " << B.is_string();
-      std::cout << " is undefined!" << std::endl;
+      std::cerr << this->is_string() << " + " << A.is_string();
+      std::cerr << " is undefined." << std::endl;
       return *this;
     }
   }
-  const Node& Hierarchical::operator+=(Block&& B) {
-    return *this += *B.ptr;
+  const Node& Hierarchical::operator+=(Block&& A) {
+    return *this += *A.ptr;
   }
 
-  Block Hierarchical::operator-(const Node& B) const {
-    Block Out(*this);
-    Out -= B;
-    return Out;
+  Block Hierarchical::operator-(const Node& A) const {
+    Block B(*this);
+    B -= A;
+    return B;
   }
-  Block Hierarchical::operator-(Block&& B) const {
-    return *this - *B.ptr;
+
+  Block Hierarchical::operator-(Block&& A) const {
+    return *this - *A.ptr;
   }
-  const Node& Hierarchical::operator-=(const Node& B) {
-    if (B.is(HICMA_HIERARCHICAL)) {
-      const Hierarchical& BR = static_cast<const Hierarchical&>(B);
-      assert(dim[0]==BR.dim[0] && dim[1]==BR.dim[1]);
+
+  const Node& Hierarchical::operator-=(const Node& A) {
+    if (A.is(HICMA_HIERARCHICAL)) {
+      const Hierarchical& B = static_cast<const Hierarchical&>(A);
+      assert(dim[0]==B.dim[0] && dim[1]==B.dim[1]);
       for (int i=0; i<dim[0]; i++)
         for (int j=0; j<dim[1]; j++)
-          (*this)(i, j) -= BR(i, j);
+          (*this)(i, j) -= B(i, j);
       return *this;
     } else {
-      std::cout << this->is_string() << " - " << B.is_string();
-      std::cout << " is undefined!" << std::endl;
+      std::cerr << this->is_string() << " - " << A.is_string();
+      std::cerr << " is undefined." << std::endl;
       return *this;
     }
   }
-  const Node& Hierarchical::operator-=(Block&& B) {
-    return *this -= *B.ptr;
+
+  const Node& Hierarchical::operator-=(Block&& A) {
+    return *this -= *A.ptr;
   }
 
-  Block Hierarchical::operator*(const Node& B) const {
-    if (B.is(HICMA_HIERARCHICAL)) {
-      const Hierarchical& BR = static_cast<const Hierarchical&>(B);
-      assert(dim[1] == BR.dim[0]);
-      Hierarchical Out(dim[0], BR.dim[1]);
+  Block Hierarchical::operator*(const Node& A) const {
+    if (A.is(HICMA_HIERARCHICAL)) {
+      const Hierarchical& B = static_cast<const Hierarchical&>(A);
+      assert(dim[1] == B.dim[0]);
+      Hierarchical C(dim[0], B.dim[1]);
       for (int i=0; i<dim[0]; i++) {
-        for (int j=0; j<BR.dim[1]; j++) {
-          Out(i, j) = (*this)(i, 0) * BR(0, j);
+        for (int j=0; j<B.dim[1]; j++) {
+          C(i, j) = (*this)(i, 0) * B(0, j);
           int rank = -1;
           // Avoid unnecessary recompression by making it dense now
           // and later recompressing it only once
-          if (Out(i, j).is(HICMA_LOWRANK)) {
-            rank = static_cast<LowRank&>(*Out(i, j).ptr).rank;
-            Out(i, j) = static_cast<LowRank&>(*Out(i, j).ptr).dense();
+          if (C(i, j).is(HICMA_LOWRANK)) {
+            rank = static_cast<LowRank&>(*C(i, j).ptr).rank;
+            C(i, j) = static_cast<LowRank&>(*C(i, j).ptr).dense();
           }
           for (int k=1; k<dim[1]; k++) {
-            Out(i, j) += (*this)(i, k) * BR(k, j);
+            C(i, j) += (*this)(i, k) * B(k, j);
           }
           // If it was LowRank earlier, return it to LowRank now
-          if (rank != -1 && BR.dim[1] >= rank) {
-            Out(i, j) = LowRank(Out(i, j), rank);
+          if (rank != -1 && B.dim[1] >= rank) {
+            C(i, j) = LowRank(C(i, j), rank);
           }
         }
       }
-      return Out;
+      return C;
     } else {
-      std::cout << this->is_string() << " * " << B.is_string();
-      std::cout << " is undefined!" << std::endl;
+      std::cerr << this->is_string() << " * " << A.is_string();
+      std::cerr << " is undefined." << std::endl;
       return Block();
     }
   }
-  Block Hierarchical::operator*(Block&& B) const {
-    return *this * *B.ptr;
+
+  Block Hierarchical::operator*(Block&& A) const {
+    return *this * *A.ptr;
   }
 
   const Node& Hierarchical::operator[](const int i) const {
     assert(i<dim[0]*dim[1]);
     return *data[i].ptr;
   }
+
   Block& Hierarchical::operator[](const int i) {
     assert(i<dim[0]*dim[1]);
     return data[i];
@@ -298,6 +305,7 @@ namespace hicma {
     assert(i<dim[0] && j<dim[1]);
     return *data[i*dim[1]+j].ptr;
   }
+
   Block& Hierarchical::operator()(const int i, const int j) {
     assert(i<dim[0] && j<dim[1]);
     return data[i*dim[1]+j];
@@ -358,27 +366,28 @@ namespace hicma {
 
   void Hierarchical::trsm(const Node& A, const char& uplo) {
     if (A.is(HICMA_HIERARCHICAL)) {
-      const Hierarchical& AR = static_cast<const Hierarchical&>(A);
+      const Hierarchical& B = static_cast<const Hierarchical&>(A);
       if (dim[1] == 1) {
         switch (uplo) {
         case 'l' :
           for (int i=0; i<dim[0]; i++) {
             for (int j=0; j<i; j++) {
-              (*this)[i].gemm(AR(i,j), (*this)[j]);
+              (*this)[i].gemm(B(i,j), (*this)[j]);
             }
-            (*this)[i].trsm(AR(i,i),'l');
+            (*this)[i].trsm(B(i,i),'l');
           }
           break;
         case 'u' :
           for (int i=dim[0]-1; i>=0; i--) {
             for (int j=dim[0]-1; j>i; j--) {
-              (*this)[i].gemm(AR(i,j), (*this)[j]);
+              (*this)[i].gemm(B(i,j), (*this)[j]);
             }
-            (*this)[i].trsm(AR(i,i),'u');
+            (*this)[i].trsm(B(i,i),'u');
           }
           break;
         default :
-          fprintf(stderr,"Second argument must be 'l' for lower, 'u' for upper.\n"); abort();
+          std::cerr << "Second argument must be 'l' for lower, 'u' for upper." << std::endl;
+          abort();
         }
       }
       else {
@@ -389,11 +398,11 @@ namespace hicma {
             // Loop over rows, getting new results
             for (int i=0; i<dim[0]; i++) {
               // Loop over previously calculated row, accumulate results
-              (*this).gemm_row(AR, *this, i, j, 0, i);
+              (*this).gemm_row(B, *this, i, j, 0, i);
               // for (int i_old=0; i_old<i; i_old++) {
-              //   (*this)(i,j).gemm(AR(i,i_old), (*this)(i_old,j));
+              //   (*this)(i,j).gemm(B(i,i_old), (*this)(i_old,j));
               // }
-              (*this)(i,j).trsm(AR(i,i),'l');
+              (*this)(i,j).trsm(B(i,i),'l');
             }
           }
           break;
@@ -403,59 +412,57 @@ namespace hicma {
             // Loop over cols, getting new results
             for (int j=0; j<dim[1]; j++) {
               // Loop over previously calculated col, accumulate results
-              (*this).gemm_row(*this, AR, i, j, 0, j);
+              (*this).gemm_row(*this, B, i, j, 0, j);
               // for (int j_old=0; j_old<j; j_old++) {
-              //   (*this)(i,j).gemm((*this)(i,j_old),AR(j_old,j));
+              //   (*this)(i,j).gemm((*this)(i,j_old),B(j_old,j));
               // }
-              (*this)(i,j).trsm(AR(j,j),'u');
+              (*this)(i,j).trsm(B(j,j),'u');
             }
           }
           break;
         default :
-          fprintf(stderr,"Second argument must be 'l' for lower, 'u' for upper.\n"); abort();
+          std::cerr << "Second argument must be 'l' for lower, 'u' for upper." << std::endl;
+          abort();
         }
       }
     } else {
-      fprintf(
-          stderr,"%s /= %s undefined.\n",
-          this->is_string(), A.is_string());
+      std::cerr << this->is_string() << " /= " << A.is_string();
+      std::cerr << " is undefined." << std::endl;
       abort();
     }
   }
 
   void Hierarchical::gemm(const Node& A, const Node& B) {
     if (A.is(HICMA_HIERARCHICAL)) {
-      const Hierarchical& AR = static_cast<const Hierarchical&>(A);
+      const Hierarchical& C = static_cast<const Hierarchical&>(A);
       if (B.is(HICMA_HIERARCHICAL)) {
-        const Hierarchical& BR = static_cast<const Hierarchical&>(B);
-        assert(dim[0]==AR.dim[0] && dim[1]==BR.dim[1]);
-        assert(AR.dim[1] == BR.dim[0]);
+        const Hierarchical& D = static_cast<const Hierarchical&>(B);
+        assert(dim[0]==C.dim[0] && dim[1]==D.dim[1]);
+        assert(C.dim[1] == D.dim[0]);
         for (int i=0; i<dim[0]; i++) {
           for (int j=0; j<dim[1]; j++) {
-            (*this).gemm_row(AR, BR, i, j, 0, AR.dim[1]);
-            // for (int k=0; k<AR.dim[1]; k++) {
-            //   (*this)(i,j).gemm(AR(i,k), BR(k,j));
+            (*this).gemm_row(C, D, i, j, 0, C.dim[1]);
+            // for (int k=0; k<C.dim[1]; k++) {
+            //   (*this)(i,j).gemm(C(i,k), D(k,j));
             // }
           }
         }
       } else {
-        fprintf(
-            stderr,"%s += %s * %s undefined.\n",
-            this->is_string(), A.is_string(), B.is_string());
+        std::cerr << this->is_string() << " -= " << A.is_string();
+        std::cerr << " * " << B.is_string() << " is undefined." << std::endl;
         abort();
       }
     } else {
-      fprintf(
-          stderr,"%s += %s * %s undefined.\n",
-          this->is_string(), A.is_string(), B.is_string());
+      std::cerr << this->is_string() << " -= " << A.is_string();
+      std::cerr << " * " << B.is_string() << " is undefined." << std::endl;
       abort();
     }
   }
 
   // TODO: Check if this really avoids recompression
   void Hierarchical::gemm_row(
-      const Hierarchical& A, const Hierarchical& B,
-      const int i, const int j, const int k_min, const int k_max)
+                              const Hierarchical& A, const Hierarchical& B,
+                              const int i, const int j, const int k_min, const int k_max)
   {
     int rank = -1;
     if ((*this)(i, j).is(HICMA_LOWRANK)) {
@@ -470,14 +477,4 @@ namespace hicma {
       (*this)(i, j) = LowRank((*this)(i, j), rank);
     }
   }
-
-  void Hierarchical::create_dense_block(std::vector<double> &data) {};
-
-  bool Hierarchical::has_block(const int i, const int j) const {
-    return false;
-  };
-
-  void Hierarchical::single_process_split(const int proc_id) {};
-
-  void Hierarchical::multi_process_split(void) {};
 }

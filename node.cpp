@@ -6,12 +6,13 @@
 namespace hicma {
   Node::Node() : i_abs(0), j_abs(0), level(0) {}
   Node::Node(
-      const int _i_abs,
-      const int _j_abs,
-      const int _level) : i_abs(_i_abs), j_abs(_j_abs), level(_level) {}
+             const int _i_abs,
+             const int _j_abs,
+             const int _level)
+    : i_abs(_i_abs), j_abs(_j_abs), level(_level) {}
 
   Node::Node(const Node& ref)
-  : i_abs(ref.i_abs), j_abs(ref.j_abs), level(ref.level) {}
+    : i_abs(ref.i_abs), j_abs(ref.j_abs), level(ref.level) {}
 
   Node::~Node() {};
 
@@ -41,44 +42,54 @@ namespace hicma {
     return *this = *A.ptr;
   }
 
-  Block Node::operator+(const Node& B) const {
-    std::cout << "Not implemented!!" << std::endl; abort();
+  Block Node::operator+(const Node& A) const {
+    std::cerr << "Operations should not be performed between two node types." << std::endl;
+    abort();
     return Block();
   };
-  Block Node::operator+(Block&& B) const {
-    std::cout << "Not implemented!!" << std::endl; abort();
+  Block Node::operator+(Block&& A) const {
+    std::cerr << "Operations should not be performed between two node types." << std::endl;
+    abort();
     return Block();
   };
-  const Node& Node::operator+=(const Node& B) {
-    std::cout << "Not implemented!!" << std::endl; abort();
+  const Node& Node::operator+=(const Node& A) {
+    std::cerr << "Operations should not be performed between two node types." << std::endl;
+    abort();
     return *this;
   };
-  const Node& Node::operator+=(Block&& B) {
-    std::cout << "Not implemented!!" << std::endl; abort();
+  const Node& Node::operator+=(Block&& A) {
+    std::cerr << "Operations should not be performed between two node types." << std::endl;
+    abort();
     return *this;
   };
-  Block Node::operator-(const Node& B) const {
-    std::cout << "Not implemented!!" << std::endl; abort();
+  Block Node::operator-(const Node& A) const {
+    std::cerr << "Operations should not be performed between two node types." << std::endl;
+    abort();
     return Block();
   };
-  Block Node::operator-(Block&& B) const {
-    std::cout << "Not implemented!!" << std::endl; abort();
+  Block Node::operator-(Block&& A) const {
+    std::cerr << "Operations should not be performed between two node types." << std::endl;
+    abort();
     return Block();
   };
-  const Node& Node::operator-=(const Node& B) {
-    std::cout << "Not implemented!!" << std::endl; abort();
+  const Node& Node::operator-=(const Node& A) {
+    std::cerr << "Operations should not be performed between two node types." << std::endl;
+    abort();
     return *this;
   };
-  const Node& Node::operator-=(Block&& B) {
-    std::cout << "Not implemented!!" << std::endl; abort();
+  const Node& Node::operator-=(Block&& A) {
+    std::cerr << "Operations should not be performed between two node types." << std::endl;
+    abort();
     return *this;
   };
-  Block Node::operator*(const Node& B) const {
-    std::cout << "Not implemented!!" << std::endl; abort();
+  Block Node::operator*(const Node& A) const {
+    std::cerr << "Operations should not be performed between two node types." << std::endl;
+    abort();
     return Block();
   };
-  Block Node::operator*(Block&& B) const {
-    std::cout << "Not implemented!!" << std::endl; abort();
+  Block Node::operator*(Block&& A) const {
+    std::cerr << "Operations should not be performed between two node types." << std::endl;
+    abort();
     return Block();
   };
 
@@ -89,7 +100,7 @@ namespace hicma {
   const char* Node::is_string() const { return "Node"; }
 
   double Node::norm() const {
-    std::cout << "Not implemented!!" << std::endl; abort();
+    std::cerr << "No norm for Node type." << std::endl; abort();
     return 0.0;
   };
 
@@ -100,14 +111,4 @@ namespace hicma {
   void Node::trsm(const Node& A, const char& uplo) {};
 
   void Node::gemm(const Node& A, const Node& B) {};
-
-  void Node::create_dense_block(std::vector<double> &data) {};
-
-  bool Node::has_block(const int i, const int j) const {
-    return false;
-  };
-
-  void Node::single_process_split(const int proc_id) {};
-
-  void Node::multi_process_split(void) {};
 }

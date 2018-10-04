@@ -35,7 +35,9 @@ namespace hicma {
     friend void swap(LowRank& first, LowRank& second);
 
     const Node& operator=(const Node& A) override;
+
     const Node& operator=(Node&& A) override;
+
     const LowRank& operator=(LowRank A);
 
     const Node& operator=(Block A) override;
@@ -44,16 +46,25 @@ namespace hicma {
 
     LowRank operator-() const;
 
-    Block operator+(const Node& B) const override;
-    Block operator+(Block&& B) const override;
-    const Node& operator+=(const Node& B) override;
-    const Node& operator+=(Block&& B) override;
-    Block operator-(const Node& B) const override;
-    Block operator-(Block&& B) const override;
-    const Node& operator-=(const Node& B) override;
-    const Node& operator-=(Block&& B) override;
-    Block operator*(const Node& B) const override;
-    Block operator*(Block&& B) const override;
+    Block operator+(const Node& A) const override;
+
+    Block operator+(Block&& A) const override;
+
+    const Node& operator+=(const Node& A) override;
+
+    const Node& operator+=(Block&& A) override;
+
+    Block operator-(const Node& A) const override;
+
+    Block operator-(Block&& A) const override;
+
+    const Node& operator-=(const Node& A) override;
+
+    const Node& operator-=(Block&& A) override;
+
+    Block operator*(const Node& A) const override;
+
+    Block operator*(Block&& A) const override;
 
     const bool is(const int enum_id) const override;
 

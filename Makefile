@@ -16,9 +16,9 @@ blr_lu: blr_lu.o $(SOURCES)
 
 h_lu: h_lu.o $(SOURCES)
 	$(CXX) $? -lblas -llapacke
-	valgrind ./a.out 4
+	valgrind ./a.out 6
 
-test:  $(TEST_SOURCES) $(SOURCES) 
+test:  $(TEST_SOURCES) $(SOURCES)
 	$(CXX) $? -lblas -llapacke
 	mpirun -np 4 ./a.out
 

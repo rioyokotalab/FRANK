@@ -24,6 +24,7 @@ namespace hicma {
     int level;
 
     Node();
+
     Node(const int _i_abs, const int _j_abs, const int _level);
 
     Node(const Node& ref);
@@ -38,20 +39,30 @@ namespace hicma {
     virtual const Node& operator=(const double a);
 
     virtual const Node& operator=(const Node& A);
+
     virtual const Node& operator=(Node&& A);
 
     virtual const Node& operator=(Block A);
 
-    virtual Block operator+(const Node& B) const;
-    virtual Block operator+(Block&& B) const;
-    virtual const Node& operator+=(const Node& B);
-    virtual const Node& operator+=(Block&& B);
-    virtual Block operator-(const Node& B) const;
-    virtual Block operator-(Block&& B) const;
-    virtual const Node& operator-=(const Node& B);
-    virtual const Node& operator-=(Block&& B);
-    virtual Block operator*(const Node& B) const;
-    virtual Block operator*(Block&& B) const;
+    virtual Block operator+(const Node& A) const;
+
+    virtual Block operator+(Block&& A) const;
+
+    virtual const Node& operator+=(const Node& A);
+
+    virtual const Node& operator+=(Block&& A);
+
+    virtual Block operator-(const Node& A) const;
+
+    virtual Block operator-(Block&& A) const;
+
+    virtual const Node& operator-=(const Node& A);
+
+    virtual const Node& operator-=(Block&& A);
+
+    virtual Block operator*(const Node& A) const;
+
+    virtual Block operator*(Block&& A) const;
 
     virtual const bool is(const int enum_id) const;
 
@@ -66,14 +77,6 @@ namespace hicma {
     virtual void trsm(const Node& A, const char& uplo);
 
     virtual void gemm(const Node& A, const Node& B);
-
-    virtual void create_dense_block(std::vector<double> &data);
-
-    virtual bool has_block(const int i, const int j) const;
-
-    virtual void single_process_split(const int proc_id);
-
-    virtual void multi_process_split(void);
   };
 }
 #endif

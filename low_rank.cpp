@@ -33,18 +33,18 @@ namespace hicma {
 
   // TODO: This constructor is called A LOT. Work that out
   LowRank::LowRank(
-               const Block& A,
-               const int k
-               ) : Node(A.ptr->i_abs,A.ptr->j_abs,A.ptr->level){
+                   const Block& A,
+                   const int k
+                   ) : Node(A.ptr->i_abs,A.ptr->j_abs,A.ptr->level) {
     assert(A.is(HICMA_DENSE));
-    const Dense& AR = static_cast<Dense&>(*A.ptr);
-    int m = dim[0] = AR.dim[0];
-    int n = dim[1] = AR.dim[1];
+    const Dense& B = static_cast<Dense&>(*A.ptr);
+    int m = dim[0] = B.dim[0];
+    int n = dim[1] = B.dim[1];
     rank = k;
     U = Dense(m,k);
     S = Dense(k,k);
     V = Dense(k,n);
-    randomized_low_rank_svd2(AR.data, rank, U.data, S.data, V.data, m, n);
+    randomized_low_rank_svd2(B.data, rank, U.data, S.data, V.data, m, n);
   }
 
   LowRank::LowRank(const LowRank& A) : Node(A.i_abs,A.j_abs,A.level), U(A.U), S(A.S), V(A.V) {
@@ -63,30 +63,31 @@ namespace hicma {
     return new LowRank(*this);
   }
 
-  void swap(LowRank& first, LowRank& second) {
+  void swap(LowRank& A, LowRank& B) {
     using std::swap;
-    swap(first.U, second.U);
-    swap(first.S, second.S);
-    swap(first.V, second.V);
-    swap(first.dim, second.dim);
-    swap(first.i_abs, second.i_abs);
-    swap(first.j_abs, second.j_abs);
-    swap(first.level, second.level);
-    swap(first.rank, second.rank);
+    swap(A.U, B.U);
+    swap(A.S, B.S);
+    swap(A.V, B.V);
+    swap(A.dim, B.dim);
+    swap(A.i_abs, B.i_abs);
+    swap(A.j_abs, B.j_abs);
+    swap(A.level, B.level);
+    swap(A.rank, B.rank);
   }
 
   const Node& LowRank::operator=(const Node& A) {
     if (A.is(HICMA_LOWRANK)) {
-      const LowRank& AR = static_cast<const LowRank&>(A);
-      assert(dim[0]==AR.dim[0] && dim[1]==AR.dim[1] && rank==AR.rank);
-      dim[0]=AR.dim[0]; dim[1]=AR.dim[1]; rank=AR.rank;
-      U = AR.U;
-      S = AR.S;
-      V = AR.V;
+      const LowRank& B = static_cast<const LowRank&>(A);
+      assert(dim[0]==B.dim[0] && dim[1]==B.dim[1] && rank==B.rank);
+      dim[0]=B.dim[0]; dim[1]=B.dim[1]; rank=B.rank;
+      U = B.U;
+      S = B.S;
+      V = B.V;
       return *this;
     } else {
-      std::cout << this->is_string() << " = " << A.is_string();
-      std::cout << " not implemented!" << std::endl;
+      std::cerr << this->is_string() << " = " << A.is_string();
+      std::cerr << " is undefined." << std::endl;
+      abort();
       return *this;
     }
   }
@@ -96,8 +97,9 @@ namespace hicma {
       swap(*this, static_cast<LowRank&>(A));
       return *this;
     } else {
-      std::cout << this->is_string() << " = " << A.is_string();
-      std::cout << " not implemented!" << std::endl;
+      std::cerr << this->is_string() << " = " << A.is_string();
+      std::cerr << " is undefined." << std::endl;
+      abort();
       return *this;
     }
   }
@@ -127,101 +129,105 @@ namespace hicma {
     return A;
   }
 
-  Block LowRank::operator+(const Node& B) const {
-    Block Out(*this);
-    Out += B;
-    return Out;
+  Block LowRank::operator+(const Node& A) const {
+    Block B(*this);
+    B += A;
+    return B;
   }
-  Block LowRank::operator+(Block&& B) const {
-    return *this + *B.ptr;
+
+  Block LowRank::operator+(Block&& A) const {
+    return *this + *A.ptr;
   }
-  const Node& LowRank::operator+=(const Node& B) {
-    if (B.is(HICMA_LOWRANK)) {
-      const LowRank& BR = static_cast<const LowRank&>(B);
-      assert(dim[0]==BR.dim[0] && dim[1]==BR.dim[1]);
-      if (rank+BR.rank >= dim[0]) {
-        *this = LowRank(this->dense() + BR.dense(), rank);
-      }
-      else {
-        mergeU(*this, BR);
-        mergeS(*this, BR);
-        mergeV(*this, BR);
+
+  const Node& LowRank::operator+=(const Node& A) {
+    if (A.is(HICMA_DENSE)) {
+      const Dense& B = static_cast<const Dense&>(A);
+      assert(dim[0]==B.dim[0] && dim[1]==B.dim[1]);
+      return this->dense() += B;
+    } else if (A.is(HICMA_LOWRANK)) {
+      const LowRank& B = static_cast<const LowRank&>(A);
+      assert(dim[0]==B.dim[0] && dim[1]==B.dim[1]);
+      if (rank+B.rank >= dim[0]) {
+        *this = LowRank(this->dense() + B.dense(), rank);
+      } else {
+        mergeU(*this, B);
+        mergeS(*this, B);
+        mergeV(*this, B);
       }
       return *this;
-    } else if(B.is(HICMA_DENSE)) {
-      const Dense& BR = static_cast<const Dense&>(B);
-      assert(dim[0]==BR.dim[0] && dim[1]==BR.dim[1]);
-      return this->dense() += BR;
     } else {
-      std::cout << this->is_string() << " + " << B.is_string();
-      std::cout << " is undefined!" << std::endl;
+      std::cerr << this->is_string() << " + " << A.is_string();
+      std::cerr << " is undefined." << std::endl;
+      abort();
       return *this;
     }
   }
-  const Node& LowRank::operator+=(Block&& B) {
-    return *this += *B.ptr;
+
+  const Node& LowRank::operator+=(Block&& A) {
+    return *this += *A.ptr;
   }
 
-  Block LowRank::operator-(const Node& B) const {
-    Block Out(*this);
-    Out -= B;
-    return Out;
+  Block LowRank::operator-(const Node& A) const {
+    Block B(*this);
+    B -= A;
+    return B;
   }
-  Block LowRank::operator-(Block&& B) const {
-    return *this - *B.ptr;
+  Block LowRank::operator-(Block&& A) const {
+    return *this - *A.ptr;
   }
-  const Node& LowRank::operator-=(const Node& B) {
-    if (B.is(HICMA_LOWRANK)) {
-      const LowRank& BR = static_cast<const LowRank&>(B);
-      assert(dim[0]==BR.dim[0] && dim[1]==BR.dim[1]);
-      if (rank+BR.rank >= dim[0]) {
-        *this = LowRank(this->dense() - BR.dense(), rank);
-      }
-      else {
-        mergeU(*this, -BR);
-        mergeS(*this, -BR);
-        mergeV(*this, -BR);
+  const Node& LowRank::operator-=(const Node& A) {
+    if(A.is(HICMA_DENSE)) {
+      const Dense& B = static_cast<const Dense&>(A);
+      assert(dim[0]==B.dim[0] && dim[1]==B.dim[1]);
+      return this->dense() -= B;
+    } else if (A.is(HICMA_LOWRANK)) {
+      const LowRank& B = static_cast<const LowRank&>(A);
+      assert(dim[0]==B.dim[0] && dim[1]==B.dim[1]);
+      if (rank+B.rank >= dim[0]) {
+        *this = LowRank(this->dense() - B.dense(), rank);
+      } else {
+        mergeU(*this, -B);
+        mergeS(*this, -B);
+        mergeV(*this, -B);
       }
       return *this;
-    } else if(B.is(HICMA_DENSE)) {
-      const Dense& BR = static_cast<const Dense&>(B);
-      assert(dim[0]==BR.dim[0] && dim[1]==BR.dim[1]);
-      return this->dense() -= BR;
     } else {
-      std::cout << this->is_string() << " + " << B.is_string();
-      std::cout << " is undefined!" << std::endl;
+      std::cerr << this->is_string() << " + " << A.is_string();
+      std::cerr << " is undefined." << std::endl;
+      abort();
       return *this;
     }
   }
-  const Node& LowRank::operator-=(Block&& B) {
-    return *this -= *B.ptr;
+  const Node& LowRank::operator-=(Block&& A) {
+    return *this -= *A.ptr;
   }
 
-  Block LowRank::operator*(const Node& B) const {
-    if (B.is(HICMA_LOWRANK)) {
-      const LowRank& BR = static_cast<const LowRank&>(B);
-      assert(dim[1] == BR.dim[0]);
-      LowRank Out(dim[0], BR.dim[1], rank);
-      Out.U = U;
-      Out.S = S * (V * BR.U) * BR.S;
-      Out.V = BR.V;
-      return Out;
-    } else if(B.is(HICMA_DENSE)) {
-      const Dense& BR = static_cast<const Dense&>(B);
-      assert(dim[1] == BR.dim[0]);
-      LowRank Out(dim[0], BR.dim[1], rank);
-      Out.U = U;
-      Out.S = S;
-      Out.V = V * B;
-      return Out;
+  Block LowRank::operator*(const Node& A) const {
+    if(A.is(HICMA_DENSE)) {
+      const Dense& B = static_cast<const Dense&>(A);
+      assert(dim[1] == B.dim[0]);
+      LowRank C(dim[0], B.dim[1], rank);
+      C.U = U;
+      C.S = S;
+      C.V = V * A;
+      return C;
+    } else if (A.is(HICMA_LOWRANK)) {
+      const LowRank& B = static_cast<const LowRank&>(A);
+      assert(dim[1] == B.dim[0]);
+      LowRank C(dim[0], B.dim[1], rank);
+      C.U = U;
+      C.S = S * (V * B.U) * B.S;
+      C.V = B.V;
+      return C;
     } else {
-      std::cout << this->is_string() << " * " << B.is_string();
-      std::cout << " is undefined!" << std::endl;
+      std::cerr << this->is_string() << " * " << A.is_string();
+      std::cerr << " is undefined." << std::endl;
+      abort();
       return Block();
     }
   }
-  Block LowRank::operator*(Block&& B) const {
-    return *this * *B.ptr;
+  Block LowRank::operator*(Block&& A) const {
+    return *this * *A.ptr;
   }
 
   const bool LowRank::is(const int enum_id) const {
@@ -312,9 +318,8 @@ namespace hicma {
         break;
       }
     } else {
-      fprintf(
-          stderr,"%s /= %s undefined.\n",
-          this->is_string(), A.is_string());
+      std::cerr << this->is_string() << " /= " << A.is_string();
+      std::cerr << " is undefined." << std::endl;
       abort();
     }
   }
@@ -322,16 +327,14 @@ namespace hicma {
   void LowRank::gemm(const Node& A, const Node& B) {
     if (A.is(HICMA_DENSE)) {
       if (B.is(HICMA_DENSE)) {
-        fprintf(
-            stderr,"%s += %s * %s undefined.\n",
-            this->is_string(), A.is_string(), B.is_string());
+        std::cerr << this->is_string() << " -= " << A.is_string();
+        std::cerr << " * " << B.is_string() << " is undefined." << std::endl;
         abort();
       } else if (B.is(HICMA_LOWRANK)) {
         *this -= A * B;
       } else if (B.is(HICMA_HIERARCHICAL)) {
-        fprintf(
-            stderr,"%s += %s * %s undefined.\n",
-            this->is_string(), A.is_string(), B.is_string());
+        std::cerr << this->is_string() << " -= " << A.is_string();
+        std::cerr << " * " << B.is_string() << " is undefined." << std::endl;
         abort();
       }
     } else if (A.is(HICMA_LOWRANK)) {
@@ -340,15 +343,13 @@ namespace hicma {
       } else if (B.is(HICMA_LOWRANK)) {
         *this -= A * B;
       } else if (B.is(HICMA_HIERARCHICAL)) {
-        fprintf(
-            stderr,"%s += %s * %s undefined.\n",
-            this->is_string(), A.is_string(), B.is_string());
+        std::cerr << this->is_string() << " -= " << A.is_string();
+        std::cerr << " * " << B.is_string() << " is undefined." << std::endl;
         abort();
       }
     } else {
-      fprintf(
-          stderr,"%s += %s * %s undefined.\n",
-          this->is_string(), A.is_string(), B.is_string());
+      std::cerr << this->is_string() << " -= " << A.is_string();
+      std::cerr << " * " << B.is_string() << " is undefined." << std::endl;
       abort();
     }
   }

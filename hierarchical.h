@@ -42,6 +42,7 @@ namespace hicma {
                  );
 
     Hierarchical(const Hierarchical& A);
+
     Hierarchical(Hierarchical&& A);
 
     Hierarchical(const Hierarchical* A);
@@ -54,28 +55,41 @@ namespace hicma {
     friend void swap(Hierarchical& first, Hierarchical& second);
 
     const Node& operator=(const Node& A) override;
+
     const Node& operator=(Node&& A) override;
+
     const Hierarchical& operator=(Hierarchical A);
 
     const Node& operator=(Block A) override;
 
     const Node& operator=(const double a) override;
 
-    Block operator+(const Node& B) const override;
-    Block operator+(Block&& B) const override;
-    const Node& operator+=(const Node& B) override;
-    const Node& operator+=(Block&& B) override;
-    Block operator-(const Node& B) const override;
-    Block operator-(Block&& B) const override;
-    const Node& operator-=(const Node& B) override;
-    const Node& operator-=(Block&& B) override;
-    Block operator*(const Node& B) const override;
-    Block operator*(Block&& B) const override;
+    Block operator+(const Node& A) const override;
+
+    Block operator+(Block&& A) const override;
+
+    const Node& operator+=(const Node& A) override;
+
+    const Node& operator+=(Block&& A) override;
+
+    Block operator-(const Node& A) const override;
+
+    Block operator-(Block&& A) const override;
+
+    const Node& operator-=(const Node& A) override;
+
+    const Node& operator-=(Block&& A) override;
+
+    Block operator*(const Node& A) const override;
+
+    Block operator*(Block&& A) const override;
 
     const Node& operator[](const int i) const;
+
     Block& operator[](const int i);
 
     const Node& operator()(const int i, const int j) const;
+
     Block& operator()(const int i, const int j);
 
     const bool is(const int enum_id) const override;
@@ -97,13 +111,6 @@ namespace hicma {
         const Hierarchical& B,
         const int i, const int j, const int k_min, const int k_max);
 
-    void create_dense_block(std::vector<double> &data) override;
-
-    bool has_block(const int i, const int j) const override;
-
-    void single_process_split(const int proc_id) override;
-
-    void multi_process_split(void) override;
   };
 }
 #endif

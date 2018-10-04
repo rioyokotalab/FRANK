@@ -1,3 +1,4 @@
+Rename is_string
 
 Clean randomized id.cpp
 H^2-matrix LU (nested basis)
