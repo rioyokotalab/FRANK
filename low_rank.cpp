@@ -165,9 +165,11 @@ namespace hicma {
     A -= _A;
     return A;
   }
+
   Block LowRank::operator-(Block&& A) const {
     return *this - *A.ptr;
   }
+
   const Node& LowRank::operator-=(const Node& _A) {
     if(_A.is(HICMA_DENSE)) {
       const Dense& A = static_cast<const Dense&>(_A);
@@ -191,6 +193,7 @@ namespace hicma {
       return *this;
     }
   }
+
   const Node& LowRank::operator-=(Block&& A) {
     return *this -= *A.ptr;
   }
@@ -219,6 +222,7 @@ namespace hicma {
       return Block();
     }
   }
+
   Block LowRank::operator*(Block&& A) const {
     return *this * *A.ptr;
   }

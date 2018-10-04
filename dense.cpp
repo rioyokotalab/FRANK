@@ -149,10 +149,10 @@ namespace hicma {
     return *this += *A.ptr;
   }
 
-  Block Dense::operator-(const Node& A) const {
-    Block B(*this);
-    B -= A;
-    return B;
+  Block Dense::operator-(const Node& _A) const {
+    Block A(*this);
+    A -= _A;
+    return A;
   }
 
   Block Dense::operator-(Block&& A) const {
