@@ -8,6 +8,7 @@ namespace hicma {
 
   class Block {
   public:
+    // NOTE: Take care to add members new members to swap
     std::unique_ptr<Node> ptr;
 
     Block();
@@ -22,8 +23,7 @@ namespace hicma {
 
     ~Block();
 
-    // NOTE: Take care to add members new members to swap
-    friend void swap(Block& first, Block& second);
+    friend void swap(Block& A, Block& B);
 
     const Block& operator=(Block A);
 
@@ -63,7 +63,7 @@ namespace hicma {
 
     const bool is(const int i) const;
 
-    const char* is_string() const;
+    const char* type() const;
 
     void resize(int i);
 

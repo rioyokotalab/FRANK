@@ -8,6 +8,7 @@
 namespace hicma {
   class Hierarchical : public Node {
   public:
+    // NOTE: Take care to add members new members to swap
     int dim[2];
     std::vector<Block> data;
 
@@ -51,8 +52,7 @@ namespace hicma {
 
     Hierarchical* clone() const override;
 
-    // NOTE: Take care to add members new members to swap
-    friend void swap(Hierarchical& first, Hierarchical& second);
+    friend void swap(Hierarchical& A, Hierarchical& B);
 
     const Node& operator=(const Node& A) override;
 
@@ -94,7 +94,7 @@ namespace hicma {
 
     const bool is(const int enum_id) const override;
 
-    const char* is_string() const override;
+    const char* type() const override;
 
     double norm() const override;
 
@@ -110,7 +110,6 @@ namespace hicma {
         const Hierarchical& A,
         const Hierarchical& B,
         const int i, const int j, const int k_min, const int k_max);
-
   };
 }
 #endif

@@ -8,6 +8,7 @@
 namespace hicma {
   class Dense : public Node {
   public:
+    // NOTE: Take care to add members new members to swap
     std::vector<double> data;
     int dim[2];
 
@@ -46,8 +47,7 @@ namespace hicma {
 
     Dense* clone() const override;
 
-    // NOTE: Take care to add members new members to swap
-    friend void swap(Dense& first, Dense& second);
+    friend void swap(Dense& A, Dense& B);
 
     const Node& operator=(const Node& A) override;
 
@@ -91,7 +91,7 @@ namespace hicma {
 
     const bool is(const int enum_id) const override;
 
-    const char* is_string() const override;
+    const char* type() const override;
 
     void resize(int i);
 

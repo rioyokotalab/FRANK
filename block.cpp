@@ -134,7 +134,7 @@ namespace hicma {
     } else return *this;
   }
 
-  const char* Block::is_string() const { return ptr->is_string(); }
+  const char* Block::type() const { return ptr->type(); }
 
   const bool Block::is(const int i) const { return ptr->is(i); }
 

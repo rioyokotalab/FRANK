@@ -10,6 +10,7 @@
 namespace hicma {
   class LowRank : public Node {
   public:
+    // NOTE: Take care to add members new members to swap
     Dense U, S, V;
     int dim[2];
     int rank;
@@ -23,6 +24,7 @@ namespace hicma {
     LowRank(const Block& A, const int k);
 
     LowRank(const LowRank& A);
+
     LowRank(LowRank&& A);
 
     LowRank(const LowRank* A);
@@ -31,8 +33,7 @@ namespace hicma {
 
     LowRank* clone() const override;
 
-    // NOTE: Take care to add members new members to swap
-    friend void swap(LowRank& first, LowRank& second);
+    friend void swap(LowRank& A, LowRank& B);
 
     const Node& operator=(const Node& A) override;
 
@@ -68,7 +69,7 @@ namespace hicma {
 
     const bool is(const int enum_id) const override;
 
-    const char* is_string() const override;
+    const char* type() const override;
 
     void resize(int m, int n, int k);
 

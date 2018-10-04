@@ -20,11 +20,11 @@ namespace hicma {
     return new Node(*this);
   }
 
-  void swap(Node& first, Node& second) {
+  void swap(Node& A, Node& B) {
     using std::swap;
-    swap(first.i_abs, second.i_abs);
-    swap(first.j_abs, second.j_abs);
-    swap(first.level, second.level);
+    swap(A.i_abs, B.i_abs);
+    swap(A.j_abs, B.j_abs);
+    swap(A.level, B.level);
   }
 
   const Node& Node::operator=(const double a) {
@@ -97,7 +97,7 @@ namespace hicma {
     return enum_id == HICMA_NODE;
   }
 
-  const char* Node::is_string() const { return "Node"; }
+  const char* Node::type() const { return "Node"; }
 
   double Node::norm() const {
     std::cerr << "No norm for Node type." << std::endl; abort();

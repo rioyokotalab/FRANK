@@ -16,25 +16,22 @@ namespace hicma {
 
   class Node {
   public:
-    /// Row number of the node on the current recursion level
-    int i_abs;
-    /// Column number of the node on the current recursion level
-    int j_abs;
-    /// Recursion level of the node
-    int level;
+    // NOTE: Take care to add members new members to swap
+    int i_abs; // Row number of the node on the current recursion level
+    int j_abs; // Column number of the node on the current recursion level
+    int level; // Recursion level of the node
 
     Node();
 
     Node(const int _i_abs, const int _j_abs, const int _level);
 
-    Node(const Node& ref);
+    Node(const Node& A);
 
     virtual ~Node();
 
     virtual Node* clone() const;
 
-    // NOTE: Take care to add members new members to swap
-    friend void swap(Node& first, Node& second);
+    friend void swap(Node& A, Node& B);
 
     virtual const Node& operator=(const double a);
 
@@ -66,7 +63,7 @@ namespace hicma {
 
     virtual const bool is(const int enum_id) const;
 
-    virtual const char* is_string() const;
+    virtual const char* type() const;
 
     virtual double norm() const;
 

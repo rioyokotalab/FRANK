@@ -93,7 +93,7 @@ namespace hicma {
       data = B.data;
       return *this;
     } else {
-      std::cerr << this->is_string() << " = " << A.is_string();
+      std::cerr << this->type() << " = " << A.type();
       std::cerr << " is undefined." << std::endl;
       return *this;
     }
@@ -104,7 +104,7 @@ namespace hicma {
       swap(*this, static_cast<Dense&>(A));
       return *this;
     } else {
-      std::cerr << this->is_string() << " = " << A.is_string();
+      std::cerr << this->type() << " = " << A.type();
       std::cerr << " is undefined." << std::endl;
       return *this;
     }
@@ -146,7 +146,7 @@ namespace hicma {
       assert(dim[0] == B.dim[0] && dim[1] == B.dim[1]);
       return *this += B.dense();
     } else {
-      std::cerr << this->is_string() << " + " << A.is_string();
+      std::cerr << this->type() << " + " << A.type();
       std::cerr << " is undefined." << std::endl;
       return *this;
     }
@@ -178,7 +178,7 @@ namespace hicma {
       assert(dim[0] == B.dim[0] && dim[1] == B.dim[1]);
       return *this -= B.dense();
     } else {
-      std::cerr << this->is_string() << " - " << A.is_string();
+      std::cerr << this->type() << " - " << A.type();
       std::cerr << " is undefined." << std::endl;
       return *this;
     }
@@ -235,7 +235,7 @@ namespace hicma {
       }
       return C;
     } else {
-      std::cerr << this->is_string() << " * " << A.is_string();
+      std::cerr << this->type() << " * " << A.type();
       std::cerr << " is undefined." << std::endl;
       return Block();
     }
@@ -269,7 +269,7 @@ namespace hicma {
     return enum_id == HICMA_DENSE;
   }
 
-  const char* Dense::is_string() const { return "Dense"; }
+  const char* Dense::type() const { return "Dense"; }
 
   void Dense::resize(int i) {
     dim[0]=i; dim[1]=1;
@@ -340,7 +340,7 @@ namespace hicma {
         }
       }
     } else {
-      std::cerr << this->is_string() << " /= " << A.is_string();
+      std::cerr << this->type() << " /= " << A.type();
       std::cerr << " is undefined." << std::endl;
       abort();
     }
@@ -353,8 +353,8 @@ namespace hicma {
       } else if (B.is(HICMA_LOWRANK)) {
         *this = *this - (A * B);
       } else if (B.is(HICMA_HIERARCHICAL)) {
-        std::cerr << this->is_string() << " -= " << A.is_string();
-        std::cerr << " * " << B.is_string() << " is undefined." << std::endl;
+        std::cerr << this->type() << " -= " << A.type();
+        std::cerr << " * " << B.type() << " is undefined." << std::endl;
         abort();
       }
     } else if (A.is(HICMA_LOWRANK)) {
@@ -363,13 +363,13 @@ namespace hicma {
       } else if (B.is(HICMA_LOWRANK)) {
         *this = *this - (A * B);
       } else if (B.is(HICMA_HIERARCHICAL)) {
-        std::cerr << this->is_string() << " -= " << A.is_string();
-        std::cerr << " * " << B.is_string() << " is undefined." << std::endl;
+        std::cerr << this->type() << " -= " << A.type();
+        std::cerr << " * " << B.type() << " is undefined." << std::endl;
         abort();
       }
     } else {
-      std::cerr << this->is_string() << " -= " << A.is_string();
-      std::cerr << " * " << B.is_string() << " is undefined." << std::endl;
+      std::cerr << this->type() << " -= " << A.type();
+      std::cerr << " * " << B.type() << " is undefined." << std::endl;
       abort();
     }
   }
