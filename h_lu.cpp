@@ -5,7 +5,7 @@
 using namespace hicma;
 
 int main(int argc, char** argv) {
-  int N = 64;
+  int N = 128;
   int nleaf = 16;
   int rank = 8;
   std::vector<double> randx(N);
@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
   Hierarchical A(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   Hierarchical x(rand_data, randx, N, 1, rank, nleaf, admis, nblocks, 1);
   Hierarchical b(zeros, randx, N, 1, rank, nleaf, admis, nblocks, 1);
-  b += A * x;
+  b.gemm(A,x);
   stop("Init matrix");
   start("LU decomposition");
   A.getrf();
@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
   start("Backward substitution");
   b.trsm(A,'u');
   stop("Backward substitution");
-  double diff = (x - b).norm();
+  double diff = (x + b).norm();
   double norm = x.norm();
   print("Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);

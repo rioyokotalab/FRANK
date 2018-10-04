@@ -52,12 +52,46 @@ namespace hicma {
     dim[0]=A->dim[0]; dim[1]=A->dim[1];
   }
 
-  Dense::Dense(const Block& A)
-    : Node((*A.ptr).i_abs, (*A.ptr).j_abs, (*A.ptr).level) {
-    assert(A.is(HICMA_DENSE));
-    Dense& ref = static_cast<Dense&>(*A.ptr);
-    dim[0]=ref.dim[0]; dim[1]=ref.dim[1];
-    data = ref.data;
+  Dense::Dense(const Block& _A) : Node((*_A.ptr).i_abs, (*_A.ptr).j_abs, (*_A.ptr).level) {
+    if (_A.is(HICMA_DENSE)) {
+      Dense& A = static_cast<Dense&>(*_A.ptr);
+      dim[0]=A.dim[0]; dim[1]=A.dim[1];
+      data = A.data;
+    } else if (_A.is(HICMA_LOWRANK)) {
+      LowRank& A = static_cast<LowRank&>(*_A.ptr);
+      Dense AD = A.U * A.S * A.V;
+      dim[0]=AD.dim[0]; dim[1]=AD.dim[1];
+      data = AD.data;
+    } else if (_A.is(HICMA_HIERARCHICAL)) {
+      Hierarchical& A = static_cast<Hierarchical&>(*_A.ptr);
+      dim[0] = 0;
+      for (int i=0; i<A.dim[0]; i++) {
+        Dense AD = Dense(A(i,0));
+        dim[0] += AD.dim[0];
+      }
+      dim[1] = 0;
+      for (int j=0; j<A.dim[1]; j++) {
+        Dense AD = Dense(A(0,j));
+        dim[1] += AD.dim[1];
+      }
+      Dense D(dim[0],dim[1]);
+      int i_begin = 0;
+      for (int i=0; i<A.dim[0]; i++) {
+        Dense AA = Dense(A(i,0));
+        int j_begin = 0;
+        for (int j=0; j<A.dim[1]; j++) {
+          Dense AD = Dense(A(i,j));
+          for (int ic=0; ic<AD.dim[0]; ic++) {
+            for (int jc=0; jc<AD.dim[1]; jc++) {
+              D(ic+i_begin,jc+j_begin) = AD(ic,jc);
+            }
+          }
+          j_begin += AD.dim[1];
+        }
+        i_begin += AA.dim[0];
+      }
+      data = D.data;
+    }
   }
 
   Dense* Dense::clone() const {
@@ -333,6 +367,11 @@ namespace hicma {
           abort();
         }
       }
+    } else if (_A.is(HICMA_HIERARCHICAL)) {
+      const Hierarchical& A = static_cast<const Hierarchical&>(_A);
+      Hierarchical H(*this, A.dim[0], A.dim[1]);
+      H.trsm(A, uplo);
+      *this = Dense(H);
     } else {
       std::cerr << this->type() << " /= " << _A.type();
       std::cerr << " is undefined." << std::endl;

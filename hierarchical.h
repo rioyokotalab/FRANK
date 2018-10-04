@@ -18,6 +18,10 @@ namespace hicma {
 
     Hierarchical(const int m, const int n);
 
+    Hierarchical(const Dense& A, const int m, const int n);
+
+    Hierarchical(const LowRank& A, const int m, const int n);
+
     Hierarchical(
                  void (*func)(
                               std::vector<double>& data,
