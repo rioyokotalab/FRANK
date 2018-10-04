@@ -1,6 +1,5 @@
 #include "functions.h"
 #include "hierarchical.h"
-#include "print.h"
 #include "timer.h"
 
 using namespace hicma;
