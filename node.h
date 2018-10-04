@@ -2,8 +2,6 @@
 #define node_h
 #include "block.h"
 
-#include <vector>
-
 namespace hicma {
 
   // Used in polymorphic code to know what actually a class is.

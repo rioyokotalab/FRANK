@@ -1,16 +1,10 @@
-#include "dense.h"
+#include "hierarchical.h"
 
-#include "block.h"
-#include "low_rank.h"
-
-#include <cstdio>
-#include <iostream>
-#include <iomanip>
-#include <cassert>
 #include <lapacke.h>
 #include <cblas.h>
 
 namespace hicma {
+
   Dense::Dense() {
     dim[0]=0; dim[1]=0;
   }

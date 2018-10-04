@@ -1,5 +1,7 @@
-#ifndef block
-#define block
+#ifndef block_h
+#define block_h
+#include <cassert>
+#include <iostream>
 #include <memory>
 
 namespace hicma {

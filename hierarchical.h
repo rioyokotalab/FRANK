@@ -1,11 +1,11 @@
 #ifndef hierarchical_h
 #define hierarchical_h
-#include "node.h"
-#include "block.h"
+#include "low_rank.h"
 
-#include <vector>
+#include <algorithm>
 
 namespace hicma {
+
   class Hierarchical : public Node {
   public:
     // NOTE: Take care to add members new members to swap

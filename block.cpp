@@ -1,13 +1,4 @@
-#include "block.h"
-
-#include "node.h"
 #include "hierarchical.h"
-#include "low_rank.h"
-#include "dense.h"
-
-#include <iostream>
-#include <cassert>
-#include <memory>
 
 namespace hicma {
 

@@ -1,13 +1,9 @@
 #ifndef low_rank_h
 #define low_rank_h
-#include "block.h"
-#include "node.h"
 #include "dense.h"
 
-#include <vector>
-
-
 namespace hicma {
+
   class LowRank : public Node {
   public:
     // NOTE: Take care to add members new members to swap

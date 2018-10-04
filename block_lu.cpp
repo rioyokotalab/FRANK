@@ -1,11 +1,7 @@
-#include <algorithm>
-#include "mpi_utils.h"
 #include "functions.h"
+#include "hierarchical.h"
 #include "print.h"
 #include "timer.h"
-#include "hierarchical.h"
-#include "dense.h"
-#include "node.h"
 
 using namespace hicma;
 

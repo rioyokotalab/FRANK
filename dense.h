@@ -1,11 +1,12 @@
 #ifndef dense_h
 #define dense_h
-#include "block.h"
 #include "node.h"
 
+#include <iomanip>
 #include <vector>
 
 namespace hicma {
+
   class Dense : public Node {
   public:
     // NOTE: Take care to add members new members to swap

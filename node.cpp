@@ -1,10 +1,9 @@
-#include "node.h"
-
-#include <iostream>
-#include <vector>
+#include "hierarchical.h"
 
 namespace hicma {
+
   Node::Node() : i_abs(0), j_abs(0), level(0) {}
+
   Node::Node(
              const int _i_abs,
              const int _j_abs,
@@ -47,46 +46,55 @@ namespace hicma {
     abort();
     return Block();
   };
+
   Block Node::operator+(Block&& A) const {
     std::cerr << "Operations should not be performed between two node types." << std::endl;
     abort();
     return Block();
   };
+
   const Node& Node::operator+=(const Node& A) {
     std::cerr << "Operations should not be performed between two node types." << std::endl;
     abort();
     return *this;
   };
+
   const Node& Node::operator+=(Block&& A) {
     std::cerr << "Operations should not be performed between two node types." << std::endl;
     abort();
     return *this;
   };
+
   Block Node::operator-(const Node& A) const {
     std::cerr << "Operations should not be performed between two node types." << std::endl;
     abort();
     return Block();
   };
+
   Block Node::operator-(Block&& A) const {
     std::cerr << "Operations should not be performed between two node types." << std::endl;
     abort();
     return Block();
   };
+
   const Node& Node::operator-=(const Node& A) {
     std::cerr << "Operations should not be performed between two node types." << std::endl;
     abort();
     return *this;
   };
+
   const Node& Node::operator-=(Block&& A) {
     std::cerr << "Operations should not be performed between two node types." << std::endl;
     abort();
     return *this;
   };
+
   Block Node::operator*(const Node& A) const {
     std::cerr << "Operations should not be performed between two node types." << std::endl;
     abort();
     return Block();
   };
+
   Block Node::operator*(Block&& A) const {
     std::cerr << "Operations should not be performed between two node types." << std::endl;
     abort();

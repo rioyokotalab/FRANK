@@ -1,15 +1,8 @@
-#include "low_rank.h"
-
-#include "dense.h"
+#include "hierarchical.h"
 #include "id.h"
 
-#include <cstdio>
-#include <iostream>
-#include <vector>
-#include <cassert>
-#include <cstdlib>
-
 namespace hicma {
+
   LowRank::LowRank() {
     dim[0]=0; dim[1]=0; rank=0;
   }

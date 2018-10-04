@@ -1,17 +1,7 @@
 #include "hierarchical.h"
 
-#include "block.h"
-#include "node.h"
-#include "dense.h"
-#include "low_rank.h"
-
-#include <cstdio>
-#include <iostream>
-#include <algorithm>
-#include <memory>
-#include <cassert>
-
 namespace hicma {
+
   Hierarchical::Hierarchical() {
     dim[0]=0; dim[1]=0;
   }
