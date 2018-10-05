@@ -127,7 +127,6 @@ namespace hicma {
     if (_A.is(HICMA_DENSE)) {
       const Dense& A = static_cast<const Dense&>(_A);
       dim[0] = A.dim[0]; dim[1] = A.dim[1];
-      //data.resize(dim[0]*dim[1]);
       data = A.data;
       return *this;
     } else {
