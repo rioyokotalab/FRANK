@@ -451,11 +451,7 @@ namespace hicma {
       } else if (_B.is(HICMA_LOWRANK)) {
         const LowRank& B = static_cast<const LowRank&>(_B);
         Dense VxU(A.rank,B.rank);
-#if 1
         VxU.gemm(A.V,B.U);
-#else
-        VxU -= A.V * B.U;
-#endif
         Dense SxVxU(A.rank,B.rank);
         SxVxU.gemm(A.S,VxU);
         Dense SxVxUxS(A.rank,B.rank);
