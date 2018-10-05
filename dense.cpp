@@ -379,30 +379,66 @@ namespace hicma {
     }
   }
 
-  void Dense::gemm(const Node& A, const Node& B) {
-    if (A.is(HICMA_DENSE)) {
-      if (B.is(HICMA_DENSE)) {
-        *this = *this - (A * B);
-      } else if (B.is(HICMA_LOWRANK)) {
-        *this = *this - (A * B);
-      } else if (B.is(HICMA_HIERARCHICAL)) {
-        std::cerr << this->type() << " -= " << A.type();
-        std::cerr << " * " << B.type() << " is undefined." << std::endl;
+  void Dense::gemm(const Node& _A, const Node& _B) {
+    if (_A.is(HICMA_DENSE)) {
+      const Dense& A = static_cast<const Dense&>(_A);
+      if (_B.is(HICMA_DENSE)) {
+        const Dense& B = static_cast<const Dense&>(_B);
+        assert(A.dim[1] == B.dim[0]);
+        if (A.dim[1] == 1) {
+          cblas_dgemv(
+                      CblasRowMajor,
+                      CblasNoTrans,
+                      A.dim[0],
+                      A.dim[1],
+                      -1,
+                      &A[0],
+                      A.dim[1],
+                      &B[0],
+                      1,
+                      1,
+                      &data[0],
+                      1
+                      );
+        }
+        else {
+          cblas_dgemm(
+                      CblasRowMajor,
+                      CblasNoTrans,
+                      CblasNoTrans,
+                      dim[0],
+                      dim[1],
+                      A.dim[1],
+                      -1,
+                      &A[0],
+                      A.dim[1],
+                      &B[0],
+                      B.dim[1],
+                      1,
+                      &data[0],
+                      dim[1]
+                      );
+        }
+      } else if (_B.is(HICMA_LOWRANK)) {
+        *this = *this - (_A * _B);
+      } else if (_B.is(HICMA_HIERARCHICAL)) {
+        std::cerr << this->type() << " -= " << _A.type();
+        std::cerr << " * " << _B.type() << " is undefined." << std::endl;
         abort();
       }
-    } else if (A.is(HICMA_LOWRANK)) {
-      if (B.is(HICMA_DENSE)) {
-        *this = *this - (A * B);
-      } else if (B.is(HICMA_LOWRANK)) {
-        *this = *this - (A * B);
-      } else if (B.is(HICMA_HIERARCHICAL)) {
-        std::cerr << this->type() << " -= " << A.type();
-        std::cerr << " * " << B.type() << " is undefined." << std::endl;
+    } else if (_A.is(HICMA_LOWRANK)) {
+      if (_B.is(HICMA_DENSE)) {
+        *this = *this - (_A * _B);
+      } else if (_B.is(HICMA_LOWRANK)) {
+        *this = *this - (_A * _B);
+      } else if (_B.is(HICMA_HIERARCHICAL)) {
+        std::cerr << this->type() << " -= " << _A.type();
+        std::cerr << " * " << _B.type() << " is undefined." << std::endl;
         abort();
       }
     } else {
-      std::cerr << this->type() << " -= " << A.type();
-      std::cerr << " * " << B.type() << " is undefined." << std::endl;
+      std::cerr << this->type() << " -= " << _A.type();
+      std::cerr << " * " << _B.type() << " is undefined." << std::endl;
       abort();
     }
   }
