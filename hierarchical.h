@@ -53,41 +53,9 @@ namespace hicma {
 
     Hierarchical(const Hierarchical* A);
 
-    Hierarchical(const Block& A);
-
     Hierarchical* clone() const override;
 
     friend void swap(Hierarchical& A, Hierarchical& B);
-
-    const Node& operator=(const Node& A) override;
-
-    const Node& operator=(Node&& A) override;
-
-    const Hierarchical& operator=(Hierarchical A);
-
-    const Node& operator=(Block A) override;
-
-    const Node& operator=(const double a) override;
-
-    Block operator+(const Node& A) const override;
-
-    Block operator+(Block&& A) const override;
-
-    const Node& operator+=(const Node& A) override;
-
-    const Node& operator+=(Block&& A) override;
-
-    Block operator-(const Node& A) const override;
-
-    Block operator-(Block&& A) const override;
-
-    const Node& operator-=(const Node& A) override;
-
-    const Node& operator-=(Block&& A) override;
-
-    Block operator*(const Node& A) const override;
-
-    Block operator*(Block&& A) const override;
 
     const Node& operator[](const int i) const;
 

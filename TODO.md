@@ -1,5 +1,3 @@
-Use Dense(LR) instead of LR.dense()
-
 Clean randomized id.cpp
 H^2-matrix LU (nested basis)
 Recompress low_rank after add/sub (after H^2 mat)

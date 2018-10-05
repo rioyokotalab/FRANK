@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
   start("Backward substitution");
   b.trsm(A,'u');
   stop("Backward substitution");
-  double diff = (x + b).norm();
+  double diff = (Dense(x) + Dense(b)).norm();
   double norm = x.norm();
   print("Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);

@@ -65,9 +65,13 @@ namespace hicma {
       data = A.data;
     } else if (_A.is(HICMA_LOWRANK)) {
       LowRank& A = static_cast<LowRank&>(*_A.ptr);
-      Dense AD = A.U * A.S * A.V;
-      dim[0]=AD.dim[0]; dim[1]=AD.dim[1];
-      data = AD.data;
+      Dense UxS(A.dim[0],A.rank);
+      UxS.gemm(A.U,A.S);
+      Dense UxSxV(A.dim[0],A.dim[1]);
+      UxSxV.gemm(UxS,A.V);
+      dim[0] = A.dim[0];
+      dim[1] = A.dim[1];
+      data = UxSxV.data;
     } else if (_A.is(HICMA_HIERARCHICAL)) {
       Hierarchical& A = static_cast<Hierarchical&>(*_A.ptr);
       dim[0] = 0;
@@ -123,7 +127,6 @@ namespace hicma {
     if (_A.is(HICMA_DENSE)) {
       const Dense& A = static_cast<const Dense&>(_A);
       dim[0] = A.dim[0]; dim[1] = A.dim[1];
-      //data.resize(dim[0]*dim[1]);
       data = A.data;
       return *this;
     } else {
@@ -164,9 +167,11 @@ namespace hicma {
     B += A;
     return B;
   }
+
   Block Dense::operator+(Block&& A) const {
     return *this + *A.ptr;
   }
+
   const Node& Dense::operator+=(const Node& _A) {
     if (_A.is(HICMA_DENSE)) {
       const Dense& A = static_cast<const Dense&>(_A);
@@ -178,13 +183,14 @@ namespace hicma {
     } else if (_A.is(HICMA_LOWRANK)) {
       const LowRank& A = static_cast<const LowRank&>(_A);
       assert(dim[0] == A.dim[0] && dim[1] == A.dim[1]);
-      return *this += A.dense();
+      return *this += Dense(A);
     } else {
       std::cerr << this->type() << " + " << _A.type();
       std::cerr << " is undefined." << std::endl;
       return *this;
     }
   }
+
   const Node& Dense::operator+=(Block&& A) {
     return *this += *A.ptr;
   }
@@ -210,7 +216,7 @@ namespace hicma {
     } else if (_A.is(HICMA_LOWRANK)) {
       const LowRank& A = static_cast<const LowRank&>(_A);
       assert(dim[0] == A.dim[0] && dim[1] == A.dim[1]);
-      return *this -= A.dense();
+      return *this -= Dense(A);
     } else {
       std::cerr << this->type() << " - " << _A.type();
       std::cerr << " is undefined." << std::endl;
@@ -451,11 +457,7 @@ namespace hicma {
       } else if (_B.is(HICMA_LOWRANK)) {
         const LowRank& B = static_cast<const LowRank&>(_B);
         Dense VxU(A.rank,B.rank);
-#if 1
         VxU.gemm(A.V,B.U);
-#else
-        VxU -= A.V * B.U;
-#endif
         Dense SxVxU(A.rank,B.rank);
         SxVxU.gemm(A.S,VxU);
         Dense SxVxUxS(A.rank,B.rank);
