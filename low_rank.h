@@ -23,15 +23,11 @@ namespace hicma {
 
     LowRank(const Dense& A, const int k);
 
-    LowRank(const Block& A, const int k);
+    LowRank(const Node& A, const int k);
 
     LowRank(const LowRank& A);
 
     LowRank(LowRank&& A);
-
-    LowRank(const LowRank* A);
-
-    LowRank(const Block& A);
 
     LowRank* clone() const override;
 
@@ -43,31 +39,7 @@ namespace hicma {
 
     const LowRank& operator=(LowRank A);
 
-    const Node& operator=(Block A) override;
-
-    const Node& operator=(const double a) override;
-
-    LowRank operator-() const;
-
-    Block operator+(const Node& A) const override;
-
-    Block operator+(Block&& A) const override;
-
     const Node& operator+=(const Node& A) override;
-
-    const Node& operator+=(Block&& A) override;
-
-    Block operator-(const Node& A) const override;
-
-    Block operator-(Block&& A) const override;
-
-    const Node& operator-=(const Node& A) override;
-
-    const Node& operator-=(Block&& A) override;
-
-    Block operator*(const Node& A) const override;
-
-    Block operator*(Block&& A) const override;
 
     const bool is(const int enum_id) const override;
 

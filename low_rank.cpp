@@ -32,11 +32,11 @@ namespace hicma {
 
   // TODO: This constructor is called A LOT. Work that out
   LowRank::LowRank(
-                   const Block& _A,
+                   const Node& _A,
                    const int k
-                   ) : Node(_A.ptr->i_abs,_A.ptr->j_abs,_A.ptr->level) {
+                   ) : Node(_A.i_abs,_A.j_abs,_A.level) {
     assert(_A.is(HICMA_DENSE));
-    const Dense& A = static_cast<Dense&>(*_A.ptr);
+    const Dense& A = static_cast<const Dense&>(_A);
     int m = dim[0] = A.dim[0];
     int n = dim[1] = A.dim[1];
     rank = k;
@@ -52,10 +52,6 @@ namespace hicma {
 
   LowRank::LowRank(LowRank&& A) {
     swap(*this, A);
-  }
-
-  LowRank::LowRank(const LowRank* A) : Node(A->i_abs,A->j_abs,A->level), U(A->U), S(A->S), V(A->V) {
-    dim[0]=A->dim[0]; dim[1]=A->dim[1]; rank=A->rank;
   }
 
   LowRank* LowRank::clone() const {
@@ -108,36 +104,6 @@ namespace hicma {
     return *this;
   }
 
-  const Node& LowRank::operator=(Block A) {
-    return *this = std::move(*A.ptr);
-  }
-
-  const Node& LowRank::operator=(const double a) {
-    assert(a == 0);
-    U = 0;
-    S = 0;
-    V = 0;
-    return *this;
-  }
-
-  LowRank LowRank::operator-() const {
-    LowRank A(*this);
-    A.U = -U;
-    A.S = -S;
-    A.V = -V;
-    return A;
-  }
-
-  Block LowRank::operator+(const Node& _A) const {
-    Block A(*this);
-    A += _A;
-    return A;
-  }
-
-  Block LowRank::operator+(Block&& A) const {
-    return *this + *A.ptr;
-  }
-
   const Node& LowRank::operator+=(const Node& _A) {
     if (_A.is(HICMA_DENSE)) {
       const Dense& A = static_cast<const Dense&>(_A);
@@ -160,77 +126,6 @@ namespace hicma {
       abort();
       return *this;
     }
-  }
-
-  const Node& LowRank::operator+=(Block&& A) {
-    return *this += *A.ptr;
-  }
-
-  Block LowRank::operator-(const Node& _A) const {
-    Block A(*this);
-    A -= _A;
-    return A;
-  }
-
-  Block LowRank::operator-(Block&& A) const {
-    return *this - *A.ptr;
-  }
-
-  const Node& LowRank::operator-=(const Node& _A) {
-    if(_A.is(HICMA_DENSE)) {
-      const Dense& A = static_cast<const Dense&>(_A);
-      assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
-      return Dense(*this) -= A;
-    } else if (_A.is(HICMA_LOWRANK)) {
-      const LowRank& A = static_cast<const LowRank&>(_A);
-      assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
-      if (rank+A.rank >= dim[0]) {
-        *this = LowRank(Dense(*this) - Dense(A), rank);
-      } else {
-        mergeU(*this, -A);
-        mergeS(*this, -A);
-        mergeV(*this, -A);
-      }
-      return *this;
-    } else {
-      std::cerr << this->type() << " + " << _A.type();
-      std::cerr << " is undefined." << std::endl;
-      abort();
-      return *this;
-    }
-  }
-
-  const Node& LowRank::operator-=(Block&& A) {
-    return *this -= *A.ptr;
-  }
-
-  Block LowRank::operator*(const Node& _A) const {
-    if(_A.is(HICMA_DENSE)) {
-      const Dense& A = static_cast<const Dense&>(_A);
-      assert(dim[1] == A.dim[0]);
-      LowRank B(dim[0], A.dim[1], rank, i_abs, j_abs, level);
-      B.U = U;
-      B.S = S;
-      B.V = V * _A;
-      return B;
-    } else if (_A.is(HICMA_LOWRANK)) {
-      const LowRank& A = static_cast<const LowRank&>(_A);
-      assert(dim[1] == A.dim[0]);
-      LowRank B(dim[0], A.dim[1], rank, i_abs, j_abs, level);
-      B.U = U;
-      B.S = S * (V * A.U) * A.S;
-      B.V = A.V;
-      return B;
-    } else {
-      std::cerr << this->type() << " * " << _A.type();
-      std::cerr << " is undefined." << std::endl;
-      abort();
-      return Block();
-    }
-  }
-
-  Block LowRank::operator*(Block&& A) const {
-    return *this * *A.ptr;
   }
 
   const bool LowRank::is(const int enum_id) const {
@@ -343,7 +238,10 @@ namespace hicma {
 	abort();
       } else if (_B.is(HICMA_LOWRANK)) {
         const LowRank& B = static_cast<const LowRank&>(_B);
-        *this -= A * B;
+        LowRank C(B);
+        C.U = 0;
+        C.U.gemm(A,B.U);
+        *this += C;
       } else if (_B.is(HICMA_HIERARCHICAL)) {
         std::cerr << this->type() << " -= " << _A.type();
         std::cerr << " * " << _B.type() << " is undefined." << std::endl;
@@ -353,10 +251,14 @@ namespace hicma {
       const LowRank& A = static_cast<const LowRank&>(_A);
       if (_B.is(HICMA_DENSE)) {
         const Dense& B = static_cast<const Dense&>(_B);
-        *this -= A * B;
+        LowRank C(A);
+        C.V = 0;
+        C.V.gemm(A.V,B);
+        *this += C;
       } else if (_B.is(HICMA_LOWRANK)) {
-        const LowRank& B = static_cast<const LowRank&>(_B);
-        *this -= A * B;
+        std::cerr << this->type() << " -= " << _A.type();
+        std::cerr << " * " << _B.type() << " is undefined." << std::endl;
+        abort();
       } else if (_B.is(HICMA_HIERARCHICAL)) {
         std::cerr << this->type() << " -= " << _A.type();
         std::cerr << " * " << _B.type() << " is undefined." << std::endl;
