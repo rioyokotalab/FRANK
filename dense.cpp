@@ -182,7 +182,7 @@ namespace hicma {
     } else if (_A.is(HICMA_LOWRANK)) {
       const LowRank& A = static_cast<const LowRank&>(_A);
       assert(dim[0] == A.dim[0] && dim[1] == A.dim[1]);
-      return *this += A.dense();
+      return *this += Dense(A);
     } else {
       std::cerr << this->type() << " + " << _A.type();
       std::cerr << " is undefined." << std::endl;
@@ -214,7 +214,7 @@ namespace hicma {
     } else if (_A.is(HICMA_LOWRANK)) {
       const LowRank& A = static_cast<const LowRank&>(_A);
       assert(dim[0] == A.dim[0] && dim[1] == A.dim[1]);
-      return *this -= A.dense();
+      return *this -= Dense(A);
     } else {
       std::cerr << this->type() << " - " << _A.type();
       std::cerr << " is undefined." << std::endl;

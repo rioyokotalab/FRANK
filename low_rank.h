@@ -75,8 +75,6 @@ namespace hicma {
 
     void resize(int m, int n, int k);
 
-    Dense dense() const;
-
     double norm() const override;
 
     void print() const override;

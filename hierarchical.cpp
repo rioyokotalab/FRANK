@@ -317,7 +317,7 @@ namespace hicma {
           // and later recompressing it only once
           if (B(i, j).is(HICMA_LOWRANK)) {
             rank = static_cast<LowRank&>(*B(i, j).ptr).rank;
-            B(i, j) = static_cast<LowRank&>(*B(i, j).ptr).dense();
+            B(i, j) = Dense(static_cast<LowRank&>(*B(i, j).ptr));
           }
           for (int k=1; k<dim[1]; k++) {
             B(i, j) += (*this)(i, k) * A(k, j);
@@ -533,7 +533,7 @@ namespace hicma {
     int rank = -1;
     if ((*this)(i, j).is(HICMA_LOWRANK)) {
       rank = static_cast<LowRank&>(*(*this)(i, j).ptr).rank;
-      (*this)(i, j) = static_cast<LowRank&>(*(*this)(i, j).ptr).dense();
+      (*this)(i, j) = Dense(static_cast<LowRank&>(*(*this)(i, j).ptr));
     }
     for (int k=k_min; k<k_max; k++) {
       (*this)(i, j).gemm(A(i, k), B(k, j));

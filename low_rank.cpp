@@ -246,14 +246,6 @@ namespace hicma {
     V.resize(k,n);
   }
 
-  Dense LowRank::dense() const {
-    Dense A = U * S * V;
-    A.level = level;
-    A.i_abs = i_abs;
-    A.j_abs = j_abs;
-    return std::move(A);
-  }
-
   double LowRank::norm() const {
     return Dense(*this).norm();
   }
