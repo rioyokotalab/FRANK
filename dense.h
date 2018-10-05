@@ -38,9 +38,9 @@ namespace hicma {
           const int nj,
           const int i_begin,
           const int j_begin,
-          const int i_abs,
-          const int j_abs,
-          const int level);
+          const int i_abs=0,
+          const int j_abs=0,
+          const int level=0);
 
     Dense(const Dense& A);
 

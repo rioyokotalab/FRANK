@@ -65,9 +65,13 @@ namespace hicma {
       data = A.data;
     } else if (_A.is(HICMA_LOWRANK)) {
       LowRank& A = static_cast<LowRank&>(*_A.ptr);
-      Dense AD = A.U * A.S * A.V;
-      dim[0]=AD.dim[0]; dim[1]=AD.dim[1];
-      data = AD.data;
+      Dense UxS(A.dim[0],A.rank);
+      UxS.gemm(A.U,A.S);
+      Dense UxSxV(A.dim[0],A.dim[1]);
+      UxSxV.gemm(UxS,A.V);
+      dim[0] = A.dim[0];
+      dim[1] = A.dim[1];
+      data = UxSxV.data;
     } else if (_A.is(HICMA_HIERARCHICAL)) {
       Hierarchical& A = static_cast<Hierarchical&>(*_A.ptr);
       dim[0] = 0;
