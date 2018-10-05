@@ -194,78 +194,6 @@ namespace hicma {
     swap(A.level, B.level);
   }
 
-  const Node& Hierarchical::operator=(const Node& _A) {
-    if (_A.is(HICMA_HIERARCHICAL)) {
-      // This can be avoided if Node has data and dim members!
-      const Hierarchical& A = static_cast<const Hierarchical&>(_A);
-      dim[0]=A.dim[0]; dim[1]=A.dim[1];
-      data.resize(dim[0]*dim[1]);
-      // TODO Explicit constructor is called here! Make sure it's done right,
-      // including inheritance
-      data = A.data;
-      return *this;
-    } else {
-      std::cerr << this->type() << " = " << _A.type();
-      std::cerr << " is undefined." << std::endl;
-      return *this;
-    }
-  }
-
-  const Node& Hierarchical::operator=(Node&& A) {
-    if (A.is(HICMA_HIERARCHICAL)) {
-      swap(*this, static_cast<Hierarchical&>(A));
-      return *this;
-    } else {
-      std::cerr << this->type() << " = " << A.type();
-      std::cerr << " is undefined." << std::endl;
-      return *this;
-    }
-  }
-
-  const Hierarchical& Hierarchical::operator=(Hierarchical A) {
-    swap(*this, A);
-    return *this;
-  }
-
-  const Node& Hierarchical::operator=(const double a) {
-    for (int i=0; i<dim[0]; i++) {
-      for (int j=0; j<dim[1]; j++) {
-        (*this)(i, j) = a;
-      }
-    }
-    return *this;
-  }
-
-  const Node& Hierarchical::operator+=(const Node& _A) {
-    if (_A.is(HICMA_HIERARCHICAL)) {
-      const Hierarchical& A = static_cast<const Hierarchical&>(_A);
-      assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
-      for (int i=0; i<dim[0]; i++)
-        for (int j=0; j<dim[1]; j++)
-          (*this)(i, j) += A(i, j);
-      return *this;
-    } else {
-      std::cerr << this->type() << " + " << _A.type();
-      std::cerr << " is undefined." << std::endl;
-      return *this;
-    }
-  }
-
-  const Node& Hierarchical::operator-=(const Node& _A) {
-    if (_A.is(HICMA_HIERARCHICAL)) {
-      const Hierarchical& A = static_cast<const Hierarchical&>(_A);
-      assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
-      for (int i=0; i<dim[0]; i++)
-        for (int j=0; j<dim[1]; j++)
-          (*this)(i, j) -= A(i, j);
-      return *this;
-    } else {
-      std::cerr << this->type() << " - " << _A.type();
-      std::cerr << " is undefined." << std::endl;
-      return *this;
-    }
-  }
-
   const Node& Hierarchical::operator[](const int i) const {
     assert(i<dim[0]*dim[1]);
     return *data[i].ptr;
@@ -451,7 +379,6 @@ namespace hicma {
     }
   }
 
-  // TODO: Check if this really avoids recompression
   void Hierarchical::gemm_row(
                               const Hierarchical& A, const Hierarchical& B,
                               const int i, const int j, const int k_min, const int k_max)
@@ -464,7 +391,6 @@ namespace hicma {
     for (int k=k_min; k<k_max; k++) {
       (*this)(i, j).gemm(A(i, k), B(k, j));
     }
-    // If it was LowRank earlier, return it to LowRank now
     if (rank != -1) {
       (*this)(i, j) = LowRank((*this)(i, j), rank);
     }

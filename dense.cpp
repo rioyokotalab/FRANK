@@ -167,9 +167,11 @@ namespace hicma {
     B += A;
     return B;
   }
+
   Block Dense::operator+(Block&& A) const {
     return *this + *A.ptr;
   }
+
   const Node& Dense::operator+=(const Node& _A) {
     if (_A.is(HICMA_DENSE)) {
       const Dense& A = static_cast<const Dense&>(_A);
@@ -188,6 +190,7 @@ namespace hicma {
       return *this;
     }
   }
+
   const Node& Dense::operator+=(Block&& A) {
     return *this += *A.ptr;
   }
