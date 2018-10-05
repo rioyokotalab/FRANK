@@ -7,20 +7,26 @@ namespace hicma {
     dim[0]=0; dim[1]=0; rank=0;
   }
 
-  LowRank::LowRank(const int m, const int n, const int k) {
+  LowRank::LowRank(
+                   const int m,
+                   const int n,
+                   const int k,
+                   const int i_abs,
+                   const int j_abs,
+                   const int level) {
     dim[0]=m; dim[1]=n; rank=k;
-    U = Dense(m,k);
-    S = Dense(k,k);
-    V = Dense(k,n);
+    U = Dense(m,k,i_abs,j_abs,level);
+    S = Dense(k,k,i_abs,j_abs,level);
+    V = Dense(k,n,i_abs,j_abs,level);
   }
 
   LowRank::LowRank(const Dense& A, const int k) : Node(A.i_abs,A.j_abs,A.level) {
     int m = dim[0] = A.dim[0];
     int n = dim[1] = A.dim[1];
     rank = k;
-    U = Dense(m,k);
-    S = Dense(k,k);
-    V = Dense(k,n);
+    U = Dense(m,k,i_abs,j_abs,level);
+    S = Dense(k,k,i_abs,j_abs,level);
+    V = Dense(k,n,i_abs,j_abs,level);
     randomized_low_rank_svd2(A.data, rank, U.data, S.data, V.data, m, n);
   }
 
@@ -34,9 +40,9 @@ namespace hicma {
     int m = dim[0] = A.dim[0];
     int n = dim[1] = A.dim[1];
     rank = k;
-    U = Dense(m,k);
-    S = Dense(k,k);
-    V = Dense(k,n);
+    U = Dense(m,k,i_abs,j_abs,level);
+    S = Dense(k,k,i_abs,j_abs,level);
+    V = Dense(k,n,i_abs,j_abs,level);
     randomized_low_rank_svd2(A.data, rank, U.data, S.data, V.data, m, n);
   }
 
@@ -202,7 +208,7 @@ namespace hicma {
     if(_A.is(HICMA_DENSE)) {
       const Dense& A = static_cast<const Dense&>(_A);
       assert(dim[1] == A.dim[0]);
-      LowRank B(dim[0], A.dim[1], rank);
+      LowRank B(dim[0], A.dim[1], rank, i_abs, j_abs, level);
       B.U = U;
       B.S = S;
       B.V = V * _A;
@@ -210,7 +216,7 @@ namespace hicma {
     } else if (_A.is(HICMA_LOWRANK)) {
       const LowRank& A = static_cast<const LowRank&>(_A);
       assert(dim[1] == A.dim[0]);
-      LowRank B(dim[0], A.dim[1], rank);
+      LowRank B(dim[0], A.dim[1], rank, i_abs, j_abs, level);
       B.U = U;
       B.S = S * (V * A.U) * A.S;
       B.V = A.V;
@@ -241,7 +247,11 @@ namespace hicma {
   }
 
   Dense LowRank::dense() const {
-    return U * S * V;
+    Dense Out = U * S * V;
+    Out.level = level;
+    Out.i_abs = i_abs;
+    Out.j_abs = j_abs;
+    return std::move(Out);
   }
 
   double LowRank::norm() const {

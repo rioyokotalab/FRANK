@@ -17,7 +17,12 @@ namespace hicma {
 
     Dense(const int m);
 
-    Dense(const int m, const int n);
+    Dense(
+          const int m,
+          const int n,
+          const int i_abs=0,
+          const int j_abs=0,
+          const int level=0);
 
     Dense(
           void (*func)(
@@ -33,10 +38,9 @@ namespace hicma {
           const int nj,
           const int i_begin,
           const int j_begin,
-          const int _i_abs=0,
-          const int _j_abs=0,
-          const int level=0
-          );
+          const int i_abs,
+          const int j_abs,
+          const int level);
 
     Dense(const Dense& A);
 

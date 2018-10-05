@@ -13,7 +13,13 @@ namespace hicma {
     dim[0]=m; dim[1]=1; data.resize(dim[0],0);
   }
 
-  Dense::Dense(const int m, const int n) {
+  Dense::Dense(
+               const int m,
+               const int n,
+               const int i_abs,
+               const int j_abs,
+               const int level
+               ) : Node(i_abs, j_abs, level) {
     dim[0]=m; dim[1]=n; data.resize(dim[0]*dim[1],0);
   }
 
@@ -31,10 +37,10 @@ namespace hicma {
                const int nj,
                const int i_begin,
                const int j_begin,
-               const int _i_abs,
-               const int _j_abs,
-               const int _level
-               ) : Node(_i_abs,_j_abs,_level) {
+               const int i_abs,
+               const int j_abs,
+               const int level
+               ) : Node(i_abs,j_abs,level) {
     dim[0] = ni; dim[1] = nj;
     data.resize(dim[0]*dim[1]);
     func(data, x, ni, nj, i_begin, j_begin);
@@ -148,7 +154,7 @@ namespace hicma {
   }
 
   Dense Dense::operator-() const {
-    Dense A(dim[0],dim[1]);
+    Dense A(dim[0],dim[1], i_abs, j_abs, level);
     for (int i=0; i<dim[0]*dim[1]; i++) A[i] = -data[i];
     return A;
   }
@@ -226,7 +232,7 @@ namespace hicma {
     } else if (_A.is(HICMA_DENSE)) {
       const Dense& A = static_cast<const Dense&>(_A);
       assert(dim[1] == A.dim[0]);
-      Dense B(dim[0], A.dim[1]);
+      Dense B(dim[0], A.dim[1], i_abs, j_abs, level);
       if (A.dim[1] == 1) {
         cblas_dgemv(
                     CblasRowMajor,
@@ -387,7 +393,7 @@ namespace hicma {
         const Dense& B = static_cast<const Dense&>(_B);
         assert(A.dim[1] == B.dim[0]);
         assert(this->dim[1] == B.dim[1]);
-        if (A.dim[1] == 1) {
+        if (B.dim[1] == 1) {
           cblas_dgemv(
                       CblasRowMajor,
                       CblasNoTrans,
