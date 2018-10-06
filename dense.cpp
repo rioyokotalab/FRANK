@@ -168,8 +168,7 @@ namespace hicma {
     return B;
   }
 
-  const Node& Dense::operator+=(const Node& _A) {
-    const Dense& A = static_cast<const Dense&>(_A);
+  const Dense& Dense::operator+=(const Dense& A) {
     assert(dim[0] == A.dim[0] && dim[1] == A.dim[1]);
     for (int i=0; i<dim[0]*dim[1]; i++) {
       (*this)[i] += A[i];

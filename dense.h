@@ -68,7 +68,7 @@ namespace hicma {
 
     Dense operator+(const Dense& A) const;
 
-    const Node& operator+=(const Node& A);
+    const Dense& operator+=(const Dense& A);
 
     double& operator[](const int i);
 

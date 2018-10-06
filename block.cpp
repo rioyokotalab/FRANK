@@ -61,38 +61,6 @@ namespace hicma {
     return *this;
   }
 
-  Block Block::operator+(const Block& A) const {
-    return *ptr + *A.ptr;
-  }
-
-  const Node& Block::operator+=(const Block& A) {
-    return *ptr += *A.ptr;
-  }
-
-  Block Block::operator-(const Block& A) const {
-    return *ptr - *A.ptr;
-  }
-
-  const Node& Block::operator-=(const Block& A) {
-    return *ptr -= *A.ptr;
-  }
-
-  Block Block::operator+(const Node& A) const {
-    return *ptr + A;
-  }
-
-  const Node& Block::operator+=(const Node& A) {
-    return *ptr += A;
-  }
-
-  Block Block::operator-(const Node& A) const {
-    return *ptr - A;
-  }
-
-  const Node& Block::operator-=(const Node& A) {
-    return *ptr -= A;
-  }
-
   const Node& Block::operator[](const int i) const {
     if (is(HICMA_HIERARCHICAL)) {
       return static_cast<const Hierarchical&>(*ptr)[i];
