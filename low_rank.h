@@ -23,8 +23,6 @@ namespace hicma {
 
     LowRank(const Dense& A, const int k);
 
-    LowRank(const Node& A, const int k);
-
     LowRank(const LowRank& A);
 
     LowRank(LowRank&& A);
@@ -32,10 +30,6 @@ namespace hicma {
     LowRank* clone() const override;
 
     friend void swap(LowRank& A, LowRank& B);
-
-    const Node& operator=(const Node& A) override;
-
-    const Node& operator=(Node&& A) override;
 
     const LowRank& operator=(LowRank A);
 
@@ -57,7 +51,7 @@ namespace hicma {
 
     void trsm(const Node& A, const char& uplo) override;
 
-    void gemm(const Node& A, const Node& B);
+    void gemm(const Node& A, const Node& B) override;
   };
 }
 #endif

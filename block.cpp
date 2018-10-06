@@ -6,27 +6,7 @@ namespace hicma {
 
   Block::Block(const Block& A) : ptr(A.ptr->clone()) {}
 
-  Block::Block(Block&& A) : ptr() {
-    swap(*this, A);
-  }
-
   Block::Block(const Node& A) : ptr(A.clone()) {}
-
-  Block::Block(Node&& A) {
-    if (A.is(HICMA_HIERARCHICAL)) {
-      ptr = std::make_unique<Hierarchical>();
-      swap(static_cast<Hierarchical&>(*ptr), static_cast<Hierarchical&>(A));
-    } else if (A.is(HICMA_LOWRANK)) {
-      ptr = std::make_unique<LowRank>();
-      swap(static_cast<LowRank&>(*ptr), static_cast<LowRank&>(A));
-    } else if (A.is(HICMA_DENSE)) {
-      ptr = std::make_unique<Dense>();
-      swap(static_cast<Dense&>(*ptr), static_cast<Dense&>(A));
-    } else {
-      std::cerr << "Node is of an undefined type." << std::endl;
-      abort();
-    }
-  }
 
   Block::~Block() = default;
 
@@ -37,34 +17,6 @@ namespace hicma {
   const Block& Block::operator=(Block A) {
     swap(*this, A);
     return *this;
-  }
-
-  const Block& Block::operator=(Node&& A) {
-    if (A.is(HICMA_HIERARCHICAL)) {
-      ptr = std::make_unique<Hierarchical>();
-      swap(static_cast<Hierarchical&>(*ptr), static_cast<Hierarchical&>(A));
-    } else if (A.is(HICMA_LOWRANK)) {
-      ptr = std::make_unique<LowRank>();
-      swap(static_cast<LowRank&>(*ptr), static_cast<LowRank&>(A));
-    } else if (A.is(HICMA_DENSE)) {
-      ptr = std::make_unique<Dense>();
-      swap(static_cast<Dense&>(*ptr), static_cast<Dense&>(A));
-    } else {
-      std::cerr << "Node is of an undefined type." << std::endl;
-      abort();
-    }
-    return *this;
-  }
-
-  const Block& Block::operator=(double a) {
-    *ptr = a;
-    return *this;
-  }
-
-  const Node& Block::operator[](const int i) const {
-    if (is(HICMA_HIERARCHICAL)) {
-      return static_cast<const Hierarchical&>(*ptr)[i];
-    } else return *ptr;
   }
 
   Block& Block::operator[](const int i) {

@@ -30,22 +30,6 @@ namespace hicma {
     randomized_low_rank_svd2(A.data, rank, U.data, S.data, V.data, m, n);
   }
 
-  // TODO: This constructor is called A LOT. Work that out
-  LowRank::LowRank(
-                   const Node& _A,
-                   const int k
-                   ) : Node(_A.i_abs,_A.j_abs,_A.level) {
-    assert(_A.is(HICMA_DENSE));
-    const Dense& A = static_cast<const Dense&>(_A);
-    int m = dim[0] = A.dim[0];
-    int n = dim[1] = A.dim[1];
-    rank = k;
-    U = Dense(m,k,i_abs,j_abs,level);
-    S = Dense(k,k,i_abs,j_abs,level);
-    V = Dense(k,n,i_abs,j_abs,level);
-    randomized_low_rank_svd2(A.data, rank, U.data, S.data, V.data, m, n);
-  }
-
   LowRank::LowRank(const LowRank& A) : Node(A.i_abs,A.j_abs,A.level), U(A.U), S(A.S), V(A.V) {
     dim[0]=A.dim[0]; dim[1]=A.dim[1]; rank=A.rank;
   }
@@ -68,35 +52,6 @@ namespace hicma {
     swap(A.j_abs, B.j_abs);
     swap(A.level, B.level);
     swap(A.rank, B.rank);
-  }
-
-  const Node& LowRank::operator=(const Node& _A) {
-    if (_A.is(HICMA_LOWRANK)) {
-      const LowRank& A = static_cast<const LowRank&>(_A);
-      assert(dim[0]==A.dim[0] && dim[1]==A.dim[1] && rank==A.rank);
-      dim[0]=A.dim[0]; dim[1]=A.dim[1]; rank=A.rank;
-      U = A.U;
-      S = A.S;
-      V = A.V;
-      return *this;
-    } else {
-      std::cerr << this->type() << " = " << _A.type();
-      std::cerr << " is undefined." << std::endl;
-      abort();
-      return *this;
-    }
-  }
-
-  const Node& LowRank::operator=(Node&& A) {
-    if (A.is(HICMA_LOWRANK)) {
-      swap(*this, static_cast<LowRank&>(A));
-      return *this;
-    } else {
-      std::cerr << this->type() << " = " << A.type();
-      std::cerr << " is undefined." << std::endl;
-      abort();
-      return *this;
-    }
   }
 
   const LowRank& LowRank::operator=(LowRank A) {

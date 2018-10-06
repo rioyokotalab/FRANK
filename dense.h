@@ -54,17 +54,9 @@ namespace hicma {
 
     friend void swap(Dense& A, Dense& B);
 
-    const Node& operator=(const Node& A) override;
-
-    const Node& operator=(Node&& A) override;
-
     const Dense& operator=(Dense A);
 
-    const Node& operator=(Block A) override;
-
-    const Node& operator=(const double a) override;
-
-    Dense operator-() const;
+    const Dense& operator=(const double a);
 
     Dense operator+(const Dense& A) const;
 
@@ -82,8 +74,6 @@ namespace hicma {
 
     const char* type() const override;
 
-    Dense extract(int i, int j, int ni, int nj);
-
     double norm() const override;
 
     void print() const override;
@@ -92,7 +82,7 @@ namespace hicma {
 
     void trsm(const Node& A, const char& uplo) override;
 
-    void gemm(const Node& A, const Node& B);
+    void gemm(const Node& A, const Node& B) override;
   };
 }
 #endif

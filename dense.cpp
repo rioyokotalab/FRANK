@@ -117,49 +117,15 @@ namespace hicma {
     swap(A.level, B.level);
   }
 
-  const Node& Dense::operator=(const double a) {
+  const Dense& Dense::operator=(const double a) {
     for (int i=0; i<dim[0]*dim[1]; i++)
       data[i] = a;
     return *this;
   }
 
-  const Node& Dense::operator=(const Node& _A) {
-    if (_A.is(HICMA_DENSE)) {
-      const Dense& A = static_cast<const Dense&>(_A);
-      dim[0] = A.dim[0]; dim[1] = A.dim[1];
-      data = A.data;
-      return *this;
-    } else {
-      std::cerr << this->type() << " = " << _A.type();
-      std::cerr << " is undefined." << std::endl;
-      return *this;
-    }
-  };
-
-  const Node& Dense::operator=(Node&& A) {
-    if (A.is(HICMA_DENSE)) {
-      swap(*this, static_cast<Dense&>(A));
-      return *this;
-    } else {
-      std::cerr << this->type() << " = " << A.type();
-      std::cerr << " is undefined." << std::endl;
-      return *this;
-    }
-  };
-
   const Dense& Dense::operator=(Dense A) {
     swap(*this, A);
     return *this;
-  }
-
-  const Node& Dense::operator=(Block A) {
-    return *this = std::move(*A.ptr);
-  }
-
-  Dense Dense::operator-() const {
-    Dense A(dim[0],dim[1], i_abs, j_abs, level);
-    for (int i=0; i<dim[0]*dim[1]; i++) A[i] = -data[i];
-    return A;
   }
 
   Dense Dense::operator+(const Dense& A) const {

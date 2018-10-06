@@ -26,17 +26,6 @@ namespace hicma {
     swap(A.level, B.level);
   }
 
-  const Node& Node::operator=(const double a) {
-    return *this;
-  }
-
-  const Node& Node::operator=(const Node& A) {
-    return *this;
-  }
-  const Node& Node::operator=(Node&& A) {
-    return *this;
-  }
-
   const Node& Node::operator=(Block A) {
     return *this = *A.ptr;
   }

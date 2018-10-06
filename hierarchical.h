@@ -57,8 +57,6 @@ namespace hicma {
 
     friend void swap(Hierarchical& A, Hierarchical& B);
 
-    const Node& operator[](const int i) const;
-
     Block& operator[](const int i);
 
     const Node& operator()(const int i, const int j) const;

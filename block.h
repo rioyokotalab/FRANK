@@ -17,25 +17,13 @@ namespace hicma {
 
     Block(const Block& A);
 
-    Block(Block&& A);
-
     Block(const Node& A);
-
-    Block(Node&& A);
 
     ~Block();
 
     friend void swap(Block& A, Block& B);
 
     const Block& operator=(Block A);
-
-    const Block& operator=(const Node& A);
-
-    const Block& operator=(Node&& A);
-
-    const Block& operator=(double a);
-
-    const Node& operator[](const int i) const;
 
     Block& operator[](const int i);
 

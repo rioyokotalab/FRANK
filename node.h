@@ -31,12 +31,6 @@ namespace hicma {
 
     friend void swap(Node& A, Node& B);
 
-    virtual const Node& operator=(const double a);
-
-    virtual const Node& operator=(const Node& A);
-
-    virtual const Node& operator=(Node&& A);
-
     virtual const Node& operator=(Block A);
 
     virtual const bool is(const int enum_id) const;
