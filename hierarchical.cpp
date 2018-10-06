@@ -253,6 +253,7 @@ namespace hicma {
   }
 
   void Hierarchical::getrf() {
+    if (level == 0) printXML(*this);
     for (int i=0; i<dim[0]; i++) {
       (*this)(i,i).getrf();
       for (int j=i+1; j<dim[0]; j++) {

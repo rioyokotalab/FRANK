@@ -1,6 +1,7 @@
 #ifndef hierarchical_h
 #define hierarchical_h
 #include "low_rank.h"
+#include "print.h"
 
 #include <algorithm>
 

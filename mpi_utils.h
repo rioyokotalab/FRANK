@@ -3,24 +3,17 @@
 #include <mpi.h>
 
 namespace hicma {
-  int MPIRANK;
-  int MPISIZE;
-  int CONTEXT;
-  int ROWSIZE;
-  int COLSIZE;
-  int ROWRANK;
-  int COLRANK;
-  int EXTERNAL;
+  extern int MPIRANK;
+  extern int MPISIZE;
+  extern int CONTEXT;
+  extern int ROWSIZE;
+  extern int COLSIZE;
+  extern int ROWRANK;
+  extern int COLRANK;
+  extern int EXTERNAL;
 
-  void startMPI(int argc, char ** argv) {
-    MPI_Initialized(&EXTERNAL);
-    if (!EXTERNAL) MPI_Init(&argc, &argv);
-    MPI_Comm_rank(MPI_COMM_WORLD, &MPIRANK);
-    MPI_Comm_size(MPI_COMM_WORLD, &MPISIZE);
-  }
+  void startMPI(int argc, char ** argv);
 
-  void stopMPI() {
-    if (!EXTERNAL) MPI_Finalize();
-  }
+  void stopMPI();
 }
 #endif
