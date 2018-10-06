@@ -67,10 +67,6 @@ namespace hicma {
 
     const char* type() const;
 
-    void resize(int i);
-
-    void resize(int i, int j);
-
     double norm() const;
 
     void print() const;

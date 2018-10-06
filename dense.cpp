@@ -168,10 +168,6 @@ namespace hicma {
     return B;
   }
 
-  Block Dense::operator+(Block&& A) const {
-    return *this + *A.ptr;
-  }
-
   const Node& Dense::operator+=(const Node& _A) {
     if (_A.is(HICMA_DENSE)) {
       const Dense& A = static_cast<const Dense&>(_A);
@@ -189,100 +185,6 @@ namespace hicma {
       std::cerr << " is undefined." << std::endl;
       return *this;
     }
-  }
-
-  const Node& Dense::operator+=(Block&& A) {
-    return *this += *A.ptr;
-  }
-
-  Block Dense::operator-(const Node& _A) const {
-    Block A(*this);
-    A -= _A;
-    return A;
-  }
-
-  Block Dense::operator-(Block&& A) const {
-    return *this - *A.ptr;
-  }
-
-  const Node& Dense::operator-=(const Node& _A) {
-    if (_A.is(HICMA_DENSE)) {
-      const Dense& A = static_cast<const Dense&>(_A);
-      assert(dim[0] == A.dim[0] && dim[1] == A.dim[1]);
-      for (int i=0; i<dim[0]*dim[1]; i++) {
-        (*this)[i] -= A[i];
-      }
-      return *this;
-    } else if (_A.is(HICMA_LOWRANK)) {
-      const LowRank& A = static_cast<const LowRank&>(_A);
-      assert(dim[0] == A.dim[0] && dim[1] == A.dim[1]);
-      return *this -= Dense(A);
-    } else {
-      std::cerr << this->type() << " - " << _A.type();
-      std::cerr << " is undefined." << std::endl;
-      return *this;
-    }
-  }
-
-  const Node& Dense::operator-=(Block&& A) {
-    return *this -= *A.ptr;
-  }
-
-  Block Dense::operator*(const Node& _A) const {
-    if (_A.is(HICMA_LOWRANK)) {
-      const LowRank& A = static_cast<const LowRank&>(_A);
-      assert(dim[0] == A.dim[0] && dim[1] == A.dim[1]);
-      LowRank B(A);
-      B.U = *this * A.U;
-      return B;
-    } else if (_A.is(HICMA_DENSE)) {
-      const Dense& A = static_cast<const Dense&>(_A);
-      assert(dim[1] == A.dim[0]);
-      Dense B(dim[0], A.dim[1], i_abs, j_abs, level);
-      if (A.dim[1] == 1) {
-        cblas_dgemv(
-                    CblasRowMajor,
-                    CblasNoTrans,
-                    dim[0],
-                    dim[1],
-                    1,
-                    &data[0],
-                    dim[1],
-                    &A[0],
-                    1,
-                    0,
-                    &B[0],
-                    1
-                    );
-      }
-      else {
-        cblas_dgemm(
-                    CblasRowMajor,
-                    CblasNoTrans,
-                    CblasNoTrans,
-                    B.dim[0],
-                    B.dim[1],
-                    dim[1],
-                    1,
-                    &data[0],
-                    dim[1],
-                    &A[0],
-                    A.dim[1],
-                    0,
-                    &B[0],
-                    B.dim[1]
-                    );
-      }
-      return B;
-    } else {
-      std::cerr << this->type() << " * " << _A.type();
-      std::cerr << " is undefined." << std::endl;
-      return Block();
-    }
-  }
-
-  Block Dense::operator*(Block&& A) const {
-    return *this * *A.ptr;
   }
 
   double& Dense::operator[](const int i) {
@@ -310,16 +212,6 @@ namespace hicma {
   }
 
   const char* Dense::type() const { return "Dense"; }
-
-  void Dense::resize(int i) {
-    dim[0]=i; dim[1]=1;
-    data.resize(dim[0]*dim[1]);
-  }
-
-  void Dense::resize(int i, int j) {
-    dim[0]=i; dim[1]=j;
-    data.resize(dim[0]*dim[1]);
-  }
 
   double Dense::norm() const {
     double l2 = 0;

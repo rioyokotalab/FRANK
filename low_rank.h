@@ -45,8 +45,6 @@ namespace hicma {
 
     const char* type() const override;
 
-    void resize(int m, int n, int k);
-
     double norm() const override;
 
     void print() const override;

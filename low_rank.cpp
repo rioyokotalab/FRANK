@@ -134,13 +134,6 @@ namespace hicma {
 
   const char* LowRank::type() const { return "LowRank"; }
 
-  void LowRank::resize(int m, int n, int k) {
-    dim[0]=m; dim[1]=n; rank=k;
-    U.resize(m,k);
-    S.resize(k,k);
-    V.resize(k,n);
-  }
-
   double LowRank::norm() const {
     return Dense(*this).norm();
   }

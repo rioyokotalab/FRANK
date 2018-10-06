@@ -66,25 +66,9 @@ namespace hicma {
 
     Dense operator-() const;
 
-    Block operator+(const Node& A) const override;
-
-    Block operator+(Block&& A) const override;
+    Block operator+(const Node& A) const;
 
     const Node& operator+=(const Node& A) override;
-
-    const Node& operator+=(Block&& A) override;
-
-    Block operator-(const Node& A) const override;
-
-    Block operator-(Block&& A) const override;
-
-    const Node& operator-=(const Node& A) override;
-
-    const Node& operator-=(Block&& A) override;
-
-    Block operator*(const Node& A) const override;
-
-    Block operator*(Block&& A) const override;
 
     double& operator[](const int i);
 
@@ -97,10 +81,6 @@ namespace hicma {
     const bool is(const int enum_id) const override;
 
     const char* type() const override;
-
-    void resize(int i);
-
-    void resize(int i, int j);
 
     Dense extract(int i, int j, int ni, int nj);
 

@@ -129,16 +129,6 @@ namespace hicma {
 
   const bool Block::is(const int i) const { return ptr->is(i); }
 
-  void Block::resize(int i) {
-    assert(is(HICMA_DENSE));
-    static_cast<Dense*>(ptr.get())->resize(i);
-  }
-
-  void Block::resize(int i, int j) {
-    assert(is(HICMA_DENSE));
-    static_cast<Dense*>(ptr.get())->resize(i, j);
-  }
-
   double Block::norm() const {
     return ptr->norm();
   }
