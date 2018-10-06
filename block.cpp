@@ -77,10 +77,6 @@ namespace hicma {
     return *ptr -= *A.ptr;
   }
 
-  Block Block::operator*(const Block& A) const {
-    return *ptr * *A.ptr;
-  }
-
   Block Block::operator+(const Node& A) const {
     return *ptr + A;
   }
@@ -95,10 +91,6 @@ namespace hicma {
 
   const Node& Block::operator-=(const Node& A) {
     return *ptr -= A;
-  }
-
-  Block Block::operator*(const Node& A) const {
-    return *ptr * A;
   }
 
   const Node& Block::operator[](const int i) const {

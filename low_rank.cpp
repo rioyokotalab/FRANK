@@ -104,28 +104,16 @@ namespace hicma {
     return *this;
   }
 
-  const Node& LowRank::operator+=(const Node& _A) {
-    if (_A.is(HICMA_DENSE)) {
-      const Dense& A = static_cast<const Dense&>(_A);
-      assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
-      return Dense(*this) += A;
-    } else if (_A.is(HICMA_LOWRANK)) {
-      const LowRank& A = static_cast<const LowRank&>(_A);
-      assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
-      if (rank+A.rank >= dim[0]) {
-        *this = LowRank(Dense(*this) + Dense(A), rank);
-      } else {
-        mergeU(*this, A);
-        mergeS(*this, A);
-        mergeV(*this, A);
-      }
-      return *this;
+  const LowRank& LowRank::operator+=(const LowRank& A) {
+    assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
+    if (rank+A.rank >= dim[0]) {
+      *this = LowRank(Dense(*this) + Dense(A), rank);
     } else {
-      std::cerr << this->type() << " + " << _A.type();
-      std::cerr << " is undefined." << std::endl;
-      abort();
-      return *this;
+      mergeU(*this, A);
+      mergeS(*this, A);
+      mergeV(*this, A);
     }
+    return *this;
   }
 
   const bool LowRank::is(const int enum_id) const {

@@ -89,18 +89,6 @@ namespace hicma {
     return *this;
   };
 
-  Block Node::operator*(const Node& A) const {
-    std::cerr << "Operations should not be performed between two node types." << std::endl;
-    abort();
-    return Block();
-  };
-
-  Block Node::operator*(Block&& A) const {
-    std::cerr << "Operations should not be performed between two node types." << std::endl;
-    abort();
-    return Block();
-  };
-
   const bool Node::is(const int enum_id) const {
     return enum_id == HICMA_NODE;
   }

@@ -162,29 +162,19 @@ namespace hicma {
     return A;
   }
 
-  Block Dense::operator+(const Node& A) const {
-    Block B(*this);
+  Dense Dense::operator+(const Dense& A) const {
+    Dense B(*this);
     B += A;
     return B;
   }
 
   const Node& Dense::operator+=(const Node& _A) {
-    if (_A.is(HICMA_DENSE)) {
-      const Dense& A = static_cast<const Dense&>(_A);
-      assert(dim[0] == A.dim[0] && dim[1] == A.dim[1]);
-      for (int i=0; i<dim[0]*dim[1]; i++) {
-        (*this)[i] += A[i];
-      }
-      return *this;
-    } else if (_A.is(HICMA_LOWRANK)) {
-      const LowRank& A = static_cast<const LowRank&>(_A);
-      assert(dim[0] == A.dim[0] && dim[1] == A.dim[1]);
-      return *this += Dense(A);
-    } else {
-      std::cerr << this->type() << " + " << _A.type();
-      std::cerr << " is undefined." << std::endl;
-      return *this;
+    const Dense& A = static_cast<const Dense&>(_A);
+    assert(dim[0] == A.dim[0] && dim[1] == A.dim[1]);
+    for (int i=0; i<dim[0]*dim[1]; i++) {
+      (*this)[i] += A[i];
     }
+    return *this;
   }
 
   double& Dense::operator[](const int i) {

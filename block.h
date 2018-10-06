@@ -43,8 +43,6 @@ namespace hicma {
 
     const Node& operator-=(const Block& A);
 
-    Block operator*(const Block& A) const;
-
     Block operator+(const Node& A) const;
 
     const Node& operator+=(const Node& A);
@@ -52,8 +50,6 @@ namespace hicma {
     Block operator-(const Node& A) const;
 
     const Node& operator-=(const Node& A);
-
-    Block operator*(const Node& A) const;
 
     const Node& operator[](const int i) const;
 
