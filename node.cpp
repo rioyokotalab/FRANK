@@ -10,8 +10,12 @@ namespace hicma {
              const int _level)
     : i_abs(_i_abs), j_abs(_j_abs), level(_level) {}
 
-  Node::Node(const Node& ref)
-    : i_abs(ref.i_abs), j_abs(ref.j_abs), level(ref.level) {}
+  Node::Node(const Node& A)
+    : i_abs(A.i_abs), j_abs(A.j_abs), level(A.level) {}
+
+  Node::Node(Block A) {
+    return *this = *A.ptr;
+  }
 
   Node::~Node() {};
 

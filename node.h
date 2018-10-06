@@ -25,6 +25,8 @@ namespace hicma {
 
     Node(const Node& A);
 
+    Node(Block A);
+
     virtual ~Node();
 
     virtual Node* clone() const;

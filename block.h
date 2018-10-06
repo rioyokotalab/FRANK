@@ -25,6 +25,8 @@ namespace hicma {
 
     const Block& operator=(Block A);
 
+    const Node& operator[](const int i) const;
+
     Block& operator[](const int i);
 
     const Node& operator()(const int i, const int j) const;

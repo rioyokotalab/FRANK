@@ -194,6 +194,11 @@ namespace hicma {
     swap(A.level, B.level);
   }
 
+  const Node& Hierarchical::operator[](const int i) const {
+    assert(i<dim[0]*dim[1]);
+    return *data[i].ptr;
+  }
+
   Block& Hierarchical::operator[](const int i) {
     assert(i<dim[0]*dim[1]);
     return data[i];

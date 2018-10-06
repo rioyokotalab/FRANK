@@ -19,6 +19,12 @@ namespace hicma {
     return *this;
   }
 
+  const Node& Block::operator[](const int i) const {
+    if (is(HICMA_HIERARCHICAL)) {
+      return static_cast<const Hierarchical&>(*ptr)[i];
+    } else return *ptr;
+  }
+
   Block& Block::operator[](const int i) {
     if (is(HICMA_HIERARCHICAL)) {
       return static_cast<Hierarchical&>(*ptr)[i];
