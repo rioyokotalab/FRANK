@@ -25,13 +25,17 @@ namespace hicma {
 
     Node(const Node& A);
 
-    Node(Block A);
-
     virtual ~Node();
 
     virtual Node* clone() const;
 
     friend void swap(Node& A, Node& B);
+
+    virtual const Node& operator=(const double a);
+
+    virtual const Node& operator=(const Node& A);
+
+    virtual const Node& operator=(Node&& A);
 
     virtual const Node& operator=(Block A);
 
