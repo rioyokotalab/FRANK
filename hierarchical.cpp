@@ -393,7 +393,8 @@ namespace hicma {
       (*this)(i, j).gemm(A(i, k), B(k, j));
     }
     if (rank != -1) {
-      (*this)(i, j) = LowRank((*this)(i, j), rank);
+      assert((*this)(i, j).is(HICMA_DENSE));
+      (*this)(i, j) = LowRank(static_cast<Dense&>(*(*this)(i, j).ptr), rank);
     }
   }
 }

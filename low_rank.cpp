@@ -31,7 +31,7 @@ namespace hicma {
   }
 
   LowRank::LowRank(const LowRank& A) : Node(A.i_abs,A.j_abs,A.level), U(A.U), S(A.S), V(A.V) {
-    dim[0]=A.dim[0]; dim[1]=A.dim[1]; rank=A.rank;
+     dim[0]=A.dim[0]; dim[1]=A.dim[1]; rank=A.rank;
   }
 
   LowRank::LowRank(LowRank&& A) {
