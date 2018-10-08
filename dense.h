@@ -55,6 +55,8 @@ namespace hicma {
 
     Dense(const Hierarchical& A);
 
+    Dense(const Nodex& A);
+
     Dense(const Block& A);
 
     Dense* clone() const override;

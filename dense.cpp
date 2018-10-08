@@ -95,6 +95,17 @@ namespace hicma {
     }
     data = D.data;
   }
+
+  Dense::Dense(const Node& _A) : Node(*_A.i_abs, *_A.j_abs, *_A.level) {
+    if (_A.is(HICMA_DENSE)) {
+      *this = static_cast<Dense&>(_A);
+    } else if (_A.is(HICMA_LOWRANK)) {
+      *this = Dense(static_cast<LowRank&>(_A));
+    } else if (_A.is(HICMA_HIERARCHICAL)) {
+      *this = Dense(static_cast<Hierarchical&>(_A));
+    }
+  }
+
   Dense::Dense(const Block& _A) : Node((*_A.ptr).i_abs, (*_A.ptr).j_abs, (*_A.ptr).level) {
     if (_A.is(HICMA_DENSE)) {
       *this = static_cast<Dense&>(*_A.ptr);
