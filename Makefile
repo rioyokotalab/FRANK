@@ -23,4 +23,4 @@ test:  $(TEST_SOURCES) $(SOURCES)
 	mpirun -np 4 ./a.out
 
 clean:
-	$(RM) *.o *.out
+	$(RM) *.o *.out *.xml

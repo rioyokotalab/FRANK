@@ -21,25 +21,9 @@ namespace hicma {
 
     ~Block();
 
-    friend void swap(Block& A, Block& B);
-
     const Block& operator=(Block A);
 
-    const Node& operator[](const int i) const;
-
-    Block& operator[](const int i);
-
-    const Node& operator()(const int i, const int j) const;
-
-    Block& operator()(const int i, const int j);
-
     const bool is(const int i) const;
-
-    const char* type() const;
-
-    double norm() const;
-
-    void print() const;
 
     void getrf();
 
@@ -49,7 +33,6 @@ namespace hicma {
 
     void gemm(const Block& A, const Block& B);
 
-    void gemm(const Node& A, const Node& B);
   };
 }
 

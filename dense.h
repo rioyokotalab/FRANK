@@ -7,6 +7,9 @@
 
 namespace hicma {
 
+  class LowRank;
+  class Hierarchical;
+
   class Dense : public Node {
   public:
     // NOTE: Take care to add members new members to swap
@@ -47,6 +50,10 @@ namespace hicma {
     Dense(Dense&& A);
 
     Dense(const Dense* A);
+
+    Dense(const LowRank& A);
+
+    Dense(const Hierarchical& A);
 
     Dense(const Block& A);
 

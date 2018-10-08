@@ -37,8 +37,6 @@ namespace hicma {
 
     virtual const Node& operator=(Node&& A);
 
-    virtual const Node& operator=(Block A);
-
     virtual const bool is(const int enum_id) const;
 
     virtual const char* type() const;

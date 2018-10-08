@@ -58,49 +58,50 @@ namespace hicma {
     dim[0]=A->dim[0]; dim[1]=A->dim[1];
   }
 
+  Dense::Dense(const LowRank& A) : Node(A.i_abs,A.j_abs,A.level) {
+    Dense UxS(A.dim[0],A.rank);
+    UxS.gemm(A.U,A.S);
+    Dense UxSxV(A.dim[0],A.dim[1],A.i_abs,A.j_abs,A.level);
+    UxSxV.gemm(UxS,A.V);
+    *this = UxSxV;
+  }
+
+  Dense::Dense(const Hierarchical& A) : Node(A.i_abs,A.j_abs,A.level) {
+    dim[0] = 0;
+    for (int i=0; i<A.dim[0]; i++) {
+      Dense AD = Dense(A(i,0));
+      dim[0] += AD.dim[0];
+    }
+    dim[1] = 0;
+    for (int j=0; j<A.dim[1]; j++) {
+      Dense AD = Dense(A(0,j));
+      dim[1] += AD.dim[1];
+    }
+    Dense D(dim[0],dim[1]);
+    int i_begin = 0;
+    for (int i=0; i<A.dim[0]; i++) {
+      Dense AA = Dense(A(i,0));
+      int j_begin = 0;
+      for (int j=0; j<A.dim[1]; j++) {
+        Dense AD = Dense(A(i,j));
+        for (int ic=0; ic<AD.dim[0]; ic++) {
+          for (int jc=0; jc<AD.dim[1]; jc++) {
+            D(ic+i_begin,jc+j_begin) = AD(ic,jc);
+          }
+        }
+        j_begin += AD.dim[1];
+      }
+      i_begin += AA.dim[0];
+    }
+    data = D.data;
+  }
   Dense::Dense(const Block& _A) : Node((*_A.ptr).i_abs, (*_A.ptr).j_abs, (*_A.ptr).level) {
     if (_A.is(HICMA_DENSE)) {
-      Dense& A = static_cast<Dense&>(*_A.ptr);
-      dim[0]=A.dim[0]; dim[1]=A.dim[1];
-      data = A.data;
+      *this = static_cast<Dense&>(*_A.ptr);
     } else if (_A.is(HICMA_LOWRANK)) {
-      LowRank& A = static_cast<LowRank&>(*_A.ptr);
-      Dense UxS(A.dim[0],A.rank);
-      UxS.gemm(A.U,A.S);
-      Dense UxSxV(A.dim[0],A.dim[1]);
-      UxSxV.gemm(UxS,A.V);
-      dim[0] = A.dim[0];
-      dim[1] = A.dim[1];
-      data = UxSxV.data;
+      *this = Dense(static_cast<LowRank&>(*_A.ptr));
     } else if (_A.is(HICMA_HIERARCHICAL)) {
-      Hierarchical& A = static_cast<Hierarchical&>(*_A.ptr);
-      dim[0] = 0;
-      for (int i=0; i<A.dim[0]; i++) {
-        Dense AD = Dense(A(i,0));
-        dim[0] += AD.dim[0];
-      }
-      dim[1] = 0;
-      for (int j=0; j<A.dim[1]; j++) {
-        Dense AD = Dense(A(0,j));
-        dim[1] += AD.dim[1];
-      }
-      Dense D(dim[0],dim[1]);
-      int i_begin = 0;
-      for (int i=0; i<A.dim[0]; i++) {
-        Dense AA = Dense(A(i,0));
-        int j_begin = 0;
-        for (int j=0; j<A.dim[1]; j++) {
-          Dense AD = Dense(A(i,j));
-          for (int ic=0; ic<AD.dim[0]; ic++) {
-            for (int jc=0; jc<AD.dim[1]; jc++) {
-              D(ic+i_begin,jc+j_begin) = AD(ic,jc);
-            }
-          }
-          j_begin += AD.dim[1];
-        }
-        i_begin += AA.dim[0];
-      }
-      data = D.data;
+      *this = Dense(static_cast<Hierarchical&>(*_A.ptr));
     }
   }
 
