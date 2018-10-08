@@ -7,6 +7,8 @@
 #include "low_rank.h"
 #include "dense.h"
 
+#include <lapacke.h>
+#include <algorithm>
 #include <iomanip>
 #include <iostream>
 #include <string>
@@ -39,15 +41,35 @@ namespace hicma {
       tree.put("<xmlattr>.dim1", A.dim[1]);
     } else if (_A.is(HICMA_LOWRANK)) {
       const LowRank& A = static_cast<const LowRank&>(_A);
+      int max_rank = std::min(A.dim[0], A.dim[1]);
+      std::vector<double> S(max_rank), U(A.dim[0]*A.dim[1]), Vt(A.dim[1]*A.dim[1]), SU(max_rank - 1);
+      LAPACKE_dgesvd(
+          LAPACK_ROW_MAJOR, 'A', 'A',
+          A.dim[0], A.dim[1], &(Dense(A))[0],
+          A.dim[0], &S[0], &U[0], A.dim[0], &Vt[0], A.dim[1], &SU[0]);
+      std::string singular_values = std::to_string(S[0]);
+      for (int i=1; i<max_rank; ++i)
+        singular_values += std::string(",") + std::to_string(S[i]);
       tree.put("<xmlattr>.type", A.type());
       tree.put("<xmlattr>.dim0", A.dim[0]);
       tree.put("<xmlattr>.dim1", A.dim[1]);
       tree.put("<xmlattr>.rank", A.rank);
+      tree.put("<xmlattr>.svalues", singular_values);
     } else if (_A.is(HICMA_DENSE)) {
       const Dense& A = static_cast<const Dense&>(_A);
+      int max_rank = std::min(A.dim[0], A.dim[1]);
+      std::vector<double> S(max_rank), U(A.dim[0]*A.dim[1]), Vt(A.dim[1]*A.dim[1]), SU(max_rank - 1);
+      LAPACKE_dgesvd(
+          LAPACK_ROW_MAJOR, 'A', 'A',
+          A.dim[0], A.dim[1], &(Dense(A))[0],
+          A.dim[0], &S[0], &U[0], A.dim[0], &Vt[0], A.dim[1], &SU[0]);
+      std::string singular_values = std::to_string(S[0]);
+      for (int i=1; i<max_rank; ++i)
+        singular_values += std::string(",") + std::to_string(S[i]);
       tree.put("<xmlattr>.type", A.type());
       tree.put("<xmlattr>.dim0", A.dim[0]);
       tree.put("<xmlattr>.dim1", A.dim[1]);
+      tree.put("<xmlattr>.svalues", singular_values);
     } else {
       tree.add("Node", "test");
     }
