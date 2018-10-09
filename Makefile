@@ -1,6 +1,6 @@
 CXX = mpicxx -std=c++14 -ggdb3 -Wall -O3 -fopenmp -I. -Wfatal-errors
 
-SOURCES = errors.o print.o mpi_utils.o timer.o functions.o dense.o id.o low_rank.o hierarchical.o node.o block.o
+SOURCES = errors.o print.o mpi_utils.o timer.o functions.o dense.o id.o low_rank.o hierarchical.o node.o any.o
 TEST_SOURCES = test/test_helper.o test/test_mpi_block_creation.o test/test_mpi_dense_lu.o
 
 .cpp.o:

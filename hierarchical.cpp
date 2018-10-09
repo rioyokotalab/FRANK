@@ -199,7 +199,7 @@ namespace hicma {
     return *data[i].ptr;
   }
 
-  Block& Hierarchical::operator[](const int i) {
+  Any& Hierarchical::operator[](const int i) {
     assert(i<dim[0]*dim[1]);
     return data[i];
   }
@@ -209,7 +209,7 @@ namespace hicma {
     return *data[i*dim[1]+j].ptr;
   }
 
-  Block& Hierarchical::operator()(const int i, const int j) {
+  Any& Hierarchical::operator()(const int i, const int j) {
     assert(i<dim[0] && j<dim[1]);
     return data[i*dim[1]+j];
   }

@@ -11,7 +11,7 @@ namespace hicma {
   public:
     // NOTE: Take care to add members new members to swap
     int dim[2];
-    std::vector<Block> data;
+    std::vector<Any> data;
 
     Hierarchical();
 
@@ -59,11 +59,11 @@ namespace hicma {
 
     const Node& operator[](const int i) const;
 
-    Block& operator[](const int i);
+    Any& operator[](const int i);
 
     const Node& operator()(const int i, const int j) const;
 
-    Block& operator()(const int i, const int j);
+    Any& operator()(const int i, const int j);
 
     const bool is(const int enum_id) const override;
 
