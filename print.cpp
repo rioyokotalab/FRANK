@@ -7,7 +7,6 @@
 #include "low_rank.h"
 #include "dense.h"
 
-#include <lapacke.h>
 #include <algorithm>
 #include <iomanip>
 #include <iostream>
@@ -16,6 +15,7 @@
 #include <vector>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
+#include <lapacke.h>
 
 namespace hicma {
   bool VERBOSE = true;                          //!< Print to screen
