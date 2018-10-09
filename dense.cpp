@@ -54,10 +54,6 @@ namespace hicma {
     swap(*this, A);
   }
 
-  Dense::Dense(const Dense* A) : Node(A->i_abs,A->j_abs,A->level), data(A->data) {
-    dim[0]=A->dim[0]; dim[1]=A->dim[1];
-  }
-
   Dense::Dense(const LowRank& A) : Node(A.i_abs,A.j_abs,A.level) {
     Dense UxS(A.dim[0],A.rank);
     UxS.gemm(A.U,A.S);

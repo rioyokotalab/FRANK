@@ -175,12 +175,6 @@ namespace hicma {
     swap(*this, A);
   }
 
-  Hierarchical::Hierarchical(const Hierarchical* A)
-    : Node(A->i_abs,A->j_abs,A->level), data(A->data) {
-    dim[0]=A->dim[0]; dim[1]=A->dim[1];
-    data = A->data;
-  }
-
   Hierarchical* Hierarchical::clone() const {
     return new Hierarchical(*this);
   }

@@ -49,8 +49,6 @@ namespace hicma {
 
     Dense(Dense&& A);
 
-    Dense(const Dense* A);
-
     Dense(const LowRank& A);
 
     Dense(const Hierarchical& A);

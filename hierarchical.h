@@ -51,8 +51,6 @@ namespace hicma {
 
     Hierarchical(Hierarchical&& A);
 
-    Hierarchical(const Hierarchical* A);
-
     Hierarchical* clone() const override;
 
     friend void swap(Hierarchical& A, Hierarchical& B);
