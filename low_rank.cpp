@@ -192,9 +192,17 @@ namespace hicma {
         C.V.gemm(A.V,B);
         *this += C;
       } else if (_B.is(HICMA_LOWRANK)) {
-        std::cerr << this->type() << " -= " << _A.type();
-        std::cerr << " * " << _B.type() << " is undefined." << std::endl;
-        abort();
+        const LowRank& B = static_cast<const LowRank&>(_B);
+        LowRank C(A);
+        C.S = 0;
+        C.V = B.V;
+        Dense VxU(A.rank,B.rank);
+        VxU.gemm(A.V,B.U);
+        Dense SxVxU(A.rank,B.rank);
+        SxVxU.gemm(A.S,VxU);
+        Dense SxVxUxS(A.rank,B.rank);
+        C.S.gemm(SxVxU,B.S);
+        *this += C;
       } else if (_B.is(HICMA_HIERARCHICAL)) {
         std::cerr << this->type() << " -= " << _A.type();
         std::cerr << " * " << _B.type() << " is undefined." << std::endl;

@@ -325,7 +325,23 @@ namespace hicma {
   }
 
   void Hierarchical::gemm(const Node& _A, const Node& _B) {
-    if (_A.is(HICMA_LOWRANK)) {
+    if (_A.is(HICMA_DENSE)) {
+      const Dense& A = static_cast<const Dense&>(_A);
+      if (_B.is(HICMA_HIERARCHICAL)) {
+        const Hierarchical& B = static_cast<const Hierarchical&>(_B);
+        const Hierarchical& AH = Hierarchical(A, dim[0], B.dim[0]);
+        for (int i=0; i<dim[0]; i++) {
+          for (int j=0; j<dim[1]; j++) {
+            (*this).gemm_row(AH, B, i, j, 0, AH.dim[1]);
+          }
+        }
+
+      } else {
+        std::cerr << this->type() << " -= " << _A.type();
+        std::cerr << " * " << _B.type() << " is undefined." << std::endl;
+        abort();
+      }
+    } else if (_A.is(HICMA_LOWRANK)) {
       const LowRank& A = static_cast<const LowRank&>(_A);
       if (_B.is(HICMA_LOWRANK)) {
         const LowRank& B = static_cast<const LowRank&>(_B);
@@ -353,6 +369,14 @@ namespace hicma {
       const Hierarchical& A = static_cast<const Hierarchical&>(_A);
       if (_B.is(HICMA_LOWRANK)) {
         const LowRank& B = static_cast<const LowRank&>(_B);
+        const Hierarchical& BH = Hierarchical(B, A.dim[1], dim[1]);
+        for (int i=0; i<dim[0]; i++) {
+          for (int j=0; j<dim[1]; j++) {
+            (*this).gemm_row(A, BH, i, j, 0, A.dim[1]);
+          }
+        }
+      } else if (_B.is(HICMA_DENSE)) {
+        const Dense& B = static_cast<const Dense&>(_B);
         const Hierarchical& BH = Hierarchical(B, A.dim[1], dim[1]);
         for (int i=0; i<dim[0]; i++) {
           for (int j=0; j<dim[1]; j++) {
