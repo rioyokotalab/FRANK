@@ -1,7 +1,5 @@
-Change vector to Dense in rsvd
-Use rank+p in rsvd
-Define all lapack calls in Dense
 Don't use transpose in rsvd
+Use rank+p in rsvd
 
 H^2-matrix LU (nested basis)
 Recompress low_rank after add/sub (after H^2 mat)
