@@ -1,36 +1,6 @@
 #include "rsvd.h"
 
-#define min(x,y) (((x) < (y)) ? (x) : (y))
-#define max(x,y) (((x) > (y)) ? (x) : (y))
-
 namespace hicma {
-
-  /* C = A*B */
-  void matrix_matrix_mult(
-                          const std::vector<double>& A,
-                          std::vector<double>& B,
-                          std::vector<double>& C,
-                          int nrows_a,
-                          int ncols_a,
-                          int nrows_b,
-                          int ncols_b
-                          ) {
-    cblas_dgemm(
-                CblasRowMajor,
-                CblasNoTrans,
-                CblasNoTrans,
-                nrows_a,
-                ncols_b,
-                nrows_b,
-                1,
-                &A[0],
-                ncols_a,
-                &B[0],
-                ncols_b,
-                1,
-                &C[0],
-                ncols_b);
-  }
 
   /* C = A^T*B
    *
@@ -81,7 +51,7 @@ namespace hicma {
                                         int ncols,
                                         int rank)
   {
-    int k = min(ncols, rank);
+    int k = std::min(ncols, rank);
     std::vector<double> QR_temp(Bt);
     std::vector<double> TAU(k);
     LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, ncols, rank, &QR_temp[0], rank, &TAU[0]);
@@ -105,7 +75,7 @@ namespace hicma {
    * rank - target rank.
    */
   void QR_factorization_getQ(std::vector<double>& M, std::vector<double>& Q, int nrows, int ncols, int rank){
-    int k = min(nrows, rank);
+    int k = std::min(nrows, rank);
     std::vector<double> QR_temp(M);
     std::vector<double> TAU(k);
     for (int i=0; i<k; i++) Q[i*k+i] = 1.0;
@@ -118,21 +88,6 @@ namespace hicma {
     for(int i=0; i<n; i++){
       D[i*n+i] = dvals[i];
     }
-  }
-
-  /* P = U*S*V^T */
-  void form_svd_product_matrix(
-                               std::vector<double>& U,
-                               std::vector<double>& S,
-                               std::vector<double>& V,
-                               std::vector<double>& P,
-                               int nrows,
-                               int ncols,
-                               int rank
-                               ) {
-    std::vector<double> US(nrows*rank);
-    matrix_matrix_mult(U, S, US, nrows, rank, rank, rank);
-    matrix_matrix_mult(US, V, P, nrows, rank, rank, ncols);
   }
 
   /*
@@ -153,7 +108,7 @@ namespace hicma {
                      int ncols,
                      int rank
                      ) {
-    std::vector<double> SU(min(nrows, ncols) - 1);
+    std::vector<double> SU(std::min(nrows, ncols) - 1);
     LAPACKE_dgesvd(LAPACK_ROW_MAJOR, 'A', 'A', rank, rank, &M[0], rank, &S[0], &U[0], rank, &Vt[0], rank, &SU[0]);
   }
 
@@ -184,49 +139,49 @@ namespace hicma {
     int ncols = A.dim[1];
 
     // RN = randn(n,k+p)
-    Dense RN(ncols, rank);
+    Dense RN(ncols,rank);
     std::mt19937 generator;
     std::normal_distribution<double> distribution(0.0, 1.0);
     for (int i=0; i<ncols*rank; i++) {
       RN[i] = distribution(generator);
     }
 
-    // Y = M * RN
-    Dense Y(nrows, rank);
-    matrix_matrix_mult(A.data, RN.data, Y.data, nrows, ncols, ncols, rank);
+    // Y = A * RN
+    Dense Y(nrows,rank);
+    Y.gemm(A, RN, 1, 0);
 
     // [Q, R] = qr(Y)
-    std::vector<double> Q(nrows*rank);
-    QR_factorization_getQ(Y.data, Q, nrows, ncols, rank);
+    Dense Q(nrows,rank);
+    QR_factorization_getQ(Y.data, Q.data, nrows, ncols, rank);
 
-    // B' = M' * Q
-    std::vector<double> Bt(ncols*rank);
-    matrix_transpose_matrix_mult(A.data, Q, Bt, nrows, ncols, nrows, rank);
+    // B' = A' * Q
+    Dense Bt(ncols,rank);
+    matrix_transpose_matrix_mult(A.data, Q.data, Bt.data, nrows, ncols, nrows, rank);
 
     // [Qhat, Rhat] = qr(Bt)
-    std::vector<double> Qhat(ncols*rank);
-    std::vector<double> Rhat(rank*rank);
-    compute_QR_compact_factorization(Bt, Qhat, Rhat, nrows, ncols, rank);
+    Dense Qhat(ncols,rank);
+    Dense Rhat(rank,rank);
+    compute_QR_compact_factorization(Bt.data, Qhat.data, Rhat.data, nrows, ncols, rank);
 
     // [Uhat, S, Vhat] = svd(Rhat);
-    std::vector<double> Uhat(rank*rank);
-    std::vector<double> Shat(rank);
-    std::vector<double> Vhat(rank*rank);
-    calculate_svd(Uhat, Shat, Vhat, Rhat, rank, rank, rank);
-    build_diagonal_matrix(Shat, rank, S.data);
+    Dense Uhat(rank,rank);
+    Dense Shat(rank,1);
+    Dense Vhat(rank,rank);
+    calculate_svd(Uhat.data, Shat.data, Vhat.data, Rhat.data, rank, rank, rank);
+    build_diagonal_matrix(Shat.data, rank, S.data);
 
     // Vhat = Vhat'
-    std::vector<double> Vhat_t(rank*rank);
-    transpose(Vhat, Vhat_t, rank, rank);
+    Dense Vhat_t(rank,rank);
+    transpose(Vhat.data, Vhat_t.data, rank, rank);
 
     // U = Q * Vhat'
-    matrix_matrix_mult(Q, Vhat_t, U.data, nrows, rank, rank, rank);
+    U.gemm(Q, Vhat_t);
 
     // V' = Qhat * Uhat
-    std::vector<double> V_t(ncols*rank);
-    matrix_matrix_mult(Qhat, Uhat, V_t, ncols, rank, rank, rank);
+    Dense V_t(ncols,rank);
+    V_t.gemm(Qhat, Uhat);
 
     // V = V'
-    transpose(V_t, V.data, rank, ncols);
+    transpose(V_t.data, V.data, rank, ncols);
   }
 }
