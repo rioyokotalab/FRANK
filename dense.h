@@ -92,6 +92,11 @@ namespace hicma {
     void trsm(const Node& A, const char& uplo) override;
 
     void gemm(const Node& A, const Node& B, const int& alpha=-1, const int& beta=1) override;
+
+    void qr(Dense& Q, Dense& R);
+
+    void svd(Dense& U, Dense& S, Dense& V);
+
   };
 }
 #endif

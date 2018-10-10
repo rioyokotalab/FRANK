@@ -35,54 +35,6 @@ namespace hicma {
                 );
   }
 
-
-  /* compute compact QR factorization
-   * Bt - input matrix. rank x ncols
-   * Q - matrix in which Q is to be saved. ncols x rank
-   * R - matrix in which R is to be saved. rank x rank
-   M is mxn; Q is mxk and R is kxk
-   NOTE: FUNCTION NOT USED AS OF NOW.
-  */
-  void compute_QR_compact_factorization(
-                                        std::vector<double>& Bt,
-                                        std::vector<double>& Q,
-                                        std::vector<double>& R,
-                                        int nrows,
-                                        int ncols,
-                                        int rank)
-  {
-    int k = std::min(ncols, rank);
-    std::vector<double> QR_temp(Bt);
-    std::vector<double> TAU(k);
-    LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, ncols, rank, &QR_temp[0], rank, &TAU[0]);
-    for(int i=0; i<ncols; i++) {
-      for(int j=0; j<rank; j++) {
-        if(j>=i){
-          R[i*rank + j] = QR_temp[i*rank + j];
-        }
-      }
-    }
-    for (int i=0; i<k; i++) Q[i*k+i] = 1.0;
-    LAPACKE_dormqr(LAPACK_ROW_MAJOR, 'L', 'N', ncols, rank, rank, &QR_temp[0], rank, &TAU[0], &Q[0], rank);
-  }
-
-
-  /* compute compact QR factoriation and get Q
-   * M - original matrix. dim: nrows * rank
-   * Q - Q part of QR factorized matrix. Answer is returned in this vector. nrows*k. no data during input.
-   * nrows - number of rows of the Matrix Q.
-   * ncols - number of columns of M.
-   * rank - target rank.
-   */
-  void QR_factorization_getQ(std::vector<double>& M, std::vector<double>& Q, int nrows, int ncols, int rank){
-    int k = std::min(nrows, rank);
-    std::vector<double> QR_temp(M);
-    std::vector<double> TAU(k);
-    for (int i=0; i<k; i++) Q[i*k+i] = 1.0;
-    LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, nrows, rank, &QR_temp[0], rank, &TAU[0]);
-    LAPACKE_dormqr(LAPACK_ROW_MAJOR, 'L', 'N', nrows, rank, rank, &QR_temp[0], rank, &TAU[0], &Q[0], rank);
-  }
-
   /* build diagonal matrix from vector elements */
   void build_diagonal_matrix(std::vector<double>& dvals, int n, std::vector<double>& D){
     for(int i=0; i<n; i++){
@@ -112,7 +64,7 @@ namespace hicma {
     LAPACKE_dgesvd(LAPACK_ROW_MAJOR, 'A', 'A', rank, rank, &M[0], rank, &S[0], &U[0], rank, &Vt[0], rank, &SU[0]);
   }
 
-  void transpose(std::vector<double>&  mat, std::vector<double>& mat_t, int nrows, int ncols)
+  void transpose(const std::vector<double>&  mat, std::vector<double>& mat_t, int nrows, int ncols)
   {
     for (int i=0; i<nrows; i++) {
       for (int j=0; j<ncols; j++) {
@@ -152,23 +104,25 @@ namespace hicma {
 
     // [Q, R] = qr(Y)
     Dense Q(nrows,rank);
-    QR_factorization_getQ(Y.data, Q.data, nrows, ncols, rank);
+    Dense R(rank,rank);
+    Y.qr(Q, R);
 
     // B' = A' * Q
-    Dense Bt(ncols,rank);
-    matrix_transpose_matrix_mult(A.data, Q.data, Bt.data, nrows, ncols, nrows, rank);
+    Dense At(ncols,nrows);
+    transpose(A.data, At.data, ncols, nrows);
 
-    // [Qhat, Rhat] = qr(Bt)
+    Dense Bt(ncols,rank);
+    Bt.gemm(At, Q, 1, 0);
+
+    // [Qhat, Rhat] = qr(B')
     Dense Qhat(ncols,rank);
     Dense Rhat(rank,rank);
-    compute_QR_compact_factorization(Bt.data, Qhat.data, Rhat.data, nrows, ncols, rank);
+    Bt.qr(Qhat,Rhat);
 
     // [Uhat, S, Vhat] = svd(Rhat);
     Dense Uhat(rank,rank);
-    Dense Shat(rank,1);
     Dense Vhat(rank,rank);
-    calculate_svd(Uhat.data, Shat.data, Vhat.data, Rhat.data, rank, rank, rank);
-    build_diagonal_matrix(Shat.data, rank, S.data);
+    Rhat.svd(Uhat,S,Vhat);
 
     // Vhat = Vhat'
     Dense Vhat_t(rank,rank);
