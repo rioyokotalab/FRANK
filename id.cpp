@@ -1,33 +1,9 @@
 #include "id.h"
 
-#include <vector>
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <cblas.h>
-#include <math.h>
-#include <string.h>
-#include <sys/time.h>
-#include <boost/random.hpp>
-#include <boost/random/normal_distribution.hpp>
-#include <lapacke.h>
-
 #define min(x,y) (((x) < (y)) ? (x) : (y))
 #define max(x,y) (((x) > (y)) ? (x) : (y))
-//using namespace std;
+
 namespace hicma {
-
-  void initialize_random_matrix(std::vector<double>& M, int nrows, int ncols)
-  {
-    boost::mt19937 rng;
-    boost::normal_distribution<> nd(0.0, 1.0);
-    boost::variate_generator<boost::mt19937&,
-                             boost::normal_distribution<> > var_nor(rng, nd);
-
-    for(int i=0; i<nrows*ncols; i++){
-      M[i] = var_nor();
-    }
-  }
 
   /* C = A*B */
   void matrix_matrix_mult(
@@ -200,22 +176,26 @@ namespace hicma {
    * nrows - number of rows of M.
    * ncols - number of cols of M.
    */
-  void randomized_low_rank_svd2(
-                                const std::vector<double>& M,
-                                int rank,
-                                std::vector<double>& U,
-                                std::vector<double>& S,
-                                std::vector<double>& V,
-                                int nrows,
-                                int ncols
-                                ) {
+  void rsvd(
+            const Dense& M,
+            int rank,
+            Dense& U,
+            Dense& S,
+            Dense& V,
+            int nrows,
+            int ncols
+            ) {
     // RN = randn(n,k+p)
-    std::vector<double> RN(ncols*rank);
-    initialize_random_matrix(RN, ncols, rank);
+    Dense RN(ncols, rank);
+    std::mt19937 generator;
+    std::normal_distribution<double> distribution(0.0, 1.0);
+    for (int i=0; i<nrows*rank; i++) {
+      RN[i] = distribution(generator);
+    }
 
     // Y = M * RN
     std::vector<double> Y(nrows*rank);
-    matrix_matrix_mult(M, RN, Y, nrows, ncols, ncols, rank);
+    matrix_matrix_mult(M.data, RN.data, Y, nrows, ncols, ncols, rank);
 
     // [Q, R] = qr(Y)
     std::vector<double> Q(nrows*rank);
@@ -223,7 +203,7 @@ namespace hicma {
 
     // B' = M' * Q
     std::vector<double> Bt(ncols*rank);
-    matrix_transpose_matrix_mult(M, Q, Bt, nrows, ncols, nrows, rank);
+    matrix_transpose_matrix_mult(M.data, Q, Bt, nrows, ncols, nrows, rank);
 
     // [Qhat, Rhat] = qr(Bt)
     std::vector<double> Qhat(ncols*rank);
@@ -235,20 +215,20 @@ namespace hicma {
     std::vector<double> Shat(rank);
     std::vector<double> Vhat(rank*rank);
     calculate_svd(Uhat, Shat, Vhat, Rhat, rank, rank, rank);
-    build_diagonal_matrix(Shat, rank, S);
+    build_diagonal_matrix(Shat, rank, S.data);
 
     // Vhat = Vhat'
     std::vector<double> Vhat_t(rank*rank);
     transpose(Vhat, Vhat_t, rank, rank);
 
     // U = Q * Vhat'
-    matrix_matrix_mult(Q, Vhat_t, U, nrows, rank, rank, rank);
+    matrix_matrix_mult(Q, Vhat_t, U.data, nrows, rank, rank, rank);
 
     // V' = Qhat * Uhat
     std::vector<double> V_t(ncols*rank);
     matrix_matrix_mult(Qhat, Uhat, V_t, ncols, rank, rank, rank);
 
     // V = V'
-    transpose(V_t, V, rank, ncols);
+    transpose(V_t, V.data, rank, ncols);
   }
 }

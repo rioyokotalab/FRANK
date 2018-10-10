@@ -27,7 +27,7 @@ namespace hicma {
     U = Dense(m,k,i_abs,j_abs,level);
     S = Dense(k,k,i_abs,j_abs,level);
     V = Dense(k,n,i_abs,j_abs,level);
-    randomized_low_rank_svd2(A.data, rank, U.data, S.data, V.data, m, n);
+    rsvd(A, rank, U, S, V, m, n);
   }
 
   LowRank::LowRank(const LowRank& A) : Node(A.i_abs,A.j_abs,A.level), U(A.U), S(A.S), V(A.V) {
