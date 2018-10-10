@@ -64,9 +64,14 @@ namespace hicma {
     if (rank+A.rank >= dim[0]) {
       *this = LowRank(Dense(*this) + Dense(A), rank);
     } else {
-      mergeU(*this, A);
-      mergeS(*this, A);
-      mergeV(*this, A);
+      LowRank B(dim[0], dim[1], rank+A.rank, i_abs, j_abs, level);
+      B.mergeU(*this, A);
+      B.mergeS(*this, A);
+      B.mergeV(*this, A);
+      rank += A.rank;
+      swap(U, B.U);
+      swap(S, B.S);
+      swap(V, B.V);
     }
     return *this;
   }
