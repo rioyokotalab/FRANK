@@ -166,36 +166,34 @@ namespace hicma {
     }
   }
 
-  /* computes the approximate low rank SVD of rank k of matrix M using QR method */
-  /*
-   * M - input matrix.
-   * k - rank of the output.
-   * U - U matrix from ID.
-   * S - S (sigma) matrix from ID containing eigenvalues.
-   * V - V matrix from ID.
-   * nrows - number of rows of M.
-   * ncols - number of cols of M.
+  /* Randomized low rank SVD of matrix A
+   * A - input matrix.
+   * rank - rank of the output.
+   * U - U matrix from RSVD.
+   * S - S matrix from RSVD.
+   * V - V matrix from RSVD.
    */
   void rsvd(
-            const Dense& M,
+            const Dense& A,
             int rank,
             Dense& U,
             Dense& S,
-            Dense& V,
-            int nrows,
-            int ncols
+            Dense& V
             ) {
+    int nrows = A.dim[0];
+    int ncols = A.dim[1];
+
     // RN = randn(n,k+p)
     Dense RN(ncols, rank);
     std::mt19937 generator;
     std::normal_distribution<double> distribution(0.0, 1.0);
-    for (int i=0; i<nrows*rank; i++) {
+    for (int i=0; i<ncols*rank; i++) {
       RN[i] = distribution(generator);
     }
 
     // Y = M * RN
     std::vector<double> Y(nrows*rank);
-    matrix_matrix_mult(M.data, RN.data, Y, nrows, ncols, ncols, rank);
+    matrix_matrix_mult(A.data, RN.data, Y, nrows, ncols, ncols, rank);
 
     // [Q, R] = qr(Y)
     std::vector<double> Q(nrows*rank);
@@ -203,7 +201,7 @@ namespace hicma {
 
     // B' = M' * Q
     std::vector<double> Bt(ncols*rank);
-    matrix_transpose_matrix_mult(M.data, Q, Bt, nrows, ncols, nrows, rank);
+    matrix_transpose_matrix_mult(A.data, Q, Bt, nrows, ncols, nrows, rank);
 
     // [Qhat, Rhat] = qr(Bt)
     std::vector<double> Qhat(ncols*rank);

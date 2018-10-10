@@ -10,13 +10,11 @@
 
 namespace hicma {
   void rsvd(
-            const Dense& M,
+            const Dense& A,
             int rank,
             Dense& U,
             Dense& S,
-            Dense& V,
-            int nrows ,
-            int ncols
+            Dense& V
             );
 }
 #endif
