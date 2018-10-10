@@ -49,7 +49,7 @@ namespace hicma {
 
     virtual void trsm(const Node& A, const char& uplo);
 
-    virtual void gemm(const Node& A, const Node& B);
+    virtual void gemm(const Node& A, const Node& B, const int& alpha=-1, const int& beta=1);
   };
 }
 #endif

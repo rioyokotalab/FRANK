@@ -15,18 +15,18 @@ namespace hicma {
                    const int j_abs,
                    const int level) {
     dim[0]=m; dim[1]=n; rank=k;
-    U = Dense(m,k,i_abs,j_abs,level);
-    S = Dense(k,k,i_abs,j_abs,level);
-    V = Dense(k,n,i_abs,j_abs,level);
+    U = Dense(m, k, i_abs, j_abs, level);
+    S = Dense(k, k, i_abs, j_abs, level);
+    V = Dense(k, n, i_abs, j_abs, level);
   }
 
   LowRank::LowRank(const Dense& A, const int k) : Node(A.i_abs,A.j_abs,A.level) {
     dim[0] = A.dim[0];
     dim[1] = A.dim[1];
     rank = k;
-    U = Dense(dim[0],rank,i_abs,j_abs,level);
-    S = Dense(rank,rank,i_abs,j_abs,level);
-    V = Dense(rank,dim[1],i_abs,j_abs,level);
+    U = Dense(dim[0], rank, i_abs, j_abs, level);
+    S = Dense(rank, rank, i_abs, j_abs, level);
+    V = Dense(rank, dim[1], i_abs, j_abs, level);
     rsvd(A, rank, U, S, V);
   }
 
@@ -165,7 +165,7 @@ namespace hicma {
     }
   }
 
-  void LowRank::gemm(const Node& _A, const Node& _B) {
+  void LowRank::gemm(const Node& _A, const Node& _B, const int& alpha, const int& beta) {
     if (_A.is(HICMA_DENSE)) {
       const Dense& A = static_cast<const Dense&>(_A);
       if (_B.is(HICMA_DENSE)) {
@@ -175,8 +175,7 @@ namespace hicma {
       } else if (_B.is(HICMA_LOWRANK)) {
         const LowRank& B = static_cast<const LowRank&>(_B);
         LowRank C(B);
-        C.U = 0;
-        C.U.gemm(A,B.U);
+        C.U.gemm(A, B.U, alpha, 0);
         *this += C;
       } else if (_B.is(HICMA_HIERARCHICAL)) {
         std::cerr << this->type() << " -= " << _A.type();
@@ -188,20 +187,18 @@ namespace hicma {
       if (_B.is(HICMA_DENSE)) {
         const Dense& B = static_cast<const Dense&>(_B);
         LowRank C(A);
-        C.V = 0;
-        C.V.gemm(A.V,B);
+        C.V.gemm(A.V, B, alpha, 0);
         *this += C;
       } else if (_B.is(HICMA_LOWRANK)) {
         const LowRank& B = static_cast<const LowRank&>(_B);
         LowRank C(A);
-        C.S = 0;
         C.V = B.V;
-        Dense VxU(A.rank,B.rank);
-        VxU.gemm(A.V,B.U);
-        Dense SxVxU(A.rank,B.rank);
-        SxVxU.gemm(A.S,VxU);
-        Dense SxVxUxS(A.rank,B.rank);
-        C.S.gemm(SxVxU,B.S);
+        Dense VxU(A.rank, B.rank);
+        VxU.gemm(A.V, B.U, 1, 0);
+        Dense SxVxU(A.rank, B.rank);
+        SxVxU.gemm(A.S, VxU, 1, 0);
+        Dense SxVxUxS(A.rank, B.rank);
+        C.S.gemm(SxVxU, B.S, alpha, 0);
         *this += C;
       } else if (_B.is(HICMA_HIERARCHICAL)) {
         std::cerr << this->type() << " -= " << _A.type();

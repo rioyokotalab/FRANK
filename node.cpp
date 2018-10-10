@@ -54,5 +54,5 @@ namespace hicma {
 
   void Node::trsm(const Node& A, const char& uplo) {};
 
-  void Node::gemm(const Node& A, const Node& B) {};
+  void Node::gemm(const Node& A, const Node& B, const int& alpha, const int& beta) {};
 }

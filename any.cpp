@@ -25,8 +25,8 @@ namespace hicma {
     return ptr->trsm(*A.ptr, uplo);
   }
 
-  void Any::gemm(const Any& A, const Any& B) {
-    return ptr->gemm(*A.ptr, *B.ptr);
+  void Any::gemm(const Any& A, const Any& B, const int& alpha, const int& beta) {
+    return ptr->gemm(*A.ptr, *B.ptr, alpha, beta);
   }
 
 }

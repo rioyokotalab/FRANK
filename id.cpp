@@ -192,12 +192,12 @@ namespace hicma {
     }
 
     // Y = M * RN
-    std::vector<double> Y(nrows*rank);
-    matrix_matrix_mult(A.data, RN.data, Y, nrows, ncols, ncols, rank);
+    Dense Y(nrows, rank);
+    matrix_matrix_mult(A.data, RN.data, Y.data, nrows, ncols, ncols, rank);
 
     // [Q, R] = qr(Y)
     std::vector<double> Q(nrows*rank);
-    QR_factorization_getQ(Y, Q, nrows, ncols, rank);
+    QR_factorization_getQ(Y.data, Q, nrows, ncols, rank);
 
     // B' = M' * Q
     std::vector<double> Bt(ncols*rank);

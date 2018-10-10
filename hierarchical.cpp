@@ -251,12 +251,12 @@ namespace hicma {
     for (int i=0; i<dim[0]; i++) {
       (*this)(i,i).getrf();
       for (int j=i+1; j<dim[0]; j++) {
-        (*this)(i,j).trsm((*this)(i,i),'l');
-        (*this)(j,i).trsm((*this)(i,i),'u');
+        (*this)(i,j).trsm((*this)(i,i), 'l');
+        (*this)(j,i).trsm((*this)(i,i), 'u');
       }
       for (int j=i+1; j<dim[0]; j++) {
         for (int k=i+1; k<dim[0]; k++) {
-          (*this)(j,k).gemm((*this)(j,i),(*this)(i,k));
+          (*this)(j,k).gemm((*this)(j,i), (*this)(i,k), -1, 1);
         }
       }
     }
@@ -270,17 +270,17 @@ namespace hicma {
         case 'l' :
           for (int i=0; i<dim[0]; i++) {
             for (int j=0; j<i; j++) {
-              (*this)[i].gemm(A(i,j), (*this)[j]);
+              (*this)[i].gemm(A(i,j), (*this)[j], -1, 1);
             }
-            (*this)[i].trsm(A(i,i),'l');
+            (*this)[i].trsm(A(i,i), 'l');
           }
           break;
         case 'u' :
           for (int i=dim[0]-1; i>=0; i--) {
             for (int j=dim[0]-1; j>i; j--) {
-              (*this)[i].gemm(A(i,j), (*this)[j]);
+              (*this)[i].gemm(A(i,j), (*this)[j], -1, 1);
             }
-            (*this)[i].trsm(A(i,i),'u');
+            (*this)[i].trsm(A(i,i), 'u');
           }
           break;
         default :
@@ -293,16 +293,16 @@ namespace hicma {
         case 'l' :
           for (int j=0; j<dim[1]; j++) {
             for (int i=0; i<dim[0]; i++) {
-              (*this).gemm_row(A, *this, i, j, 0, i);
-              (*this)(i,j).trsm(A(i,i),'l');
+              (*this).gemm_row(A, *this, i, j, 0, i, -1, 1);
+              (*this)(i,j).trsm(A(i,i), 'l');
             }
           }
           break;
         case 'u' :
           for (int i=0; i<dim[0]; i++) {
             for (int j=0; j<dim[1]; j++) {
-              (*this).gemm_row(*this, A, i, j, 0, j);
-              (*this)(i,j).trsm(A(j,j),'u');
+              (*this).gemm_row(*this, A, i, j, 0, j, -1, 1);
+              (*this)(i,j).trsm(A(j,j), 'u');
             }
           }
           break;
@@ -318,7 +318,7 @@ namespace hicma {
     }
   }
 
-  void Hierarchical::gemm(const Node& _A, const Node& _B) {
+  void Hierarchical::gemm(const Node& _A, const Node& _B, const int& alpha, const int& beta) {
     if (_A.is(HICMA_DENSE)) {
       const Dense& A = static_cast<const Dense&>(_A);
       if (_B.is(HICMA_HIERARCHICAL)) {
@@ -326,7 +326,7 @@ namespace hicma {
         const Hierarchical& AH = Hierarchical(A, dim[0], B.dim[0]);
         for (int i=0; i<dim[0]; i++) {
           for (int j=0; j<dim[1]; j++) {
-            (*this).gemm_row(AH, B, i, j, 0, AH.dim[1]);
+            (*this).gemm_row(AH, B, i, j, 0, AH.dim[1], alpha, beta);
           }
         }
 
@@ -343,7 +343,7 @@ namespace hicma {
         const Hierarchical& BH = Hierarchical(B, dim[1], dim[1]);
         for (int i=0; i<dim[0]; i++) {
           for (int j=0; j<dim[1]; j++) {
-            (*this).gemm_row(AH, BH, i, j, 0, AH.dim[1]);
+            (*this).gemm_row(AH, BH, i, j, 0, AH.dim[1], alpha, beta);
           }
         }
       } else if (_B.is(HICMA_HIERARCHICAL)) {
@@ -351,7 +351,7 @@ namespace hicma {
         const Hierarchical& AH = Hierarchical(A, dim[0], B.dim[0]);
         for (int i=0; i<dim[0]; i++) {
           for (int j=0; j<dim[1]; j++) {
-            (*this).gemm_row(AH, B, i, j, 0, AH.dim[1]);
+            (*this).gemm_row(AH, B, i, j, 0, AH.dim[1], alpha, beta);
           }
         }
       } else {
@@ -366,7 +366,7 @@ namespace hicma {
         const Hierarchical& BH = Hierarchical(B, A.dim[1], dim[1]);
         for (int i=0; i<dim[0]; i++) {
           for (int j=0; j<dim[1]; j++) {
-            (*this).gemm_row(A, BH, i, j, 0, A.dim[1]);
+            (*this).gemm_row(A, BH, i, j, 0, A.dim[1], alpha, beta);
           }
         }
       } else if (_B.is(HICMA_DENSE)) {
@@ -374,7 +374,7 @@ namespace hicma {
         const Hierarchical& BH = Hierarchical(B, A.dim[1], dim[1]);
         for (int i=0; i<dim[0]; i++) {
           for (int j=0; j<dim[1]; j++) {
-            (*this).gemm_row(A, BH, i, j, 0, A.dim[1]);
+            (*this).gemm_row(A, BH, i, j, 0, A.dim[1], alpha, beta);
           }
         }
       } else if (_B.is(HICMA_HIERARCHICAL)) {
@@ -383,7 +383,7 @@ namespace hicma {
         assert(A.dim[1] == B.dim[0]);
         for (int i=0; i<dim[0]; i++) {
           for (int j=0; j<dim[1]; j++) {
-            (*this).gemm_row(A, B, i, j, 0, A.dim[1]);
+            (*this).gemm_row(A, B, i, j, 0, A.dim[1], alpha, beta);
           }
         }
       } else {
@@ -400,19 +400,20 @@ namespace hicma {
 
   void Hierarchical::gemm_row(
                               const Hierarchical& A, const Hierarchical& B,
-                              const int i, const int j, const int k_min, const int k_max)
+                              const int& i, const int& j, const int& k_min, const int& k_max,
+                              const int& alpha, const int& beta)
   {
     int rank = -1;
-    if ((*this)(i, j).is(HICMA_LOWRANK)) {
-      rank = static_cast<LowRank&>(*(*this)(i, j).ptr).rank;
-      (*this)(i, j) = Dense(static_cast<LowRank&>(*(*this)(i, j).ptr));
+    if ((*this)(i,j).is(HICMA_LOWRANK)) {
+      rank = static_cast<LowRank&>(*(*this)(i,j).ptr).rank;
+      (*this)(i,j) = Dense(static_cast<LowRank&>(*(*this)(i,j).ptr));
     }
     for (int k=k_min; k<k_max; k++) {
-      (*this)(i, j).gemm(A(i, k), B(k, j));
+      (*this)(i,j).gemm(A(i,k), B(k,j), alpha, beta);
     }
     if (rank != -1) {
-      assert((*this)(i, j).is(HICMA_DENSE));
-      (*this)(i, j) = LowRank(static_cast<Dense&>(*(*this)(i, j).ptr), rank);
+      assert((*this)(i,j).is(HICMA_DENSE));
+      (*this)(i,j) = LowRank(static_cast<Dense&>(*(*this)(i,j).ptr), rank);
     }
   }
 }
