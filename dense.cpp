@@ -132,10 +132,24 @@ namespace hicma {
     return B;
   }
 
+  Dense Dense::operator-(const Dense& A) const {
+    Dense B(*this);
+    B -= A;
+    return B;
+  }
+
   const Dense& Dense::operator+=(const Dense& A) {
     assert(dim[0] == A.dim[0] && dim[1] == A.dim[1]);
     for (int i=0; i<dim[0]*dim[1]; i++) {
       (*this)[i] += A[i];
+    }
+    return *this;
+  }
+
+  const Dense& Dense::operator-=(const Dense& A) {
+    assert(dim[0] == A.dim[0] && dim[1] == A.dim[1]);
+    for (int i=0; i<dim[0]*dim[1]; i++) {
+      (*this)[i] -= A[i];
     }
     return *this;
   }

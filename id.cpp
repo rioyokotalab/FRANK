@@ -210,31 +210,26 @@ namespace hicma {
                                 int ncols
                                 ) {
     // RN = randn(n,k+p)
-    // build random matrix
     std::vector<double> RN(ncols*rank);
     initialize_random_matrix(RN, ncols, rank);
 
     // Y = M * RN
-    // multiply to get matrix of random samples Y
     std::vector<double> Y(nrows*rank);
     matrix_matrix_mult(M, RN, Y, nrows, ncols, ncols, rank);
 
-    // [q, r] = qr(Y,0)
+    // [Q, R] = qr(Y)
     std::vector<double> Q(nrows*rank);
     QR_factorization_getQ(Y, Q, nrows, ncols, rank);
 
-    // bt = M' * q;
-    // form Bt = Qt*M : rankxnrows * nrowsxncols = rankxncols
+    // B' = M' * Q
     std::vector<double> Bt(ncols*rank);
     matrix_transpose_matrix_mult(M, Q, Bt, nrows, ncols, nrows, rank);
 
-    /* // Bt -> ncols * rank, Qhat -> ncols * rank, Rhat -> rank, rank */
-    // [Qhat, Rhat] = qr(bt)
+    // [Qhat, Rhat] = qr(Bt)
     std::vector<double> Qhat(ncols*rank);
     std::vector<double> Rhat(rank*rank);
     compute_QR_compact_factorization(Bt, Qhat, Rhat, nrows, ncols, rank);
 
-    // compute SVD of Rhat
     // [Uhat, S, Vhat] = svd(Rhat);
     std::vector<double> Uhat(rank*rank);
     std::vector<double> Shat(rank);
@@ -246,10 +241,10 @@ namespace hicma {
     std::vector<double> Vhat_t(rank*rank);
     transpose(Vhat, Vhat_t, rank, rank);
 
-    // U = q * Vhat
+    // U = Q * Vhat'
     matrix_matrix_mult(Q, Vhat_t, U, nrows, rank, rank, rank);
 
-    // V = Qhat*Uhat
+    // V' = Qhat * Uhat
     std::vector<double> V_t(ncols*rank);
     matrix_matrix_mult(Qhat, Uhat, V_t, ncols, rank, rank, rank);
 

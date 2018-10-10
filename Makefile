@@ -6,6 +6,10 @@ TEST_SOURCES = test/test_helper.o test/test_mpi_block_creation.o test/test_mpi_d
 .cpp.o:
 	$(CXX) -c $? -o $@
 
+rsvd: rsvd.o $(SOURCES)
+	$(CXX) $? -lblas -llapacke
+	valgrind ./a.out
+
 block_lu: block_lu.o $(SOURCES)
 	$(CXX) $? -lblas -llapacke
 	valgrind ./a.out
