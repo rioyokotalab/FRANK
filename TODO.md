@@ -1,20 +1,12 @@
-Use rank+p in rsvd
-
-H^2-matrix LU (nested basis)
-Recompress low_rank after add/sub (after H^2 mat)
-ID with controllable precision
-Pivots inside diagonal blocks
-Non-square matrices
-Write operator-=() using operator+=()
-
-[Remove dependency on boost any]
-Make a few realistic test cases in prototype (return types of add etc)
-Get Hierarchical constructor working (commit to new branch if working)
-
 [Features to implement]
+RSVD with controllable precision
+H^2-matrix LU (nested basis)
 MPI version
+GPU version
 Asyncronous communication
 Template over float/double
+Pivots inside diagonal blocks
+Non-square matrices
 
 [Results]
 Compare {FullRank, LowRank, Hierarchical}, {A, L, U} types with op. overloading
