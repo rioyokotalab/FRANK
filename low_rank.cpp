@@ -26,22 +26,20 @@ namespace hicma {
     U = Dense(dim[0], rank, i_abs, j_abs, level);
     S = Dense(rank, rank, i_abs, j_abs, level);
     V = Dense(rank, dim[1], i_abs, j_abs, level);
-    int nrows = A.dim[0];
-    int ncols = A.dim[1];
-    Dense RN(ncols,rank);
+    Dense RN(dim[1],rank);
     std::mt19937 generator;
     std::normal_distribution<double> distribution(0.0, 1.0);
-    for (int i=0; i<ncols*rank; i++) {
+    for (int i=0; i<dim[1]*rank; i++) {
       RN[i] = distribution(generator); // RN = randn(n,k+p)
     }
-    Dense Y(nrows,rank);
+    Dense Y(dim[0],rank);
     Y.gemm(A, RN, CblasNoTrans, CblasNoTrans, 1, 0); // Y = A * RN
-    Dense Q(nrows,rank);
+    Dense Q(dim[0],rank);
     Dense R(rank,rank);
     Y.qr(Q, R); // [Q, R] = qr(Y)
-    Dense Bt(ncols,rank);
+    Dense Bt(dim[1],rank);
     Bt.gemm(A, Q, CblasTrans, CblasNoTrans, 1, 0); // B' = A' * Q
-    Dense Qb(ncols,rank);
+    Dense Qb(dim[1],rank);
     Dense Rb(rank,rank);
     Bt.qr(Qb,Rb); // [Qb, Rb] = qr(B')
     Dense Ur(rank,rank);

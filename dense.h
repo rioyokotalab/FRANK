@@ -87,6 +87,8 @@ namespace hicma {
 
     double norm() const override;
 
+    void reshape(const int i, const int j);
+
     void print() const override;
 
     void getrf() override;

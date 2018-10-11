@@ -1,4 +1,3 @@
-Don't use transpose in rsvd
 Use rank+p in rsvd
 
 H^2-matrix LU (nested basis)
