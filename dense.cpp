@@ -1,6 +1,5 @@
 #include "hierarchical.h"
 
-#include <cblas.h>
 #include <lapacke.h>
 
 namespace hicma {
@@ -250,6 +249,13 @@ namespace hicma {
     }
   }
 
+  void Dense::gemm(const Dense& A, const Dense&B, const CBLAS_TRANSPOSE TransA, const CBLAS_TRANSPOSE TransB,
+                   const int& alpha, const int& beta) {
+    int k = TransA == CblasNoTrans ? A.dim[1] : A.dim[0];
+    cblas_dgemm(CblasRowMajor, TransA, TransB, dim[0], dim[1], k, alpha,
+                &A[0], A.dim[1], &B[0], B.dim[1], beta, &data[0], dim[1]);
+  }
+
   void Dense::gemm(const Node& _A, const Node& _B, const int& alpha, const int& beta) {
     if (_A.is(HICMA_DENSE)) {
       const Dense& A = static_cast<const Dense&>(_A);
@@ -259,38 +265,11 @@ namespace hicma {
         assert(A.dim[1] == B.dim[0]);
         assert(this->dim[1] == B.dim[1]);
         if (B.dim[1] == 1) {
-          cblas_dgemv(
-                      CblasRowMajor,
-                      CblasNoTrans,
-                      A.dim[0],
-                      A.dim[1],
-                      alpha,
-                      &A[0],
-                      A.dim[1],
-                      &B[0],
-                      1,
-                      beta,
-                      &data[0],
-                      1
-                      );
+          cblas_dgemv(CblasRowMajor, CblasNoTrans, A.dim[0], A.dim[1], alpha,
+                      &A[0], A.dim[1], &B[0], 1, beta, &data[0], 1);
         }
         else {
-          cblas_dgemm(
-                      CblasRowMajor,
-                      CblasNoTrans,
-                      CblasNoTrans,
-                      dim[0],
-                      dim[1],
-                      A.dim[1],
-                      alpha,
-                      &A[0],
-                      A.dim[1],
-                      &B[0],
-                      B.dim[1],
-                      beta,
-                      &data[0],
-                      dim[1]
-                      );
+          gemm(A, B, CblasNoTrans, CblasNoTrans, alpha, beta);
         }
       } else if (_B.is(HICMA_LOWRANK)) {
         const LowRank& B = static_cast<const LowRank&>(_B);
@@ -374,16 +353,17 @@ namespace hicma {
         }
       }
     }
-    LAPACKE_dormqr(LAPACK_ROW_MAJOR, 'L', 'N', dim[0], dim[1], dim[1], &data[0], dim[1], &tau[0], &Q[0], dim[1]);
+    LAPACKE_dormqr(LAPACK_ROW_MAJOR, 'L', 'N', dim[0], dim[1], dim[1],
+                   &data[0], dim[1], &tau[0], &Q[0], dim[1]);
   }
 
   void Dense::svd(Dense& U, Dense& S, Dense& V) {
     Dense Sdiag(dim[0],1);
     Dense work(dim[1]-1,1);
-    LAPACKE_dgesvd(LAPACK_ROW_MAJOR, 'A', 'A', dim[0], dim[1], &data[0], dim[0], &Sdiag[0], &U[0], dim[0], &V[0], dim[1], &work[0]);
+    LAPACKE_dgesvd(LAPACK_ROW_MAJOR, 'A', 'A', dim[0], dim[1], &data[0], dim[0],
+                   &Sdiag[0], &U[0], dim[0], &V[0], dim[1], &work[0]);
     for(int i=0; i<dim[0]; i++){
       S[i*dim[1]+i] = Sdiag[i];
     }
   }
-
 }

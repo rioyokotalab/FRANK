@@ -3,7 +3,9 @@
 #include "node.h"
 
 #include <iomanip>
+#include <random>
 #include <vector>
+#include <cblas.h>
 
 namespace hicma {
 
@@ -91,12 +93,14 @@ namespace hicma {
 
     void trsm(const Node& A, const char& uplo) override;
 
+    void gemm(const Dense& A, const Dense&B, const CBLAS_TRANSPOSE TransA, const CBLAS_TRANSPOSE TransB,
+              const int& alpha, const int& beta);
+
     void gemm(const Node& A, const Node& B, const int& alpha=-1, const int& beta=1) override;
 
     void qr(Dense& Q, Dense& R);
 
     void svd(Dense& U, Dense& S, Dense& V);
-
   };
 }
 #endif

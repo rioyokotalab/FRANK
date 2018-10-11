@@ -1,5 +1,4 @@
 #include "hierarchical.h"
-#include "rsvd.h"
 
 namespace hicma {
 
@@ -27,7 +26,29 @@ namespace hicma {
     U = Dense(dim[0], rank, i_abs, j_abs, level);
     S = Dense(rank, rank, i_abs, j_abs, level);
     V = Dense(rank, dim[1], i_abs, j_abs, level);
-    rsvd(A, rank, U, S, V);
+    int nrows = A.dim[0];
+    int ncols = A.dim[1];
+    Dense RN(ncols,rank);
+    std::mt19937 generator;
+    std::normal_distribution<double> distribution(0.0, 1.0);
+    for (int i=0; i<ncols*rank; i++) {
+      RN[i] = distribution(generator); // RN = randn(n,k+p)
+    }
+    Dense Y(nrows,rank);
+    Y.gemm(A, RN, CblasNoTrans, CblasNoTrans, 1, 0); // Y = A * RN
+    Dense Q(nrows,rank);
+    Dense R(rank,rank);
+    Y.qr(Q, R); // [Q, R] = qr(Y)
+    Dense Bt(ncols,rank);
+    Bt.gemm(A, Q, CblasTrans, CblasNoTrans, 1, 0); // B' = A' * Q
+    Dense Qb(ncols,rank);
+    Dense Rb(rank,rank);
+    Bt.qr(Qb,Rb); // [Qb, Rb] = qr(B')
+    Dense Ur(rank,rank);
+    Dense Vr(rank,rank);
+    Rb.svd(Vr,S,Ur); // [Vr, S, Ur] = svd(Rb);
+    U.gemm(Q, Ur, CblasNoTrans, CblasTrans, 1, 0); // U = Q * Ur'
+    V.gemm(Vr, Qb, CblasTrans, CblasTrans, 1, 0); // V = Vr' * Qb'
   }
 
   LowRank::LowRank(const LowRank& A) : Node(A.i_abs,A.j_abs,A.level), U(A.U), S(A.S), V(A.V) {
