@@ -22,10 +22,12 @@ namespace hicma {
   LowRank::LowRank(const Dense& A, const int k) : Node(A.i_abs,A.j_abs,A.level) {
     dim[0] = A.dim[0];
     dim[1] = A.dim[1];
-    rank = k;
-    U = Dense(dim[0], rank, i_abs, j_abs, level);
+    rank = k+5;
+    assert(dim[0] >= rank);
+    assert(dim[1] >= rank);
+    U = Dense(dim[0], k, i_abs, j_abs, level);
     S = Dense(rank, rank, i_abs, j_abs, level);
-    V = Dense(rank, dim[1], i_abs, j_abs, level);
+    V = Dense(k, dim[1], i_abs, j_abs, level);
     Dense RN(dim[1],rank);
     std::mt19937 generator;
     std::normal_distribution<double> distribution(0.0, 1.0);
@@ -45,8 +47,12 @@ namespace hicma {
     Dense Ur(rank,rank);
     Dense Vr(rank,rank);
     Rb.svd(Vr,S,Ur); // [Vr, S, Ur] = svd(Rb);
+    Ur.resize(k,rank);
     U.gemm(Q, Ur, CblasNoTrans, CblasTrans, 1, 0); // U = Q * Ur'
+    Vr.resize(rank,k);
     V.gemm(Vr, Qb, CblasTrans, CblasTrans, 1, 0); // V = Vr' * Qb'
+    S.resize(k,k);
+    rank = k;
   }
 
   LowRank::LowRank(const LowRank& A) : Node(A.i_abs,A.j_abs,A.level), U(A.U), S(A.S), V(A.V) {

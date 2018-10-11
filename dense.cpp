@@ -189,16 +189,14 @@ namespace hicma {
     return l2;
   }
 
-  void Dense::reshape(const int dim0, const int dim1) {
-    assert(dim1 == dim[1]);
-    int offset = dim[0] - dim0;
+  void Dense::resize(const int dim0, const int dim1) {
     for (int i=0; i<dim0; i++) {
-      for (int j=0; j<dim[1]; j++) {
-        data[i*dim[1]+j] = data[(i+offset)*dim[1]+j];
+      for (int j=0; j<dim1; j++) {
+        data[i*dim1+j] = data[i*dim[1]+j];
       }
     }
     dim[0] = dim0;
-    data.resize(dim[0]*dim[1]);
+    dim[1] = dim1;
   }
 
   void Dense::print() const {
