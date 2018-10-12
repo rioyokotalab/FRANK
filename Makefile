@@ -17,7 +17,7 @@ rsvd: rsvd.o $(SOURCES)
 	valgrind ./a.out
 
 gpu: gpu.o $(SOURCES)
-	$(CXX) $? -lblas -llapacke -lcudart
+	$(CXX) $? -lblas -llapacke -lcudart -lkblas-gpu
 	valgrind ./a.out
 
 block_lu: block_lu.o $(SOURCES)
