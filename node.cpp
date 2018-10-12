@@ -37,7 +37,7 @@ namespace hicma {
     return *this;
   }
 
-  const bool Node::is(const int enum_id) const {
+  bool Node::is(const int enum_id) const {
     return enum_id == HICMA_NODE;
   }
 

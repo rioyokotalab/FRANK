@@ -1,7 +1,8 @@
 #ifndef timer_h
 #define timer_h
-#include <map>
 #include "print.h"
+
+#include <map>
 #include <sys/time.h>
 
 namespace hicma {

@@ -101,7 +101,7 @@ namespace hicma {
     return *this;
   }
 
-  const bool LowRank::is(const int enum_id) const {
+  bool LowRank::is(const int enum_id) const {
     return enum_id == HICMA_LOWRANK;
   }
 

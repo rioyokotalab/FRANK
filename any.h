@@ -23,7 +23,7 @@ namespace hicma {
 
     const Any& operator=(Any A);
 
-    const bool is(const int i) const;
+    bool is(const int i) const;
 
     void getrf();
 

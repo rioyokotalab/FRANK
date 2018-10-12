@@ -15,7 +15,7 @@ namespace hicma {
     return *this;
   }
 
-  const bool Any::is(const int i) const { return ptr->is(i); }
+  bool Any::is(const int i) const { return ptr->is(i); }
 
   void Any::getrf() {
     return ptr->getrf();

@@ -208,7 +208,7 @@ namespace hicma {
     return data[i*dim[1]+j];
   }
 
-  const bool Hierarchical::is(const int enum_id) const {
+  bool Hierarchical::is(const int enum_id) const {
     return enum_id == HICMA_HIERARCHICAL;
   }
 
@@ -329,7 +329,6 @@ namespace hicma {
             (*this).gemm_row(AH, B, i, j, 0, AH.dim[1], alpha, beta);
           }
         }
-
       } else {
         std::cerr << this->type() << " -= " << _A.type();
         std::cerr << " * " << _B.type() << " is undefined." << std::endl;
