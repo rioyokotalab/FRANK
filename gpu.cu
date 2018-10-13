@@ -106,17 +106,24 @@ int main(int argc, char** argv) {
   kblasCreate(&handle);
   kblasEnableMagma(handle); // Is this needed?
   magma_init();
-  double *d_Y, *d_A, *d_RN;
-  double **d_Y_ptrs, **d_A_ptrs, **d_RN_ptrs;
-  TESTING_MALLOC_DEV(d_Y, double, Y.dim[0] * Y.dim[1]);
-  TESTING_MALLOC_DEV(d_A, double, A.dim[0] * A.dim[1]);
-  TESTING_MALLOC_DEV(d_RN, double, RN.dim[0] * RN.dim[1]);
+  double *d_Y, *d_A, *d_RN, *d_Bt, *d_Rb, *d_TAU;
+  double **d_Y_ptrs, **d_A_ptrs, **d_RN_ptrs, **d_Bt_ptrs, **d_Rb_ptrs;
+  TESTING_MALLOC_DEV(d_Y, double, Y.dim[0] * Y.dim[1] * batchCount);
+  TESTING_MALLOC_DEV(d_A, double, A.dim[0] * A.dim[1] * batchCount);
+  TESTING_MALLOC_DEV(d_RN, double, RN.dim[0] * RN.dim[1] * batchCount);
+  TESTING_MALLOC_DEV(d_Bt, double, Bt.dim[0] * Bt.dim[1] * batchCount);
+  TESTING_MALLOC_DEV(d_Rb, double, Rb.dim[0] * Rb.dim[1] * batchCount);
+  TESTING_MALLOC_DEV(d_TAU, double, rank * rank * batchCount);
   TESTING_MALLOC_DEV(d_Y_ptrs, double*, batchCount);
   TESTING_MALLOC_DEV(d_A_ptrs, double*, batchCount);
   TESTING_MALLOC_DEV(d_RN_ptrs, double*, batchCount);
+  TESTING_MALLOC_DEV(d_Bt_ptrs, double*, batchCount);
+  TESTING_MALLOC_DEV(d_Rb_ptrs, double*, batchCount);
   generateDArrayOfPointers(d_Y, d_Y_ptrs, Y.dim[0] * Y.dim[1], batchCount, 0);
   generateDArrayOfPointers(d_A, d_A_ptrs, A.dim[0] * A.dim[1], batchCount, 0);
   generateDArrayOfPointers(d_RN, d_RN_ptrs, RN.dim[0] * RN.dim[1], batchCount, 0);
+  generateDArrayOfPointers(d_Bt, d_Bt_ptrs, Bt.dim[0] * Bt.dim[1], batchCount, 0);
+  generateDArrayOfPointers(d_Rb, d_Rb_ptrs, Rb.dim[0] * Rb.dim[1], batchCount, 0);
   Dense At = A;
   for (int i=0; i<A.dim[0]; i++) {
     for (int j=0; j<A.dim[1]; j++) {
@@ -131,31 +138,51 @@ int main(int argc, char** argv) {
   }
   COPY_DATA_UP(d_A, &At[0], A.dim[0] * A.dim[1], double);
   COPY_DATA_UP(d_RN, &RNt[0], RN.dim[0] * RN.dim[1], double);
-  kblas_gemm_batch(
+  kblas_gemm_batch( // Y = A * RN
                    handle, KBLAS_NoTrans, KBLAS_NoTrans, Y.dim[0], Y.dim[1], A.dim[1], 1.0,
                    (const double**)d_A_ptrs, A.dim[0], (const double**)d_RN_ptrs, RN.dim[0], 0.0,
                    d_Y_ptrs, Y.dim[0], batchCount
                    );
-  Dense Yt = Y;
-  COPY_DATA_DOWN(&Yt[0], d_Y, Y.dim[0] * Y.dim[1], double);
-  for (int i=0; i<Y.dim[0]; i++) {
-    for (int j=0; j<Y.dim[1]; j++) {
-      Y(i,j) = Yt.data[j*Y.dim[0]+i];
-    }
-  }
-  TESTING_FREE_DEV(d_Y);
-  TESTING_FREE_DEV(d_A);
-  TESTING_FREE_DEV(d_RN);
-  TESTING_FREE_DEV(d_Y_ptrs);
-  TESTING_FREE_DEV(d_A_ptrs);
-  TESTING_FREE_DEV(d_RN_ptrs);
-  kblasDestroy(&handle);
-  Y.print();
-  Y.gemm(A, RN, CblasNoTrans, CblasNoTrans, 1, 0);
-  Y.print();
+  kblas_geqrf_batch( // [Q, R] = qr(Y)
+                    handle, Y.dim[0], Y.dim[1], d_Y, Y.dim[0], Y.dim[0] * Y.dim[1], d_TAU,
+                    Y.dim[1], batchCount
+                    );
+  kblas_orgqr_batch(
+                    handle, Y.dim[0], Y.dim[1], d_Y, Y.dim[0], Y.dim[0] * Y.dim[1], d_TAU,
+                    Y.dim[1], batchCount
+                    );
+  kblas_gemm_batch( // B' = A' * Q
+                   handle, KBLAS_Trans, KBLAS_NoTrans, Bt.dim[0], Bt.dim[1], A.dim[0], 1.0,
+                   (const double**)d_A_ptrs, A.dim[0], (const double**)d_Y_ptrs, Y.dim[0], 0.0,
+                   d_Bt_ptrs, Bt.dim[0], batchCount
+                   );
+  kblas_geqrf_batch( // [Qb, Rb] = qr(B')
+                    handle, Bt.dim[0], Bt.dim[1], d_Bt, Bt.dim[0], Bt.dim[0] * Bt.dim[1], d_TAU,
+                    Bt.dim[1], batchCount
+                    );
+  kblas_copy_upper_batch(
+                         handle, Bt.dim[0], Bt.dim[1], d_Bt, Bt.dim[0], Bt.dim[0] * Bt.dim[1],
+                         d_Rb, Rb.dim[0], Rb.dim[0] * Rb.dim[1], batchCount
+                         );
+  kblas_orgqr_batch(
+                    handle, Bt.dim[0], Bt.dim[1], d_Bt, Bt.dim[0], Bt.dim[0] * Bt.dim[1], d_TAU,
+                    Bt.dim[1], batchCount
+                    );
+  Y.gemm(A, RN, 1, 0);
   Y.qr(Q, R);
   Bt.gemm(A, Q, CblasTrans, CblasNoTrans, 1, 0);
   Bt.qr(Qb,Rb);
+  Qb.print();
+  Dense Qbt = Qb;
+  COPY_DATA_DOWN(&Qbt[0], d_Bt, Qb.dim[0] * Qb.dim[1], double);
+  for (int i=0; i<Qb.dim[0]; i++) {
+    for (int j=0; j<Qb.dim[1]; j++) {
+      Qb(i,j) = Qbt.data[j*Qb.dim[0]+i];
+    }
+  }
+  Qb.print();
+
+
   Rb.svd(Vr,LR.S,Ur);
   Ur.resize(k,rank);
   LR.U.gemm(Q, Ur, CblasNoTrans, CblasTrans, 1, 0);
@@ -167,5 +194,12 @@ int main(int argc, char** argv) {
   double norm = A.norm();
   print("Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
+  TESTING_FREE_DEV(d_Y);
+  TESTING_FREE_DEV(d_A);
+  TESTING_FREE_DEV(d_RN);
+  TESTING_FREE_DEV(d_Y_ptrs);
+  TESTING_FREE_DEV(d_A_ptrs);
+  TESTING_FREE_DEV(d_RN_ptrs);
+  kblasDestroy(&handle);
   return 0;
 }
