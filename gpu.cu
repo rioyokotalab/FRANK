@@ -5,17 +5,10 @@
 #include <cublas_v2.h>
 #include <magma_v2.h>
 #include "kblas.h"
-
-// Are all of these needed?
+#include "batch_rand.h"
+#include "batch_ara.h"
 #include <thrust/device_vector.h>
-#include <thrust/host_vector.h>
-#include <thrust/transform.h>
 #include <thrust/execution_policy.h>
-#include <thrust/system/cuda/execution_policy.h>
-#include <thrust/system/omp/execution_policy.h>
-#include <thrust/random.h>
-#include <thrust/copy.h>
-#include <thrust/logical.h>
 
 extern "C" void gpuAssert(cudaError_t code, const char *file, int line) {
   if(code != cudaSuccess) {
@@ -49,30 +42,26 @@ struct UnaryAoAAssign : public thrust::unary_function<int, T*> {
   T* operator()(const unsigned int& thread_id) const { return original_array + thread_id * stride; }
 };
 
-template<class T>
-void generateArrayOfPointersT(T* original_array, T** array_of_arrays, int stride,
-                              int num_arrays, cudaStream_t stream
-                              ) {
-  thrust::device_ptr<T*> dev_data(array_of_arrays);
+void ArrayOfPointers(
+                     double* original_array, double** array_of_arrays, int stride,
+                     int num_arrays, cudaStream_t stream
+                     ) {
+  thrust::device_ptr<double*> dev_data(array_of_arrays);
   thrust::transform(
                     thrust::cuda::par.on(stream),
                     thrust::counting_iterator<int>(0),
                     thrust::counting_iterator<int>(num_arrays),
                     dev_data,
-                    UnaryAoAAssign<T>(original_array, stride)
+                    UnaryAoAAssign<double>(original_array, stride)
                     );
   check_error( cudaGetLastError() );
-}
-extern "C" void generateDArrayOfPointers(double* original_array, double** array_of_arrays,
-                                         int stride, int num_arrays, cudaStream_t stream) {
-  generateArrayOfPointersT<double>(original_array, array_of_arrays, stride, num_arrays, stream);
 }
 
 using namespace hicma;
 
 int main(int argc, char** argv) {
   int N = 8; // 32
-  int k = 4; // 16
+  int rank = 6; // 16
   std::vector<double> randx(2*N);
   for (int i=0; i<2*N; i++) {
     randx[i] = drand48();
@@ -83,123 +72,77 @@ int main(int argc, char** argv) {
   Dense A(laplace1d, randx, N, N-2, 0, N);
   stop("Init matrix");
   start("Randomized SVD");
-  LowRank LR(A.dim[0],A.dim[1],k);
-  int rank = k; // k + 5
-  LR.S = Dense(rank, rank);
-  Dense RN(A.dim[1],rank);
-  std::mt19937 generator;
-  std::normal_distribution<double> distribution(0.0, 1.0);
-  for (int i=0; i<A.dim[1]*rank; i++) {
-    RN[i] = distribution(generator);
-  }
-  Dense Y(A.dim[0],rank);
-  Dense Q(A.dim[0],rank);
-  Dense R(rank,rank);
-  Dense Bt(A.dim[1],rank);
-  Dense Qb(A.dim[1],rank);
-  Dense Rb(rank,rank);
-  Dense Ur(rank,rank);
-  Dense Vr(rank,rank);
 
   int batchCount = 1;
   kblasHandle_t handle;
+  kblasRandState_t rand_state;
   kblasCreate(&handle);
-  kblasEnableMagma(handle); // Is this needed?
+  kblasInitRandState(handle, &rand_state, 16384*2, 0);
+  kblasEnableMagma(handle);
   magma_init();
-  double *d_Y, *d_A, *d_RN, *d_Bt, *d_Rb, *d_TAU;
-  double **d_Y_ptrs, **d_A_ptrs, **d_RN_ptrs, **d_Bt_ptrs, **d_Rb_ptrs;
-  TESTING_MALLOC_DEV(d_Y, double, Y.dim[0] * Y.dim[1] * batchCount);
+  int *d_m, *d_n, *d_k;
+  double *d_A, *d_U, *d_V;
+  double **d_A_ptrs, **d_U_ptrs, **d_V_ptrs;
+  cudaMalloc( (void**)&d_m, batchCount*sizeof(int) );
+  cudaMalloc( (void**)&d_n, batchCount*sizeof(int) );
+  cudaMalloc( (void**)&d_k, batchCount*sizeof(int) );
+  cudaMalloc( (void**)&d_A, batchCount*sizeof(int) );
   TESTING_MALLOC_DEV(d_A, double, A.dim[0] * A.dim[1] * batchCount);
-  TESTING_MALLOC_DEV(d_RN, double, RN.dim[0] * RN.dim[1] * batchCount);
-  TESTING_MALLOC_DEV(d_Bt, double, Bt.dim[0] * Bt.dim[1] * batchCount);
-  TESTING_MALLOC_DEV(d_Rb, double, Rb.dim[0] * Rb.dim[1] * batchCount);
-  TESTING_MALLOC_DEV(d_TAU, double, rank * rank * batchCount);
-  TESTING_MALLOC_DEV(d_Y_ptrs, double*, batchCount);
+  TESTING_MALLOC_DEV(d_U, double, A.dim[0] * A.dim[1] * batchCount);
+  TESTING_MALLOC_DEV(d_V, double, A.dim[1] * A.dim[1] * batchCount);
   TESTING_MALLOC_DEV(d_A_ptrs, double*, batchCount);
-  TESTING_MALLOC_DEV(d_RN_ptrs, double*, batchCount);
-  TESTING_MALLOC_DEV(d_Bt_ptrs, double*, batchCount);
-  TESTING_MALLOC_DEV(d_Rb_ptrs, double*, batchCount);
-  generateDArrayOfPointers(d_Y, d_Y_ptrs, Y.dim[0] * Y.dim[1], batchCount, 0);
-  generateDArrayOfPointers(d_A, d_A_ptrs, A.dim[0] * A.dim[1], batchCount, 0);
-  generateDArrayOfPointers(d_RN, d_RN_ptrs, RN.dim[0] * RN.dim[1], batchCount, 0);
-  generateDArrayOfPointers(d_Bt, d_Bt_ptrs, Bt.dim[0] * Bt.dim[1], batchCount, 0);
-  generateDArrayOfPointers(d_Rb, d_Rb_ptrs, Rb.dim[0] * Rb.dim[1], batchCount, 0);
+  TESTING_MALLOC_DEV(d_U_ptrs, double*, batchCount);
+  TESTING_MALLOC_DEV(d_V_ptrs, double*, batchCount);
+  ArrayOfPointers(d_A, d_A_ptrs, A.dim[0] * A.dim[1], batchCount, 0);
+  ArrayOfPointers(d_U, d_U_ptrs, A.dim[0] * A.dim[1], batchCount, 0);
+  ArrayOfPointers(d_V, d_V_ptrs, A.dim[1] * A.dim[1], batchCount, 0);
   Dense At = A;
   for (int i=0; i<A.dim[0]; i++) {
     for (int j=0; j<A.dim[1]; j++) {
       At.data[j*A.dim[0]+i] = A(i,j);
     }
   }
-  Dense RNt = RN;
-  for (int i=0; i<RN.dim[0]; i++) {
-    for (int j=0; j<RN.dim[1]; j++) {
-      RNt.data[j*RN.dim[0]+i] = RN(i,j);
-    }
-  }
+  COPY_DATA_UP(d_m, &A.dim[0], batchCount, int);
+  COPY_DATA_UP(d_n, &A.dim[1], batchCount, int);
   COPY_DATA_UP(d_A, &At[0], A.dim[0] * A.dim[1], double);
-  COPY_DATA_UP(d_RN, &RNt[0], RN.dim[0] * RN.dim[1], double);
-  kblas_gemm_batch( // Y = A * RN
-                   handle, KBLAS_NoTrans, KBLAS_NoTrans, Y.dim[0], Y.dim[1], A.dim[1], 1.0,
-                   (const double**)d_A_ptrs, A.dim[0], (const double**)d_RN_ptrs, RN.dim[0], 0.0,
-                   d_Y_ptrs, Y.dim[0], batchCount
-                   );
-  kblas_geqrf_batch( // [Q, R] = qr(Y)
-                    handle, Y.dim[0], Y.dim[1], d_Y, Y.dim[0], Y.dim[0] * Y.dim[1], d_TAU,
-                    Y.dim[1], batchCount
+  double tol = 1e-6;
+  int max_m = A.dim[0];
+  int max_n = A.dim[1];
+  int max_k = A.dim[1];
+  int block_size = 32;
+  int ara_r = 10;
+  kblas_ara_batch_wsquery<double>(handle, block_size, batchCount);
+  kblasAllocateWorkspace(handle);
+  kblas_ara_batched(
+                    handle, d_m, d_n, d_A_ptrs, d_m, d_U_ptrs, d_m, d_V_ptrs, d_n, d_k,
+                    tol, max_m, max_n, max_k, block_size, ara_r, rand_state, batchCount
                     );
-  kblas_orgqr_batch(
-                    handle, Y.dim[0], Y.dim[1], d_Y, Y.dim[0], Y.dim[0] * Y.dim[1], d_TAU,
-                    Y.dim[1], batchCount
-                    );
-  kblas_gemm_batch( // B' = A' * Q
-                   handle, KBLAS_Trans, KBLAS_NoTrans, Bt.dim[0], Bt.dim[1], A.dim[0], 1.0,
-                   (const double**)d_A_ptrs, A.dim[0], (const double**)d_Y_ptrs, Y.dim[0], 0.0,
-                   d_Bt_ptrs, Bt.dim[0], batchCount
-                   );
-  kblas_geqrf_batch( // [Qb, Rb] = qr(B')
-                    handle, Bt.dim[0], Bt.dim[1], d_Bt, Bt.dim[0], Bt.dim[0] * Bt.dim[1], d_TAU,
-                    Bt.dim[1], batchCount
-                    );
-  kblas_copy_upper_batch(
-                         handle, Bt.dim[0], Bt.dim[1], d_Bt, Bt.dim[0], Bt.dim[0] * Bt.dim[1],
-                         d_Rb, Rb.dim[0], Rb.dim[0] * Rb.dim[1], batchCount
-                         );
-  kblas_orgqr_batch(
-                    handle, Bt.dim[0], Bt.dim[1], d_Bt, Bt.dim[0], Bt.dim[0] * Bt.dim[1], d_TAU,
-                    Bt.dim[1], batchCount
-                    );
-  Y.gemm(A, RN, 1, 0);
-  Y.qr(Q, R);
-  Bt.gemm(A, Q, CblasTrans, CblasNoTrans, 1, 0);
-  Bt.qr(Qb,Rb);
-  Qb.print();
-  Dense Qbt = Qb;
-  COPY_DATA_DOWN(&Qbt[0], d_Bt, Qb.dim[0] * Qb.dim[1], double);
-  for (int i=0; i<Qb.dim[0]; i++) {
-    for (int j=0; j<Qb.dim[1]; j++) {
-      Qb(i,j) = Qbt.data[j*Qb.dim[0]+i];
+  Dense U(A.dim[0],A.dim[1]);
+  Dense Ut = U;
+  COPY_DATA_DOWN(&Ut[0], d_U, U.dim[0] * U.dim[1], double);
+  for (int i=0; i<U.dim[0]; i++) {
+    for (int j=0; j<U.dim[1]; j++) {
+      U(i,j) = Ut.data[j*U.dim[0]+i];
     }
   }
-  Qb.print();
-
-
-  Rb.svd(Vr,LR.S,Ur);
-  Ur.resize(k,rank);
-  LR.U.gemm(Q, Ur, CblasNoTrans, CblasTrans, 1, 0);
-  Vr.resize(rank,k);
-  LR.V.gemm(Vr, Qb, CblasTrans, CblasTrans, 1, 0);
-  LR.S.resize(k,k);
+  Dense V(A.dim[1],A.dim[1]);
+  COPY_DATA_DOWN(&V[0], d_V, V.dim[0] * V.dim[1], double);
+  COPY_DATA_DOWN(&rank, d_k, batchCount, int);
+  U.resize(A.dim[0],rank);
+  V.resize(rank,A.dim[1]);
+  Dense A2(A);
+  A2.gemm(U, V, CblasNoTrans, CblasNoTrans, 1, 0);
   stop("Randomized SVD");
-  double diff = (A - Dense(LR)).norm();
+  double diff = (A - A2).norm();
   double norm = A.norm();
   print("Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
-  TESTING_FREE_DEV(d_Y);
+  TESTING_FREE_DEV(d_m);
+  TESTING_FREE_DEV(d_n);
+  TESTING_FREE_DEV(d_k);
   TESTING_FREE_DEV(d_A);
-  TESTING_FREE_DEV(d_RN);
-  TESTING_FREE_DEV(d_Y_ptrs);
-  TESTING_FREE_DEV(d_A_ptrs);
-  TESTING_FREE_DEV(d_RN_ptrs);
+  TESTING_FREE_DEV(d_U);
+  TESTING_FREE_DEV(d_V);
   kblasDestroy(&handle);
   return 0;
 }

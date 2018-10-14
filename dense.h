@@ -87,6 +87,8 @@ namespace hicma {
 
     double norm() const override;
 
+    int size() const;
+
     void resize(const int dim0, const int dim1);
 
     void print() const override;

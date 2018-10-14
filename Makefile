@@ -24,10 +24,6 @@ gpu: gpu.o $(SOURCES)
 	$(CXX) $? -L/home/rioyokota/magma-2.3.0/lib -lm -lkblas-gpu -lmagma -lcusparse -lcublas -lcudart -lblas -llapacke -lpthread -lm -ldl -lstdc++
 	./a.out
 
-ara: ara.o $(SOURCES)
-	$(CXX) $? -L/home/rioyokota/magma-2.3.0/lib -lm -lkblas-gpu -lmagma -lcusparse -lcublas -lcudart -lblas -llapacke -lpthread -lm -ldl -lstdc++
-	./a.out
-
 block_lu: block_lu.o $(SOURCES)
 	$(CXX) $? -lblas -llapacke
 	valgrind ./a.out

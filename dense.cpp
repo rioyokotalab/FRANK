@@ -189,6 +189,10 @@ namespace hicma {
     return l2;
   }
 
+  int Dense::size() const {
+    return dim[0] * dim[1];
+  }
+
   void Dense::resize(const int dim0, const int dim1) {
     for (int i=0; i<dim0; i++) {
       for (int j=0; j<dim1; j++) {
