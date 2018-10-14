@@ -1,5 +1,5 @@
 [Immediate]
-batchCount > batchSize
+data[i*dim[1]+j] > (i,j) in Hierarchical constructor
 
 [Features to implement]
 RSVD with controllable precision

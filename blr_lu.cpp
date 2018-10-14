@@ -1,5 +1,6 @@
 #include "functions.h"
 #include "hierarchical.h"
+#include "batch_rsvd.h"
 #include "timer.h"
 
 using namespace hicma;
@@ -9,6 +10,7 @@ int main(int argc, char** argv) {
   int Nb = 16;
   int Nc = N / Nb;
   int rank = 8;
+  useBatch = true;
   std::vector<double> randx(N);
   Hierarchical x(Nc);
   Hierarchical b(Nc);
@@ -37,9 +39,22 @@ int main(int argc, char** argv) {
       }
       else {
         A(ic,jc) = LowRank(Aij, rank);
+        h_m.push_back(Aij.dim[0]);
+        h_n.push_back(Aij.dim[1]);
+        vecA.push_back(Aij);
+        vecLR.push_back(&A(ic,jc));
       }
     }
   }
+  print("size of vecLR",vecLR.size());
+#if 1
+  batch_rsvd();
+#else
+  useBatch = false;
+  for (size_t b=0; b<vecLR.size(); b++) {
+    *vecLR[b] = LowRank(vecA[b], rank);
+  }
+#endif
   b.gemm(A,x);
   stop("Init matrix");
   start("LU decomposition");
