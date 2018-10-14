@@ -12,11 +12,19 @@ TEST_SOURCES = test/test_helper.o test/test_mpi_block_creation.o test/test_mpi_d
 .cu.o:
 	$(NVCC) -c $? -o $@
 
+lib:
+	ar -cr libhicma.a $(SOURCES)
+	ranlib libhicma.a
+
 rsvd: rsvd.o $(SOURCES)
 	$(CXX) $? -lblas -llapacke
 	valgrind ./a.out
 
 gpu: gpu.o $(SOURCES)
+	$(CXX) $? -L/home/rioyokota/magma-2.3.0/lib -lm -lkblas-gpu -lmagma -lcusparse -lcublas -lcudart -lblas -llapacke -lpthread -lm -ldl -lstdc++
+	./a.out
+
+ara: ara.o $(SOURCES)
 	$(CXX) $? -L/home/rioyokota/magma-2.3.0/lib -lm -lkblas-gpu -lmagma -lcusparse -lcublas -lcudart -lblas -llapacke -lpthread -lm -ldl -lstdc++
 	./a.out
 
