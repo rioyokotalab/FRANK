@@ -40,7 +40,7 @@ using namespace hicma;
 
 int main(int argc, char** argv) {
   int N = 8; // 32
-  int batchCount = 1;
+  int batchCount = 10;
   print("Time");
   start("Init matrix");
   std::vector<int> h_m;
