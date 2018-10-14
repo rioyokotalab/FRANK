@@ -1,6 +1,8 @@
 #include "hierarchical.h"
 
+#ifndef USE_MKL
 #include <lapacke.h>
+#endif
 
 namespace hicma {
 

@@ -5,7 +5,11 @@
 #include <iomanip>
 #include <random>
 #include <vector>
+#ifdef USE_MKL
+#include <mkl.h>
+#else
 #include <cblas.h>
+#endif
 
 namespace hicma {
 

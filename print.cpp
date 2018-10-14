@@ -15,7 +15,9 @@
 #include <vector>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
+#ifndef USE_MKL
 #include <lapacke.h>
+#endif
 
 namespace hicma {
   bool VERBOSE = true;                          //!< Print to screen
