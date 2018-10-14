@@ -1,4 +1,5 @@
 #include "hierarchical.h"
+#include "batch_rsvd.h"
 
 namespace hicma {
 
@@ -114,53 +115,61 @@ namespace hicma {
         int i_abs_child = i_abs * dim[0] + i;
         int j_abs_child = j_abs * dim[1] + j;
         if (
-            // Check regular admissibility
-            std::abs(i_abs_child - j_abs_child) <= admis
-            // Check if vector, and if so do not use LowRank
-            || (nj == 1 || ni == 1) /* Check if vector */ ) { // TODO: use x in admissibility condition
+            std::abs(i_abs_child - j_abs_child) <= admis // Check regular admissibility
+            || (nj == 1 || ni == 1) ) { // Check if vector, and if so do not use LowRank
           if ( ni_child <= nleaf && nj_child <= nleaf ) {
-            (*this).data[i*dim[1]+j] = Dense(
-                                             func,
-                                             x,
-                                             ni_child,
-                                             nj_child,
-                                             i_begin_child,
-                                             j_begin_child,
-                                             i_abs_child,
-                                             j_abs_child,
-                                             level+1);
+            (*this)(i,j) = Dense(
+                                 func,
+                                 x,
+                                 ni_child,
+                                 nj_child,
+                                 i_begin_child,
+                                 j_begin_child,
+                                 i_abs_child,
+                                 j_abs_child,
+                                 level+1
+                                 );
           }
           else {
-            (*this).data[i*dim[1]+j] = Hierarchical(
-                                                    func,
-                                                    x,
-                                                    ni_child,
-                                                    nj_child,
-                                                    rank,
-                                                    nleaf,
-                                                    admis,
-                                                    ni_level,
-                                                    nj_level,
-                                                    i_begin_child,
-                                                    j_begin_child,
-                                                    i_abs_child,
-                                                    j_abs_child,
-                                                    level+1);
+            (*this)(i,j) = Hierarchical(
+                                        func,
+                                        x,
+                                        ni_child,
+                                        nj_child,
+                                        rank,
+                                        nleaf,
+                                        admis,
+                                        ni_level,
+                                        nj_level,
+                                        i_begin_child,
+                                        j_begin_child,
+                                        i_abs_child,
+                                        j_abs_child,
+                                        level+1
+                                        );
           }
         }
         else {
-          (*this).data[i*dim[1]+j] = LowRank(
-                                             Dense(
-                                                   func,
-                                                   x,
-                                                   ni_child,
-                                                   nj_child,
-                                                   i_begin_child,
-                                                   j_begin_child,
-                                                   i_abs_child,
-                                                   j_abs_child,
-                                                   level+1)
-                                             , rank);// TODO : create a LowRank constructor that does ID with x
+          Dense A = Dense(
+                          func,
+                          x,
+                          ni_child,
+                          nj_child,
+                          i_begin_child,
+                          j_begin_child,
+                          i_abs_child,
+                          j_abs_child,
+                          level+1
+                          );
+          if (useBatch) {
+            h_m.push_back(A.dim[0]);
+            h_n.push_back(A.dim[1]);
+            vecA.push_back(A);
+            vecLR.push_back(&(*this)(i,j));
+          }
+          else {
+            (*this)(i,j) = LowRank(A, rank);// TODO : create a LowRank constructor that does ID with x
+          }
         }
       }
     }

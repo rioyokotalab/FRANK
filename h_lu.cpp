@@ -1,5 +1,6 @@
 #include "functions.h"
 #include "hierarchical.h"
+#include "batch_rsvd.h"
 #include "timer.h"
 
 using namespace hicma;
@@ -8,6 +9,7 @@ int main(int argc, char** argv) {
   int N = 256;
   int nleaf = 16;
   int rank = 8;
+  useBatch = true;
   std::vector<double> randx(N);
   for (int i=0; i<N; i++) {
     randx[i] = drand48();
@@ -44,23 +46,35 @@ int main(int argc, char** argv) {
     nblocks = 2; // Hierarchical (log_2(N/nleaf) levels)
     admis = 2; // Strong admissibility
   }
-  Hierarchical A(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
-  Hierarchical x(rand_data, randx, N, 1, rank, nleaf, admis, nblocks, 1);
-  Hierarchical b(zeros, randx, N, 1, rank, nleaf, admis, nblocks, 1);
-  b.gemm(A,x);
-  stop("Init matrix");
-  start("LU decomposition");
-  A.getrf();
-  stop("LU decomposition");
-  start("Forward substitution");
-  b.trsm(A,'l');
-  stop("Forward substitution");
-  start("Backward substitution");
-  b.trsm(A,'u');
-  stop("Backward substitution");
-  double diff = (Dense(x) + Dense(b)).norm();
-  double norm = x.norm();
-  print("Accuracy");
-  print("Rel. L2 Error", std::sqrt(diff/norm), false);
+  if (useBatch) {
+    Hierarchical A(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
+    batch_rsvd();
+    useBatch = false;
+    Hierarchical B(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
+    double diff = (Dense(A) - Dense(B)).norm();
+    double norm = Dense(B).norm();
+    print("Accuracy");
+    print("Rel. L2 Error", std::sqrt(diff/norm), false);
+  }
+  else {
+    Hierarchical A(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
+    Hierarchical x(rand_data, randx, N, 1, rank, nleaf, admis, nblocks, 1);
+    Hierarchical b(zeros, randx, N, 1, rank, nleaf, admis, nblocks, 1);
+    b.gemm(A,x);
+    stop("Init matrix");
+    start("LU decomposition");
+    A.getrf();
+    stop("LU decomposition");
+    start("Forward substitution");
+    b.trsm(A,'l');
+    stop("Forward substitution");
+    start("Backward substitution");
+    b.trsm(A,'u');
+    stop("Backward substitution");
+    double diff = (Dense(x) + Dense(b)).norm();
+    double norm = x.norm();
+    print("Accuracy");
+    print("Rel. L2 Error", std::sqrt(diff/norm), false);
+  }
   return 0;
 }

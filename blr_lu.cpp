@@ -37,24 +37,26 @@ int main(int argc, char** argv) {
       if (std::abs(ic - jc) <= 1) {
         A(ic,jc) = std::move(Aij);
       }
-      else {
-        A(ic,jc) = LowRank(Aij, rank);
+      else if (useBatch) {
         h_m.push_back(Aij.dim[0]);
         h_n.push_back(Aij.dim[1]);
         vecA.push_back(Aij);
         vecLR.push_back(&A(ic,jc));
       }
+      else {
+        A(ic,jc) = LowRank(Aij, rank);
+      }
     }
   }
-  print("size of vecLR",vecLR.size());
-#if 1
-  batch_rsvd();
-#else
-  useBatch = false;
-  for (size_t b=0; b<vecLR.size(); b++) {
-    *vecLR[b] = LowRank(vecA[b], rank);
+  if (useBatch) {
+    batch_rsvd();
   }
-#endif
+  else {
+    useBatch = false;
+    for (size_t b=0; b<vecLR.size(); b++) {
+      *vecLR[b] = LowRank(vecA[b], rank);
+    }
+  }
   b.gemm(A,x);
   stop("Init matrix");
   start("LU decomposition");

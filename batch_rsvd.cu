@@ -44,6 +44,8 @@ namespace hicma {
   }
 
   void batch_rsvd() {
+    int batchCount = h_m.size();
+    if (batchCount == 0) return;
     kblasHandle_t handle;
     kblasRandState_t rand_state;
     kblasCreate(&handle);
@@ -54,7 +56,6 @@ namespace hicma {
     double *d_A, *d_U, *d_V;
     double **p_A, **p_U, **p_V;
     int max_m = 0, max_n = 0;
-    int batchCount = h_m.size();
     for (int b=0; b<batchCount; b++) {
       max_m = std::max(max_m, h_m[b]);
       max_n = std::max(max_n, h_n[b]);
