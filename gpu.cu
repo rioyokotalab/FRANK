@@ -10,36 +10,16 @@
 #include <thrust/device_vector.h>
 #include <thrust/execution_policy.h>
 
-extern "C" void gpuAssert(cudaError_t code, const char *file, int line) {
-  if(code != cudaSuccess) {
-    printf("gpuAssert: %s(%d) %s %d\n", cudaGetErrorString(code), (int)code, file, line);
-    exit(-1);
-  }
-}
-
-#define check_error(ans) { gpuAssert((ans), __FILE__, __LINE__); }
-
-#define TESTING_MALLOC_DEV( ptr, T, size) check_error( cudaMalloc( (void**)&ptr, (size)*sizeof(T) ) )
-
-#define COPY_DATA_UP(d_A, h_A, el_size, el_type)                        \
-  cudaSetDevice(0);                                                     \
-  check_error( cudaMemcpy(d_A, h_A, el_size * sizeof(el_type), cudaMemcpyHostToDevice) ); \
-  cudaDeviceSynchronize();
-
-#define COPY_DATA_DOWN(h_A, d_A, el_size, el_type)                      \
-  cudaSetDevice(0);                                                     \
-  check_error( cudaMemcpy(h_A, d_A, el_size * sizeof(el_type), cudaMemcpyDeviceToHost ) ); \
-  cudaDeviceSynchronize();
-
-#define TESTING_FREE_DEV(ptr)   check_error( cudaFree( (ptr) ) );
-
-template<class T>
-struct UnaryAoAAssign : public thrust::unary_function<int, T*> {
-  T* original_array;
+struct Assign : public thrust::unary_function<int, double*> {
+  double* original_array;
   int stride;
-  UnaryAoAAssign(T* original_array, int stride) { this->original_array = original_array; this->stride = stride; }
-  __host__ __device__
-  T* operator()(const unsigned int& thread_id) const { return original_array + thread_id * stride; }
+  Assign(double* original_array, int stride) {
+    this->original_array = original_array;
+    this->stride = stride;
+  }
+  __host__ __device__ double* operator()(const unsigned int& thread_id) const {
+    return original_array + thread_id * stride;
+  }
 };
 
 void ArrayOfPointers(
@@ -52,28 +32,34 @@ void ArrayOfPointers(
                     thrust::counting_iterator<int>(0),
                     thrust::counting_iterator<int>(num_arrays),
                     dev_data,
-                    UnaryAoAAssign<double>(original_array, stride)
+                    Assign(original_array, stride)
                     );
-  check_error( cudaGetLastError() );
 }
 
 using namespace hicma;
 
 int main(int argc, char** argv) {
   int N = 8; // 32
-  int rank = 6; // 16
-  std::vector<double> randx(2*N);
-  for (int i=0; i<2*N; i++) {
-    randx[i] = drand48();
-  }
-  std::sort(randx.begin(), randx.end());
+  int batchCount = 1;
   print("Time");
   start("Init matrix");
-  Dense A(laplace1d, randx, N, N-2, 0, N);
+  std::vector<int> h_m;
+  std::vector<int> h_n;
+  std::vector<Dense> vecA;
+  for (int i=0; i<batchCount; i++) {
+    std::vector<double> randx(2*N);
+    for (int i=0; i<2*N; i++) {
+      randx[i] = drand48();
+    }
+    std::sort(randx.begin(), randx.end());
+    Dense A(laplace1d, randx, N, N-2, 0, N);
+    h_m.push_back(A.dim[0]);
+    h_n.push_back(A.dim[1]);
+    vecA.push_back(A);
+  }
   stop("Init matrix");
-  start("Randomized SVD");
 
-  int batchCount = 1;
+  start("Randomized SVD");
   kblasHandle_t handle;
   kblasRandState_t rand_state;
   kblasCreate(&handle);
@@ -82,67 +68,83 @@ int main(int argc, char** argv) {
   magma_init();
   int *d_m, *d_n, *d_k;
   double *d_A, *d_U, *d_V;
-  double **d_A_ptrs, **d_U_ptrs, **d_V_ptrs;
-  cudaMalloc( (void**)&d_m, batchCount*sizeof(int) );
-  cudaMalloc( (void**)&d_n, batchCount*sizeof(int) );
-  cudaMalloc( (void**)&d_k, batchCount*sizeof(int) );
-  cudaMalloc( (void**)&d_A, batchCount*sizeof(int) );
-  TESTING_MALLOC_DEV(d_A, double, A.dim[0] * A.dim[1] * batchCount);
-  TESTING_MALLOC_DEV(d_U, double, A.dim[0] * A.dim[1] * batchCount);
-  TESTING_MALLOC_DEV(d_V, double, A.dim[1] * A.dim[1] * batchCount);
-  TESTING_MALLOC_DEV(d_A_ptrs, double*, batchCount);
-  TESTING_MALLOC_DEV(d_U_ptrs, double*, batchCount);
-  TESTING_MALLOC_DEV(d_V_ptrs, double*, batchCount);
-  ArrayOfPointers(d_A, d_A_ptrs, A.dim[0] * A.dim[1], batchCount, 0);
-  ArrayOfPointers(d_U, d_U_ptrs, A.dim[0] * A.dim[1], batchCount, 0);
-  ArrayOfPointers(d_V, d_V_ptrs, A.dim[1] * A.dim[1], batchCount, 0);
-  Dense At = A;
-  for (int i=0; i<A.dim[0]; i++) {
-    for (int j=0; j<A.dim[1]; j++) {
-      At.data[j*A.dim[0]+i] = A(i,j);
+  double **p_A, **p_U, **p_V;
+  int max_m = 0, max_n = 0;
+  for (int b=0; b<batchCount; b++) {
+    max_m = std::max(max_m, h_m[b]);
+    max_n = std::max(max_n, h_n[b]);
+  }
+  int max_k = max_n;
+  std::vector<double> h_A(max_m * max_n * batchCount);
+  std::vector<double> h_U(max_m * max_n * batchCount);
+  std::vector<double> h_V(max_n * max_n * batchCount);
+  cudaMalloc( (void**)&d_m, batchCount * sizeof(int) );
+  cudaMalloc( (void**)&d_n, batchCount * sizeof(int) );
+  cudaMalloc( (void**)&d_k, batchCount * sizeof(int) );
+  cudaMalloc( (void**)&d_A, h_A.size() * sizeof(double) );
+  cudaMalloc( (void**)&d_U, h_U.size() * sizeof(double) );
+  cudaMalloc( (void**)&d_V, h_V.size() * sizeof(double) );
+  cudaMalloc( (void**)&p_A, batchCount * sizeof(double*) );
+  cudaMalloc( (void**)&p_U, batchCount * sizeof(double*) );
+  cudaMalloc( (void**)&p_V, batchCount * sizeof(double*) );
+  ArrayOfPointers(d_A, p_A, max_m * max_n, batchCount, 0);
+  ArrayOfPointers(d_U, p_U, max_m * max_n, batchCount, 0);
+  ArrayOfPointers(d_V, p_V, max_n * max_n, batchCount, 0);
+  for (int b=0; b<batchCount; b++) {
+    for (int i=0; i<vecA[b].dim[0]; i++) {
+      for (int j=0; j<vecA[b].dim[1]; j++) {
+        h_A[i+j*max_m+b*max_m*max_n] = vecA[b](i,j);
+      }
     }
   }
-  COPY_DATA_UP(d_m, &A.dim[0], batchCount, int);
-  COPY_DATA_UP(d_n, &A.dim[1], batchCount, int);
-  COPY_DATA_UP(d_A, &At[0], A.dim[0] * A.dim[1], double);
+  cudaMemcpy(d_m, &h_m[0], batchCount * sizeof(int), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_n, &h_n[0], batchCount * sizeof(int), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_A, &h_A[0], h_A.size() * sizeof(double), cudaMemcpyHostToDevice);
   double tol = 1e-6;
-  int max_m = A.dim[0];
-  int max_n = A.dim[1];
-  int max_k = A.dim[1];
   int block_size = 32;
   int ara_r = 10;
   kblas_ara_batch_wsquery<double>(handle, block_size, batchCount);
   kblasAllocateWorkspace(handle);
   kblas_ara_batched(
-                    handle, d_m, d_n, d_A_ptrs, d_m, d_U_ptrs, d_m, d_V_ptrs, d_n, d_k,
+                    handle, d_m, d_n, p_A, d_m, p_U, d_m, p_V, d_n, d_k,
                     tol, max_m, max_n, max_k, block_size, ara_r, rand_state, batchCount
                     );
-  Dense U(A.dim[0],A.dim[1]);
-  Dense Ut = U;
-  COPY_DATA_DOWN(&Ut[0], d_U, U.dim[0] * U.dim[1], double);
-  for (int i=0; i<U.dim[0]; i++) {
-    for (int j=0; j<U.dim[1]; j++) {
-      U(i,j) = Ut.data[j*U.dim[0]+i];
+  std::vector<int> h_k(batchCount);
+  cudaMemcpy(&h_k[0], d_k, batchCount * sizeof(int), cudaMemcpyDeviceToHost);
+  cudaMemcpy(&h_U[0], d_U, h_U.size() * sizeof(double), cudaMemcpyDeviceToHost);
+  cudaMemcpy(&h_V[0], d_V, h_V.size() * sizeof(double), cudaMemcpyDeviceToHost);
+  std::vector<LowRank> vecLR;
+  for (int b=0; b<batchCount; b++) {
+    LowRank LR(vecA[b].dim[0], vecA[b].dim[1], h_k[b]);
+    for (int i=0; i<LR.dim[0]; i++) {
+      for (int j=0; j<LR.rank; j++) {
+        LR.U(i,j) = h_U[i+j*max_m+b*max_m*max_n];
+      }
     }
+    for (int i=0; i<LR.rank; i++) {
+      for (int j=0; j<LR.dim[1]; j++) {
+        LR.V(i,j) = h_V[j+i*max_n+b*max_n*max_n];
+      }
+      LR.S(i,i) = 1;
+    }
+    vecLR.push_back(LR);
   }
-  Dense V(A.dim[1],A.dim[1]);
-  COPY_DATA_DOWN(&V[0], d_V, V.dim[0] * V.dim[1], double);
-  COPY_DATA_DOWN(&rank, d_k, batchCount, int);
-  U.resize(A.dim[0],rank);
-  V.resize(rank,A.dim[1]);
-  Dense A2(A);
-  A2.gemm(U, V, CblasNoTrans, CblasNoTrans, 1, 0);
   stop("Randomized SVD");
-  double diff = (A - A2).norm();
-  double norm = A.norm();
   print("Accuracy");
-  print("Rel. L2 Error", std::sqrt(diff/norm), false);
-  TESTING_FREE_DEV(d_m);
-  TESTING_FREE_DEV(d_n);
-  TESTING_FREE_DEV(d_k);
-  TESTING_FREE_DEV(d_A);
-  TESTING_FREE_DEV(d_U);
-  TESTING_FREE_DEV(d_V);
+  for (int b=0; b<batchCount; b++) {
+    double diff = (vecA[b] - Dense(vecLR[b])).norm();
+    double norm = vecA[b].norm();
+    print("Rel. L2 Error", std::sqrt(diff/norm), false);
+  }
+  cudaFree(p_A);
+  cudaFree(p_U);
+  cudaFree(p_V);
+  cudaFree(d_A);
+  cudaFree(d_U);
+  cudaFree(d_V);
+  cudaFree(d_m);
+  cudaFree(d_n);
+  cudaFree(d_k);
   kblasDestroy(&handle);
   return 0;
 }

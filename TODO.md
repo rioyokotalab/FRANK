@@ -1,11 +1,11 @@
 [Immediate]
-Batch class
+batchCount > batchSize
 
 [Features to implement]
 RSVD with controllable precision
+GPU version
 H^2-matrix LU (nested basis)
 MPI version
-GPU version
 Asyncronous communication
 Template over float/double
 Wrappers that define +,-,*,/ operators
