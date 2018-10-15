@@ -32,19 +32,19 @@ int main(int argc, char** argv) {
   }
   else if (atoi(argv[1]) == 3) {
     nblocks = N / nleaf; // 1 level
-    admis = 1; // Weak admissibility
+    admis = 0; // Weak admissibility
   }
   else if (atoi(argv[1]) == 4) {
     nblocks = N / nleaf; // 1 level
-    admis = 2; // Strong admissibility
+    admis = 1; // Strong admissibility
   }
   else if (atoi(argv[1]) == 5) {
     nblocks = 2; // Hierarchical (log_2(N/nleaf) levels)
-    admis = 1; // Weak admissibility
+    admis = 0; // Weak admissibility
   }
   else if (atoi(argv[1]) == 6) {
     nblocks = 2; // Hierarchical (log_2(N/nleaf) levels)
-    admis = 2; // Strong admissibility
+    admis = 1; // Strong admissibility
   }
   if (useBatch) {
     Hierarchical A(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
