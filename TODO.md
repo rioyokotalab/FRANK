@@ -1,5 +1,5 @@
 [Immediate]
-data[i*dim[1]+j] > (i,j) in Hierarchical constructor
+Use valgrind after GPU paper is done
 
 [Features to implement]
 RSVD with controllable precision

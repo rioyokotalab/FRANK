@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
   }
   else {
     Hierarchical A(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
-    Hierarchical x(rand_data, randx, N, 1, rank, nleaf, admis, nblocks, 1);
+    Hierarchical x(random, randx, N, 1, rank, nleaf, admis, nblocks, 1);
     Hierarchical b(zeros, randx, N, 1, rank, nleaf, admis, nblocks, 1);
     b.gemm(A,x);
     stop("Init matrix");
