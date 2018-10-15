@@ -1,4 +1,5 @@
 [Immediate]
+Change back to N = 256 in h_lu
 Use valgrind after GPU paper is done
 
 [Features to implement]

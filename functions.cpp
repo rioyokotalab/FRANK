@@ -39,7 +39,7 @@ namespace hicma {
     }
   }
 
-  void latms(
+  void latms( // Generates a random matrix with a prescribed rank
              std::vector<double>& data,
              std::vector<double>& x,
              const int& ni,

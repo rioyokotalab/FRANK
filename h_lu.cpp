@@ -6,10 +6,10 @@
 using namespace hicma;
 
 int main(int argc, char** argv) {
-  int N = 256;
+  int N = 64; // 256
   int nleaf = 16;
   int rank = 8;
-  useBatch = true;
+  useBatch = false;
   std::vector<double> randx(N);
   for (int i=0; i<N; i++) {
     randx[i] = drand48();
