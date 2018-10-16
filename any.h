@@ -19,6 +19,8 @@ namespace hicma {
 
     Any(const Node& A);
 
+    Any(Node&& A);
+
     ~Any();
 
     const Any& operator=(Any A);

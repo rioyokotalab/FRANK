@@ -165,7 +165,7 @@ namespace hicma {
             h_m.push_back(A.dim[0]);
             h_n.push_back(A.dim[1]);
             vecA.push_back(A);
-            vecLR.push_back(&(*this)(i,j));
+            vecLR.push_back(&(*this).data[i*dim[1]+j]);
           }
           else {
             (*this)(i,j) = LowRank(A, rank);// TODO : create a LowRank constructor that does ID with x

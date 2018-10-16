@@ -41,6 +41,7 @@ int main(int argc, char** argv) {
         h_m.push_back(Aij.dim[0]);
         h_n.push_back(Aij.dim[1]);
         vecA.push_back(Aij);
+        A(ic,jc) = LowRank(Aij.dim[0], Aij.dim[1], rank);
         vecLR.push_back(&A(ic,jc));
       }
       else {
@@ -53,9 +54,11 @@ int main(int argc, char** argv) {
   }
   else {
     useBatch = false;
+    /*
     for (size_t b=0; b<vecLR.size(); b++) {
       *vecLR[b] = LowRank(vecA[b], rank);
     }
+    */
   }
   for (int ic=0; ic<Nc; ic++) {
     for (int jc=0; jc<Nc; jc++) {
