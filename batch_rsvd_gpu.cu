@@ -10,11 +10,17 @@
 
 namespace hicma {
 
-  bool useBatch;
   std::vector<int> h_m;
   std::vector<int> h_n;
   std::vector<Dense> vecA;
   std::vector<Any*> vecLR;
+
+  void low_rank_push(Any& A, Dense& Aij, int rank) {
+    h_m.push_back(Aij.dim[0]);
+    h_n.push_back(Aij.dim[1]);
+    vecA.push_back(Aij);
+    vecLR.push_back(&A);
+  }
 
   void batch_rsvd() {
     int batchCount = h_m.size();

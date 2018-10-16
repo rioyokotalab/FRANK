@@ -1,5 +1,5 @@
 #include "functions.h"
-#include "hierarchical.h"
+#include "low_rank.h"
 #include "timer.h"
 
 #include <cublas_v2.h>

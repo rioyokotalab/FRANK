@@ -13,9 +13,8 @@ int main(int argc, char** argv) {
   }
   std::sort(randx.begin(), randx.end());
   print("Time");
-  randx[0] = 4;
   start("Init matrix");
-  Dense D(latms, randx, N, N-2, 0, N);
+  Dense D(laplace1d, randx, N, N-2, 0, N);
   stop("Init matrix");
   start("Randomized SVD");
   LowRank LR(D, rank);
