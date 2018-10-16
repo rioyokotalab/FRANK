@@ -29,8 +29,6 @@ namespace hicma {
 
     virtual Node* clone() const;
 
-    friend void swap(Node& A, Node& B);
-
     const Node& operator=(Node&& A);
 
     virtual bool is(const int enum_id) const;

@@ -19,13 +19,6 @@ namespace hicma {
     return new Node(*this);
   }
 
-  void swap(Node& A, Node& B) {
-    using std::swap;
-    swap(A.i_abs, B.i_abs);
-    swap(A.j_abs, B.j_abs);
-    swap(A.level, B.level);
-  }
-
   const Node& Node::operator=(Node&& A) {
     return *this;
   }

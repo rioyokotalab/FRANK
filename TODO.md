@@ -1,5 +1,7 @@
 [Immediate]
-batchCount > batchSize
+swap > move
+ *this = std::move(A);
+ return *this;
 
 [Features to implement]
 RSVD with controllable precision

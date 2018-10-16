@@ -10,7 +10,6 @@ namespace hicma {
 
   class Any {
   public:
-    // NOTE: Take care to add members new members to swap
     std::unique_ptr<Node> ptr;
 
     Any();
