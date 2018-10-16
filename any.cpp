@@ -11,7 +11,7 @@ namespace hicma {
   Any::~Any() = default;
 
   const Any& Any::operator=(Any A) {
-    swap(this->ptr, A.ptr);
+    this->ptr = std::move(A.ptr);
     return *this;
   }
 
