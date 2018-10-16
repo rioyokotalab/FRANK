@@ -26,14 +26,14 @@ int main(int argc, char** argv) {
       xi[ib] = randx[Nb*ic+ib];
       bj[ib] = 0;
     }
-    x[ic] = std::move(xi);
-    b[ic] = std::move(bj);
+    x[ic] = xi;
+    b[ic] = bj;
   }
   for (int ic=0; ic<Nc; ic++) {
     for (int jc=0; jc<Nc; jc++) {
       Dense Aij(laplace1d, randx, Nb, Nb, Nb*ic, Nb*jc);
       if (std::abs(ic - jc) <= 1) {
-        A(ic,jc) = std::move(Aij);
+        A(ic,jc) = Aij;
       }
       else {
         A(ic,jc) = LowRank(Aij, rank);
