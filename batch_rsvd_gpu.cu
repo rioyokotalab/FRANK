@@ -25,7 +25,7 @@ namespace hicma {
   void batch_rsvd() {
     int batchCount = h_m.size();
     if (batchCount == 0) return;
-    double tol = 1e-6;
+    double tol = 1e-7;
     int block_size = 32;
     int ara_r = 10;
     int max_m = 0;

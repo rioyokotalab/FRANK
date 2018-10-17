@@ -14,7 +14,7 @@ using namespace hicma;
 int main(int argc, char** argv)
 {
   int batchCount = 16;
-  double tol = 1e-6;
+  double tol = 1e-7;
   int block_size = 32;
   int ara_r = 10;
   std::vector<int> h_m;
