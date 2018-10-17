@@ -34,7 +34,7 @@ block_lu: block_lu.o batch_rsvd.o $(SOURCES)
 
 blr_lu: blr_lu.o batch_rsvd.o $(SOURCES)
 	$(CXX) $? -lblas -llapacke
-	valgrind ./a.out
+	./a.out 64 16
 
 h_lu: h_lu.o batch_rsvd.o $(SOURCES)
 	$(CXX) $? -lblas -llapacke
@@ -46,7 +46,7 @@ rsvd_gpu: rsvd_gpu.o batch_rsvd_gpu.o $(SOURCES)
 
 blr_lu_gpu: blr_lu.o batch_rsvd_gpu.o $(SOURCES)
 	$(CXX) $? -L/home/rioyokota/magma-2.3.0/lib -lm -lkblas-gpu -lmagma -lcusparse -lcublas -lcudart -lblas -llapacke -lpthread -lm -ldl -lstdc++ -lmkl_intel_lp64 -lmkl_sequential -lmkl_core
-	./a.out
+	./a.out 64 16
 
 h_lu_gpu: h_lu.o batch_rsvd_gpu.o $(SOURCES)
 	$(CXX) $? -L/home/rioyokota/magma-2.3.0/lib -lm -lkblas-gpu -lmagma -lcusparse -lcublas -lcudart -lblas -llapacke -lpthread -lm -ldl -lstdc++ -lmkl_intel_lp64 -lmkl_sequential -lmkl_core

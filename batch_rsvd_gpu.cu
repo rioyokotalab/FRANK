@@ -44,7 +44,7 @@ namespace hicma {
     std::vector<double> h_U(max_m * max_n * batchCount);
     std::vector<double> h_V(max_n * max_n * batchCount);
     stop("Allocate host");
-    /*
+#if 0
     std::ofstream file("matrix.txt");
     for (int b=0; b<batchCount; b++) {
       Dense A = vecA[b];
@@ -57,7 +57,7 @@ namespace hicma {
         }
       }
     }
-    */
+#endif
     start("Init KBLAS");
     kblasHandle_t handle;
     kblasRandState_t rand_state;
@@ -113,7 +113,7 @@ namespace hicma {
         for (int i=0; i<vecA[b].dim[1]; i++) h_V[i+b*max_m*max_n] = 0;
       }
       LowRank LR(vecA[b].dim[0], vecA[b].dim[1], h_k[b]);
-      std::cout << LR.dim[0] << " " << LR.dim[1] << " " << LR.rank << std::endl;
+      //std::cout << LR.dim[0] << " " << LR.dim[1] << " " << LR.rank << std::endl;
       Dense A = vecA[b];
       for (int i=0; i<LR.dim[0]; i++) {
         for (int j=0; j<LR.rank; j++) {
