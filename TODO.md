@@ -1,9 +1,7 @@
 [Immediate]
-Use Dense.svd in print
-Always include headers that are used in the file
-Change Node to Any in inputs to functions
 Change print in blr to diff/norm
 Add diff/norm for compression in h_lu
+Change Node to Any in inputs to functions
 
 [Features to implement]
 RSVD with controllable precision on CPU
@@ -15,6 +13,7 @@ Template over float/double
 Wrappers that define +,-,*,/ operators
 Pivots inside diagonal blocks
 Non-square matrices
+QR decomposition
 
 [Results to show]
 Compare {FullRank, LowRank, Hierarchical}, {A, L, U} types with op. overloading
