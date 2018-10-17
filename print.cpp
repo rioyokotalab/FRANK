@@ -1,17 +1,11 @@
 #ifndef print_h
 #define print_h
 #include "print.h"
-#include "node.h"
-#include "hierarchical.h"
+#include "any.h"
 #include "low_rank.h"
-#include "dense.h"
+#include "hierarchical.h"
 
-#include <algorithm>
-#include <iomanip>
 #include <iostream>
-#include <string>
-#include <unistd.h>
-#include <vector>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 

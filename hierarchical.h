@@ -1,11 +1,13 @@
 #ifndef hierarchical_h
 #define hierarchical_h
-#include "low_rank.h"
-#include "print.h"
+#include "node.h"
 
-#include <algorithm>
+#include <vector>
 
 namespace hicma {
+
+  class Dense;
+  class LowRank;
 
   class Hierarchical : public Node {
   public:

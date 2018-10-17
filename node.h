@@ -1,10 +1,8 @@
 #ifndef node_h
 #define node_h
-#include "any.h"
 
 namespace hicma {
 
-  // Used in polymorphic code to know what actually a class is.
   enum {
     HICMA_NODE,
     HICMA_HIERARCHICAL,
@@ -14,10 +12,9 @@ namespace hicma {
 
   class Node {
   public:
-    // NOTE: Take care to add members new members to swap
-    int i_abs; // Row number of the node on the current recursion level
-    int j_abs; // Column number of the node on the current recursion level
-    int level; // Recursion level of the node
+    int i_abs; //! Row number of the node on the current recursion level
+    int j_abs; //! Column number of the node on the current recursion level
+    int level; //! Recursion level of the node
 
     Node();
 

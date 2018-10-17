@@ -1,5 +1,11 @@
+#include "any.h"
+#include "dense.h"
+#include "low_rank.h"
 #include "hierarchical.h"
 
+#include <cassert>
+#include <iostream>
+#include <iomanip>
 #include <lapacke.h>
 
 namespace hicma {

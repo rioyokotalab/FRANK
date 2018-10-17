@@ -1,6 +1,8 @@
 #ifndef functions_h
 #define functions_h
-#include <cmath>
+
+#include "functions.h"
+
 #include <cstdlib>
 #include <vector>
 

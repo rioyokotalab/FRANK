@@ -2,8 +2,6 @@
 #define dense_h
 #include "node.h"
 
-#include <iomanip>
-#include <random>
 #include <vector>
 #include <cblas.h>
 

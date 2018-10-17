@@ -1,4 +1,6 @@
-#include "hierarchical.h"
+#include "node.h"
+
+#include <iostream>
 
 namespace hicma {
 

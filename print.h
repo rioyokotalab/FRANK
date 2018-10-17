@@ -1,14 +1,10 @@
 #ifndef print_h
 #define print_h
-#include <iomanip>
-#include <iostream>
-#include <string>
-#include <unistd.h>
-#include <vector>
+
 #include <boost/property_tree/ptree.hpp>
 
 namespace hicma {
-  extern bool VERBOSE;                          //!< Print to screen
+  extern bool VERBOSE;
 
   class Node;
   void printXML(const Node& A);

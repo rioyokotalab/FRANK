@@ -1,6 +1,7 @@
 #ifndef timer_h
 #define timer_h
 #include "print.h"
+#include "timer.h"
 
 #include <map>
 #include <sys/time.h>

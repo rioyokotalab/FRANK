@@ -1,6 +1,12 @@
-#include "functions.h"
+#include "any.h"
+#include "low_rank.h"
 #include "hierarchical.h"
+#include "functions.h"
+#include "print.h"
 #include "timer.h"
+
+#include <algorithm>
+#include <cmath>
 
 using namespace hicma;
 
