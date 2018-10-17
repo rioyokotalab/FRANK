@@ -25,7 +25,6 @@ int main(int argc, char** argv) {
     randx[i] = drand48();
   }
   std::sort(randx.begin(), randx.end());
-  print("Time");
   start("Init matrix");
   for (int ic=0; ic<Nc; ic++) {
     Dense xi(Nb);
@@ -50,11 +49,18 @@ int main(int argc, char** argv) {
     }
   }
   batch_rsvd();
+  double diff = 0, norm = 0;
   for (int ic=0; ic<Nc; ic++) {
     for (int jc=0; jc<Nc; jc++) {
-      if(A(ic,jc).is(HICMA_LOWRANK)) static_cast<LowRank&>(*A(ic,jc).ptr).print();
+      if(A(ic,jc).is(HICMA_LOWRANK)) {
+        diff += (Dense(static_cast<LowRank&>(*A(ic,jc).ptr)) - static_cast<Dense&>(*D(ic,jc).ptr)).norm();
+        norm += static_cast<Dense&>(*D(ic,jc).ptr).norm();
+      }
     }
   }
+  print("Compression Accuracy");
+  print("Rel. L2 Error", std::sqrt(diff/norm), false);
+  print("Time");
   /*
   b.gemm(A,x);
   stop("Init matrix");
@@ -97,9 +103,9 @@ int main(int argc, char** argv) {
     b[ic].trsm(A(ic,ic),'u');
   }
   stop("Backward substitution");
-  double diff = (Dense(x) + Dense(b)).norm();
-  double norm = x.norm();
-  print("Accuracy");
+  diff = (Dense(x) + Dense(b)).norm();
+  norm = x.norm();
+  print("LU Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
   */
   return 0;
