@@ -1,4 +1,5 @@
 *.a
+*.pdf
 *.o
 *.out
 *.xml

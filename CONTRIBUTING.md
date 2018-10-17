@@ -164,3 +164,23 @@ implement this for our case but was unable to implement interaction between
 different concepts. A solution to this may be to use auto and dynamic\_cast,
 but these might be features we do not want to use. Inheritance seems to do the
 job fine, although there is currently no way to gauge the performance overhead.
+
+### Notes on testing framework
+Moving to the catch2 C++ testing framework seems like a good idea. It is header-only (no external
+dependencies) and provides a host of easy to use matchers which are extensible as per use case.
+Have a look at the list of matchers [here](https://github.com/catchorg/Catch2/blob/master/docs/matchers.md).
+If a test fails, catch2 will provide very useful output that can be compared easily on the
+terminal. It allows running specific tests from the test suite.
+The only downside is increase in compilation time, but that can be taken care of with some
+modifications to the way we structure the test code (which will be done in the future).
+
+### Null pointers
+Do not use `NULL`. Use `nullptr` everywhere. Good article comparing them both can be found
+[here](https://embeddedartistry.com/blog/2017/2/28/migrating-from-c-to-c-null-vs-nullptr).
+
+### Adding new functions
+If you want to add a new function that is supposed to work across all kinds of matrix blocks,
+follow this procedure.
+* Add a `virtual` function to `Node` class.
+* Override the same function in any or all of the subclasses of `Node` : `Hierarchical`,
+`Dense` or `LowRank`.

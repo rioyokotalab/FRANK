@@ -17,10 +17,9 @@
 #include <lapacke.h>
 
 namespace hicma {
-  bool VERBOSE = true;                          //!< Print to screen
-  static const int stringLength = 24;           //!< Length of formatted string
-  static const int decimal = 7;                 //!< Decimal precision
-  static const int wait = 100;                  //!< Waiting time between output of different ranks
+  bool VERBOSE = true;
+  static const int stringLength = 24; //!< Length of formatted string
+  static const int decimal = 7; //!< Decimal precision
 
   void fillXML(const Node& _A, boost::property_tree::ptree& tree) {
     namespace pt = boost::property_tree;
@@ -84,7 +83,7 @@ namespace hicma {
     tree.add_child("root", root_el);
 
     pt::xml_writer_settings<std::string> settings(' ', 4);
-    write_xml("test.xml", tree, std::locale(), settings);
+    write_xml("matrix.xml", tree, std::locale(), settings);
   }
 
   void print(std::string s) {

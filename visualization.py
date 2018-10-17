@@ -7,7 +7,7 @@ import xml.etree.ElementTree as ET
 
 
 def read_xml():
-    tree = ET.parse('input/test.xml');
+    tree = ET.parse('matrix.xml');
     return tree
 
 
@@ -88,8 +88,8 @@ def main():
     fig = plt.figure()
     grid_dict = plot_matrix(root)
     plt.subplots_adjust(wspace=0, hspace=0)
-    plt.savefig("test.pdf")
-    # plt.show()
+    plt.savefig("matrix.pdf")
+    plt.show()
 
 
 if __name__ == '__main__':
