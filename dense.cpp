@@ -6,7 +6,9 @@
 #include <cassert>
 #include <iostream>
 #include <iomanip>
+#ifndef USE_MKL
 #include <lapacke.h>
+#endif
 
 namespace hicma {
 

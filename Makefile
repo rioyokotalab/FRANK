@@ -1,6 +1,6 @@
 .SUFFIXES: .cpp .cu
 
-CXX = g++ -std=c++11 -ggdb3 -O3 -fopenmp -I. -Wall -Wfatal-errors
+CXX = g++ -std=c++11 -ggdb3 -O3 -fopenmp -I. -Wall -Wfatal-errors -DUSE_MKL
 NVCC = nvcc -ccbin=g++-5 -std=c++11 -I. -arch sm_35 -Xcompiler "-fopenmp -Wall -Wfatal-errors"
 
 SOURCES = print.o timer.o functions.o any.o node.o dense.o low_rank.o hierarchical.o
@@ -20,7 +20,7 @@ cpu:
 gpu:
 	make rsvd_gpu blr_lu_gpu h_lu_gpu
 
-lib: $(SOURCES)
+lib: batch_rsvd.o $(SOURCES)
 	ar -cr libhicma.a batch_rsvd.o $(SOURCES)
 	ranlib libhicma.a
 

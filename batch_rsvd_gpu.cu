@@ -9,6 +9,9 @@
 #include "batch_rand.h"
 #include "batch_ara.h"
 
+#include <iostream>
+#include <fstream>
+
 namespace hicma {
 
   std::vector<int> h_m;
@@ -38,11 +41,16 @@ namespace hicma {
     std::vector<double> h_A(max_m * max_n * batchCount);
     std::vector<double> h_U(max_m * max_n * batchCount);
     std::vector<double> h_V(max_n * max_n * batchCount);
+    std::cout << batchCount << std::endl;
+    std::ofstream file("matrix.txt");
     for (int b=0; b<batchCount; b++) {
       Dense A = vecA[b];
+      file << A.dim[0] << std::endl;
+      file << A.dim[1] << std::endl;
       for (int i=0; i<A.dim[0]; i++) {
         for (int j=0; j<A.dim[1]; j++) {
           h_A[i+j*A.dim[0]+b*max_m*max_n] = A(i,j);
+          file << A(i,j) << std::endl;
         }
       }
     }
@@ -72,16 +80,25 @@ namespace hicma {
     cudaMemcpy(d_m, &h_m[0], batchCount * sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(d_n, &h_n[0], batchCount * sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(d_A, &h_A[0], h_A.size() * sizeof(double), cudaMemcpyHostToDevice);
+    int batchSave = batchCount;
+    batchCount = 1;
     kblas_ara_batched(
                       handle, d_m, d_n, p_A, d_m, p_U, d_m, p_V, d_n, d_k,
                       tol, max_m, max_n, max_n, block_size, ara_r, rand_state, batchCount
                       );
+    batchCount = batchSave;
     std::vector<int> h_k(batchCount);
     cudaMemcpy(&h_k[0], d_k, batchCount * sizeof(int), cudaMemcpyDeviceToHost);
     cudaMemcpy(&h_U[0], d_U, h_U.size() * sizeof(double), cudaMemcpyDeviceToHost);
     cudaMemcpy(&h_V[0], d_V, h_V.size() * sizeof(double), cudaMemcpyDeviceToHost);
     for(int b=0; b<batchCount; b++) {
+      if (h_k[b] == 0) {
+        h_k[b] = 1;
+        for (int i=0; i<vecA[b].dim[0]; i++) h_U[i+b*max_m*max_n] = 0;
+        for (int i=0; i<vecA[b].dim[1]; i++) h_V[i+b*max_m*max_n] = 0;
+      }
       LowRank LR(vecA[b].dim[0], vecA[b].dim[1], h_k[b]);
+      std::cout << LR.dim[0] << " " << LR.dim[1] << " " << LR.rank << std::endl;
       Dense A = vecA[b];
       for (int i=0; i<LR.dim[0]; i++) {
         for (int j=0; j<LR.rank; j++) {
@@ -94,8 +111,13 @@ namespace hicma {
         }
         LR.S(i,i) = 1;
       }
+      LR = LowRank(vecA[b], 8);
       *vecLR[b] = LR;
     }
+    h_m.clear();
+    h_n.clear();
+    vecA.clear();
+    vecLR.clear();
     cudaFree(p_A);
     cudaFree(p_U);
     cudaFree(p_V);

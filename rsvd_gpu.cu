@@ -12,19 +12,24 @@
 #include "batch_rand.h"
 #include "batch_ara.h"
 
+#include <iostream>
+#include <fstream>
+
 using namespace hicma;
 
 int main(int argc, char** argv)
 {
-  int batchCount = 16;
+  int batchCount = 2;
   double tol = 1e-7;
   int block_size = 32;
   int ara_r = 10;
   std::vector<int> h_m;
   std::vector<int> h_n;
   std::vector<Dense> vecA;
+#if 1
   for (int b=0; b<batchCount; b++) {
-    int N = 64+b;
+    int N = 64;
+    if(b==1) N = 128;
     std::vector<double> randx(2*N);
     for (int i=0; i<2*N; i++) {
       randx[i] = drand48();
@@ -35,6 +40,27 @@ int main(int argc, char** argv)
     h_n.push_back(A.dim[1]);
     vecA.push_back(A);
   }
+#else
+  int dim0, dim1;
+  std::ifstream file("matrix.txt");
+  for (int b=0; b<batchCount; b++) {
+    file >> dim0;
+    file >> dim1;
+    std::cout << b << " " << dim0 << " " << dim1 << std::endl;
+    Dense A(dim0,dim1);
+    for (int i=0; i<dim0; i++) {
+      for (int j=0; j<dim1; j++) {
+        double Aij;
+        file >> Aij;
+        A(i,j) = Aij;
+      }
+    }
+    h_m.push_back(A.dim[0]);
+    h_n.push_back(A.dim[1]);
+    vecA.push_back(A);
+  }
+  file.close();
+#endif
   int max_m = 0;
   int max_n = 0;
   for (int b=0; b<batchCount; b++) {
@@ -90,6 +116,7 @@ int main(int argc, char** argv)
   cudaMemcpy(&h_V[0], d_V, h_V.size() * sizeof(double), cudaMemcpyDeviceToHost);
   std::vector<LowRank> vecLR;
   for(int b=0; b<batchCount; b++) {
+    std::cout << b << " " << h_k[b] << std::endl;
     LowRank LR(vecA[b].dim[0], vecA[b].dim[1], h_k[b]);
     Dense A = vecA[b];
     for (int i=0; i<LR.dim[0]; i++) {
