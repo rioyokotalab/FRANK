@@ -20,17 +20,17 @@ namespace hicma {
     }
   }
 
-  void rand_data(
-            std::vector<double>& data,
-            std::vector<double>& x,
-            const int& ni,
-            const int& nj,
-            const int& i_begin,
-            const int& j_begin
-            ) {
+  void random(
+              std::vector<double>& data,
+              std::vector<double>& x,
+              const int& ni,
+              const int& nj,
+              const int& i_begin,
+              const int& j_begin
+              ) {
     for (int i=0; i<ni; i++) {
       for (int j=0; j<nj; j++) {
-        data[i*nj+j] = 0.5; //drand48();
+        data[i*nj+j] = drand48();
       }
     }
   }

@@ -14,7 +14,7 @@ namespace hicma {
             const int& j_begin
             );
 
-  void rand_data(
+  void random(
             std::vector<double>& data,
             std::vector<double>& x,
             const int& ni,
@@ -22,6 +22,15 @@ namespace hicma {
             const int& i_begin,
             const int& j_begin
             );
+
+  void latms(
+             std::vector<double>& data,
+             std::vector<double>& x,
+             const int& ni,
+             const int& nj,
+             const int& i_begin,
+             const int& j_begin
+             );
 
   void arange(
             std::vector<double>& data,

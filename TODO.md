@@ -1,11 +1,9 @@
 [Immediate]
-swap > move
- *this = std::move(A);
- return *this;
+Change back to N = 256 in h_lu
 
 [Features to implement]
-RSVD with controllable precision
-GPU version
+RSVD with controllable precision on CPU
+GPU LU
 H^2-matrix LU (nested basis)
 MPI version
 Asyncronous communication

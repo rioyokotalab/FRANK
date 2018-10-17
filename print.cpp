@@ -97,7 +97,7 @@ namespace hicma {
   }
 
   template<typename T>
-  void print(std::string s, T v, bool fixed=true) {
+  void print(std::string s, T v, bool fixed) {
     if (!VERBOSE | (MPIRANK != 0)) return;
     std::cout << std::setw(stringLength) << std::left << s << " : ";
     if(fixed)
@@ -107,6 +107,9 @@ namespace hicma {
     std::cout << v << std::endl;
   }
 
+  template void print<int>(std::string s, int v, bool fixed=true);
+  template void print<size_t>(std::string s, size_t v, bool fixed=true);
+  template void print<float>(std::string s, float v, bool fixed=true);
   template void print<double>(std::string s, double v, bool fixed=true);
 
   template<typename T>

@@ -1,11 +1,12 @@
 #include "functions.h"
 #include "hierarchical.h"
+#include "batch_rsvd.h"
 #include "timer.h"
 
 using namespace hicma;
 
 int main(int argc, char** argv) {
-  int N = 64;
+  int N = 64; // 256
   int nleaf = 16;
   int rank = 8;
   std::vector<double> randx(N);
@@ -45,7 +46,8 @@ int main(int argc, char** argv) {
     admis = 1; // Strong admissibility
   }
   Hierarchical A(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
-  Hierarchical x(rand_data, randx, N, 1, rank, nleaf, admis, nblocks, 1);
+  batch_rsvd();
+  Hierarchical x(random, randx, N, 1, rank, nleaf, admis, nblocks, 1);
   Hierarchical b(zeros, randx, N, 1, rank, nleaf, admis, nblocks, 1);
   b.gemm(A,x);
   stop("Init matrix");

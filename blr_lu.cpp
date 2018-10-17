@@ -1,5 +1,6 @@
 #include "functions.h"
 #include "hierarchical.h"
+#include "batch_rsvd.h"
 #include "timer.h"
 
 using namespace hicma;
@@ -36,8 +37,14 @@ int main(int argc, char** argv) {
         A(ic,jc) = Aij;
       }
       else {
-        A(ic,jc) = LowRank(Aij, rank);
+        low_rank_push(A(ic,jc), Aij, rank);
       }
+    }
+  }
+  batch_rsvd();
+  for (int ic=0; ic<Nc; ic++) {
+    for (int jc=0; jc<Nc; jc++) {
+      if(A(ic,jc).is(HICMA_LOWRANK)) static_cast<LowRank&>(*A(ic,jc).ptr).print();
     }
   }
   b.gemm(A,x);
