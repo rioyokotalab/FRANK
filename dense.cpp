@@ -380,4 +380,11 @@ namespace hicma {
       S[i*dim[1]+i] = Sdiag[i];
     }
   }
+
+  void Dense::svd(Dense& Sdiag) {
+    Dense U(dim[0],dim[1]),V(dim[1],dim[0]);
+    Dense work(dim[1]-1,1);
+    LAPACKE_dgesvd(LAPACK_ROW_MAJOR, 'A', 'A', dim[0], dim[1], &data[0], dim[0],
+                   &Sdiag[0], &U[0], dim[0], &V[0], dim[1], &work[0]);
+  }
 }

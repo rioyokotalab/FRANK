@@ -105,6 +105,8 @@ namespace hicma {
     void qr(Dense& Q, Dense& R);
 
     void svd(Dense& U, Dense& S, Dense& V);
+
+    void svd(Dense& S);
   };
 }
 #endif

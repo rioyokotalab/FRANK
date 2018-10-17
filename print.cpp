@@ -14,7 +14,6 @@
 #include <vector>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
-#include <lapacke.h>
 
 namespace hicma {
   bool VERBOSE = true;
@@ -25,8 +24,8 @@ namespace hicma {
     namespace pt = boost::property_tree;
     if (_A.is(HICMA_HIERARCHICAL)) {
       const Hierarchical& A = static_cast<const Hierarchical&>(_A);
-      for (int i = 0; i < A.dim[0]; ++i) {
-        for (int j = 0; j < A.dim[1]; ++j) {
+      for (int i=0; i<A.dim[0]; i++) {
+        for (int j=0; j<A.dim[1]; j++) {
           pt::ptree el_subtree{};
           fillXML(A(i, j), el_subtree);
           std::string el_name = "i" + std::to_string(i) + "j" + std::to_string(j);
@@ -39,14 +38,10 @@ namespace hicma {
       tree.put("<xmlattr>.dim1", A.dim[1]);
     } else if (_A.is(HICMA_LOWRANK)) {
       const LowRank& A = static_cast<const LowRank&>(_A);
-      int max_rank = std::min(A.dim[0], A.dim[1]);
-      std::vector<double> S(max_rank), U(A.dim[0]*A.dim[1]), Vt(A.dim[1]*A.dim[1]), SU(max_rank - 1);
-      LAPACKE_dgesvd(
-          LAPACK_ROW_MAJOR, 'A', 'A',
-          A.dim[0], A.dim[1], &(Dense(A))[0],
-          A.dim[0], &S[0], &U[0], A.dim[0], &Vt[0], A.dim[1], &SU[0]);
+      Dense S(A.dim[0],1);
+      Dense(A).svd(S);
       std::string singular_values = std::to_string(S[0]);
-      for (int i=1; i<max_rank; ++i)
+      for (int i=1; i<A.dim[0]; ++i)
         singular_values += std::string(",") + std::to_string(S[i]);
       tree.put("<xmlattr>.type", A.type());
       tree.put("<xmlattr>.dim0", A.dim[0]);
@@ -55,14 +50,10 @@ namespace hicma {
       tree.put("<xmlattr>.svalues", singular_values);
     } else if (_A.is(HICMA_DENSE)) {
       const Dense& A = static_cast<const Dense&>(_A);
-      int max_rank = std::min(A.dim[0], A.dim[1]);
-      std::vector<double> S(max_rank), U(A.dim[0]*A.dim[1]), Vt(A.dim[1]*A.dim[1]), SU(max_rank - 1);
-      LAPACKE_dgesvd(
-          LAPACK_ROW_MAJOR, 'A', 'A',
-          A.dim[0], A.dim[1], &(Dense(A))[0],
-          A.dim[0], &S[0], &U[0], A.dim[0], &Vt[0], A.dim[1], &SU[0]);
+      Dense S(A.dim[0],1);
+      Dense(A).svd(S);
       std::string singular_values = std::to_string(S[0]);
-      for (int i=1; i<max_rank; ++i)
+      for (int i=1; i<A.dim[0]; ++i)
         singular_values += std::string(",") + std::to_string(S[i]);
       tree.put("<xmlattr>.type", A.type());
       tree.put("<xmlattr>.dim0", A.dim[0]);
@@ -81,7 +72,6 @@ namespace hicma {
     pt::ptree root_el;
     fillXML(A, root_el);
     tree.add_child("root", root_el);
-
     pt::xml_writer_settings<std::string> settings(' ', 4);
     write_xml("matrix.xml", tree, std::locale(), settings);
   }
