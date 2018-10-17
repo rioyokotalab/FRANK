@@ -1,6 +1,5 @@
 #ifndef print_h
 #define print_h
-#include "mpi_utils.h"
 #include <iomanip>
 #include <iostream>
 #include <string>

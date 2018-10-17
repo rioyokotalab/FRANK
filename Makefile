@@ -1,10 +1,9 @@
 .SUFFIXES: .cpp .cu
 
-CXX = mpicxx -std=c++11 -ggdb3 -O3 -fopenmp -I. -Wall -Wfatal-errors
+CXX = g++ -std=c++11 -ggdb3 -O3 -fopenmp -I. -Wall -Wfatal-errors
 NVCC = nvcc -ccbin=g++-5 -std=c++11 -I. -arch sm_35 -Xcompiler "-fopenmp -Wall -Wfatal-errors"
 
-SOURCES = errors.o print.o mpi_utils.o timer.o functions.o any.o node.o dense.o low_rank.o hierarchical.o
-TEST_SOURCES = test/test_helper.o test/test_mpi_block_creation.o test/test_mpi_dense_lu.o
+SOURCES = print.o timer.o functions.o any.o node.o dense.o low_rank.o hierarchical.o
 
 .cpp.o:
 	$(CXX) -c $? -o $@
@@ -52,10 +51,6 @@ blr_lu_gpu: blr_lu.o batch_rsvd_gpu.o $(SOURCES)
 h_lu_gpu: h_lu.o batch_rsvd_gpu.o $(SOURCES)
 	$(CXX) $? -L/home/rioyokota/magma-2.3.0/lib -lm -lkblas-gpu -lmagma -lcusparse -lcublas -lcudart -lblas -llapacke -lpthread -lm -ldl -lstdc++ -lmkl_intel_lp64 -lmkl_sequential -lmkl_core
 	./a.out 6
-
-test:  $(TEST_SOURCES) $(SOURCES)
-	$(CXX) $? -lblas -llapacke
-	mpirun -np 4 ./a.out
 
 clean:
 	$(RM) *.o *.out *.xml
