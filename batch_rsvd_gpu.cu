@@ -80,13 +80,10 @@ namespace hicma {
     cudaMemcpy(d_m, &h_m[0], batchCount * sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(d_n, &h_n[0], batchCount * sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(d_A, &h_A[0], h_A.size() * sizeof(double), cudaMemcpyHostToDevice);
-    int batchSave = batchCount;
-    batchCount = 1;
     kblas_ara_batched(
                       handle, d_m, d_n, p_A, d_m, p_U, d_m, p_V, d_n, d_k,
                       tol, max_m, max_n, max_n, block_size, ara_r, rand_state, batchCount
                       );
-    batchCount = batchSave;
     std::vector<int> h_k(batchCount);
     cudaMemcpy(&h_k[0], d_k, batchCount * sizeof(int), cudaMemcpyDeviceToHost);
     cudaMemcpy(&h_U[0], d_U, h_U.size() * sizeof(double), cudaMemcpyDeviceToHost);

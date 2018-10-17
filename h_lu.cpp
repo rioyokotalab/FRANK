@@ -13,9 +13,9 @@
 using namespace hicma;
 
 int main(int argc, char** argv) {
-  int N = 512;
+  int N = 1024;
   int nleaf = 64;
-  int rank = 16;
+  int rank = 4;
   std::vector<double> randx(N);
   for (int i=0; i<N; i++) {
     randx[i] = drand48();
@@ -53,6 +53,7 @@ int main(int argc, char** argv) {
   }
   Hierarchical A(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   batch_rsvd();
+  printXML(A);
   admis = N / nleaf; // Full rank
   Hierarchical D(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   Hierarchical x(random, randx, N, 1, rank, nleaf, admis, nblocks, 1);

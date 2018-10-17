@@ -19,17 +19,17 @@ using namespace hicma;
 
 int main(int argc, char** argv)
 {
-  int batchCount = 2;
+  int batchCount = 14;
   double tol = 1e-7;
   int block_size = 32;
   int ara_r = 10;
   std::vector<int> h_m;
   std::vector<int> h_n;
   std::vector<Dense> vecA;
-#if 1
+#if 0
   for (int b=0; b<batchCount; b++) {
     int N = 64;
-    if(b==1) N = 128;
+    if (b==1) N=64;
     std::vector<double> randx(2*N);
     for (int i=0; i<2*N; i++) {
       randx[i] = drand48();
@@ -116,7 +116,6 @@ int main(int argc, char** argv)
   cudaMemcpy(&h_V[0], d_V, h_V.size() * sizeof(double), cudaMemcpyDeviceToHost);
   std::vector<LowRank> vecLR;
   for(int b=0; b<batchCount; b++) {
-    std::cout << b << " " << h_k[b] << std::endl;
     LowRank LR(vecA[b].dim[0], vecA[b].dim[1], h_k[b]);
     Dense A = vecA[b];
     for (int i=0; i<LR.dim[0]; i++) {
