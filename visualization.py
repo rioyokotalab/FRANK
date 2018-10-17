@@ -50,7 +50,7 @@ def plot_lowrank(xml_node, lowrank_dict, root_grid):
     slog = np.log(svalues[0:10])
     ax = plt.subplot(lowrank_dict['gs'][0, 0])
     ax.set(xlim=(0, len(slog)), ylim=(0, slog[0]-slog[9]), xticks=[], yticks=[])
-    ax.bar(np.arange(len(slog)), slog-slog[9], width=1, color='r')
+    ax.bar(np.arange(len(slog)), slog-slog[9], width=1, color='g')
 
 
 def plot_dense(xml_node, dense_dict, root_grid):
@@ -63,7 +63,7 @@ def plot_dense(xml_node, dense_dict, root_grid):
     slog = np.log(svalues[0:10])
     ax = plt.subplot(dense_dict['gs'][0, 0])
     ax.set(xlim=(0, len(slog)), ylim=(0, slog[0]-slog[9]), xticks=[], yticks=[])
-    ax.bar(np.arange(len(slog)), slog-slog[9], width=1, color='b')
+    ax.bar(np.arange(len(slog)), slog-slog[9], width=1, color='r')
 
 
 def plot_matrix(root):

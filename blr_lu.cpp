@@ -12,14 +12,15 @@
 using namespace hicma;
 
 int main(int argc, char** argv) {
-  int N = 64;
-  int Nb = 16;
+  int N = atoi(argv[1]);
+  int Nb = atoi(argv[2]);
   int Nc = N / Nb;
   int rank = 8;
   std::vector<double> randx(N);
   Hierarchical x(Nc);
   Hierarchical b(Nc);
   Hierarchical A(Nc,Nc);
+  Hierarchical D(Nc,Nc);
   for (int i=0; i<N; i++) {
     randx[i] = drand48();
   }
@@ -39,6 +40,7 @@ int main(int argc, char** argv) {
   for (int ic=0; ic<Nc; ic++) {
     for (int jc=0; jc<Nc; jc++) {
       Dense Aij(laplace1d, randx, Nb, Nb, Nb*ic, Nb*jc);
+      D(ic,jc) = Aij;
       if (std::abs(ic - jc) <= 1) {
         A(ic,jc) = Aij;
       }
@@ -53,6 +55,7 @@ int main(int argc, char** argv) {
       if(A(ic,jc).is(HICMA_LOWRANK)) static_cast<LowRank&>(*A(ic,jc).ptr).print();
     }
   }
+  /*
   b.gemm(A,x);
   stop("Init matrix");
   start("LU decomposition");
@@ -98,5 +101,6 @@ int main(int argc, char** argv) {
   double norm = x.norm();
   print("Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
+  */
   return 0;
 }

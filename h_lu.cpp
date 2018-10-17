@@ -13,7 +13,7 @@
 using namespace hicma;
 
 int main(int argc, char** argv) {
-  int N = 1024;
+  int N = 1 << atoi(argv[2]);
   int nleaf = 64;
   int rank = 4;
   std::vector<double> randx(N);
@@ -51,15 +51,21 @@ int main(int argc, char** argv) {
     nblocks = 2; // Hierarchical (log_2(N/nleaf) levels)
     admis = 1; // Strong admissibility
   }
+  start("CPU compression");
   Hierarchical A(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
+  stop("CPU compression");
   batch_rsvd();
-  printXML(A);
+  //printXML(A);
   admis = N / nleaf; // Full rank
+  start("Dense tree");
   Hierarchical D(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
+  stop("Dense tree");
   Hierarchical x(random, randx, N, 1, rank, nleaf, admis, nblocks, 1);
   Hierarchical b(zeros, randx, N, 1, rank, nleaf, admis, nblocks, 1);
+  start("Verification");
   double diff = (Dense(A) - Dense(D)).norm();
   double norm = D.norm();
+  stop("Verification");
   print("Compression Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
   /*

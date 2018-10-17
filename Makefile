@@ -38,7 +38,7 @@ blr_lu: blr_lu.o batch_rsvd.o $(SOURCES)
 
 h_lu: h_lu.o batch_rsvd.o $(SOURCES)
 	$(CXX) $? -lblas -llapacke
-	./a.out 6
+	./a.out 6 10
 
 rsvd_gpu: rsvd_gpu.o batch_rsvd_gpu.o $(SOURCES)
 	$(CXX) $? -L/home/rioyokota/magma-2.3.0/lib -lm -lkblas-gpu -lmagma -lcusparse -lcublas -lcudart -lblas -llapacke -lpthread -lm -ldl -lstdc++ -lmkl_intel_lp64 -lmkl_sequential -lmkl_core
@@ -50,7 +50,7 @@ blr_lu_gpu: blr_lu.o batch_rsvd_gpu.o $(SOURCES)
 
 h_lu_gpu: h_lu.o batch_rsvd_gpu.o $(SOURCES)
 	$(CXX) $? -L/home/rioyokota/magma-2.3.0/lib -lm -lkblas-gpu -lmagma -lcusparse -lcublas -lcudart -lblas -llapacke -lpthread -lm -ldl -lstdc++ -lmkl_intel_lp64 -lmkl_sequential -lmkl_core
-	./a.out 6
+	./a.out 6 10
 
 clean:
 	$(RM) *.o *.out *.xml

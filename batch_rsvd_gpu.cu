@@ -1,6 +1,7 @@
 #include "any.h"
 #include "low_rank.h"
 #include "batch_rsvd.h"
+#include "timer.h"
 
 #include <cublas_v2.h>
 #include <magma_v2.h>
@@ -38,10 +39,12 @@ namespace hicma {
       max_m = std::max(max_m, h_m[b]);
       max_n = std::max(max_n, h_n[b]);
     }
+    start("Allocate host");
     std::vector<double> h_A(max_m * max_n * batchCount);
     std::vector<double> h_U(max_m * max_n * batchCount);
     std::vector<double> h_V(max_n * max_n * batchCount);
-    std::cout << batchCount << std::endl;
+    stop("Allocate host");
+    /*
     std::ofstream file("matrix.txt");
     for (int b=0; b<batchCount; b++) {
       Dense A = vecA[b];
@@ -54,12 +57,16 @@ namespace hicma {
         }
       }
     }
+    */
+    start("Init KBLAS");
     kblasHandle_t handle;
     kblasRandState_t rand_state;
     kblasCreate(&handle);
     kblasInitRandState(handle, &rand_state, 16384*2, 0);
     kblasEnableMagma(handle);
     magma_init();
+    stop("Init KBLAS");
+    start("Allocate device");
     int *d_m, *d_n, *d_k;
     cudaMalloc( (void**)&d_m, batchCount * sizeof(int) );
     cudaMalloc( (void**)&d_n, batchCount * sizeof(int) );
@@ -72,22 +79,33 @@ namespace hicma {
     cudaMalloc( (void**)&p_A, batchCount * sizeof(double*) );
     cudaMalloc( (void**)&p_U, batchCount * sizeof(double*) );
     cudaMalloc( (void**)&p_V, batchCount * sizeof(double*) );
+    stop("Allocate device");
+    start("Array of pointers");
     generateDArrayOfPointers(d_A, p_A, max_m * max_n, batchCount, 0);
     generateDArrayOfPointers(d_U, p_U, max_m * max_n, batchCount, 0);
     generateDArrayOfPointers(d_V, p_V, max_n * max_n, batchCount, 0);
+    stop("Array of pointers");
+    start("Copy to device");
     kblas_ara_batch_wsquery<double>(handle, block_size, batchCount);
     kblasAllocateWorkspace(handle);
     cudaMemcpy(d_m, &h_m[0], batchCount * sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(d_n, &h_n[0], batchCount * sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(d_A, &h_A[0], h_A.size() * sizeof(double), cudaMemcpyHostToDevice);
+    stop("Copy to device");
+    start("Batched SVD");
     kblas_ara_batched(
                       handle, d_m, d_n, p_A, d_m, p_U, d_m, p_V, d_n, d_k,
                       tol, max_m, max_n, max_n, block_size, ara_r, rand_state, batchCount
                       );
+    cudaDeviceSynchronize();
+    stop("Batched SVD");
+    start("Copy to host");
     std::vector<int> h_k(batchCount);
     cudaMemcpy(&h_k[0], d_k, batchCount * sizeof(int), cudaMemcpyDeviceToHost);
     cudaMemcpy(&h_U[0], d_U, h_U.size() * sizeof(double), cudaMemcpyDeviceToHost);
     cudaMemcpy(&h_V[0], d_V, h_V.size() * sizeof(double), cudaMemcpyDeviceToHost);
+    stop("Copy to host");
+    start("Copy to LR");
     for(int b=0; b<batchCount; b++) {
       if (h_k[b] == 0) {
         h_k[b] = 1;
@@ -111,6 +129,7 @@ namespace hicma {
       LR = LowRank(vecA[b], 8);
       *vecLR[b] = LR;
     }
+    stop("Copy to LR");
     h_m.clear();
     h_n.clear();
     vecA.clear();
