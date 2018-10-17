@@ -1,7 +1,5 @@
 #ifndef any_h
 #define any_h
-#include <cassert>
-#include <iostream>
 #include <memory>
 
 namespace hicma {

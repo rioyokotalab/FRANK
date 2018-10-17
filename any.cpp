@@ -1,4 +1,8 @@
+#include "any.h"
+#include "low_rank.h"
 #include "hierarchical.h"
+
+#include <iostream>
 
 namespace hicma {
 

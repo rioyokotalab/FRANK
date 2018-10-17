@@ -2,8 +2,6 @@
 #define dense_h
 #include "node.h"
 
-#include <iomanip>
-#include <random>
 #include <vector>
 #include <cblas.h>
 
@@ -105,6 +103,8 @@ namespace hicma {
     void qr(Dense& Q, Dense& R);
 
     void svd(Dense& U, Dense& S, Dense& V);
+
+    void svd(Dense& S);
   };
 }
 #endif

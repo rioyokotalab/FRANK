@@ -1,4 +1,10 @@
+#include "any.h"
+#include "low_rank.h"
 #include "hierarchical.h"
+
+#include <cassert>
+#include <iostream>
+#include <random>
 
 namespace hicma {
 

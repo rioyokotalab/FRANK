@@ -1,9 +1,12 @@
 #ifndef batch_rsvd_h
 #define batch_rsvd_h
 
-#include "dense.h"
+#include <vector>
 
 namespace hicma {
+
+  class Any;
+  class Dense;
 
   extern std::vector<int> h_m;
   extern std::vector<int> h_n;

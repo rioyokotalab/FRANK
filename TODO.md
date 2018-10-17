@@ -1,6 +1,9 @@
 [Immediate]
 Use Dense.svd in print
 Always include headers that are used in the file
+Change Node to Any in inputs to functions
+Change print in blr to diff/norm
+Add diff/norm for compression in h_lu
 
 [Features to implement]
 RSVD with controllable precision on CPU
