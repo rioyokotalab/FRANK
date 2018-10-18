@@ -259,9 +259,25 @@ namespace hicma {
       }
     } else if (_A.is(HICMA_HIERARCHICAL)) {
       const Hierarchical& A = static_cast<const Hierarchical&>(_A);
-      Hierarchical H(*this, A.dim[0], A.dim[1]);
-      H.trsm(A, uplo);
-      *this = Dense(H);
+      switch (uplo) {
+      case 'l' :
+        {
+          Hierarchical H(*this, A.dim[0], 1);
+          H.trsm(A, uplo);
+          *this = Dense(H);
+          break;
+        }
+      case 'u' :
+        {
+          Hierarchical H(*this, 1, A.dim[1]);
+          H.trsm(A, uplo);
+          *this = Dense(H);
+          break;
+        }
+      default :
+        std::cerr << "Second argument must be 'l' for lower, 'u' for upper." << std::endl;
+        abort();
+      }
     } else {
       std::cerr << this->type() << " /= " << _A.type();
       std::cerr << " is undefined." << std::endl;
