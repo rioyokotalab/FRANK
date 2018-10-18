@@ -43,7 +43,7 @@ namespace hicma {
             D(ic,jc) = A(ic+i_begin,jc+j_begin);
           }
         }
-        (*this)(i,j) = D;
+        (*this)(i,j) = std::move(D);
       }
     }
   }
@@ -76,7 +76,7 @@ namespace hicma {
             LR.V(kc,jc) = A.V(kc,jc+j_begin);
           }
         }
-        (*this)(i,j) = LR;
+        (*this)(i,j) = std::move(LR);
       }
     }
   }
