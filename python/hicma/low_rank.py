@@ -4,6 +4,7 @@ import numpy as np
 from hicma.id import rsvd
 from hicma.node import Node
 import hicma.dense as HD
+import hicma.hierarchical as HH
 
 
 class LowRank(Node):
@@ -132,7 +133,7 @@ class LowRank(Node):
                 self.U.trsm(A, uplo)
             elif uplo == 'u':
                 self.V.trsm(A, uplo)
-        elif isinstance(A, Hierarchical):
+        elif isinstance(A, HH.Hierarchical):
             if uplo == 'l':
                 self.U.trsm(A, uplo)
             elif uplo == 'u':
@@ -155,7 +156,7 @@ class LowRank(Node):
                 self += C
             elif isinstance(B, LowRank):
                 C = LowRank(A)
-                C.V = Dense(B.V)
+                C.V = HD.Dense(B.V)
                 VxU = HD.Dense(ni=A.rank, nj=B.rank)
                 VxU.gemm(A.V, B.U, 1, 0)
                 SxVxU = HD.Dense(ni=A.rank, nj=B.rank)

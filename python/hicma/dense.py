@@ -51,9 +51,9 @@ class Dense(Node):
             super().__init__(arr.i_abs, arr.j_abs, arr.level)
             self.dim = [0, 0]
             for i in range(arr.dim[0]):
-                self.dim[0] += arr[i, 0].dim[0]
+                self.dim[0] += Dense(arr[i, 0]).dim[0]
             for j in range(arr.dim[1]):
-                self.dim[1] += arr[0, j].dim[1]
+                self.dim[1] += Dense(arr[0, j]).dim[1]
             self.data = np.zeros((self.dim[0], self.dim[1]))
             i_begin = 0
             for i in range(arr.dim[0]):
@@ -151,9 +151,14 @@ class Dense(Node):
                     self.data = x_trsm(1, A.data, self.data, side=1,
                           lower=False, trans_a=False, diag=False)
         elif isinstance(A, HH.Hierarchical):
-            H = HH.Hierarchical(self, ni_level=A.dim[0], nj_level=A.dim[1])
-            H.trsm(A, uplo)
-            self.data = Dense(H).data
+            if uplo == 'l':
+                H = HH.Hierarchical(self, ni_level=A.dim[0], nj_level=1)
+                H.trsm(A, uplo)
+                self.data = Dense(H).data
+            elif uplo == 'u':
+                H = HH.Hierarchical(self, ni_level=1, nj_level=A.dim[1])
+                H.trsm(A, uplo)
+                self.data = Dense(H).data
         else:
             return NotImplemented
 
