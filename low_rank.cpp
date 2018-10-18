@@ -5,6 +5,7 @@
 #include <cassert>
 #include <iostream>
 #include <random>
+#include <algorithm>
 
 namespace hicma {
 
@@ -28,9 +29,8 @@ namespace hicma {
   LowRank::LowRank(const Dense& A, const int k) : Node(A.i_abs,A.j_abs,A.level) {
     dim[0] = A.dim[0];
     dim[1] = A.dim[1];
-    rank = k+5;
-    assert(dim[0] >= rank);
-    assert(dim[1] >= rank);
+    // Rank with oversampling limited by dimensions
+    rank = std::min(std::min(k+5, dim[0]), dim[1]);
     U = Dense(dim[0], k, i_abs, j_abs, level);
     S = Dense(rank, rank, i_abs, j_abs, level);
     V = Dense(k, dim[1], i_abs, j_abs, level);

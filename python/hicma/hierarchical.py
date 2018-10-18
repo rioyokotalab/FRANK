@@ -81,8 +81,8 @@ class Hierarchical(Node):
                         ni=ni_child, nj=nj_child,
                         i_abs=i_abs_child, j_abs=j_abs_child, level=self.level + 1
                     )
-                    i_begin = ni / self.dim[0] * i
-                    j_begin = nj / self.dim[1] * j
+                    i_begin = int(ni / self.dim[0] * i)
+                    j_begin = int(nj / self.dim[1] * j)
                     for ic in range(ni_child):
                         for jc in range(nj_child):
                             self[i, j][ic, jc] = arr[i_begin+ic, j_begin+jc]
@@ -98,17 +98,19 @@ class Hierarchical(Node):
                     ni_child = ni / self.dim[0]
                     if i == self.dim[0] - 1:
                         ni_child = ni - (ni / self.dim[0]) * (self.dim[0] - 1)
+                    ni_child = int(ni_child)
                     nj_child = nj / self.dim[1]
                     if j == self.dim[1] - 1:
                         nj_child = nj - (nj / self.dim[1]) * (self.dim[1] - 1)
+                    nj_child = int(nj_child)
                     i_abs_child = self.i_abs * self.dim[0] + i
                     j_abs_child = self.j_abs * self.dim[1] + j
                     self[i, j] = LowRank(
-                        ni_child, nj_child, rank,
-                        i_abs_child, j_abs_child, self.level + 1
+                        m=ni_child, n=nj_child, rank=rank,
+                        i_abs=i_abs_child, j_abs=j_abs_child, level=self.level + 1
                     )
-                    i_begin = ni / self.dim[0] * i
-                    j_begin = nj / self.dim[1] * j
+                    i_begin = int(ni / self.dim[0] * i)
+                    j_begin = int(nj / self.dim[1] * j)
                     for ic in range(ni_child):
                         for kc in range(rank):
                             self[i, j].U[ic, kc] = arr.U[i_begin+ic, kc]
@@ -147,7 +149,7 @@ class Hierarchical(Node):
                     i_abs_child = self.i_abs * self.dim[0] + i
                     j_abs_child = self.j_abs * self.dim[1] + j
                     if abs(i_abs_child - j_abs_child) <= admis or (ni == 1 or nj == 1):
-                        if min(ni_child, nj_child) <= nleaf:
+                        if ni_child <= nleaf and nj_child <= nleaf:
                             self[i, j] = Dense(
                                 arr,
                                 func,

@@ -12,9 +12,9 @@ import sys
 
 def main():
     np.set_printoptions(formatter={'float': '{: 0.15f}'.format}, linewidth=100)
-    N = 16
-    nleaf = 4
-    rank = 2
+    N = 256
+    nleaf = 16
+    rank = 8
     assert len(sys.argv) == 2
     nblocks = 0
     admis = 0
@@ -38,24 +38,25 @@ def main():
     elif (int(sys.argv[1]) == 3):
         # 1 level, weak admissibility
         nblocks = int(N / nleaf)
-        admis = 1
+        admis = 0
     elif (int(sys.argv[1]) == 4):
         # 1 level, strong admissibility
         nblocks = int(N / nleaf)
-        admis = 2
+        admis = 1
     elif (int(sys.argv[1]) == 5):
         # log_2(N/nleaf) levels, weak admissibility
         nblocks = 2
-        admis = 1
+        admis = 0
     elif (int(sys.argv[1]) == 6):
         # log_2(N/nleaf) levels, strong admissibility
         nblocks = 2
-        admis = 2
+        admis = 1
     A = Hierarchical(randx, laplace1d, N, N, rank, nleaf, admis, nblocks, nblocks)
     x = Hierarchical(randx, rand_data, N, 1, rank, nleaf, admis, nblocks, 1)
     b = Hierarchical(randx, zeros, N, 1, rank, nleaf, admis, nblocks, 1)
     b.gemm(A, x)
     A.getrf()
+    print(Dense(A).data)
     b.trsm(A, 'l')
     b.trsm(A, 'u')
     diff = (Dense(x) + Dense(b)).norm()
