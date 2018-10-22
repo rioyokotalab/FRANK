@@ -10,6 +10,7 @@
 #include <boost/property_tree/xml_parser.hpp>
 
 namespace hicma {
+
   bool VERBOSE = true;
   static const int stringLength = 24; //!< Length of formatted string
   static const int decimal = 7; //!< Decimal precision

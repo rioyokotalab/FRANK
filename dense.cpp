@@ -2,6 +2,8 @@
 #include "dense.h"
 #include "low_rank.h"
 #include "hierarchical.h"
+#include "print.h"
+#include "timer.h"
 
 #include <cassert>
 #include <iostream>
@@ -222,12 +224,15 @@ namespace hicma {
   }
 
   void Dense::getrf() {
+    start("-DGETRF");
     std::vector<int> ipiv(std::min(dim[0],dim[1]));
     LAPACKE_dgetrf(LAPACK_ROW_MAJOR, dim[0], dim[1], &data[0], dim[1], &ipiv[0]);
+    stop("-DGETRF",false);
   }
 
   void Dense::trsm(const Node& _A, const char& uplo) {
     if (_A.is(HICMA_DENSE)) {
+      start("-DTRSM");
       const Dense& A = static_cast<const Dense&>(_A);
       if (dim[1] == 1) {
         switch (uplo) {
@@ -259,6 +264,7 @@ namespace hicma {
           abort();
         }
       }
+      stop("-DTRSM",false);
     } else if (_A.is(HICMA_HIERARCHICAL)) {
       const Hierarchical& A = static_cast<const Hierarchical&>(_A);
       switch (uplo) {
@@ -296,6 +302,7 @@ namespace hicma {
 
   void Dense::gemm(const Node& _A, const Node& _B, const int& alpha, const int& beta) {
     if (_A.is(HICMA_DENSE)) {
+      start("-DGEMM");
       const Dense& A = static_cast<const Dense&>(_A);
       assert(this->dim[0] == A.dim[0]);
       if (_B.is(HICMA_DENSE)) {
@@ -326,6 +333,7 @@ namespace hicma {
         std::cerr << " * " << _B.type() << " is undefined." << std::endl;
         abort();
       }
+      stop("-DGEMM",false);
     } else if (_A.is(HICMA_LOWRANK)) {
       const LowRank& A = static_cast<const LowRank&>(_A);
       if (_B.is(HICMA_DENSE)) {
@@ -381,6 +389,7 @@ namespace hicma {
   }
 
   void Dense::qr(Dense& Q, Dense& R) {
+    start("-DGEQRF");
     std::vector<double> tau(dim[1]);
     for (int i=0; i<dim[1]; i++) Q[i*dim[1]+i] = 1.0;
     LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, dim[0], dim[1], &data[0], dim[1], &tau[0]);
@@ -393,9 +402,11 @@ namespace hicma {
         }
       }
     }
+    stop("-DGEQRF",false);
   }
 
   void Dense::svd(Dense& U, Dense& S, Dense& V) {
+    start("-DGESVD");
     Dense Sdiag(dim[0],1);
     Dense work(dim[1]-1,1);
     LAPACKE_dgesvd(LAPACK_ROW_MAJOR, 'A', 'A', dim[0], dim[1], &data[0], dim[0],
@@ -403,12 +414,15 @@ namespace hicma {
     for(int i=0; i<dim[0]; i++){
       S[i*dim[1]+i] = Sdiag[i];
     }
+    stop("-DGESVD",false);
   }
 
   void Dense::svd(Dense& Sdiag) {
+    start("-DGESVD");
     Dense U(dim[0],dim[1]),V(dim[1],dim[0]);
     Dense work(dim[1]-1,1);
     LAPACKE_dgesvd(LAPACK_ROW_MAJOR, 'A', 'A', dim[0], dim[1], &data[0], dim[0],
                    &Sdiag[0], &U[0], dim[0], &V[0], dim[1], &work[0]);
+    stop("-DGESVD",false);
   }
 }

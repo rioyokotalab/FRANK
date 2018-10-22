@@ -7,6 +7,7 @@
 #include <sys/time.h>
 
 namespace hicma {
+
   std::map<std::string,timeval> tic;
   std::map<std::string,double> sumTime;
 
@@ -24,8 +25,9 @@ namespace hicma {
     if (verbose) print(event, sumTime[event]);
   }
 
-  void print2(std::string event) {
+  void printTime(std::string event) {
     print(event, sumTime[event]);
+    sumTime[event] = 0;
   }
 }
 #endif

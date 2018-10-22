@@ -68,23 +68,29 @@ int main(int argc, char** argv) {
   stop("Verification");
   print("Compression Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
-  /*
   print("Time");
   b.gemm(A,x);
   stop("Init matrix");
+  printTime("-DGEMM");
   start("LU decomposition");
   A.getrf();
   stop("LU decomposition");
+  printTime("-DGETRF");
+  printTime("-DTRSM");
+  printTime("-DGEMM");
   start("Forward substitution");
   b.trsm(A,'l');
   stop("Forward substitution");
+  printTime("-DTRSM");
+  printTime("-DGEMM");
   start("Backward substitution");
   b.trsm(A,'u');
   stop("Backward substitution");
+  printTime("-DTRSM");
+  printTime("-DGEMM");
   diff = (Dense(x) + Dense(b)).norm();
   norm = x.norm();
   print("LU Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
   return 0;
-  */
 }
