@@ -4,8 +4,6 @@
 
 namespace hicma {
 
-  std::vector<int> h_m;
-  std::vector<int> h_n;
   std::vector<Dense> vecA;
   std::vector<Any*> vecLR;
 

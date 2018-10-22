@@ -1,8 +1,6 @@
 [Immediate]
-Change print in blr to diff/norm
-Add diff/norm for compression in h_lu
+Make batch class
 Change Node to Any in inputs to functions
-Remove iostream, fstream for tests
 
 [Features to implement]
 RSVD with controllable precision on CPU

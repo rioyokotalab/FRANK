@@ -15,27 +15,28 @@
 
 namespace hicma {
 
-  std::vector<int> h_m;
-  std::vector<int> h_n;
   std::vector<Dense> vecA;
   std::vector<Any*> vecLR;
 
   void low_rank_push(Any& A, Dense& Aij, int rank) {
-    h_m.push_back(Aij.dim[0]);
-    h_n.push_back(Aij.dim[1]);
     vecA.push_back(Aij);
     vecLR.push_back(&A);
   }
 
   void batch_rsvd() {
-    int batchCount = h_m.size();
+    int batchCount = vecA.size();
     if (batchCount == 0) return;
     double tol = 1e-7;
     int block_size = 32;
     int ara_r = 10;
     int max_m = 0;
     int max_n = 0;
+    std::vector<int> h_m(batchCount);
+    std::vector<int> h_n(batchCount);
     for (int b=0; b<batchCount; b++) {
+      Dense A = vecA[b];
+      h_m[b] = A.dim[0];
+      h_n[b] = A.dim[1];
       max_m = std::max(max_m, h_m[b]);
       max_n = std::max(max_n, h_n[b]);
     }
