@@ -44,9 +44,9 @@ class Dense(Node):
         elif isinstance(A, HL.LowRank):
             super().__init__(A.i_abs, A.j_abs, A.level)
             self.dim = A.dim
+            self.data = np.zeros((A.dim[0], A.dim[1]))
             UxS = Dense(ni=A.dim[0], nj=A.rank)
             UxS.gemm(A.U, A.S)
-            self.data = np.zeros((self.dim[0], self.dim[1]))
             self.gemm(UxS, A.V)
         elif isinstance(A, HH.Hierarchical):
             super().__init__(A.i_abs, A.j_abs, A.level)
@@ -80,19 +80,18 @@ class Dense(Node):
             raise ValueError
 
     def __add__(self, A):
-        return Dense(
-            self.data + A.data,
-            i_abs=self.i_abs, j_abs=self.j_abs, level=self.level)
+        B = Dense(self)
+        B += A
+        return B
+
+    def __sub__(self, A):
+        B = Dense(self)
+        B -= A
+        return B
 
     def __iadd__(self, A):
         self.data += A.data
         return self
-
-
-    def __sub__(self, A):
-        return Dense(
-            self.data - A.data,
-            i_abs=self.i_abs, j_abs=self.j_abs, level=self.level)
 
     def __isub__(self, A):
         self.data -= A.data
@@ -114,7 +113,7 @@ class Dense(Node):
         if isinstance(pos, int):
             assert pos < self.dim[0] * self.dim[1]
             assert isinstance(data, numbers.Number)
-            self.data[pos / self.dim[0], pos % self.dim[0]] = data
+            self.data[pos] = data
         elif len(pos) == 2:
             i, j = pos
             assert i < self.dim[0] and j < self.dim[1]
@@ -131,9 +130,8 @@ class Dense(Node):
         return l2
 
     def getrf(self):
-        self.data, piv = sl.lu_factor(self.data, False, True)
-        for i, p in enumerate(piv):
-            self.data[i], self.data[p] = self.data[p], self.data[i]
+        x_getrf = sl.get_lapack_funcs('getrf', (self.data,))
+        self.data, _, __ = x_getrf(self.data, overwrite_a=False)
 
     def trsm(self, A, uplo):
         if isinstance(A, Dense):
@@ -170,7 +168,20 @@ class Dense(Node):
     def gemm(self, A, B, alpha=-1, beta=1):
         if isinstance(A, Dense):
             if isinstance(B, Dense):
-                self.data = alpha*(A.data @ B.data) + beta * self.data
+                assert A.dim[1] == B.dim[0]
+                assert self.dim[1] == B.dim[1]
+                if B.dim[1] == 1:
+                    x_gemv = sl.get_blas_funcs(
+                        'gemv', (self.data, A.data, B.data))
+                    self.data = x_gemv(
+                        alpha, A.data, B.data, beta, self.data,
+                        overwrite_y=False, incx=1, incy=1, trans=False)
+                else:
+                    x_gemm = sl.get_blas_funcs(
+                        'gemm', (self.data, A.data, B.data))
+                    self.data = x_gemm(
+                        alpha, A.data, B.data, beta, self.data,
+                        overwrite_c=False, trans_a=False, trans_b=False)
             elif isinstance(B, HL.LowRank):
                 AxU = Dense(ni=self.dim[0], nj=B.rank)
                 AxU.gemm(A, B.U, 1, 0)
