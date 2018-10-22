@@ -6,14 +6,9 @@ import scipy.linalg as sl
 import hicma.low_rank as HL
 import hicma.hierarchical as HH
 from hicma.node import Node
-from hicma.id import lup_factorize
 
 
 class Dense(Node):
-    """
-    Dense matrix container.
-    """
-    # TODO Pass generator function
     def __init__(
             self,
             A=None,

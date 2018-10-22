@@ -2,16 +2,12 @@
 import random
 import numpy as np
 
-from hicma.id import rsvd
 from hicma.node import Node
 import hicma.dense as HD
 import hicma.hierarchical as HH
 
 
 class LowRank(Node):
-    """
-    Class for low-rank-form matrices.
-    """
     def __init__(
             self,
             A=None,
@@ -22,9 +18,6 @@ class LowRank(Node):
             j_abs=0,
             level=0
     ):
-        """
-        Initialize from input data
-        """
         if isinstance(A, HD.Dense):
             super().__init__(A.i_abs, A.j_abs, A.level)
             self.dim = A.dim
@@ -71,12 +64,9 @@ class LowRank(Node):
             assert isinstance(k, int)
             self.dim = [m, n]
             self.rank = k
-            self.U = HD.Dense(
-                ni=m, nj=self.rank, i_abs=i_abs, j_abs=j_abs, level=level)
-            self.S = HD.Dense(
-                ni=self.rank, nj=self.rank, i_abs=i_abs, j_abs=j_abs, level=level)
-            self.V = HD.Dense(
-                ni=self.rank, nj=n, i_abs=i_abs, j_abs=j_abs, level=level)
+            self.U = HD.Dense(ni=m, nj=k, i_abs=i_abs, j_abs=j_abs, level=level)
+            self.S = HD.Dense(ni=k, nj=k, i_abs=i_abs, j_abs=j_abs, level=level)
+            self.V = HD.Dense(ni=k, nj=n, i_abs=i_abs, j_abs=j_abs, level=level)
         else:
             raise TypeError
 
@@ -109,6 +99,7 @@ class LowRank(Node):
                 self.U[i, j+A.rank] = B.U[i, j]
 
     def mergeS(self, A, B):
+        assert self.rank == A.rank + B.rank
         for i in range(A.rank):
             for j in range(A.rank):
                 self.S[i, j] = A.S[i, j]
@@ -121,6 +112,7 @@ class LowRank(Node):
                 self.S[i+A.rank, j+A.rank] = B.S[i, j]
 
     def mergeV(self, A, B):
+        assert self.rank == A.rank + B.rank
         for i in range(A.rank):
             for j in range(self.dim[1]):
                 self.V[i, j] = A.V[i, j]
@@ -136,9 +128,13 @@ class LowRank(Node):
                 self.V.trsm(A, uplo)
         elif isinstance(A, HH.Hierarchical):
             if uplo == 'l':
-                self.U.trsm(A, uplo)
+                H = HH.Hierarchical(self.U, ni_level=A.dim[0], nj_level=1)
+                H.trsm(A, uplo)
+                self.U = HD.Dense(H)
             elif uplo == 'u':
-                self.V.trsm(A, uplo)
+                H = HH.Hierarchical(self.V, ni_level=1, nj_level=A.dim[1])
+                H.trsm(A, uplo)
+                self.V = HD.Dense(H)
         else:
             return NotImplemented
 
