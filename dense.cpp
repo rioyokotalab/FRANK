@@ -60,11 +60,11 @@ namespace hicma {
   }
 
   Dense::Dense(const LowRank& A) : Node(A.i_abs,A.j_abs,A.level) {
+    dim[0] = A.dim[0]; dim[1] = A.dim[1];
+    data.resize(dim[0]*dim[1], 0);
     Dense UxS(A.dim[0], A.rank);
     UxS.gemm(A.U, A.S);
-    Dense UxSxV(A.dim[0], A.dim[1], A.i_abs, A.j_abs, A.level);
-    UxSxV.gemm(UxS, A.V);
-    *this = UxSxV;
+    this->gemm(UxS, A.V);
   }
 
   Dense::Dense(const Hierarchical& A) : Node(A.i_abs,A.j_abs,A.level) {
@@ -78,7 +78,7 @@ namespace hicma {
       Dense AD = Dense(A(0,j));
       dim[1] += AD.dim[1];
     }
-    Dense D(dim[0],dim[1]);
+    data.resize(dim[0]*dim[1]);
     int i_begin = 0;
     for (int i=0; i<A.dim[0]; i++) {
       Dense AA = Dense(A(i,0));
@@ -87,14 +87,13 @@ namespace hicma {
         Dense AD = Dense(A(i,j));
         for (int ic=0; ic<AD.dim[0]; ic++) {
           for (int jc=0; jc<AD.dim[1]; jc++) {
-            D(ic+i_begin, jc+j_begin) = AD(ic,jc);
+            (*this)(ic+i_begin, jc+j_begin) = AD(ic,jc);
           }
         }
         j_begin += AD.dim[1];
       }
       i_begin += AA.dim[0];
     }
-    data = D.data;
   }
 
   Dense::Dense(const Node& _A) : Node(_A.i_abs, _A.j_abs, _A.level) {
@@ -189,7 +188,7 @@ namespace hicma {
     double l2 = 0;
     for (int i=0; i<dim[0]; i++) {
       for (int j=0; j<dim[1]; j++) {
-        l2 += data[i*dim[1]+j] * data[i*dim[1]+j];
+        l2 += (*this)(i, j) * (*this)(i, j);
       }
     }
     return l2;
@@ -259,9 +258,25 @@ namespace hicma {
       }
     } else if (_A.is(HICMA_HIERARCHICAL)) {
       const Hierarchical& A = static_cast<const Hierarchical&>(_A);
-      Hierarchical H(*this, A.dim[0], A.dim[1]);
-      H.trsm(A, uplo);
-      *this = Dense(H);
+      switch (uplo) {
+      case 'l' :
+        {
+          Hierarchical H(*this, A.dim[0], 1);
+          H.trsm(A, uplo);
+          *this = Dense(H);
+          break;
+        }
+      case 'u' :
+        {
+          Hierarchical H(*this, 1, A.dim[1]);
+          H.trsm(A, uplo);
+          *this = Dense(H);
+          break;
+        }
+      default :
+        std::cerr << "Second argument must be 'l' for lower, 'u' for upper." << std::endl;
+        abort();
+      }
     } else {
       std::cerr << this->type() << " /= " << _A.type();
       std::cerr << " is undefined." << std::endl;
@@ -300,7 +315,7 @@ namespace hicma {
         this->gemm(AxUxS, B.V, alpha, beta);
       } else if (_B.is(HICMA_HIERARCHICAL)) {
         const Hierarchical& B = static_cast<const Hierarchical&>(_B);
-        Hierarchical C(*this, B.dim[0], B.dim[1]);
+        Hierarchical C(*this, 1, B.dim[1]);
         C.gemm(A, B, alpha, beta);
         *this = Dense(C);
       } else {
@@ -330,7 +345,7 @@ namespace hicma {
         this->gemm(UxSxVxUxS, B.V, alpha, beta);
       } else if (_B.is(HICMA_HIERARCHICAL)) {
         const Hierarchical& B = static_cast<const Hierarchical&>(_B);
-        Hierarchical C(*this, B.dim[0], B.dim[1]);
+        Hierarchical C(*this, 1, B.dim[1]);
         C.gemm(A, B, alpha, beta);
         *this = Dense(C);
       } else {
@@ -340,14 +355,14 @@ namespace hicma {
       }
     } else if (_A.is(HICMA_HIERARCHICAL)) {
       const Hierarchical& A = static_cast<const Hierarchical&>(_A);
-      if (_B.is(HICMA_LOWRANK)) {
-        const LowRank& B = static_cast<const LowRank&>(_B);
-        Hierarchical C(*this, A.dim[0], A.dim[1]);
+      if (_B.is(HICMA_DENSE)) {
+        const Dense& B = static_cast<const Dense&>(_B);
+        Hierarchical C(*this, A.dim[0], 1);
         C.gemm(A, B, alpha, beta);
         *this = Dense(C);
-      } else if (_B.is(HICMA_DENSE)) {
-        const Dense& B = static_cast<const Dense&>(_B);
-        Hierarchical C(*this, A.dim[0], A.dim[1]);
+      } else if (_B.is(HICMA_LOWRANK)) {
+        const LowRank& B = static_cast<const LowRank&>(_B);
+        Hierarchical C(*this, A.dim[0], 1);
         C.gemm(A, B, alpha, beta);
         *this = Dense(C);
       } else {

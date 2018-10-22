@@ -20,7 +20,6 @@ int main(int argc, char** argv) {
     randx[i] = drand48();
   }
   std::sort(randx.begin(), randx.end());
-  print("Time");
   start("Init matrix");
   int nblocks=0, admis=0;
   if (atoi(argv[1]) == 0) {
@@ -53,8 +52,15 @@ int main(int argc, char** argv) {
   }
   Hierarchical A(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   batch_rsvd();
+  admis = N / nleaf; // Full rank
+  Hierarchical D(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   Hierarchical x(random, randx, N, 1, rank, nleaf, admis, nblocks, 1);
   Hierarchical b(zeros, randx, N, 1, rank, nleaf, admis, nblocks, 1);
+  double diff = (Dense(A) - Dense(D)).norm();
+  double norm = D.norm();
+  print("Compression Accuracy");
+  print("Rel. L2 Error", std::sqrt(diff/norm), false);
+  print("Time");
   b.gemm(A,x);
   stop("Init matrix");
   start("LU decomposition");
@@ -66,9 +72,9 @@ int main(int argc, char** argv) {
   start("Backward substitution");
   b.trsm(A,'u');
   stop("Backward substitution");
-  double diff = (Dense(x) + Dense(b)).norm();
-  double norm = x.norm();
-  print("Accuracy");
+  diff = (Dense(x) + Dense(b)).norm();
+  norm = x.norm();
+  print("LU Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
   return 0;
 }

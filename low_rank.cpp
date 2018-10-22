@@ -5,6 +5,7 @@
 #include <cassert>
 #include <iostream>
 #include <random>
+#include <algorithm>
 
 namespace hicma {
 
@@ -28,9 +29,8 @@ namespace hicma {
   LowRank::LowRank(const Dense& A, const int k) : Node(A.i_abs,A.j_abs,A.level) {
     dim[0] = A.dim[0];
     dim[1] = A.dim[1];
-    rank = k+5;
-    assert(dim[0] >= rank);
-    assert(dim[1] >= rank);
+    // Rank with oversampling limited by dimensions
+    rank = std::min(std::min(k+5, dim[0]), dim[1]);
     U = Dense(dim[0], k, i_abs, j_abs, level);
     S = Dense(rank, rank, i_abs, j_abs, level);
     V = Dense(k, dim[1], i_abs, j_abs, level);
@@ -188,11 +188,19 @@ namespace hicma {
       const Hierarchical& A = static_cast<const Hierarchical&>(_A);
       switch (uplo) {
       case 'l' :
-        U.trsm(A, uplo);
-        break;
+        {
+          Hierarchical H(U, A.dim[0], 1);
+          H.trsm(A, uplo);
+          U = Dense(H);
+          break;
+        }
       case 'u' :
-        V.trsm(A, uplo);
-        break;
+        {
+          Hierarchical H(V, 1, A.dim[1]);
+          H.trsm(A, uplo);
+          V = Dense(H);
+          break;
+        }
       }
     } else {
       std::cerr << this->type() << " /= " << _A.type();
@@ -207,7 +215,7 @@ namespace hicma {
       if (_B.is(HICMA_DENSE)) {
         std::cerr << this->type() << " -= " << _A.type();
         std::cerr << " * " << _B.type() << " is undefined." << std::endl;
-	abort();
+	      abort();
       } else if (_B.is(HICMA_LOWRANK)) {
         const LowRank& B = static_cast<const LowRank&>(_B);
         LowRank C(B);

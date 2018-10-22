@@ -43,7 +43,7 @@ namespace hicma {
             D(ic,jc) = A(ic+i_begin,jc+j_begin);
           }
         }
-        (*this)(i,j) = D;
+        (*this)(i,j) = std::move(D);
       }
     }
   }
@@ -76,7 +76,7 @@ namespace hicma {
             LR.V(kc,jc) = A.V(kc,jc+j_begin);
           }
         }
-        (*this)(i,j) = LR;
+        (*this)(i,j) = std::move(LR);
       }
     }
   }
@@ -124,7 +124,7 @@ namespace hicma {
         if (
             std::abs(i_abs_child - j_abs_child) <= admis // Check regular admissibility
             || (nj == 1 || ni == 1) ) { // Check if vector, and if so do not use LowRank
-          if ( ni_child <= nleaf && nj_child <= nleaf ) {
+          if ( ni_child/ni_level < nleaf && nj_child/nj_level < nleaf ) {
             (*this)(i,j) = Dense(
                                  func,
                                  x,
