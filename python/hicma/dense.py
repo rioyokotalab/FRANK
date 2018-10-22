@@ -6,14 +6,9 @@ import scipy.linalg as sl
 import hicma.low_rank as HL
 import hicma.hierarchical as HH
 from hicma.node import Node
-from hicma.id import lup_factorize
 
 
 class Dense(Node):
-    """
-    Dense matrix container.
-    """
-    # TODO Pass generator function
     def __init__(
             self,
             A=None,
@@ -122,12 +117,23 @@ class Dense(Node):
         else:
             raise ValueError
 
+    def type(self):
+        return 'Dense'
+
     def norm(self):
         l2 = 0
         for i in range(self.dim[0]):
             for j in range(self.dim[1]):
                 l2 += self[i, j] * self[i, j]
         return l2
+
+    def resize(self, dim0, dim1):
+        new_data = np.zeros((dim0, dim1))
+        for i in range(dim0):
+            for j in range(dim1):
+                new_data[i, j] = self[i, j]
+        self.dim = [dim0, dim1]
+        self.data = new_data
 
     def getrf(self):
         x_getrf = sl.get_lapack_funcs('getrf', (self.data,))
@@ -165,6 +171,12 @@ class Dense(Node):
         else:
             return NotImplemented
 
+    def gemm_trans(self, A, B, transA, transB, alpha, beta):
+        x_gemm = sl.get_blas_funcs('gemm', (self.data, A.data, B.data))
+        self.data = x_gemm(
+            alpha, A.data, B.data, beta, self.data,
+            overwrite_c=False, trans_a=transA, trans_b=transB)
+
     def gemm(self, A, B, alpha=-1, beta=1):
         if isinstance(A, Dense):
             if isinstance(B, Dense):
@@ -177,11 +189,7 @@ class Dense(Node):
                         alpha, A.data, B.data, beta, self.data,
                         overwrite_y=False, incx=1, incy=1, trans=False)
                 else:
-                    x_gemm = sl.get_blas_funcs(
-                        'gemm', (self.data, A.data, B.data))
-                    self.data = x_gemm(
-                        alpha, A.data, B.data, beta, self.data,
-                        overwrite_c=False, trans_a=False, trans_b=False)
+                    self.gemm_trans(A, B, False, False, alpha, beta)
             elif isinstance(B, HL.LowRank):
                 AxU = Dense(ni=self.dim[0], nj=B.rank)
                 AxU.gemm(A, B.U, 1, 0)
@@ -230,3 +238,26 @@ class Dense(Node):
                 return NotImplemented
         else:
             return NotImplemented
+
+    def qr(self, Q, R):
+        for i in range(self.dim[1]):
+            Q[i, i] = 1.0
+        x_geqrf = sl.get_lapack_funcs('geqrf', (self.data,))
+        self.data, tau, work, _ = x_geqrf(self.data, overwrite_a=False)
+        x_ormqr = sl.get_lapack_funcs('ormqr', (self.data, tau, Q.data))
+        Q.data, _, __ = x_ormqr(
+            'L', 'N', self.data, tau, Q.data, lwork=len(work),
+            overwrite_c=False)
+        for i in range(self.dim[1]):
+            for j in range(self.dim[1]):
+                if j >= i:
+                    R[i, j] = self[i, j]
+        pass
+
+    def svd(self, U, S, V):
+        work = Dense(ni=self.dim[1]-1, nj=1)
+        x_gesvd = sl.get_lapack_funcs('gesvd', (self.data,))
+        U.data, Sdiag, V.data, _ = x_gesvd(
+            self.data, overwrite_a=False, compute_uv=True, full_matrices=True)
+        for i in range(self.dim[1]):
+            S[i, i] = Sdiag[i]

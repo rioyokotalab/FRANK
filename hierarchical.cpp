@@ -368,16 +368,16 @@ namespace hicma {
       }
     } else if (_A.is(HICMA_HIERARCHICAL)) {
       const Hierarchical& A = static_cast<const Hierarchical&>(_A);
-      if (_B.is(HICMA_LOWRANK)) {
-        const LowRank& B = static_cast<const LowRank&>(_B);
+      if (_B.is(HICMA_DENSE)) {
+        const Dense& B = static_cast<const Dense&>(_B);
         const Hierarchical& BH = Hierarchical(B, A.dim[1], dim[1]);
         for (int i=0; i<dim[0]; i++) {
           for (int j=0; j<dim[1]; j++) {
             (*this).gemm_row(A, BH, i, j, 0, A.dim[1], alpha, beta);
           }
         }
-      } else if (_B.is(HICMA_DENSE)) {
-        const Dense& B = static_cast<const Dense&>(_B);
+      } else if (_B.is(HICMA_LOWRANK)) {
+        const LowRank& B = static_cast<const LowRank&>(_B);
         const Hierarchical& BH = Hierarchical(B, A.dim[1], dim[1]);
         for (int i=0; i<dim[0]; i++) {
           for (int j=0; j<dim[1]; j++) {

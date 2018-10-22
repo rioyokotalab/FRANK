@@ -7,9 +7,6 @@ from hicma.low_rank import LowRank
 
 
 class Hierarchical(Node):
-    """
-    Recursive hirarchical matrix data structure.
-    """
     def __init__(
             self,
             A=None,
@@ -27,38 +24,6 @@ class Hierarchical(Node):
             j_abs=0,
             level=0
     ):
-        """
-        Init the block matrix from the np.array A
-
-        Arguments
-        ---------
-        self - np.array
-        A - np.array or list
-            Array or list from which this Hierarchical is initiated.
-        func - function
-            Function that is used to create Dense objects from vectors (green
-            mesh etc).
-        ni - int
-            Number of rows of elements.
-        nj - int
-            Number of columns of elements.
-        rank - int
-            Target rank of admissible blocks.
-        nleaf - int
-            Maximum amount of rows or columns of a leaf node.
-        admis - int
-            Admissibility condition.
-        i_begin - int
-            Starting index in vector A for the rows.
-        j_begin - int
-            Starting index in vector A for the columns.
-        ni_level - int
-            Number of rows of blocks.
-        nj_level - int
-            Number of columns of blocks.
-        level - int
-            Level that the Hierarchical to be created resides at.
-        """
         if isinstance(A, Dense):
             super().__init__(A.i_abs, A.j_abs, A.level)
             self.dim = [ni_level, nj_level]
@@ -75,14 +40,14 @@ class Hierarchical(Node):
                     if j == self.dim[1] - 1:
                         nj_child = nj - (nj / self.dim[1]) * (self.dim[1] - 1)
                     nj_child = int(nj_child)
+                    i_begin = int(ni / self.dim[0] * i)
+                    j_begin = int(nj / self.dim[1] * j)
                     i_abs_child = self.i_abs * self.dim[0] + i
                     j_abs_child = self.j_abs * self.dim[1] + j
                     self[i, j] = Dense(
                         ni=ni_child, nj=nj_child,
                         i_abs=i_abs_child, j_abs=j_abs_child, level=self.level + 1
                     )
-                    i_begin = int(ni / self.dim[0] * i)
-                    j_begin = int(nj / self.dim[1] * j)
                     for ic in range(ni_child):
                         for jc in range(nj_child):
                             self[i, j][ic, jc] = A[i_begin+ic, j_begin+jc]
@@ -103,14 +68,14 @@ class Hierarchical(Node):
                     if j == self.dim[1] - 1:
                         nj_child = nj - (nj / self.dim[1]) * (self.dim[1] - 1)
                     nj_child = int(nj_child)
+                    i_begin = int(ni / self.dim[0] * i)
+                    j_begin = int(nj / self.dim[1] * j)
                     i_abs_child = self.i_abs * self.dim[0] + i
                     j_abs_child = self.j_abs * self.dim[1] + j
                     self[i, j] = LowRank(
                         m=ni_child, n=nj_child, k=rank,
                         i_abs=i_abs_child, j_abs=j_abs_child, level=self.level + 1
                     )
-                    i_begin = int(ni / self.dim[0] * i)
-                    j_begin = int(nj / self.dim[1] * j)
                     for ic in range(ni_child):
                         for kc in range(rank):
                             self[i, j].U[ic, kc] = A.U[i_begin+ic, kc]
@@ -118,17 +83,6 @@ class Hierarchical(Node):
                     for kc in range(rank):
                         for jc in range(nj_child):
                             self[i, j].V[kc, jc] = A.V[kc, j_begin+jc]
-        elif isinstance(A, list):
-            super().__init__(i_abs, j_abs, level)
-            self.dim = [len(A), len(A[0])]
-            self.data = [None] * (self.dim[0] * self.dim[1])
-            for i in range(0, ni_level):
-                for j in range(0, nj_level):
-                    assert isinstance(A[i][j], Node)
-                    self[i, j] = A[i][j]
-                    self[i, j].i_abs = self.i_abs * self.dim[0] + i
-                    self[i, j].j_abs = self.j_abs * self.dim[1] + j
-                    self[i, j].level = self.level + 1
         elif isinstance(A, np.ndarray):
             super().__init__(i_abs, j_abs, level)
             self.dim = [min(ni_level, ni), min(nj_level, nj)]
@@ -199,19 +153,6 @@ class Hierarchical(Node):
             raise TypeError
 
     def __getitem__(self, pos):
-        """
-        Get an item of the Hierarchical matrix from coordinates.
-
-        Get one of the blocks held by the Hierarchical matrix. data is a
-        one-dimensional array that can be indexed with just one coordinate, but
-        represents a two-dimensional structure. This function allows accessing
-        it with both one and two coordinates.
-
-        Arguments
-        ---------
-        pos : tuple
-            pos must have either one (i) or two (i, j) coordinates as elements.
-        """
         if isinstance(pos, int):
             assert pos < self.dim[0] * self.dim[1]
             return self.data[pos]
@@ -223,19 +164,6 @@ class Hierarchical(Node):
             raise ValueError
 
     def __setitem__(self, pos, data):
-        """
-        Recurse into the Hierarchical and set the proper submatrix/element.
-
-        Set one of the blocks held by the Hierarchical matrix. data is a
-        one-dimensional array that can be indexed with just one coordinate, but
-        represents a two-dimensional structure. This function allows setting
-        it with both one and two coordinates.
-
-        Arguments
-        ---------
-        pos : tuple
-            pos must have either one (i) or two (i, j) coordinates as elements.
-        """
         if isinstance(pos, int):
             assert pos < self.dim[0] * self.dim[1]
             assert isinstance(data, Node)
@@ -254,6 +182,9 @@ class Hierarchical(Node):
         else:
             raise ValueError
 
+    def type(self):
+        return 'Hierarchical'
+
     def norm(self):
         l2 = 0
         for i in range(self.dim[0]):
@@ -262,12 +193,6 @@ class Hierarchical(Node):
         return l2
 
     def getrf(self):
-        """
-        Calculate the LU decomposition recursively
-
-        Arguments
-        ---------
-        """
         for i in range(self.dim[0]):
             self[i, i].getrf()
             for j in range(i+1, self.dim[0]):
