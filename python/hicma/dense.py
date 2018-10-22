@@ -117,6 +117,9 @@ class Dense(Node):
         else:
             raise ValueError
 
+    def type(self):
+        return 'Dense'
+
     def norm(self):
         l2 = 0
         for i in range(self.dim[0]):

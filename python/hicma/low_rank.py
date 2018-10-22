@@ -73,7 +73,11 @@ class LowRank(Node):
     def __iadd__(self, A):
         assert self.dim[0] == A.dim[0] and self.dim[1] == A.dim[1]
         if self.rank + A.rank >= self.dim[0]:
-            self = LowRank(HD.Dense(self) + HD.Dense(A), k=self.rank)
+            B = LowRank(HD.Dense(self) + HD.Dense(A), k=self.rank)
+            self.U = B.U
+            self.S = B.S
+            self.V = B.V
+            return self
         else:
             B = LowRank(
                 m=self.dim[0], n=self.dim[1], k=self.rank+A.rank,
@@ -86,6 +90,11 @@ class LowRank(Node):
             self.U = B.U
             self.S = B.S
             self.V = B.V
+            return self
+
+
+    def type(self):
+        return 'LowRank'
 
     def norm(self):
         return HD.Dense(self).norm()

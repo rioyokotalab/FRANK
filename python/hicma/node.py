@@ -16,3 +16,6 @@ class Node(object):
         self.i_abs = i_abs
         self.j_abs = j_abs
         self.level = level
+
+    def type(self):
+        return 'Node'

@@ -12,7 +12,7 @@ import sys
 
 def main():
     np.set_printoptions(formatter={'float': '{: 0.15f}'.format}, linewidth=100)
-    N = 64
+    N = 16
     nleaf = 2
     rank = 2
     assert len(sys.argv) == 2
