@@ -12,7 +12,7 @@ class Hierarchical(Node):
     """
     def __init__(
             self,
-            arr=None,
+            A=None,
             func=None,
             ni=None,
             nj=None,
@@ -28,12 +28,12 @@ class Hierarchical(Node):
             level=0
     ):
         """
-        Init the block matrix from the np.array arr
+        Init the block matrix from the np.array A
 
         Arguments
         ---------
         self - np.array
-        arr - np.array or list
+        A - np.array or list
             Array or list from which this Hierarchical is initiated.
         func - function
             Function that is used to create Dense objects from vectors (green
@@ -49,9 +49,9 @@ class Hierarchical(Node):
         admis - int
             Admissibility condition.
         i_begin - int
-            Starting index in vector arr for the rows.
+            Starting index in vector A for the rows.
         j_begin - int
-            Starting index in vector arr for the columns.
+            Starting index in vector A for the columns.
         ni_level - int
             Number of rows of blocks.
         nj_level - int
@@ -59,12 +59,12 @@ class Hierarchical(Node):
         level - int
             Level that the Hierarchical to be created resides at.
         """
-        if isinstance(arr, Dense):
-            super().__init__(arr.i_abs, arr.j_abs, arr.level)
+        if isinstance(A, Dense):
+            super().__init__(A.i_abs, A.j_abs, A.level)
             self.dim = [ni_level, nj_level]
             self.data = [None] * (self.dim[0] * self.dim[1])
-            ni = arr.dim[0]
-            nj = arr.dim[1]
+            ni = A.dim[0]
+            nj = A.dim[1]
             for i in range(self.dim[0]):
                 for j in range(self.dim[1]):
                     ni_child = ni / self.dim[0]
@@ -85,14 +85,14 @@ class Hierarchical(Node):
                     j_begin = int(nj / self.dim[1] * j)
                     for ic in range(ni_child):
                         for jc in range(nj_child):
-                            self[i, j][ic, jc] = arr[i_begin+ic, j_begin+jc]
-        elif isinstance(arr, LowRank):
-            super().__init__(arr.i_abs, arr.j_abs, arr.level)
+                            self[i, j][ic, jc] = A[i_begin+ic, j_begin+jc]
+        elif isinstance(A, LowRank):
+            super().__init__(A.i_abs, A.j_abs, A.level)
             self.dim = [ni_level, nj_level]
             self.data = [None] * (self.dim[0] * self.dim[1])
-            ni = arr.dim[0]
-            nj = arr.dim[1]
-            rank = arr.rank
+            ni = A.dim[0]
+            nj = A.dim[1]
+            rank = A.rank
             for i in range(self.dim[0]):
                 for j in range(self.dim[1]):
                     ni_child = ni / self.dim[0]
@@ -113,23 +113,23 @@ class Hierarchical(Node):
                     j_begin = int(nj / self.dim[1] * j)
                     for ic in range(ni_child):
                         for kc in range(rank):
-                            self[i, j].U[ic, kc] = arr.U[i_begin+ic, kc]
-                    self[i, j].S = arr.S
+                            self[i, j].U[ic, kc] = A.U[i_begin+ic, kc]
+                    self[i, j].S = A.S
                     for kc in range(rank):
                         for jc in range(nj_child):
-                            self[i, j].V[kc, jc] = arr.V[kc, j_begin+jc]
-        elif isinstance(arr, list):
+                            self[i, j].V[kc, jc] = A.V[kc, j_begin+jc]
+        elif isinstance(A, list):
             super().__init__(i_abs, j_abs, level)
-            self.dim = [len(arr), len(arr[0])]
+            self.dim = [len(A), len(A[0])]
             self.data = [None] * (self.dim[0] * self.dim[1])
             for i in range(0, ni_level):
                 for j in range(0, nj_level):
-                    assert isinstance(arr[i][j], Node)
-                    self[i, j] = arr[i][j]
+                    assert isinstance(A[i][j], Node)
+                    self[i, j] = A[i][j]
                     self[i, j].i_abs = self.i_abs * self.dim[0] + i
                     self[i, j].j_abs = self.j_abs * self.dim[1] + j
                     self[i, j].level = self.level + 1
-        elif isinstance(arr, np.ndarray):
+        elif isinstance(A, np.ndarray):
             super().__init__(i_abs, j_abs, level)
             self.dim = [min(ni_level, ni), min(nj_level, nj)]
             self.data = [None] * (self.dim[0] * self.dim[1])
@@ -151,7 +151,7 @@ class Hierarchical(Node):
                     if abs(i_abs_child - j_abs_child) <= admis or (ni == 1 or nj == 1):
                         if ni_child <= nleaf and nj_child <= nleaf:
                             self[i, j] = Dense(
-                                arr,
+                                A,
                                 func,
                                 ni_child,
                                 nj_child,
@@ -163,7 +163,7 @@ class Hierarchical(Node):
                             )
                         else:
                             self[i, j] = Hierarchical(
-                                arr,
+                                A,
                                 func,
                                 ni_child,
                                 nj_child,
@@ -181,7 +181,7 @@ class Hierarchical(Node):
                     else:
                         self[i, j] = LowRank(
                             Dense(
-                                arr,
+                                A,
                                 func,
                                 ni_child,
                                 nj_child,
@@ -236,29 +236,19 @@ class Hierarchical(Node):
         """
         if isinstance(pos, int):
             assert pos < self.dim[0] * self.dim[1]
-            if isinstance(data, np.ndarray):
-                assert isinstance(self[i, j], Dense)
-                self.data[pos].arr = data
-            elif isinstance(data, Node):
-                data.i_abs = self.i_abs * self.dim[0] + pos
-                data.j_abs = self.j_abs * self.dim[1]
-                data.level = self.level + 1
-                self.data[pos] = data
-            else:
-                raise ValueError('Bad data for setting item!')
+            assert isinstance(data, Node)
+            data.i_abs = self.i_abs * self.dim[0] + pos
+            data.j_abs = self.j_abs * self.dim[1]
+            data.level = self.level + 1
+            self.data[pos] = data
         elif len(pos) == 2:
             i, j = pos
             assert i < self.dim[0] and j < self.dim[1]
-            if isinstance(data, np.ndarray):
-                assert isinstance(self[i, j], Dense)
-                self.data[i * self.dim[1] + j].arr = data
-            elif isinstance(data, Node):
-                data.i_abs = self.i_abs * self.dim[0] + i
-                data.j_abs = self.j_abs * self.dim[1] + j
-                data.level = self.level + 1
-                self.data[i * self.dim[1] + j] = data
-            else:
-                raise ValueError('Bad data for setting item!')
+            assert isinstance(data, Node)
+            data.i_abs = self.i_abs * self.dim[0] + i
+            data.j_abs = self.j_abs * self.dim[1] + j
+            data.level = self.level + 1
+            self.data[i * self.dim[1] + j] = data
         else:
             raise ValueError
 
