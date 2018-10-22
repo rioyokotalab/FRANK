@@ -55,10 +55,10 @@ class LowRank(Node):
     def __iadd__(self, A):
         assert self.dim[0] == A.dim[0] and self.dim[1] == A.dim[1]
         if self.rank + A.rank >= self.dim[0]:
-            self = LowRank(HD.Dense(self) + HD.Dense(A), rank=self.rank)
+            self = LowRank(HD.Dense(self) + HD.Dense(A), k=self.rank)
         else:
             B = LowRank(
-                m=self.dim[0], n=self.dim[1], rank=self.rank+A.rank,
+                m=self.dim[0], n=self.dim[1], k=self.rank+A.rank,
                 i_abs=self.i_abs, j_abs=self.j_abs, level=self.level
             )
             B.mergeU(self, A)

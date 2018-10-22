@@ -148,8 +148,10 @@ class Hierarchical(Node):
                     j_begin_child = j_begin + j*int(nj / self.dim[1])
                     i_abs_child = self.i_abs * self.dim[0] + i
                     j_abs_child = self.j_abs * self.dim[1] + j
-                    if abs(i_abs_child - j_abs_child) <= admis or (ni == 1 or nj == 1):
-                        if ni_child <= nleaf and nj_child <= nleaf:
+                    if abs(i_abs_child - j_abs_child) <= admis\
+                    or (ni == 1 or nj == 1):
+                        if ni_child/ni_level < nleaf\
+                        and nj_child/nj_level < nleaf:
                             self[i, j] = Dense(
                                 A,
                                 func,
