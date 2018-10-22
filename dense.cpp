@@ -316,7 +316,7 @@ namespace hicma {
         this->gemm(AxUxS, B.V, alpha, beta);
       } else if (_B.is(HICMA_HIERARCHICAL)) {
         const Hierarchical& B = static_cast<const Hierarchical&>(_B);
-        Hierarchical C(*this, B.dim[0], B.dim[1]);
+        Hierarchical C(*this, 1, B.dim[1]);
         C.gemm(A, B, alpha, beta);
         *this = Dense(C);
       } else {
@@ -346,7 +346,7 @@ namespace hicma {
         this->gemm(UxSxVxUxS, B.V, alpha, beta);
       } else if (_B.is(HICMA_HIERARCHICAL)) {
         const Hierarchical& B = static_cast<const Hierarchical&>(_B);
-        Hierarchical C(*this, B.dim[0], B.dim[1]);
+        Hierarchical C(*this, 1, B.dim[1]);
         C.gemm(A, B, alpha, beta);
         *this = Dense(C);
       } else {
@@ -358,12 +358,12 @@ namespace hicma {
       const Hierarchical& A = static_cast<const Hierarchical&>(_A);
       if (_B.is(HICMA_LOWRANK)) {
         const LowRank& B = static_cast<const LowRank&>(_B);
-        Hierarchical C(*this, A.dim[0], A.dim[1]);
+        Hierarchical C(*this, A.dim[0], 1);
         C.gemm(A, B, alpha, beta);
         *this = Dense(C);
       } else if (_B.is(HICMA_DENSE)) {
         const Dense& B = static_cast<const Dense&>(_B);
-        Hierarchical C(*this, A.dim[0], A.dim[1]);
+        Hierarchical C(*this, A.dim[0], 1);
         C.gemm(A, B, alpha, beta);
         *this = Dense(C);
       } else {
