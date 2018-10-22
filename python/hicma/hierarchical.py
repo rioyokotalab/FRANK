@@ -106,7 +106,7 @@ class Hierarchical(Node):
                     i_abs_child = self.i_abs * self.dim[0] + i
                     j_abs_child = self.j_abs * self.dim[1] + j
                     self[i, j] = LowRank(
-                        m=ni_child, n=nj_child, rank=rank,
+                        m=ni_child, n=nj_child, k=rank,
                         i_abs=i_abs_child, j_abs=j_abs_child, level=self.level + 1
                     )
                     i_begin = int(ni / self.dim[0] * i)
@@ -191,7 +191,7 @@ class Hierarchical(Node):
                                 j_abs_child,
                                 level+1
                             ),
-                            rank=rank
+                            k=rank
                         )
         else:
             raise TypeError
@@ -354,4 +354,4 @@ class Hierarchical(Node):
             self[i, j].gemm(A[i, k], B[k, j], alpha, beta)
         if rank != -1:
             assert isinstance(self[i, j], Dense)
-            self[i, j] = LowRank(self[i, j], rank=rank)
+            self[i, j] = LowRank(self[i, j], k=rank)

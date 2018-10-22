@@ -16,7 +16,7 @@ class LowRank(Node):
             A=None,
             m=None,
             n=None,
-            rank=None,
+            k=None,
             i_abs=0,
             j_abs=0,
             level=0
@@ -24,36 +24,11 @@ class LowRank(Node):
         """
         Initialize from input data
         """
-        if isinstance(A, list):
-            super().__init__(i_abs, j_abs, level)
-            assert isinstance(m, int) and isinstance(n, int)
-            assert isinstance(rank, int)
-            self.dim = [m, n]
-            self.rank = rank
-            assert len(A) == 3
-            assert isinstance(A[0], HD.Dense)
-            assert isinstance(A[1], HD.Dense)
-            assert isinstance(A[2], HD.Dense)
-            assert A[0].A.shape[1] == A[1].A.shape[0]
-            assert A[1].A.shape[1] == A[2].A.shape[0]
-            self.U = A[0]
-            self.S = A[1]
-            self.V = A[2]
-        elif isinstance(A, np.ndarray):
-            super().__init__(i_abs, j_abs, level)
-            assert isinstance(m, int) and isinstance(n, int)
-            assert isinstance(rank, int)
-            self.dim = [m, n]
-            self.rank = rank
-            U, S, V = rsvd(A, self.rank, 0)
-            self.U = HD.Dense(U)
-            self.S = HD.Dense(D)
-            self.V = HD.Dense(V)
-        elif isinstance(A, HD.Dense):
+        if isinstance(A, HD.Dense):
             super().__init__(A.i_abs, A.j_abs, A.level)
             self.dim = A.dim
-            assert isinstance(rank, int)
-            self.rank = rank
+            assert isinstance(k, int)
+            self.rank = k
             U, S, V = rsvd(A.data, self.rank, 0)
             self.U = HD.Dense(U)
             self.S = HD.Dense(S)
@@ -68,14 +43,12 @@ class LowRank(Node):
         elif A is None:
             super().__init__(i_abs, j_abs, level)
             assert isinstance(m, int) and isinstance(n, int)
-            assert isinstance(rank, int)
+            assert isinstance(k, int)
             self.dim = [m, n]
-            self.rank = rank
-            self.U = HD.Dense(ni=m, nj=rank)
-            self.S = HD.Dense(ni=rank, nj=rank)
-            self.V = HD.Dense(ni=rank, nj=n)
-
-
+            self.rank = k
+            self.U = HD.Dense(ni=m, nj=self.rank)
+            self.S = HD.Dense(ni=self.rank, nj=self.rank)
+            self.V = HD.Dense(ni=self.rank, nj=n)
         else:
             raise TypeError
 
