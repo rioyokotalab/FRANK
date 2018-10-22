@@ -26,7 +26,7 @@ int main(int argc, char** argv)
   std::vector<int> h_m;
   std::vector<int> h_n;
   std::vector<Dense> vecA;
-#if 0
+#if 1
   for (int b=0; b<batchCount; b++) {
     int N = 64;
     if (b==1) N=64;

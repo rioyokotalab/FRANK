@@ -44,6 +44,18 @@ namespace hicma {
     std::vector<double> h_U(max_m * max_n * batchCount);
     std::vector<double> h_V(max_n * max_n * batchCount);
     stop("Allocate host");
+    start("Copy matrix");
+    for (int b=0; b<batchCount; b++) {
+      Dense A = vecA[b];
+      for (int i=0; i<A.dim[0]; i++) {
+        for (int j=0; j<A.dim[1]; j++) {
+          h_A[i+j*A.dim[0]+b*max_m*max_n] = A(i,j);
+        }
+      }
+    }
+    stop("Copy matrix");
+#if 0
+    start("Write matrix");
     std::ofstream file("matrix.txt");
     for (int b=0; b<batchCount; b++) {
       Dense A = vecA[b];
@@ -51,11 +63,12 @@ namespace hicma {
       file << A.dim[1] << std::endl;
       for (int i=0; i<A.dim[0]; i++) {
         for (int j=0; j<A.dim[1]; j++) {
-          h_A[i+j*A.dim[0]+b*max_m*max_n] = A(i,j);
           file << A(i,j) << std::endl;
         }
       }
     }
+    stop("Write matrix");
+#endif
     start("Init KBLAS");
     kblasHandle_t handle;
     kblasRandState_t rand_state;
