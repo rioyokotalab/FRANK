@@ -188,11 +188,19 @@ namespace hicma {
       const Hierarchical& A = static_cast<const Hierarchical&>(_A);
       switch (uplo) {
       case 'l' :
-        U.trsm(A, uplo);
-        break;
+        {
+          Hierarchical H(U, A.dim[0], 1);
+          H.trsm(A, uplo);
+          U = Dense(H);
+          break;
+        }
       case 'u' :
-        V.trsm(A, uplo);
-        break;
+        {
+          Hierarchical H(V, 1, A.dim[1]);
+          H.trsm(A, uplo);
+          V = Dense(H);
+          break;
+        }
       }
     } else {
       std::cerr << this->type() << " /= " << _A.type();
@@ -207,7 +215,7 @@ namespace hicma {
       if (_B.is(HICMA_DENSE)) {
         std::cerr << this->type() << " -= " << _A.type();
         std::cerr << " * " << _B.type() << " is undefined." << std::endl;
-	abort();
+	      abort();
       } else if (_B.is(HICMA_LOWRANK)) {
         const LowRank& B = static_cast<const LowRank&>(_B);
         LowRank C(B);
@@ -233,7 +241,6 @@ namespace hicma {
         VxU.gemm(A.V, B.U, 1, 0);
         Dense SxVxU(A.rank, B.rank);
         SxVxU.gemm(A.S, VxU, 1, 0);
-        Dense SxVxUxS(A.rank, B.rank);
         C.S.gemm(SxVxU, B.S, alpha, 0);
         *this += C;
       } else if (_B.is(HICMA_HIERARCHICAL)) {

@@ -7,12 +7,9 @@ from hicma.low_rank import LowRank
 
 
 class Hierarchical(Node):
-    """
-    Recursive hirarchical matrix data structure.
-    """
     def __init__(
             self,
-            arr=None,
+            A=None,
             func=None,
             ni=None,
             nj=None,
@@ -27,44 +24,12 @@ class Hierarchical(Node):
             j_abs=0,
             level=0
     ):
-        """
-        Init the block matrix from the np.array arr
-
-        Arguments
-        ---------
-        self - np.array
-        arr - np.array or list
-            Array or list from which this Hierarchical is initiated.
-        func - function
-            Function that is used to create Dense objects from vectors (green
-            mesh etc).
-        ni - int
-            Number of rows of elements.
-        nj - int
-            Number of columns of elements.
-        rank - int
-            Target rank of admissible blocks.
-        nleaf - int
-            Maximum amount of rows or columns of a leaf node.
-        admis - int
-            Admissibility condition.
-        i_begin - int
-            Starting index in vector arr for the rows.
-        j_begin - int
-            Starting index in vector arr for the columns.
-        ni_level - int
-            Number of rows of blocks.
-        nj_level - int
-            Number of columns of blocks.
-        level - int
-            Level that the Hierarchical to be created resides at.
-        """
-        if isinstance(arr, Dense):
-            super().__init__(arr.i_abs, arr.j_abs, arr.level)
+        if isinstance(A, Dense):
+            super().__init__(A.i_abs, A.j_abs, A.level)
             self.dim = [ni_level, nj_level]
             self.data = [None] * (self.dim[0] * self.dim[1])
-            ni = arr.dim[0]
-            nj = arr.dim[1]
+            ni = A.dim[0]
+            nj = A.dim[1]
             for i in range(self.dim[0]):
                 for j in range(self.dim[1]):
                     ni_child = ni / self.dim[0]
@@ -75,24 +40,24 @@ class Hierarchical(Node):
                     if j == self.dim[1] - 1:
                         nj_child = nj - (nj / self.dim[1]) * (self.dim[1] - 1)
                     nj_child = int(nj_child)
+                    i_begin = int(ni / self.dim[0] * i)
+                    j_begin = int(nj / self.dim[1] * j)
                     i_abs_child = self.i_abs * self.dim[0] + i
                     j_abs_child = self.j_abs * self.dim[1] + j
                     self[i, j] = Dense(
                         ni=ni_child, nj=nj_child,
                         i_abs=i_abs_child, j_abs=j_abs_child, level=self.level + 1
                     )
-                    i_begin = int(ni / self.dim[0] * i)
-                    j_begin = int(nj / self.dim[1] * j)
                     for ic in range(ni_child):
                         for jc in range(nj_child):
-                            self[i, j][ic, jc] = arr[i_begin+ic, j_begin+jc]
-        elif isinstance(arr, LowRank):
-            super().__init__(arr.i_abs, arr.j_abs, arr.level)
+                            self[i, j][ic, jc] = A[i_begin+ic, j_begin+jc]
+        elif isinstance(A, LowRank):
+            super().__init__(A.i_abs, A.j_abs, A.level)
             self.dim = [ni_level, nj_level]
             self.data = [None] * (self.dim[0] * self.dim[1])
-            ni = arr.dim[0]
-            nj = arr.dim[1]
-            rank = arr.rank
+            ni = A.dim[0]
+            nj = A.dim[1]
+            rank = A.rank
             for i in range(self.dim[0]):
                 for j in range(self.dim[1]):
                     ni_child = ni / self.dim[0]
@@ -103,33 +68,22 @@ class Hierarchical(Node):
                     if j == self.dim[1] - 1:
                         nj_child = nj - (nj / self.dim[1]) * (self.dim[1] - 1)
                     nj_child = int(nj_child)
+                    i_begin = int(ni / self.dim[0] * i)
+                    j_begin = int(nj / self.dim[1] * j)
                     i_abs_child = self.i_abs * self.dim[0] + i
                     j_abs_child = self.j_abs * self.dim[1] + j
                     self[i, j] = LowRank(
-                        m=ni_child, n=nj_child, rank=rank,
+                        m=ni_child, n=nj_child, k=rank,
                         i_abs=i_abs_child, j_abs=j_abs_child, level=self.level + 1
                     )
-                    i_begin = int(ni / self.dim[0] * i)
-                    j_begin = int(nj / self.dim[1] * j)
                     for ic in range(ni_child):
                         for kc in range(rank):
-                            self[i, j].U[ic, kc] = arr.U[i_begin+ic, kc]
-                    self[i, j].S = arr.S
+                            self[i, j].U[ic, kc] = A.U[i_begin+ic, kc]
+                    self[i, j].S = A.S
                     for kc in range(rank):
                         for jc in range(nj_child):
-                            self[i, j].V[kc, jc] = arr.V[kc, j_begin+jc]
-        elif isinstance(arr, list):
-            super().__init__(i_abs, j_abs, level)
-            self.dim = [len(arr), len(arr[0])]
-            self.data = [None] * (self.dim[0] * self.dim[1])
-            for i in range(0, ni_level):
-                for j in range(0, nj_level):
-                    assert isinstance(arr[i][j], Node)
-                    self[i, j] = arr[i][j]
-                    self[i, j].i_abs = self.i_abs * self.dim[0] + i
-                    self[i, j].j_abs = self.j_abs * self.dim[1] + j
-                    self[i, j].level = self.level + 1
-        elif isinstance(arr, np.ndarray):
+                            self[i, j].V[kc, jc] = A.V[kc, j_begin+jc]
+        elif isinstance(A, np.ndarray):
             super().__init__(i_abs, j_abs, level)
             self.dim = [min(ni_level, ni), min(nj_level, nj)]
             self.data = [None] * (self.dim[0] * self.dim[1])
@@ -148,10 +102,12 @@ class Hierarchical(Node):
                     j_begin_child = j_begin + j*int(nj / self.dim[1])
                     i_abs_child = self.i_abs * self.dim[0] + i
                     j_abs_child = self.j_abs * self.dim[1] + j
-                    if abs(i_abs_child - j_abs_child) <= admis or (ni == 1 or nj == 1):
-                        if ni_child <= nleaf and nj_child <= nleaf:
+                    if abs(i_abs_child - j_abs_child) <= admis\
+                    or (ni == 1 or nj == 1):
+                        if ni_child/ni_level < nleaf\
+                        and nj_child/nj_level < nleaf:
                             self[i, j] = Dense(
-                                arr,
+                                A,
                                 func,
                                 ni_child,
                                 nj_child,
@@ -163,7 +119,7 @@ class Hierarchical(Node):
                             )
                         else:
                             self[i, j] = Hierarchical(
-                                arr,
+                                A,
                                 func,
                                 ni_child,
                                 nj_child,
@@ -181,7 +137,7 @@ class Hierarchical(Node):
                     else:
                         self[i, j] = LowRank(
                             Dense(
-                                arr,
+                                A,
                                 func,
                                 ni_child,
                                 nj_child,
@@ -191,25 +147,12 @@ class Hierarchical(Node):
                                 j_abs_child,
                                 level+1
                             ),
-                            rank=rank
+                            k=rank
                         )
         else:
             raise TypeError
 
     def __getitem__(self, pos):
-        """
-        Get an item of the Hierarchical matrix from coordinates.
-
-        Get one of the blocks held by the Hierarchical matrix. data is a
-        one-dimensional array that can be indexed with just one coordinate, but
-        represents a two-dimensional structure. This function allows accessing
-        it with both one and two coordinates.
-
-        Arguments
-        ---------
-        pos : tuple
-            pos must have either one (i) or two (i, j) coordinates as elements.
-        """
         if isinstance(pos, int):
             assert pos < self.dim[0] * self.dim[1]
             return self.data[pos]
@@ -221,46 +164,26 @@ class Hierarchical(Node):
             raise ValueError
 
     def __setitem__(self, pos, data):
-        """
-        Recurse into the Hierarchical and set the proper submatrix/element.
-
-        Set one of the blocks held by the Hierarchical matrix. data is a
-        one-dimensional array that can be indexed with just one coordinate, but
-        represents a two-dimensional structure. This function allows setting
-        it with both one and two coordinates.
-
-        Arguments
-        ---------
-        pos : tuple
-            pos must have either one (i) or two (i, j) coordinates as elements.
-        """
         if isinstance(pos, int):
             assert pos < self.dim[0] * self.dim[1]
-            if isinstance(data, np.ndarray):
-                assert isinstance(self[i, j], Dense)
-                self.data[pos].arr = data
-            elif isinstance(data, Node):
-                data.i_abs = self.i_abs * self.dim[0] + pos
-                data.j_abs = self.j_abs * self.dim[1]
-                data.level = self.level + 1
-                self.data[pos] = data
-            else:
-                raise ValueError('Bad data for setting item!')
+            assert isinstance(data, Node)
+            data.i_abs = self.i_abs * self.dim[0] + pos
+            data.j_abs = self.j_abs * self.dim[1]
+            data.level = self.level + 1
+            self.data[pos] = data
         elif len(pos) == 2:
             i, j = pos
             assert i < self.dim[0] and j < self.dim[1]
-            if isinstance(data, np.ndarray):
-                assert isinstance(self[i, j], Dense)
-                self.data[i * self.dim[1] + j].arr = data
-            elif isinstance(data, Node):
-                data.i_abs = self.i_abs * self.dim[0] + i
-                data.j_abs = self.j_abs * self.dim[1] + j
-                data.level = self.level + 1
-                self.data[i * self.dim[1] + j] = data
-            else:
-                raise ValueError('Bad data for setting item!')
+            assert isinstance(data, Node)
+            data.i_abs = self.i_abs * self.dim[0] + i
+            data.j_abs = self.j_abs * self.dim[1] + j
+            data.level = self.level + 1
+            self.data[i * self.dim[1] + j] = data
         else:
             raise ValueError
+
+    def type(self):
+        return 'Hierarchical'
 
     def norm(self):
         l2 = 0
@@ -270,12 +193,6 @@ class Hierarchical(Node):
         return l2
 
     def getrf(self):
-        """
-        Calculate the LU decomposition recursively
-
-        Arguments
-        ---------
-        """
         for i in range(self.dim[0]):
             self[i, i].getrf()
             for j in range(i+1, self.dim[0]):
@@ -364,4 +281,4 @@ class Hierarchical(Node):
             self[i, j].gemm(A[i, k], B[k, j], alpha, beta)
         if rank != -1:
             assert isinstance(self[i, j], Dense)
-            self[i, j] = LowRank(self[i, j], rank=rank)
+            self[i, j] = LowRank(self[i, j], k=rank)

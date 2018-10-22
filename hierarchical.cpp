@@ -123,7 +123,7 @@ namespace hicma {
         if (
             std::abs(i_abs_child - j_abs_child) <= admis // Check regular admissibility
             || (nj == 1 || ni == 1) ) { // Check if vector, and if so do not use LowRank
-          if ( ni_child <= nleaf && nj_child <= nleaf ) {
+          if ( ni_child/ni_level < nleaf && nj_child/nj_level < nleaf ) {
             (*this)(i,j) = Dense(
                                  func,
                                  x,
@@ -366,16 +366,16 @@ namespace hicma {
       }
     } else if (_A.is(HICMA_HIERARCHICAL)) {
       const Hierarchical& A = static_cast<const Hierarchical&>(_A);
-      if (_B.is(HICMA_LOWRANK)) {
-        const LowRank& B = static_cast<const LowRank&>(_B);
+      if (_B.is(HICMA_DENSE)) {
+        const Dense& B = static_cast<const Dense&>(_B);
         const Hierarchical& BH = Hierarchical(B, A.dim[1], dim[1]);
         for (int i=0; i<dim[0]; i++) {
           for (int j=0; j<dim[1]; j++) {
             (*this).gemm_row(A, BH, i, j, 0, A.dim[1], alpha, beta);
           }
         }
-      } else if (_B.is(HICMA_DENSE)) {
-        const Dense& B = static_cast<const Dense&>(_B);
+      } else if (_B.is(HICMA_LOWRANK)) {
+        const LowRank& B = static_cast<const LowRank&>(_B);
         const Hierarchical& BH = Hierarchical(B, A.dim[1], dim[1]);
         for (int i=0; i<dim[0]; i++) {
           for (int j=0; j<dim[1]; j++) {

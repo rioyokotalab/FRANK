@@ -12,9 +12,9 @@ import sys
 
 def main():
     np.set_printoptions(formatter={'float': '{: 0.15f}'.format}, linewidth=100)
-    N = 256
-    nleaf = 16
-    rank = 8
+    N = 16
+    nleaf = 2
+    rank = 2
     assert len(sys.argv) == 2
     nblocks = 0
     admis = 0
@@ -56,7 +56,6 @@ def main():
     b = Hierarchical(randx, zeros, N, 1, rank, nleaf, admis, nblocks, 1)
     b.gemm(A, x)
     A.getrf()
-    print(Dense(A).data)
     b.trsm(A, 'l')
     b.trsm(A, 'u')
     diff = (Dense(x) + Dense(b)).norm()
