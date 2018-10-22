@@ -1,4 +1,5 @@
 #!/bin/python
+import random
 import numpy as np
 
 from hicma.id import rsvd
@@ -28,11 +29,35 @@ class LowRank(Node):
             super().__init__(A.i_abs, A.j_abs, A.level)
             self.dim = A.dim
             assert isinstance(k, int)
+            self.rank = min(min(k+5, self.dim[0]), self.dim[1])
+            self.U = HD.Dense(
+                ni=self.dim[0], nj=k, i_abs=i_abs, j_abs=j_abs, level=level)
+            self.S = HD.Dense(
+                ni=self.rank, nj=self.rank, i_abs=i_abs, j_abs=j_abs, level=level)
+            self.V = HD.Dense(
+                ni=k, nj=self.dim[1], i_abs=i_abs, j_abs=j_abs, level=level)
+            RN = HD.Dense(
+                np.random.normal(0, 1, self.dim[1]*self.rank).reshape(
+                    self.dim[1], self.rank))
+            Y = HD.Dense(ni=self.dim[0], nj=self.rank)
+            Y.gemm_trans(A, RN, False, False, 1, 0) # Y = A *  RN
+            Q = HD.Dense(ni=self.dim[0], nj=self.rank)
+            R = HD.Dense(ni=self.rank, nj=self.rank)
+            Y.qr(Q, R) # [Q, R] = qr(Y)
+            Bt = HD.Dense(ni=self.dim[1], nj=self.rank)
+            Bt.gemm_trans(A, Q, True, False, 1, 0) # B' = A' * Q
+            Qb = HD.Dense(ni=self.dim[1], nj=self.rank)
+            Rb = HD.Dense(ni=self.rank, nj=self.rank)
+            Bt.qr(Qb, Rb) # [Qb, Rb] = qr(B')
+            Ur = HD.Dense(ni=self.rank, nj=self.rank)
+            Vr = HD.Dense(ni=self.rank, nj=self.rank)
+            Rb.svd(Vr, self.S, Ur) # [Vr, S, Ur] = svd(Rb)
+            Ur.resize(k, self.rank)
+            self.U.gemm_trans(Q, Ur, False, True, 1, 0) # U = Q * Ur'
+            Vr.resize(self.rank, k)
+            self.V.gemm_trans(Vr, Qb, True, True, 1, 0) # V = Vr' * Qb'
+            self.S.resize(k, k)
             self.rank = k
-            U, S, V = rsvd(A.data, self.rank, 0)
-            self.U = HD.Dense(U)
-            self.S = HD.Dense(S)
-            self.V = HD.Dense(V)
         elif isinstance(A, LowRank):
             super().__init__(A.i_abs, A.j_abs, A.level)
             self.dim = A.dim
@@ -46,9 +71,12 @@ class LowRank(Node):
             assert isinstance(k, int)
             self.dim = [m, n]
             self.rank = k
-            self.U = HD.Dense(ni=m, nj=self.rank)
-            self.S = HD.Dense(ni=self.rank, nj=self.rank)
-            self.V = HD.Dense(ni=self.rank, nj=n)
+            self.U = HD.Dense(
+                ni=m, nj=self.rank, i_abs=i_abs, j_abs=j_abs, level=level)
+            self.S = HD.Dense(
+                ni=self.rank, nj=self.rank, i_abs=i_abs, j_abs=j_abs, level=level)
+            self.V = HD.Dense(
+                ni=self.rank, nj=n, i_abs=i_abs, j_abs=j_abs, level=level)
         else:
             raise TypeError
 
