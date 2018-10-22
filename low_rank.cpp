@@ -241,7 +241,6 @@ namespace hicma {
         VxU.gemm(A.V, B.U, 1, 0);
         Dense SxVxU(A.rank, B.rank);
         SxVxU.gemm(A.S, VxU, 1, 0);
-        Dense SxVxUxS(A.rank, B.rank);
         C.S.gemm(SxVxU, B.S, alpha, 0);
         *this += C;
       } else if (_B.is(HICMA_HIERARCHICAL)) {
