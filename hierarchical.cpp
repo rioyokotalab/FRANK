@@ -326,7 +326,7 @@ namespace hicma {
     }
   }
 
-  void Hierarchical::gemm(const Node& _A, const Node& _B, const int& alpha, const int& beta) {
+  void Hierarchical::gemm(const Node& _A, const Node& _B, const double& alpha, const double& beta) {
     if (_A.is(HICMA_DENSE)) {
       const Dense& A = static_cast<const Dense&>(_A);
       if (_B.is(HICMA_HIERARCHICAL)) {
@@ -408,7 +408,7 @@ namespace hicma {
   void Hierarchical::gemm_row(
                               const Hierarchical& A, const Hierarchical& B,
                               const int& i, const int& j, const int& k_min, const int& k_max,
-                              const int& alpha, const int& beta)
+                              const double& alpha, const double& beta)
   {
     int rank = -1;
     if ((*this)(i,j).is(HICMA_LOWRANK)) {

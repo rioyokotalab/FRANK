@@ -209,7 +209,7 @@ namespace hicma {
     }
   }
 
-  void LowRank::gemm(const Node& _A, const Node& _B, const int& alpha, const int& beta) {
+  void LowRank::gemm(const Node& _A, const Node& _B, const double& alpha, const double& beta) {
     if (_A.is(HICMA_DENSE)) {
       const Dense& A = static_cast<const Dense&>(_A);
       if (_B.is(HICMA_DENSE)) {

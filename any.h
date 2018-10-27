@@ -28,7 +28,7 @@ namespace hicma {
 
     void trsm(const Any& A, const char& uplo);
 
-    void gemm(const Any& A, const Any& B, const int& alpha=-1, const int& beta=1);
+    void gemm(const Any& A, const Any& B, const double& alpha=-1, const double& beta=1);
 
   };
 }

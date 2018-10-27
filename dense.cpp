@@ -285,13 +285,13 @@ namespace hicma {
   }
 
   void Dense::gemm(const Dense& A, const Dense&B, const CBLAS_TRANSPOSE TransA, const CBLAS_TRANSPOSE TransB,
-                   const int& alpha, const int& beta) {
+                   const double& alpha, const double& beta) {
     int k = TransA == CblasNoTrans ? A.dim[1] : A.dim[0];
     cblas_dgemm(CblasRowMajor, TransA, TransB, dim[0], dim[1], k, alpha,
                 &A[0], A.dim[1], &B[0], B.dim[1], beta, &data[0], dim[1]);
   }
 
-  void Dense::gemm(const Node& _A, const Node& _B, const int& alpha, const int& beta) {
+  void Dense::gemm(const Node& _A, const Node& _B, const double& alpha, const double& beta) {
     if (_A.is(HICMA_DENSE)) {
       const Dense& A = static_cast<const Dense&>(_A);
       assert(this->dim[0] == A.dim[0]);
