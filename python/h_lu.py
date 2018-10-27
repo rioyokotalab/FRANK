@@ -1,3 +1,6 @@
+import numpy as np
+import sys
+
 from hicma.hierarchical import Hierarchical
 from hicma.dense import Dense
 from hicma.functions import (
@@ -6,15 +9,18 @@ from hicma.functions import (
     zeros,
     Rand48
 )
+from hicma.print import printf
+from hicma.timer import (
+    start,
+    stop
+)
 
-import numpy as np
-import sys
 
 def main():
     np.set_printoptions(formatter={'float': '{: 0.15f}'.format}, linewidth=100)
-    N = 16
-    nleaf = 2
-    rank = 2
+    N = 128
+    nleaf = 16
+    rank = 4
     assert len(sys.argv) == 2
     nblocks = 0
     admis = 0
@@ -23,6 +29,7 @@ def main():
     for i in range(N):
         randx.append(rnd.drand())
     randx = np.array(sorted(randx))
+    start('Init Matrix')
     if (int(sys.argv[1]) == 0):
         # 1 level, full rank
         nblocks = int(N / nleaf)
@@ -52,15 +59,30 @@ def main():
         nblocks = 2
         admis = 1
     A = Hierarchical(randx, laplace1d, N, N, rank, nleaf, admis, nblocks, nblocks)
+    admis = int(N / nleaf) # Full rank
+    D = Hierarchical(randx, laplace1d, N, N, rank, nleaf, admis, nblocks, nblocks)
     x = Hierarchical(randx, rand_data, N, 1, rank, nleaf, admis, nblocks, 1)
     b = Hierarchical(randx, zeros, N, 1, rank, nleaf, admis, nblocks, 1)
+    diff = (Dense(A) - Dense(D)).norm()
+    norm = D.norm()
+    printf('Compression Accuracy')
+    printf('Rel. L2 Error', np.sqrt(diff/norm))
+    printf('Time')
     b.gemm(A, x)
+    stop('Init Matrix')
+    start('LU decomposition')
     A.getrf()
+    stop('LU decomposition')
+    start('Forward substitution')
     b.trsm(A, 'l')
+    stop('Forward substitution')
+    start('Backward substitution')
     b.trsm(A, 'u')
+    stop('Backward substitution')
     diff = (Dense(x) + Dense(b)).norm()
     norm = x.norm()
-    print('Rel. L2 Error: {}'.format(np.sqrt(diff/norm)))
+    printf('LU Accuracy')
+    printf('Rel. L2 Error', np.sqrt(diff/norm))
 
 
 if __name__ == '__main__':

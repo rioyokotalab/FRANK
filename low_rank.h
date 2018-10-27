@@ -51,7 +51,7 @@ namespace hicma {
 
     void trsm(const Node& A, const char& uplo) override;
 
-    void gemm(const Node& A, const Node& B, const int& alpha=-1, const int& beta=1) override;
+    void gemm(const Node& A, const Node& B, const double& alpha=-1, const double& beta=1) override;
   };
 }
 #endif
