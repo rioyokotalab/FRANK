@@ -52,6 +52,7 @@ int main(int argc, char** argv) {
   }
   Hierarchical A(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   batch_rsvd();
+  printXML(A);
   admis = N / nleaf; // Full rank
   Hierarchical D(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   Hierarchical x(random, randx, N, 1, rank, nleaf, admis, nblocks, 1);

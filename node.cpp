@@ -40,7 +40,9 @@ namespace hicma {
 
   void Node::getrf() {};
 
-  void Node::trsm(const Node& A, const char& uplo) {};
+  void Node::trsm(const Dense& A, const char& uplo) {};
+
+  void Node::trsm(const Hierarchical& A, const char& uplo) {};
 
   void Node::gemm(const Node& A, const Node& B, const double& alpha, const double& beta) {};
 }

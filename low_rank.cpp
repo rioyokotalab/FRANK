@@ -173,39 +173,33 @@ namespace hicma {
     }
   }
 
-  void LowRank::trsm(const Node& _A, const char& uplo) {
-    if (_A.is(HICMA_DENSE)) {
-      const Dense& A = static_cast<const Dense&>(_A);
-      switch (uplo) {
-      case 'l' :
-        U.trsm(A, uplo);
-        break;
-      case 'u' :
-        V.trsm(A, uplo);
+  void LowRank::trsm(const Dense& A, const char& uplo) {
+    switch (uplo) {
+    case 'l' :
+      U.trsm(A, uplo);
+      break;
+    case 'u' :
+      V.trsm(A, uplo);
+      break;
+    }
+  }
+
+  void LowRank::trsm(const Hierarchical& A, const char& uplo) {
+    switch (uplo) {
+    case 'l' :
+      {
+        Hierarchical H(U, A.dim[0], 1);
+        H.trsm(A, uplo);
+        U = Dense(H);
         break;
       }
-    } else if (_A.is(HICMA_HIERARCHICAL)) {
-      const Hierarchical& A = static_cast<const Hierarchical&>(_A);
-      switch (uplo) {
-      case 'l' :
-        {
-          Hierarchical H(U, A.dim[0], 1);
-          H.trsm(A, uplo);
-          U = Dense(H);
-          break;
-        }
-      case 'u' :
-        {
-          Hierarchical H(V, 1, A.dim[1]);
-          H.trsm(A, uplo);
-          V = Dense(H);
-          break;
-        }
+    case 'u' :
+      {
+        Hierarchical H(V, 1, A.dim[1]);
+        H.trsm(A, uplo);
+        V = Dense(H);
+        break;
       }
-    } else {
-      std::cerr << this->type() << " /= " << _A.type();
-      std::cerr << " is undefined." << std::endl;
-      abort();
     }
   }
 

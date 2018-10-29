@@ -75,7 +75,9 @@ namespace hicma {
 
     void getrf() override;
 
-    void trsm(const Node& A, const char& uplo) override;
+    void trsm(const Hierarchical& A, const char& uplo) override;
+
+    void gemm(const Hierarchical& A, const Hierarchical& B, const double& alpha, const double& beta);
 
     void gemm(const Node& A, const Node& B, const double& alpha=-1, const double& beta=1) override;
 
