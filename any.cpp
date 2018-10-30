@@ -38,14 +38,14 @@ namespace hicma {
   bool Any::is(const int i) const { return ptr->is(i); }
 
   void Any::getrf() {
-    return ptr->getrf();
+    ptr->getrf();
   }
 
   void Any::trsm(const Any& A, const char& uplo) {
     if (A.is(HICMA_HIERARCHICAL)) {
-      return ptr->trsm(static_cast<Hierarchical&>(*A.ptr), uplo);
+      ptr->trsm(static_cast<Hierarchical&>(*A.ptr), uplo);
     } else if (A.is(HICMA_DENSE)) {
-      return ptr->trsm(static_cast<Dense&>(*A.ptr), uplo);
+      ptr->trsm(static_cast<Dense&>(*A.ptr), uplo);
     } else {
       std::cerr << "Input matrix for trsm must be Hierarchical or Dense." << std::endl;
       abort();
@@ -53,7 +53,43 @@ namespace hicma {
   }
 
   void Any::gemm(const Any& A, const Any& B, const double& alpha, const double& beta) {
-    return ptr->gemm(*A.ptr, *B.ptr, alpha, beta);
+    if (A.is(HICMA_HIERARCHICAL)) {
+      if (B.is(HICMA_HIERARCHICAL)) {
+        ptr->gemm(static_cast<Hierarchical&>(*A.ptr), static_cast<Hierarchical&>(*B.ptr), alpha, beta);
+      } else if (B.is(HICMA_LOWRANK)) {
+        ptr->gemm(static_cast<Hierarchical&>(*A.ptr), static_cast<LowRank&>(*B.ptr), alpha, beta);
+      } else if (B.is(HICMA_DENSE)) {
+        ptr->gemm(static_cast<Hierarchical&>(*A.ptr), static_cast<Dense&>(*B.ptr), alpha, beta);
+      } else {
+        std::cerr << "Input matrix for gemm must be Hierarchical, LowRank or Dense." << std::endl;
+        abort();
+      }
+    } else if (A.is(HICMA_LOWRANK)) {
+      if (B.is(HICMA_HIERARCHICAL)) {
+        ptr->gemm(static_cast<LowRank&>(*A.ptr), static_cast<Hierarchical&>(*B.ptr), alpha, beta);
+      } else if (B.is(HICMA_LOWRANK)) {
+        ptr->gemm(static_cast<LowRank&>(*A.ptr), static_cast<LowRank&>(*B.ptr), alpha, beta);
+      } else if (B.is(HICMA_DENSE)) {
+        ptr->gemm(static_cast<LowRank&>(*A.ptr), static_cast<Dense&>(*B.ptr), alpha, beta);
+      } else {
+        std::cerr << "Input matrix for gemm must be Hierarchical, LowRank or Dense." << std::endl;
+        abort();
+      }
+    } else if (A.is(HICMA_DENSE)) {
+      if (B.is(HICMA_HIERARCHICAL)) {
+        ptr->gemm(static_cast<Dense&>(*A.ptr), static_cast<Hierarchical&>(*B.ptr), alpha, beta);
+      } else if (B.is(HICMA_LOWRANK)) {
+        ptr->gemm(static_cast<Dense&>(*A.ptr), static_cast<LowRank&>(*B.ptr), alpha, beta);
+      } else if (B.is(HICMA_DENSE)) {
+        ptr->gemm(static_cast<Dense&>(*A.ptr), static_cast<Dense&>(*B.ptr), alpha, beta);
+      } else {
+        std::cerr << "Input matrix for gemm must be Hierarchical, LowRank or Dense." << std::endl;
+        abort();
+      }
+    } else {
+      std::cerr << "Input matrix for gemm must be Hierarchical, LowRank or Dense." << std::endl;
+      abort();
+    }
   }
 
 }

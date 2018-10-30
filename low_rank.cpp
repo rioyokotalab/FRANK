@@ -203,49 +203,27 @@ namespace hicma {
     }
   }
 
-  void LowRank::gemm(const Node& _A, const Node& _B, const double& alpha, const double& beta) {
-    if (_A.is(HICMA_DENSE)) {
-      const Dense& A = static_cast<const Dense&>(_A);
-      if (_B.is(HICMA_DENSE)) {
-        std::cerr << this->type() << " -= " << _A.type();
-        std::cerr << " * " << _B.type() << " is undefined." << std::endl;
-	      abort();
-      } else if (_B.is(HICMA_LOWRANK)) {
-        const LowRank& B = static_cast<const LowRank&>(_B);
-        LowRank C(B);
-        C.U.gemm(A, B.U, alpha, 0);
-        *this += C;
-      } else if (_B.is(HICMA_HIERARCHICAL)) {
-        std::cerr << this->type() << " -= " << _A.type();
-        std::cerr << " * " << _B.type() << " is undefined." << std::endl;
-        abort();
-      }
-    } else if (_A.is(HICMA_LOWRANK)) {
-      const LowRank& A = static_cast<const LowRank&>(_A);
-      if (_B.is(HICMA_DENSE)) {
-        const Dense& B = static_cast<const Dense&>(_B);
-        LowRank C(A);
-        C.V.gemm(A.V, B, alpha, 0);
-        *this += C;
-      } else if (_B.is(HICMA_LOWRANK)) {
-        const LowRank& B = static_cast<const LowRank&>(_B);
-        LowRank C(A);
-        C.V = B.V;
-        Dense VxU(A.rank, B.rank);
-        VxU.gemm(A.V, B.U, 1, 0);
-        Dense SxVxU(A.rank, B.rank);
-        SxVxU.gemm(A.S, VxU, 1, 0);
-        C.S.gemm(SxVxU, B.S, alpha, 0);
-        *this += C;
-      } else if (_B.is(HICMA_HIERARCHICAL)) {
-        std::cerr << this->type() << " -= " << _A.type();
-        std::cerr << " * " << _B.type() << " is undefined." << std::endl;
-        abort();
-      }
-    } else {
-      std::cerr << this->type() << " -= " << _A.type();
-      std::cerr << " * " << _B.type() << " is undefined." << std::endl;
-      abort();
-    }
+  void LowRank::gemm(const Dense& A, const LowRank& B, const double& alpha, const double& beta) {
+    LowRank C(B);
+    C.U.gemm(A, B.U, alpha, 0);
+    *this += C;
   }
+
+  void LowRank::gemm(const LowRank& A, const Dense& B, const double& alpha, const double& beta) {
+    LowRank C(A);
+    C.V.gemm(A.V, B, alpha, 0);
+    *this += C;
+  }
+
+  void LowRank::gemm(const LowRank& A, const LowRank& B, const double& alpha, const double& beta) {
+    LowRank C(A);
+    C.V = B.V;
+    Dense VxU(A.rank, B.rank);
+    VxU.gemm(A.V, B.U, 1, 0);
+    Dense SxVxU(A.rank, B.rank);
+    SxVxU.gemm(A.S, VxU, 1, 0);
+    C.S.gemm(SxVxU, B.S, alpha, 0);
+    *this += C;
+  }
+
 }

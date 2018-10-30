@@ -47,7 +47,23 @@ namespace hicma {
 
     virtual void trsm(const Hierarchical& A, const char& uplo);
 
-    virtual void gemm(const Node& A, const Node& B, const double& alpha=-1, const double& beta=1);
+    virtual void gemm(const Dense& A, const Dense& B, const double& alpha=-1, const double& beta=1);
+
+    virtual void gemm(const Dense& A, const LowRank& B, const double& alpha=-1, const double& beta=1);
+
+    virtual void gemm(const Dense& A, const Hierarchical& B, const double& alpha=-1, const double& beta=1);
+
+    virtual void gemm(const LowRank& A, const Dense& B, const double& alpha=-1, const double& beta=1);
+
+    virtual void gemm(const LowRank& A, const LowRank& B, const double& alpha=-1, const double& beta=1);
+
+    virtual void gemm(const LowRank& A, const Hierarchical& B, const double& alpha=-1, const double& beta=1);
+
+    virtual void gemm(const Hierarchical& A, const Dense& B, const double& alpha=-1, const double& beta=1);
+
+    virtual void gemm(const Hierarchical& A, const LowRank& B, const double& alpha=-1, const double& beta=1);
+
+    virtual void gemm(const Hierarchical& A, const Hierarchical& B, const double& alpha=-1, const double& beta=1);
   };
 }
 #endif
