@@ -196,9 +196,9 @@ namespace hicma {
     swap(A.level, B.level);
   }
 
-  const Node& Hierarchical::operator[](const int i) const {
+  const Any& Hierarchical::operator[](const int i) const {
     assert(i<dim[0]*dim[1]);
-    return *data[i].ptr;
+    return data[i];
   }
 
   Any& Hierarchical::operator[](const int i) {
@@ -206,9 +206,9 @@ namespace hicma {
     return data[i];
   }
 
-  const Node& Hierarchical::operator()(const int i, const int j) const {
+  const Any& Hierarchical::operator()(const int i, const int j) const {
     assert(i<dim[0] && j<dim[1]);
-    return *data[i*dim[1]+j].ptr;
+    return data[i*dim[1]+j];
   }
 
   Any& Hierarchical::operator()(const int i, const int j) {
@@ -269,6 +269,11 @@ namespace hicma {
     }
   }
 
+  void Hierarchical::trsm(const Dense& A, const char& uplo) {
+    print_undefined(__func__, A.type(), this->type());
+    abort();
+  }
+
   void Hierarchical::trsm(const Hierarchical& A, const char& uplo) {
     if (dim[1] == 1) {
       switch (uplo) {
@@ -318,9 +323,24 @@ namespace hicma {
     }
   }
 
+  void Hierarchical::gemm(const Dense& A, const Dense& B, const double& alpha, const double& beta) {
+    print_undefined(__func__, A.type(), B.type(), this->type());
+    abort();
+  }
+
+  void Hierarchical::gemm(const Dense& A, const LowRank& B, const double& alpha, const double& beta) {
+    print_undefined(__func__, A.type(), B.type(), this->type());
+    abort();
+  }
+
   void Hierarchical::gemm(const Dense& A, const Hierarchical& B, const double& alpha, const double& beta) {
     const Hierarchical& AH = Hierarchical(A, dim[0], B.dim[0]);
     gemm(AH, B, alpha, beta);
+  }
+
+  void Hierarchical::gemm(const LowRank& A, const Dense& B, const double& alpha, const double& beta) {
+    print_undefined(__func__, A.type(), B.type(), this->type());
+    abort();
   }
 
   void Hierarchical::gemm(const LowRank& A, const LowRank& B, const double& alpha, const double& beta) {

@@ -1,7 +1,5 @@
 [Immediate]
-Change print in blr to diff/norm
-Add diff/norm for compression in h_lu
-Change Node to Any in inputs to functions
+Merge dev with gpu branch
 
 [Features to implement]
 RSVD with controllable precision on CPU

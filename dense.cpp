@@ -96,13 +96,13 @@ namespace hicma {
     }
   }
 
-  Dense::Dense(const Node& _A) : Node(_A.i_abs, _A.j_abs, _A.level) {
+  Dense::Dense(const Any& _A) : Node(_A.ptr->i_abs, _A.ptr->j_abs, _A.ptr->level) {
     if (_A.is(HICMA_DENSE)) {
-      *this = static_cast<const Dense&>(_A);
+      *this = static_cast<const Dense&>(*_A.ptr);
     } else if (_A.is(HICMA_LOWRANK)) {
-      *this = Dense(static_cast<const LowRank&>(_A));
+      *this = Dense(static_cast<const LowRank&>(*_A.ptr));
     } else if (_A.is(HICMA_HIERARCHICAL)) {
-      *this = Dense(static_cast<const Hierarchical&>(_A));
+      *this = Dense(static_cast<const Hierarchical&>(*_A.ptr));
     }
   }
 

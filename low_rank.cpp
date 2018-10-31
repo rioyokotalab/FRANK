@@ -1,6 +1,7 @@
 #include "any.h"
 #include "low_rank.h"
 #include "hierarchical.h"
+#include "print.h"
 
 #include <cassert>
 #include <iostream>
@@ -203,14 +204,24 @@ namespace hicma {
     }
   }
 
+  void LowRank::gemm(const Dense& A, const Dense& B, const double& alpha, const double& beta) {
+    print_undefined(__func__, A.type(), B.type(), this->type());
+    abort();
+  }
+
   void LowRank::gemm(const Dense& A, const LowRank& B, const double& alpha, const double& beta) {
     LowRank C(B);
     C.U.gemm(A, B.U, alpha, 0);
     *this += C;
   }
 
+  void LowRank::gemm(const Dense& A, const Hierarchical& B, const double& alpha, const double& beta) {
+    print_undefined(__func__, A.type(), B.type(), this->type());
+    abort();
+  }
+
   void LowRank::gemm(const LowRank& A, const Dense& B, const double& alpha, const double& beta) {
-    LowRank C(A);
+   LowRank C(A);
     C.V.gemm(A.V, B, alpha, 0);
     *this += C;
   }
@@ -224,6 +235,26 @@ namespace hicma {
     SxVxU.gemm(A.S, VxU, 1, 0);
     C.S.gemm(SxVxU, B.S, alpha, 0);
     *this += C;
+  }
+
+  void LowRank::gemm(const LowRank& A, const Hierarchical& B, const double& alpha, const double& beta) {
+    print_undefined(__func__, A.type(), B.type(), this->type());
+    abort();
+  }
+
+  void LowRank::gemm(const Hierarchical& A, const Dense& B, const double& alpha, const double& beta) {
+    print_undefined(__func__, A.type(), B.type(), this->type());
+    abort();
+  }
+
+  void LowRank::gemm(const Hierarchical& A, const LowRank& B, const double& alpha, const double& beta) {
+    print_undefined(__func__, A.type(), B.type(), this->type());
+    abort();
+  }
+
+  void LowRank::gemm(const Hierarchical& A, const Hierarchical& B, const double& alpha, const double& beta) {
+    print_undefined(__func__, A.type(), B.type(), this->type());
+    abort();
   }
 
 }
