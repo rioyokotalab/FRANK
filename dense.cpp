@@ -230,6 +230,7 @@ namespace hicma {
   }
 
   void Dense::trsm(const Dense& A, const char& uplo) {
+    start("-DTRSM");
     if (dim[1] == 1) {
       switch (uplo) {
       case 'l' :
@@ -260,6 +261,7 @@ namespace hicma {
         abort();
       }
     }
+    stop("-DTRSM",false);
   }
 
   void Dense::trsm(const Hierarchical& A, const char& uplo) {
@@ -292,6 +294,7 @@ namespace hicma {
   }
 
   void Dense::gemm(const Dense& A, const Dense& B, const double& alpha, const double& beta) {
+    start("-DGEMM");
     assert(this->dim[0] == A.dim[0]);
     assert(A.dim[1] == B.dim[0]);
     assert(this->dim[1] == B.dim[1]);
@@ -302,6 +305,7 @@ namespace hicma {
     else {
       gemm(A, B, CblasNoTrans, CblasNoTrans, alpha, beta);
     }
+    stop("-DGEMM",false);
   }
 
   void Dense::gemm(const Dense& A, const LowRank& B, const double& alpha, const double& beta) {

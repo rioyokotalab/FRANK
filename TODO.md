@@ -1,7 +1,9 @@
 [Immediate]
+Fix GPU N=128 error
 
 [Features to implement]
 RSVD with controllable precision on CPU
+GPU batch gemm
 GPU LU
 H^2-matrix LU (nested basis)
 MPI version

@@ -55,7 +55,7 @@ int main(int argc, char** argv) {
   Hierarchical A(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   stop("CPU compression");
   batch_rsvd();
-  //printXML(A);
+  printXML(A);
   admis = N / nleaf; // Full rank
   start("Dense tree");
   Hierarchical D(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
