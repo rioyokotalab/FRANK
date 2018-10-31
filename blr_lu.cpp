@@ -12,8 +12,8 @@
 using namespace hicma;
 
 int main(int argc, char** argv) {
-  int N = atoi(argv[1]);
-  int Nb = atoi(argv[2]);
+  int N = 64;
+  int Nb = 16;
   int Nc = N / Nb;
   int rank = 8;
   std::vector<double> randx(N);

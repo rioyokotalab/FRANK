@@ -2,6 +2,7 @@
 #include "low_rank.h"
 #include "hierarchical.h"
 #include "batch_rsvd.h"
+#include "print.h"
 
 #include <algorithm>
 #include <cassert>
