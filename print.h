@@ -7,15 +7,19 @@ namespace hicma {
 
   extern bool VERBOSE;
 
-  class Node;
+  class Any;
 
-  void printXML(const Node& A);
+  void printXML(const Any& A);
 
-  void fillXML(const Node& A, boost::property_tree::ptree tree);
+  void fillXML(const Any& A, boost::property_tree::ptree tree);
 
   void print(std::string s);
 
   template<typename T>
   void print(std::string s, T v, bool fixed=true);
+
+  void print_undefined(std::string func, std::string A_type, std::string B_type, std::string C_type);
+
+  void print_undefined(std::string func, std::string A_type, std::string B_type);
 }
 #endif

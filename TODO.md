@@ -1,6 +1,4 @@
 [Immediate]
-Make batch class
-Change Node to Any in inputs to functions
 
 [Features to implement]
 RSVD with controllable precision on CPU

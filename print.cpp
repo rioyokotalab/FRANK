@@ -15,10 +15,10 @@ namespace hicma {
   static const int stringLength = 24; //!< Length of formatted string
   static const int decimal = 7; //!< Decimal precision
 
-  void fillXML(const Node& _A, boost::property_tree::ptree& tree) {
+  void fillXML(const Any& _A, boost::property_tree::ptree& tree) {
     namespace pt = boost::property_tree;
     if (_A.is(HICMA_HIERARCHICAL)) {
-      const Hierarchical& A = static_cast<const Hierarchical&>(_A);
+      const Hierarchical& A = static_cast<const Hierarchical&>(*_A.ptr);
       for (int i=0; i<A.dim[0]; i++) {
         for (int j=0; j<A.dim[1]; j++) {
           pt::ptree el_subtree{};
@@ -32,7 +32,7 @@ namespace hicma {
       tree.put("<xmlattr>.dim0", A.dim[0]);
       tree.put("<xmlattr>.dim1", A.dim[1]);
     } else if (_A.is(HICMA_LOWRANK)) {
-      const LowRank& A = static_cast<const LowRank&>(_A);
+      const LowRank& A = static_cast<const LowRank&>(*_A.ptr);
       Dense S(A.dim[0],1);
       Dense(A).svd(S);
       std::string singular_values = std::to_string(S[0]);
@@ -44,7 +44,7 @@ namespace hicma {
       tree.put("<xmlattr>.rank", A.rank);
       tree.put("<xmlattr>.svalues", singular_values);
     } else if (_A.is(HICMA_DENSE)) {
-      const Dense& A = static_cast<const Dense&>(_A);
+      const Dense& A = static_cast<const Dense&>(*_A.ptr);
       Dense S(A.dim[0],1);
       Dense(A).svd(S);
       std::string singular_values = std::to_string(S[0]);
@@ -59,7 +59,7 @@ namespace hicma {
     }
   }
 
-  void printXML(const Node& A) {
+  void printXML(const Any& A) {
     namespace pt = boost::property_tree;
     pt::ptree tree;
     // Write any header info you want here, like a time stamp
@@ -94,5 +94,13 @@ namespace hicma {
   template void print<size_t>(std::string s, size_t v, bool fixed=true);
   template void print<float>(std::string s, float v, bool fixed=true);
   template void print<double>(std::string s, double v, bool fixed=true);
+
+  void print_undefined(std::string func, std::string A_type, std::string B_type, std::string C_type) {
+    std::cerr << C_type << "." << func << "(" << A_type << "," << B_type << ") undefined." << std::endl;
+  }
+
+  void print_undefined(std::string func, std::string A_type, std::string B_type) {
+    std::cerr << B_type << "." << func << "(" << A_type << ") undefined." << std::endl;
+  }
 }
 #endif

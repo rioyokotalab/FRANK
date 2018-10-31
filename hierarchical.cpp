@@ -195,9 +195,9 @@ namespace hicma {
     swap(A.level, B.level);
   }
 
-  const Node& Hierarchical::operator[](const int i) const {
+  const Any& Hierarchical::operator[](const int i) const {
     assert(i<dim[0]*dim[1]);
-    return *data[i].ptr;
+    return data[i];
   }
 
   Any& Hierarchical::operator[](const int i) {
@@ -205,9 +205,9 @@ namespace hicma {
     return data[i];
   }
 
-  const Node& Hierarchical::operator()(const int i, const int j) const {
+  const Any& Hierarchical::operator()(const int i, const int j) const {
     assert(i<dim[0] && j<dim[1]);
-    return *data[i*dim[1]+j].ptr;
+    return data[i*dim[1]+j];
   }
 
   Any& Hierarchical::operator()(const int i, const int j) {
@@ -268,138 +268,108 @@ namespace hicma {
     }
   }
 
-  void Hierarchical::trsm(const Node& _A, const char& uplo) {
-    if (_A.is(HICMA_HIERARCHICAL)) {
-      const Hierarchical& A = static_cast<const Hierarchical&>(_A);
-      if (dim[1] == 1) {
-        switch (uplo) {
-        case 'l' :
-          for (int i=0; i<dim[0]; i++) {
-            for (int j=0; j<i; j++) {
-              (*this)[i].gemm(A(i,j), (*this)[j], -1, 1);
-            }
-            (*this)[i].trsm(A(i,i), 'l');
+  void Hierarchical::trsm(const Dense& A, const char& uplo) {
+    print_undefined(__func__, A.type(), this->type());
+    abort();
+  }
+
+  void Hierarchical::trsm(const Hierarchical& A, const char& uplo) {
+    if (dim[1] == 1) {
+      switch (uplo) {
+      case 'l' :
+        for (int i=0; i<dim[0]; i++) {
+          for (int j=0; j<i; j++) {
+            (*this)[i].gemm(A(i,j), (*this)[j], -1, 1);
           }
-          break;
-        case 'u' :
-          for (int i=dim[0]-1; i>=0; i--) {
-            for (int j=dim[0]-1; j>i; j--) {
-              (*this)[i].gemm(A(i,j), (*this)[j], -1, 1);
-            }
-            (*this)[i].trsm(A(i,i), 'u');
-          }
-          break;
-        default :
-          std::cerr << "Second argument must be 'l' for lower, 'u' for upper." << std::endl;
-          abort();
+          (*this)[i].trsm(A(i,i), 'l');
         }
+        break;
+      case 'u' :
+        for (int i=dim[0]-1; i>=0; i--) {
+          for (int j=dim[0]-1; j>i; j--) {
+            (*this)[i].gemm(A(i,j), (*this)[j], -1, 1);
+          }
+          (*this)[i].trsm(A(i,i), 'u');
+        }
+        break;
+      default :
+        std::cerr << "Second argument must be 'l' for lower, 'u' for upper." << std::endl;
+        abort();
       }
-      else {
-        switch (uplo) {
-        case 'l' :
+    }
+    else {
+      switch (uplo) {
+      case 'l' :
+        for (int j=0; j<dim[1]; j++) {
+          for (int i=0; i<dim[0]; i++) {
+            (*this).gemm_row(A, *this, i, j, 0, i, -1, 1);
+            (*this)(i,j).trsm(A(i,i), 'l');
+          }
+        }
+        break;
+      case 'u' :
+        for (int i=0; i<dim[0]; i++) {
           for (int j=0; j<dim[1]; j++) {
-            for (int i=0; i<dim[0]; i++) {
-              (*this).gemm_row(A, *this, i, j, 0, i, -1, 1);
-              (*this)(i,j).trsm(A(i,i), 'l');
-            }
+            (*this).gemm_row(*this, A, i, j, 0, j, -1, 1);
+            (*this)(i,j).trsm(A(j,j), 'u');
           }
-          break;
-        case 'u' :
-          for (int i=0; i<dim[0]; i++) {
-            for (int j=0; j<dim[1]; j++) {
-              (*this).gemm_row(*this, A, i, j, 0, j, -1, 1);
-              (*this)(i,j).trsm(A(j,j), 'u');
-            }
-          }
-          break;
-        default :
-          std::cerr << "Second argument must be 'l' for lower, 'u' for upper." << std::endl;
-          abort();
         }
+        break;
+      default :
+        std::cerr << "Second argument must be 'l' for lower, 'u' for upper." << std::endl;
+        abort();
       }
-    } else {
-      std::cerr << this->type() << " /= " << _A.type();
-      std::cerr << " is undefined." << std::endl;
-      abort();
     }
   }
 
-  void Hierarchical::gemm(const Node& _A, const Node& _B, const double& alpha, const double& beta) {
-    if (_A.is(HICMA_DENSE)) {
-      const Dense& A = static_cast<const Dense&>(_A);
-      if (_B.is(HICMA_HIERARCHICAL)) {
-        const Hierarchical& B = static_cast<const Hierarchical&>(_B);
-        const Hierarchical& AH = Hierarchical(A, dim[0], B.dim[0]);
-        for (int i=0; i<dim[0]; i++) {
-          for (int j=0; j<dim[1]; j++) {
-            (*this).gemm_row(AH, B, i, j, 0, AH.dim[1], alpha, beta);
-          }
-        }
-      } else {
-        std::cerr << this->type() << " -= " << _A.type();
-        std::cerr << " * " << _B.type() << " is undefined." << std::endl;
-        abort();
+  void Hierarchical::gemm(const Dense& A, const Dense& B, const double& alpha, const double& beta) {
+    print_undefined(__func__, A.type(), B.type(), this->type());
+    abort();
+  }
+
+  void Hierarchical::gemm(const Dense& A, const LowRank& B, const double& alpha, const double& beta) {
+    print_undefined(__func__, A.type(), B.type(), this->type());
+    abort();
+  }
+
+  void Hierarchical::gemm(const Dense& A, const Hierarchical& B, const double& alpha, const double& beta) {
+    const Hierarchical& AH = Hierarchical(A, dim[0], B.dim[0]);
+    gemm(AH, B, alpha, beta);
+  }
+
+  void Hierarchical::gemm(const LowRank& A, const Dense& B, const double& alpha, const double& beta) {
+    print_undefined(__func__, A.type(), B.type(), this->type());
+    abort();
+  }
+
+  void Hierarchical::gemm(const LowRank& A, const LowRank& B, const double& alpha, const double& beta) {
+    const Hierarchical& AH = Hierarchical(A, dim[0], dim[0]);
+    const Hierarchical& BH = Hierarchical(B, dim[1], dim[1]);
+    gemm(AH, BH, alpha, beta);
+  }
+
+  void Hierarchical::gemm(const LowRank& A, const Hierarchical& B, const double& alpha, const double& beta) {
+    const Hierarchical& AH = Hierarchical(A, dim[0], B.dim[0]);
+    gemm(AH, B, alpha, beta);
+  }
+
+  void Hierarchical::gemm(const Hierarchical& A, const Dense& B, const double& alpha, const double& beta) {
+    const Hierarchical& BH = Hierarchical(B, A.dim[1], dim[1]);
+    gemm(A, BH, alpha, beta);
+  }
+
+  void Hierarchical::gemm(const Hierarchical& A, const LowRank& B, const double& alpha, const double& beta) {
+    const Hierarchical& BH = Hierarchical(B, A.dim[1], dim[1]);
+    gemm(A, BH, alpha, beta);
+  }
+
+  void Hierarchical::gemm(const Hierarchical& A, const Hierarchical& B, const double& alpha, const double& beta) {
+    assert(dim[0]==A.dim[0] && dim[1]==B.dim[1]);
+    assert(A.dim[1] == B.dim[0]);
+    for (int i=0; i<dim[0]; i++) {
+      for (int j=0; j<dim[1]; j++) {
+        (*this).gemm_row(A, B, i, j, 0, A.dim[1], alpha, beta);
       }
-    } else if (_A.is(HICMA_LOWRANK)) {
-      const LowRank& A = static_cast<const LowRank&>(_A);
-      if (_B.is(HICMA_LOWRANK)) {
-        const LowRank& B = static_cast<const LowRank&>(_B);
-        const Hierarchical& AH = Hierarchical(A, dim[0], dim[0]);
-        const Hierarchical& BH = Hierarchical(B, dim[1], dim[1]);
-        for (int i=0; i<dim[0]; i++) {
-          for (int j=0; j<dim[1]; j++) {
-            (*this).gemm_row(AH, BH, i, j, 0, AH.dim[1], alpha, beta);
-          }
-        }
-      } else if (_B.is(HICMA_HIERARCHICAL)) {
-        const Hierarchical& B = static_cast<const Hierarchical&>(_B);
-        const Hierarchical& AH = Hierarchical(A, dim[0], B.dim[0]);
-        for (int i=0; i<dim[0]; i++) {
-          for (int j=0; j<dim[1]; j++) {
-            (*this).gemm_row(AH, B, i, j, 0, AH.dim[1], alpha, beta);
-          }
-        }
-      } else {
-        std::cerr << this->type() << " -= " << _A.type();
-        std::cerr << " * " << _B.type() << " is undefined." << std::endl;
-        abort();
-      }
-    } else if (_A.is(HICMA_HIERARCHICAL)) {
-      const Hierarchical& A = static_cast<const Hierarchical&>(_A);
-      if (_B.is(HICMA_DENSE)) {
-        const Dense& B = static_cast<const Dense&>(_B);
-        const Hierarchical& BH = Hierarchical(B, A.dim[1], dim[1]);
-        for (int i=0; i<dim[0]; i++) {
-          for (int j=0; j<dim[1]; j++) {
-            (*this).gemm_row(A, BH, i, j, 0, A.dim[1], alpha, beta);
-          }
-        }
-      } else if (_B.is(HICMA_LOWRANK)) {
-        const LowRank& B = static_cast<const LowRank&>(_B);
-        const Hierarchical& BH = Hierarchical(B, A.dim[1], dim[1]);
-        for (int i=0; i<dim[0]; i++) {
-          for (int j=0; j<dim[1]; j++) {
-            (*this).gemm_row(A, BH, i, j, 0, A.dim[1], alpha, beta);
-          }
-        }
-      } else if (_B.is(HICMA_HIERARCHICAL)) {
-        const Hierarchical& B = static_cast<const Hierarchical&>(_B);
-        assert(dim[0]==A.dim[0] && dim[1]==B.dim[1]);
-        assert(A.dim[1] == B.dim[0]);
-        for (int i=0; i<dim[0]; i++) {
-          for (int j=0; j<dim[1]; j++) {
-            (*this).gemm_row(A, B, i, j, 0, A.dim[1], alpha, beta);
-          }
-        }
-      } else {
-        std::cerr << this->type() << " -= " << _A.type();
-        std::cerr << " * " << _B.type() << " is undefined." << std::endl;
-        abort();
-      }
-    } else {
-      std::cerr << this->type() << " -= " << _A.type();
-      std::cerr << " * " << _B.type() << " is undefined." << std::endl;
-      abort();
     }
   }
 

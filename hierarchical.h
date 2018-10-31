@@ -57,11 +57,11 @@ namespace hicma {
 
     friend void swap(Hierarchical& A, Hierarchical& B);
 
-    const Node& operator[](const int i) const;
+    const Any& operator[](const int i) const;
 
     Any& operator[](const int i);
 
-    const Node& operator()(const int i, const int j) const;
+    const Any& operator()(const int i, const int j) const;
 
     Any& operator()(const int i, const int j);
 
@@ -75,9 +75,27 @@ namespace hicma {
 
     void getrf() override;
 
-    void trsm(const Node& A, const char& uplo) override;
+    void trsm(const Dense& A, const char& uplo) override;
 
-    void gemm(const Node& A, const Node& B, const double& alpha=-1, const double& beta=1) override;
+    void trsm(const Hierarchical& A, const char& uplo) override;
+
+    void gemm(const Dense& A, const Dense& B, const double& alpha=-1, const double& beta=1) override;
+
+    void gemm(const Dense& A, const LowRank& B, const double& alpha=-1, const double& beta=1) override;
+
+    void gemm(const Dense& A, const Hierarchical& B, const double& alpha=-1, const double& beta=1) override;
+
+    void gemm(const LowRank& A, const Dense& B, const double& alpha=-1, const double& beta=1) override;
+
+    void gemm(const LowRank& A, const LowRank& B, const double& alpha=-1, const double& beta=1) override;
+
+    void gemm(const LowRank& A, const Hierarchical& B, const double& alpha=-1, const double& beta=1) override;
+
+    void gemm(const Hierarchical& A, const Dense& B, const double& alpha=-1, const double& beta=1) override;
+
+    void gemm(const Hierarchical& A, const LowRank& B, const double& alpha=-1, const double& beta=1) override;
+
+    void gemm(const Hierarchical& A, const Hierarchical& B, const double& alpha=-1, const double& beta=1) override;
 
     void gemm_row(
                   const Hierarchical& A, const Hierarchical& B,

@@ -24,6 +24,12 @@ namespace hicma {
 
     bool is(const int i) const;
 
+    const char* type() const;
+
+    double norm() const;
+
+    void print() const;
+
     void getrf();
 
     void trsm(const Any& A, const char& uplo);

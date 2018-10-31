@@ -10,7 +10,12 @@ namespace hicma {
     HICMA_DENSE
   };
 
+  class Dense;
+  class LowRank;
+  class Hierarchical;
+
   class Node {
+
   public:
     int i_abs; //! Row number of the node on the current recursion level
     int j_abs; //! Column number of the node on the current recursion level
@@ -38,9 +43,27 @@ namespace hicma {
 
     virtual void getrf();
 
-    virtual void trsm(const Node& A, const char& uplo);
+    virtual void trsm(const Dense& A, const char& uplo);
 
-    virtual void gemm(const Node& A, const Node& B, const double& alpha=-1, const double& beta=1);
+    virtual void trsm(const Hierarchical& A, const char& uplo);
+
+    virtual void gemm(const Dense& A, const Dense& B, const double& alpha=-1, const double& beta=1);
+
+    virtual void gemm(const Dense& A, const LowRank& B, const double& alpha=-1, const double& beta=1);
+
+    virtual void gemm(const Dense& A, const Hierarchical& B, const double& alpha=-1, const double& beta=1);
+
+    virtual void gemm(const LowRank& A, const Dense& B, const double& alpha=-1, const double& beta=1);
+
+    virtual void gemm(const LowRank& A, const LowRank& B, const double& alpha=-1, const double& beta=1);
+
+    virtual void gemm(const LowRank& A, const Hierarchical& B, const double& alpha=-1, const double& beta=1);
+
+    virtual void gemm(const Hierarchical& A, const Dense& B, const double& alpha=-1, const double& beta=1);
+
+    virtual void gemm(const Hierarchical& A, const LowRank& B, const double& alpha=-1, const double& beta=1);
+
+    virtual void gemm(const Hierarchical& A, const Hierarchical& B, const double& alpha=-1, const double& beta=1);
   };
 }
 #endif
