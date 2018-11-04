@@ -33,10 +33,14 @@ namespace hicma {
     int max_n = 0;
     std::vector<int> h_m(batchCount);
     std::vector<int> h_n(batchCount);
+    std::vector<int> h_ldm(batchCount);
+    std::vector<int> h_ldn(batchCount);
     for (int b=0; b<batchCount; b++) {
       Dense A = vecA[b];
       h_m[b] = A.dim[0];
       h_n[b] = A.dim[1];
+      h_ldm[b] = std::max(h_m[b],32);
+      h_ldn[b] = std::max(h_n[b],32);
       max_m = std::max(max_m, h_m[b]);
       max_n = std::max(max_n, h_n[b]);
     }
@@ -50,7 +54,7 @@ namespace hicma {
       Dense A = vecA[b];
       for (int i=0; i<A.dim[0]; i++) {
         for (int j=0; j<A.dim[1]; j++) {
-          h_A[i+j*A.dim[0]+b*max_m*max_n] = A(i,j);
+          h_A[i+j*h_ldm[b]+b*max_m*max_n] = A(i,j);
         }
       }
     }
@@ -58,6 +62,7 @@ namespace hicma {
 #if 0
     start("Write matrix");
     std::ofstream file("matrix.txt");
+    file << batchCount << std::endl;
     for (int b=0; b<batchCount; b++) {
       Dense A = vecA[b];
       file << A.dim[0] << std::endl;
@@ -79,10 +84,12 @@ namespace hicma {
     magma_init();
     stop("Init KBLAS");
     start("Allocate device");
-    int *d_m, *d_n, *d_k;
+    int *d_m, *d_n, *d_k, *d_ldm, *d_ldn;
     cudaMalloc( (void**)&d_m, batchCount * sizeof(int) );
     cudaMalloc( (void**)&d_n, batchCount * sizeof(int) );
     cudaMalloc( (void**)&d_k, batchCount * sizeof(int) );
+    cudaMalloc( (void**)&d_ldm, batchCount * sizeof(int) );
+    cudaMalloc( (void**)&d_ldn, batchCount * sizeof(int) );
     double *d_A, *d_U, *d_V;
     cudaMalloc( (void**)&d_A, h_A.size() * sizeof(double) );
     cudaMalloc( (void**)&d_U, h_U.size() * sizeof(double) );
@@ -102,13 +109,13 @@ namespace hicma {
     kblasAllocateWorkspace(handle);
     cudaMemcpy(d_m, &h_m[0], batchCount * sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(d_n, &h_n[0], batchCount * sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_ldm, &h_ldm[0], batchCount * sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_ldn, &h_ldn[0], batchCount * sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(d_A, &h_A[0], h_A.size() * sizeof(double), cudaMemcpyHostToDevice);
     stop("Copy to device");
     start("Batched SVD");
-    kblas_ara_batched(
-                      handle, d_m, d_n, p_A, d_m, p_U, d_m, p_V, d_n, d_k,
-                      tol, max_m, max_n, max_n, block_size, ara_r, rand_state, batchCount
-                      );
+    kblas_ara_batched(handle, d_m, d_n, p_A, d_ldm, p_U, d_ldm, p_V, d_ldn, d_k,
+                      tol, max_m, max_n, max_n, block_size, ara_r, rand_state, batchCount);
     cudaDeviceSynchronize();
     stop("Batched SVD");
     start("Copy to host");
@@ -125,22 +132,18 @@ namespace hicma {
       Dense A = vecA[b];
       for (int i=0; i<LR.dim[0]; i++) {
         for (int j=0; j<LR.rank; j++) {
-          LR.U(i,j) = h_U[i+j*LR.dim[0]+b*max_m*max_n];
+          LR.U(i,j) = h_U[i+j*h_ldm[b]+b*max_m*max_n];
         }
       }
       for (int i=0; i<LR.rank; i++) {
         for (int j=0; j<LR.dim[1]; j++) {
-          LR.V(i,j) = h_V[i*LR.dim[1]+j+b*max_n*max_n];
+          LR.V(i,j) = h_V[i*h_ldn[b]+j+b*max_n*max_n];
         }
         LR.S(i,i) = 1;
       }
       *vecLR[b] = LR;
     }
     stop("Copy to LR");
-    h_m.clear();
-    h_n.clear();
-    vecA.clear();
-    vecLR.clear();
     cudaFree(p_A);
     cudaFree(p_U);
     cudaFree(p_V);
@@ -150,6 +153,8 @@ namespace hicma {
     cudaFree(d_m);
     cudaFree(d_n);
     cudaFree(d_k);
+    cudaFree(d_ldm);
+    cudaFree(d_ldn);
     kblasDestroy(&handle);
   }
 }

@@ -1,5 +1,4 @@
 [Immediate]
-Fix GPU N=128 error
 
 [Features to implement]
 RSVD with controllable precision on CPU
