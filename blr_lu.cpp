@@ -48,20 +48,20 @@ int main(int argc, char** argv) {
       }
     }
   }
-  batch_rsvd();
+  low_rank_batch();
   double diff = 0, norm = 0;
   for (int ic=0; ic<Nc; ic++) {
     for (int jc=0; jc<Nc; jc++) {
       if(A(ic,jc).is(HICMA_LOWRANK)) {
-        diff += (Dense(static_cast<LowRank&>(*A(ic,jc).ptr)) - static_cast<Dense&>(*D(ic,jc).ptr)).norm();
-        norm += static_cast<Dense&>(*D(ic,jc).ptr).norm();
+        diff += (Dense(A(ic,jc)) - D(ic,jc)).norm();
+        norm += D(ic,jc).norm();
       }
     }
   }
   print("Compression Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
   print("Time");
-  b.gemm(A,x);
+  b.gemm(A, x, 1, 1);
   stop("Init matrix");
   start("LU decomposition");
   for (int ic=0; ic<Nc; ic++) {
@@ -100,7 +100,7 @@ int main(int argc, char** argv) {
   stop("Backward substitution");
   printTime("-DTRSM");
   printTime("-DGEMM");
-  diff = (Dense(x) + Dense(b)).norm();
+  diff = (Dense(x) - Dense(b)).norm();
   norm = x.norm();
   print("LU Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);

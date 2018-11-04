@@ -23,7 +23,7 @@ namespace hicma {
     vecLR.push_back(&A);
   }
 
-  void batch_rsvd() {
+  void low_rank_batch() {
     int batchCount = vecA.size();
     if (batchCount == 0) return;
     double tol = 1e-7;
@@ -41,8 +41,8 @@ namespace hicma {
       h_n[b] = A.dim[1];
       h_ldm[b] = std::max(h_m[b],32);
       h_ldn[b] = std::max(h_n[b],32);
-      max_m = std::max(max_m, h_m[b]);
-      max_n = std::max(max_n, h_n[b]);
+      max_m = std::max(max_m, h_ldm[b]);
+      max_n = std::max(max_n, h_ldn[b]);
     }
     start("Allocate host");
     std::vector<double> h_A(max_m * max_n * batchCount);
@@ -83,7 +83,7 @@ namespace hicma {
     kblasEnableMagma(handle);
     magma_init();
     stop("Init KBLAS");
-    start("Allocate device");
+    start("Allocate memory");
     int *d_m, *d_n, *d_k, *d_ldm, *d_ldn;
     cudaMalloc( (void**)&d_m, batchCount * sizeof(int) );
     cudaMalloc( (void**)&d_n, batchCount * sizeof(int) );
@@ -98,7 +98,7 @@ namespace hicma {
     cudaMalloc( (void**)&p_A, batchCount * sizeof(double*) );
     cudaMalloc( (void**)&p_U, batchCount * sizeof(double*) );
     cudaMalloc( (void**)&p_V, batchCount * sizeof(double*) );
-    stop("Allocate device");
+    stop("Allocate memory");
     start("Array of pointers");
     generateDArrayOfPointers(d_A, p_A, max_m * max_n, batchCount, 0);
     generateDArrayOfPointers(d_U, p_U, max_m * max_n, batchCount, 0);
@@ -144,6 +144,9 @@ namespace hicma {
       *vecLR[b] = LR;
     }
     stop("Copy to LR");
+    start("Free memory");
+    vecA.clear();
+    vecLR.clear();
     cudaFree(p_A);
     cudaFree(p_U);
     cudaFree(p_V);
@@ -156,5 +159,6 @@ namespace hicma {
     cudaFree(d_ldm);
     cudaFree(d_ldn);
     kblasDestroy(&handle);
+    stop("Free memory");
   }
 }

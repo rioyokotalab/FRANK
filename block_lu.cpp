@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
       A(ic,jc) = Aij;
     }
   }
-  b.gemm(A,x);
+  b.gemm(A, x, 1, 1);
   stop("Init matrix");
   start("LU decomposition");
   for (int ic=0; ic<Nc; ic++) {
@@ -79,7 +79,7 @@ int main(int argc, char** argv) {
   stop("Backward substitution");
   printTime("-DTRSM");
   printTime("-DGEMM");
-  double diff = (Dense(x) + Dense(b)).norm();
+  double diff = (Dense(x) - Dense(b)).norm();
   double norm = x.norm();
   print("Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);

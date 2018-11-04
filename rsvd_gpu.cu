@@ -28,6 +28,8 @@ int main(int argc, char** argv)
   for (int b=0; b<batchCount; b++) {
     int m = (b+1)*20;
     int n = (b+1)*16;
+    m = 16;
+    n = 16;
     std::vector<double> randx(2*m);
     for (int i=0; i<2*m; i++) {
       randx[i] = drand48();
@@ -67,8 +69,8 @@ int main(int argc, char** argv)
     h_n[b] = A.dim[1];
     h_ldm[b] = std::max(h_m[b],32);
     h_ldn[b] = std::max(h_n[b],32);
-    max_m = std::max(max_m, h_m[b]);
-    max_n = std::max(max_n, h_n[b]);
+    max_m = std::max(max_m, h_ldm[b]);
+    max_n = std::max(max_n, h_ldn[b]);
     printf("%d %d %d\n",b,h_m[b],h_n[b]);
   }
   std::vector<double> h_A(max_m * max_n * batchCount);

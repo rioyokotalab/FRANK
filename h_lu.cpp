@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
   start("CPU compression");
   Hierarchical A(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   stop("CPU compression");
-  batch_rsvd();
+  low_rank_batch();
   printXML(A);
   admis = N / nleaf; // Full rank
   start("Dense tree");
@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
   print("Compression Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
   print("Time");
-  b.gemm(A,x);
+  b.gemm(A, x, 1, 1);
   stop("Init matrix");
   printTime("-DGEMM");
   start("LU decomposition");
@@ -88,7 +88,7 @@ int main(int argc, char** argv) {
   stop("Backward substitution");
   printTime("-DTRSM");
   printTime("-DGEMM");
-  diff = (Dense(x) + Dense(b)).norm();
+  diff = (Dense(x) - Dense(b)).norm();
   norm = x.norm();
   print("LU Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);

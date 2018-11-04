@@ -1,4 +1,3 @@
-
 #ifndef batch_rsvd_h
 #define batch_rsvd_h
 
@@ -14,7 +13,7 @@ namespace hicma {
 
   void low_rank_push(Any& A, Dense& Aij, int rank);
 
-  void batch_rsvd();
+  void low_rank_batch();
 }
 
 #endif

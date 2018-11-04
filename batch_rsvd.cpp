@@ -11,5 +11,5 @@ namespace hicma {
     A = LowRank(Aij, rank);
   }
 
-  void batch_rsvd() {}
+  void low_rank_batch() {}
 }
