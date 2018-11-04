@@ -1,5 +1,5 @@
-#ifndef batch_rsvd_h
-#define batch_rsvd_h
+#ifndef batch_h
+#define batch_h
 
 #include <vector>
 

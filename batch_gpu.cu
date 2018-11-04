@@ -1,6 +1,6 @@
 #include "any.h"
 #include "low_rank.h"
-#include "batch_rsvd.h"
+#include "batch.h"
 #include "timer.h"
 
 #include <cublas_v2.h>

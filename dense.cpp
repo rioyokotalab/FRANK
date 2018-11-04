@@ -294,10 +294,8 @@ namespace hicma {
   }
 
   void Dense::gemm(const Dense& A, const Dense& B, const double& alpha, const double& beta) {
+    assert(this->dim[0] == A.dim[0] && A.dim[1] == B.dim[0] && this->dim[1] == B.dim[1]);
     start("-DGEMM");
-    assert(this->dim[0] == A.dim[0]);
-    assert(A.dim[1] == B.dim[0]);
-    assert(this->dim[1] == B.dim[1]);
     if (B.dim[1] == 1) {
       cblas_dgemv(CblasRowMajor, CblasNoTrans, A.dim[0], A.dim[1], alpha,
                   &A[0], A.dim[1], &B[0], 1, beta, &data[0], 1);

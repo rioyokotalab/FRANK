@@ -1,7 +1,7 @@
 #include "any.h"
 #include "low_rank.h"
 #include "hierarchical.h"
-#include "batch_rsvd.h"
+#include "batch.h"
 #include "print.h"
 
 #include <algorithm>
@@ -168,7 +168,7 @@ namespace hicma {
                           j_abs_child,
                           level+1
                           );
-          low_rank_push((*this).data[i*dim[1]+j], A, rank);
+          low_rank_push((*this)(i,j), A, rank);
         }
       }
     }
@@ -365,8 +365,7 @@ namespace hicma {
   }
 
   void Hierarchical::gemm(const Hierarchical& A, const Hierarchical& B, const double& alpha, const double& beta) {
-    assert(dim[0]==A.dim[0] && dim[1]==B.dim[1]);
-    assert(A.dim[1] == B.dim[0]);
+    assert(dim[0]==A.dim[0] && dim[1]==B.dim[1] && A.dim[1] == B.dim[0]);
     for (int i=0; i<dim[0]; i++) {
       for (int j=0; j<dim[1]; j++) {
         (*this).gemm_row(A, B, i, j, 0, A.dim[1], alpha, beta);

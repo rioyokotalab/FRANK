@@ -1,8 +1,9 @@
 [Immediate]
+Does low_rank_push need to be for Any*?
+GPU batch gemm
 
 [Features to implement]
 RSVD with controllable precision on CPU
-GPU batch gemm
 GPU LU
 H^2-matrix LU (nested basis)
 MPI version

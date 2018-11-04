@@ -2,7 +2,7 @@
 #include "low_rank.h"
 #include "hierarchical.h"
 #include "functions.h"
-#include "batch_rsvd.h"
+#include "batch.h"
 #include "print.h"
 #include "timer.h"
 
