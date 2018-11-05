@@ -288,22 +288,22 @@ namespace hicma {
 
   void Dense::gemm(const Dense& A, const Dense&B, const CBLAS_TRANSPOSE TransA, const CBLAS_TRANSPOSE TransB,
                    const double& alpha, const double& beta) {
-    int k = TransA == CblasNoTrans ? A.dim[1] : A.dim[0];
-    cblas_dgemm(CblasRowMajor, TransA, TransB, dim[0], dim[1], k, alpha,
-                &A[0], A.dim[1], &B[0], B.dim[1], beta, &data[0], dim[1]);
-  }
-
-  void Dense::gemm(const Dense& A, const Dense& B, const double& alpha, const double& beta) {
-    assert(this->dim[0] == A.dim[0] && A.dim[1] == B.dim[0] && this->dim[1] == B.dim[1]);
     start("-DGEMM");
     if (B.dim[1] == 1) {
       cblas_dgemv(CblasRowMajor, CblasNoTrans, A.dim[0], A.dim[1], alpha,
                   &A[0], A.dim[1], &B[0], 1, beta, &data[0], 1);
     }
     else {
-      gemm(A, B, CblasNoTrans, CblasNoTrans, alpha, beta);
+      int k = TransA == CblasNoTrans ? A.dim[1] : A.dim[0];
+      cblas_dgemm(CblasRowMajor, TransA, TransB, dim[0], dim[1], k, alpha,
+                  &A[0], A.dim[1], &B[0], B.dim[1], beta, &data[0], dim[1]);
     }
     stop("-DGEMM",false);
+  }
+
+  void Dense::gemm(const Dense& A, const Dense& B, const double& alpha, const double& beta) {
+    assert(this->dim[0] == A.dim[0] && A.dim[1] == B.dim[0] && this->dim[1] == B.dim[1]);
+    gemm(A, B, CblasNoTrans, CblasNoTrans, alpha, beta);
   }
 
   void Dense::gemm(const Dense& A, const LowRank& B, const double& alpha, const double& beta) {

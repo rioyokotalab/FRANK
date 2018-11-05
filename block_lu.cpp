@@ -2,6 +2,7 @@
 #include "low_rank.h"
 #include "hierarchical.h"
 #include "functions.h"
+#include "batch.h"
 #include "print.h"
 #include "timer.h"
 
@@ -41,6 +42,7 @@ int main(int argc, char** argv) {
     }
   }
   b.gemm(A, x, 1, 1);
+  gemm_batch();
   stop("Init matrix");
   start("LU decomposition");
   for (int ic=0; ic<Nc; ic++) {

@@ -13,5 +13,11 @@ namespace hicma {
     A = LowRank(Aij, rank);
   }
 
+  void gemm_push(Dense& A, Dense& B, Dense* C) {
+    C->gemm(A, B, CblasNoTrans, CblasNoTrans, 1, 1);
+  }
+
   void rsvd_batch() {}
+
+  void gemm_batch() {}
 }
