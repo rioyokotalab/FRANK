@@ -2,6 +2,7 @@
 #include "dense.h"
 #include "low_rank.h"
 #include "hierarchical.h"
+#include "batch.h"
 #include "print.h"
 #include "timer.h"
 
@@ -303,7 +304,12 @@ namespace hicma {
 
   void Dense::gemm(const Dense& A, const Dense& B, const double& alpha, const double& beta) {
     assert(this->dim[0] == A.dim[0] && A.dim[1] == B.dim[0] && this->dim[1] == B.dim[1]);
-    gemm(A, B, CblasNoTrans, CblasNoTrans, alpha, beta);
+    if (alpha == 1 && beta == 1) {
+      gemm_push(A, B, this);
+    }
+    else {
+      gemm(A, B, CblasNoTrans, CblasNoTrans, alpha, beta);
+    }
   }
 
   void Dense::gemm(const Dense& A, const LowRank& B, const double& alpha, const double& beta) {

@@ -70,6 +70,7 @@ int main(int argc, char** argv) {
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
   print("Time");
   b.gemm(A, x, 1, 1);
+  gemm_batch();
   stop("Init matrix");
   printTime("-DGEMM");
   start("LU decomposition");

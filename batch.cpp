@@ -13,7 +13,7 @@ namespace hicma {
     A = LowRank(Aij, rank);
   }
 
-  void gemm_push(Dense& A, Dense& B, Dense* C) {
+  void gemm_push(const Dense& A, const Dense& B, Dense* C) {
     C->gemm(A, B, CblasNoTrans, CblasNoTrans, 1, 1);
   }
 

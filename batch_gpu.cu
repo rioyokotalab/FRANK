@@ -25,10 +25,14 @@ namespace hicma {
     vecLR.push_back(&A);
   }
 
-  void gemm_push(Dense& A, Dense& B, Dense* C) {
+  void gemm_push(const Dense& A, const Dense& B, Dense* C) {
+#if 0
+    C->gemm(A, B, CblasNoTrans, CblasNoTrans, 1, 1);
+#else
     vecA.push_back(A);
     vecB.push_back(B);
     vecC.push_back(C);
+#endif
   }
 
   void rsvd_batch() {
@@ -262,11 +266,17 @@ namespace hicma {
     start("Copy to C");
     for (int b=0; b<batchCount; b++) {
       Dense* C = vecC[b];
+#if 0
+      Dense A = vecA[b];
+      Dense B = vecB[b];
+      C->gemm(A, B, CblasNoTrans, CblasNoTrans, 1, 1);
+#else
       for (int i=0; i<C->dim[0]; i++) {
         for (int j=0; j<C->dim[1]; j++) {
-          (*C)(i,j) = h_C[i+j*C->dim[0]+b*max_m*max_n];
+          (*C)(i,j) += h_C[i+j*C->dim[0]+b*max_m*max_n];
         }
       }
+#endif
     }
     stop("Copy to C");
     start("Free memory");
