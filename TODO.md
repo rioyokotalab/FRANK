@@ -1,5 +1,4 @@
 [Immediate]
-Does low_rank_push need to be for Any*?
 GPU batch gemm
 
 [Features to implement]

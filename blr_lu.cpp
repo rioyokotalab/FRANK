@@ -44,11 +44,11 @@ int main(int argc, char** argv) {
         A(ic,jc) = Aij;
       }
       else {
-        low_rank_push(A(ic,jc), Aij, rank);
+        rsvd_push(A(ic,jc), Aij, rank);
       }
     }
   }
-  low_rank_batch();
+  rsvd_batch();
   double diff = 0, norm = 0;
   for (int ic=0; ic<Nc; ic++) {
     for (int jc=0; jc<Nc; jc++) {

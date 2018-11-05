@@ -168,7 +168,7 @@ namespace hicma {
                           j_abs_child,
                           level+1
                           );
-          low_rank_push((*this)(i,j), A, rank);
+          rsvd_push((*this)(i,j), A, rank);
         }
       }
     }

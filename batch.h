@@ -9,11 +9,13 @@ namespace hicma {
   class Dense;
 
   extern std::vector<Dense> vecA;
+  extern std::vector<Dense> vecB;
+  extern std::vector<Dense*> vecC;
   extern std::vector<Any*> vecLR;
 
-  void low_rank_push(Any& A, Dense& Aij, int rank);
+  void rsvd_push(Any& A, Dense& Aij, int rank);
 
-  void low_rank_batch();
+  void rsvd_batch();
 }
 
 #endif

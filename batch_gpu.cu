@@ -16,14 +16,16 @@
 namespace hicma {
 
   std::vector<Dense> vecA;
+  std::vector<Dense> vecB;
+  std::vector<Dense*> vecC;
   std::vector<Any*> vecLR;
 
-  void low_rank_push(Any& A, Dense& Aij, int rank) {
+  void rsvd_push(Any& A, Dense& Aij, int rank) {
     vecA.push_back(Aij);
     vecLR.push_back(&A);
   }
 
-  void low_rank_batch() {
+  void rsvd_batch() {
     int batchCount = vecA.size();
     if (batchCount == 0) return;
     double tol = 1e-7;
