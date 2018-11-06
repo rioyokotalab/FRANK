@@ -1,5 +1,4 @@
 ### Immediate
-* GPU batch gemm
 
 ### Features to implement
 * RSVD with controllable precision on CPU
