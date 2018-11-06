@@ -2,17 +2,18 @@
 #include "low_rank.h"
 #include "hierarchical.h"
 #include "functions.h"
-#include "batch_rsvd.h"
+#include "batch.h"
 #include "print.h"
 #include "timer.h"
 
 #include <algorithm>
 #include <cmath>
+#include <iostream>
 
 using namespace hicma;
 
 int main(int argc, char** argv) {
-  int N = 64;
+  int N = 128;
   int nleaf = 16;
   int rank = 8;
   std::vector<double> randx(N);
@@ -50,29 +51,45 @@ int main(int argc, char** argv) {
     nblocks = 2; // Hierarchical (log_2(N/nleaf) levels)
     admis = 1; // Strong admissibility
   }
+  start("CPU compression");
   Hierarchical A(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
-  batch_rsvd();
+  stop("CPU compression");
+  rsvd_batch();
+  printXML(A);
   admis = N / nleaf; // Full rank
+  start("Dense tree");
   Hierarchical D(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
+  stop("Dense tree");
   Hierarchical x(random, randx, N, 1, rank, nleaf, admis, nblocks, 1);
   Hierarchical b(zeros, randx, N, 1, rank, nleaf, admis, nblocks, 1);
+  start("Verification");
   double diff = (Dense(A) - Dense(D)).norm();
   double norm = D.norm();
+  stop("Verification");
   print("Compression Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
   print("Time");
-  b.gemm(A,x);
+  b.gemm(A, x, 1, 1);
+  gemm_batch();
   stop("Init matrix");
+  printTime("-DGEMM");
   start("LU decomposition");
   A.getrf();
   stop("LU decomposition");
+  printTime("-DGETRF");
+  printTime("-DTRSM");
+  printTime("-DGEMM");
   start("Forward substitution");
   b.trsm(A,'l');
   stop("Forward substitution");
+  printTime("-DTRSM");
+  printTime("-DGEMM");
   start("Backward substitution");
   b.trsm(A,'u');
   stop("Backward substitution");
-  diff = (Dense(x) + Dense(b)).norm();
+  printTime("-DTRSM");
+  printTime("-DGEMM");
+  diff = (Dense(x) - Dense(b)).norm();
   norm = x.norm();
   print("LU Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);

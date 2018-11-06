@@ -11,6 +11,6 @@ namespace hicma {
 
   void stop(std::string event, bool verbose=true);
 
-  void print2(std::string event);
+  void printTime(std::string event);
 }
 #endif

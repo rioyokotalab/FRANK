@@ -46,10 +46,11 @@ def plot_lowrank(xml_node, lowrank_dict, root_grid):
         1, 1,
         subplot_spec=root_grid
     )
-    svalues = [float(x) for x in xml_node.attrib['svalues'].split(',')]
+    svalues = [float(x)+1e-10 for x in xml_node.attrib['svalues'].split(',')]
+    slog = np.log(svalues[0:min(10, *dim)])
     ax = plt.subplot(lowrank_dict['gs'][0, 0])
-    ax.set(xlim=(0, len(svalues)), ylim=(0, svalues[0]), xticks=[], yticks=[])
-    ax.bar(np.arange(len(svalues)), svalues, width=1, color='r')
+    ax.set(xlim=(-0.5, len(slog)+0.5), ylim=(0, slog[0]-slog[-1]), xticks=[], yticks=[])
+    ax.bar(np.arange(len(slog)), slog-slog[-1], width=1, color='g')
 
 
 def plot_dense(xml_node, dense_dict, root_grid):
@@ -58,10 +59,11 @@ def plot_dense(xml_node, dense_dict, root_grid):
         1, 1,
         subplot_spec=root_grid
     )
-    svalues = [float(x) for x in xml_node.attrib['svalues'].split(',')]
+    svalues = [float(x)+1e-10 for x in xml_node.attrib['svalues'].split(',')]
+    slog = np.log(svalues[0:min(10, *dim)])
     ax = plt.subplot(dense_dict['gs'][0, 0])
-    ax.set(xlim=(0, len(svalues)), ylim=(0, svalues[0]), xticks=[], yticks=[])
-    ax.bar(np.arange(len(svalues)), svalues, width=1, color='b')
+    ax.set(xlim=(-0.5, len(slog)+0.5), ylim=(0, slog[0]-slog[-1]), xticks=[], yticks=[])
+    ax.bar(np.arange(len(slog)), slog-slog[-1], width=1, color='r')
 
 
 def plot_matrix(root):
@@ -85,8 +87,9 @@ def main():
     tree = read_xml()
     root = tree.getroot()
 
-    fig = plt.figure()
+    fig = plt.figure(figsize=(5,5), dpi=200)
     grid_dict = plot_matrix(root)
+    plt.tight_layout()
     plt.subplots_adjust(wspace=0, hspace=0)
     plt.savefig("matrix.pdf")
     plt.show()

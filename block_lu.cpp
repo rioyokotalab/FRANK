@@ -2,6 +2,7 @@
 #include "low_rank.h"
 #include "hierarchical.h"
 #include "functions.h"
+#include "batch.h"
 #include "print.h"
 #include "timer.h"
 
@@ -40,31 +41,26 @@ int main(int argc, char** argv) {
       A(ic,jc) = Aij;
     }
   }
-  b.gemm(A,x);
+  b.gemm(A, x, 1, 1);
+  gemm_batch();
   stop("Init matrix");
   start("LU decomposition");
   for (int ic=0; ic<Nc; ic++) {
-    start("-DGETRF");
     A(ic,ic).getrf();
-    stop("-DGETRF", false);
     for (int jc=ic+1; jc<Nc; jc++) {
-      start("-DTRSM");
       A(ic,jc).trsm(A(ic,ic),'l');
       A(jc,ic).trsm(A(ic,ic),'u');
-      stop("-DTRSM", false);
     }
     for (int jc=ic+1; jc<Nc; jc++) {
       for (int kc=ic+1; kc<Nc; kc++) {
-        start("-DGEMM");
         A(jc,kc).gemm(A(jc,ic),A(ic,kc));
-        stop("-DGEMM", false);
       }
     }
   }
   stop("LU decomposition");
-  print2("-DGETRF");
-  print2("-DTRSM");
-  print2("-DGEMM");
+  printTime("-DGETRF");
+  printTime("-DTRSM");
+  printTime("-DGEMM");
   start("Forward substitution");
   for (int ic=0; ic<Nc; ic++) {
     for (int jc=0; jc<ic; jc++) {
@@ -73,6 +69,8 @@ int main(int argc, char** argv) {
     b[ic].trsm(A(ic,ic),'l');
   }
   stop("Forward substitution");
+  printTime("-DTRSM");
+  printTime("-DGEMM");
   start("Backward substitution");
   for (int ic=Nc-1; ic>=0; ic--) {
     for (int jc=Nc-1; jc>ic; jc--) {
@@ -81,7 +79,9 @@ int main(int argc, char** argv) {
     b[ic].trsm(A(ic,ic),'u');
   }
   stop("Backward substitution");
-  double diff = (Dense(x) + Dense(b)).norm();
+  printTime("-DTRSM");
+  printTime("-DGEMM");
+  double diff = (Dense(x) - Dense(b)).norm();
   double norm = x.norm();
   print("Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);

@@ -2,6 +2,7 @@
 *.pdf
 *.o
 *.out
+*.txt
 *.xml
 TAGS
 *~
