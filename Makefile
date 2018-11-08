@@ -1,7 +1,7 @@
 .SUFFIXES: .cpp .cu
 
 CXX = g++ -std=c++11 -ggdb3 -O3 -fopenmp -I. -Wall -Wfatal-errors #-DUSE_MKL
-NVCC = nvcc -ccbin=g++-5 -std=c++11 -I. -arch sm_35 -Xcompiler "-ggdb3 -fopenmp -Wall -Wfatal-errors"
+NVCC = nvcc -std=c++11 -I. -arch sm_60 -Xcompiler "-ggdb3 -fopenmp -Wall -Wfatal-errors"
 
 SOURCES = print.o timer.o functions.o any.o node.o dense.o low_rank.o hierarchical.o
 
