@@ -1,5 +1,9 @@
 # HiCMA
 
+“Any intelligent fool can make things bigger and more complex.
+It takes a touch of genius - and a lot of courage to move in the
+opposite direction.” - Albert Einstein
+
 Library for hierarchical low-rank matrix operations that calls kblas.
 
 # Classes and their details
