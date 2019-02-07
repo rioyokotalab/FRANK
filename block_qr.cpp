@@ -32,6 +32,7 @@ int main(int argc, char** argv) {
       R(ic, jc) = Rij;
     }
   }
+  A.print();
   Hierarchical _A(A);
   //Perform MGS on Block Matrix
   for(int j = 0; j < Nc; j++) {
