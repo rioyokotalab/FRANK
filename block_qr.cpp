@@ -12,8 +12,8 @@
 using namespace hicma;
 
 int main(int argc, char** argv) {
-  int N = 8;
-  int Nb = 4;
+  int N = 64;
+  int Nb = 16;
   int Nc = N / Nb;
   std::vector<double> randx(N);
   Hierarchical A(Nc, Nc);
@@ -23,6 +23,8 @@ int main(int argc, char** argv) {
     randx[i] = drand48();
   }
   std::sort(randx.begin(), randx.end());
+  print("Time");
+  start("Init matrix");
   for(int ic = 0; ic < Nc; ic++) {
     for(int jc = 0; jc < Nc; jc++) {
       Dense Aij(laplace1d, randx, Nb, Nb, Nb*ic, Nb*jc);
@@ -32,9 +34,9 @@ int main(int argc, char** argv) {
       R(ic, jc) = Rij;
     }
   }
-  A.print();
-  Hierarchical _A(A);
-  //Perform MGS on Block Matrix
+  stop("Init matrix");
+  Hierarchical _A(A); //Copy of A
+  start("QR decomposition");
   for(int j = 0; j < Nc; j++) {
     Hierarchical HAsj(Nc, 1);
     for(int i = 0; i < Nc; i++) {
@@ -45,13 +47,14 @@ int main(int argc, char** argv) {
     Dense Rjj(Nb, Nb);
     DAsj.qr(DQsj, Rjj); //[Q*j, Rjj] = QR(A*j)
     R(j, j) = Rjj;
-    //Copy Dense Qsj to Q
+    //Copy Dense Qsj to Hierarchical Q
     Hierarchical HQsj(DQsj, Nc, 1);
     for(int i = 0; i < Nc; i++) {
       Q(i, j) = HQsj(i, 0);
     }
     //Process next columns
     for(int k = j + 1; k < Nc; k++) {
+      //Take k-th column
       Hierarchical HAsk(Nc, 1);
       for(int i = 0; i < Nc; i++) {
         HAsk(i, 0) = A(i, k);
@@ -59,31 +62,21 @@ int main(int argc, char** argv) {
       Dense DAsk(HAsk);
       Dense DRjk(Nb, Nb);
       DRjk.gemm(DQsj, DAsk, CblasTrans, CblasNoTrans, 1, 1); //Rjk = Qsj^T x Ask
-      DAsk.gemm(DQsj, DRjk, -1, 1); //A*k = A*k - Q*j x Rjk
-      //Copy
       R(j, k) = DRjk;
+      DAsk.gemm(DQsj, DRjk, -1, 1); //A*k = A*k - Q*j x Rjk
       Hierarchical _HAsk(DAsk, Nc, 1);
       for(int i = 0; i < Nc; i++) {
         A(i, k) = _HAsk(i, 0);
       }
     }
   }
-  print("A");
-  _A.print();
-  print("Q");
-  Q.print();
-  print("R");
-  R.print();
-  Dense DQ(Q);
-  Dense DR(R);
-  Dense DQR(N, N);
-  DQR.gemm(DQ, DR, 1, 1);
-  Hierarchical QR(DQR, Nc, Nc);
-  print("QR");
-  QR.print();
-  Dense DA(_A);
-  double diff = (DA - DQR).norm();
-  double norm = DQR.norm();
+  stop("QR decomposition");
+  printTime("-DGEQRF");
+  printTime("-DGEMM");
+  Dense QR(N, N);
+  QR.gemm(Dense(Q), Dense(R), 1, 1);
+  double diff = (Dense(_A) - QR).norm();
+  double norm = QR.norm();
   print("Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
   return 0;
