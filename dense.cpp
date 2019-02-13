@@ -223,6 +223,16 @@ namespace hicma {
     std::cout << "----------------------------------------------------------------------------------" << std::endl;
   }
 
+  void Dense::transpose() {
+    std::vector<double> _data(data);
+    std::swap(dim[0], dim[1]);
+    for(int i=0; i<dim[0]; i++) {
+      for(int j=0; j<dim[1]; j++) {
+        data[i*dim[1]+j] = _data[j*dim[0]+i];
+      }
+    }
+  }
+
   void Dense::getrf() {
     start("-DGETRF");
     std::vector<int> ipiv(std::min(dim[0],dim[1]));
