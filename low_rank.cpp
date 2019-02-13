@@ -139,6 +139,12 @@ namespace hicma {
     std::cout << "----------------------------------------------------------------------------------" << std::endl;
   }
 
+  void LowRank::transpose() {
+    U.transpose();
+    V.transpose();
+    swap(U, V);
+  }
+
   void LowRank::mergeU(const LowRank& A, const LowRank& B) {
     assert(rank == A.rank + B.rank);
     for (int i=0; i<dim[0]; i++) {
