@@ -76,7 +76,7 @@ int main(int argc, char** argv) {
   Dense QR(N, N);
   QR.gemm(Dense(Q), Dense(R), 1, 1);
   double diff = (Dense(_A) - QR).norm();
-  double norm = QR.norm();
+  double norm = _A.norm();
   print("Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
   return 0;
