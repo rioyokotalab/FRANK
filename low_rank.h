@@ -27,6 +27,8 @@ namespace hicma {
 
     LowRank(LowRank&& A);
 
+    LowRank(const Any& _A, const int k=1);
+
     LowRank* clone() const override;
 
     friend void swap(LowRank& A, LowRank& B);

@@ -70,6 +70,17 @@ namespace hicma {
     swap(*this, A);
   }
 
+  LowRank::LowRank(const Any& _A, const int k) : Node(_A.ptr->i_abs, _A.ptr->j_abs, _A.ptr->level) {
+    if (_A.is(HICMA_LOWRANK)) {
+      *this = static_cast<const LowRank&>(*_A.ptr);
+    } else if (_A.is(HICMA_DENSE)) {
+      *this = LowRank(static_cast<const Dense&>(*_A.ptr), k);
+    } else if (_A.is(HICMA_HIERARCHICAL)) {
+      print_undefined(__func__, "Hierarchical", "LowRank");
+      abort();
+    }
+  }
+
   LowRank* LowRank::clone() const {
     return new LowRank(*this);
   }
