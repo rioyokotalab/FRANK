@@ -3,6 +3,7 @@
 #include "hierarchical.h"
 #include "batch.h"
 #include "print.h"
+#include "functions.h"
 
 #include <algorithm>
 #include <cassert>
@@ -390,5 +391,56 @@ namespace hicma {
       assert((*this)(i,j).is(HICMA_DENSE));
       (*this)(i,j) = LowRank(static_cast<Dense&>(*(*this)(i,j).ptr), rank);
     }
+  }
+
+  void Hierarchical::qr_col(const int j, Hierarchical& Q, Dense& R) {
+    Hierarchical Qu(dim[0], 1);
+    Hierarchical B(dim[0], 1);
+    for(int i=0; i<dim[0]; i++) {
+      assert((*this)(i, j).is(HICMA_DENSE) || (*this)(i, j).is(HICMA_LOWRANK));
+      if((*this)(i, j).is(HICMA_DENSE)) {
+        Dense Aij(static_cast<Dense&>(*(*this)(i, j).ptr));
+        std::vector<double> x;
+        Qu(i, 0) = Dense(identity, x, Aij.dim[0], Aij.dim[0]);
+        B(i, 0) = Aij;
+      }
+      else if((*this)(i, j).is(HICMA_LOWRANK)) {
+        LowRank Aij(static_cast<LowRank&>(*(*this)(i, j).ptr));
+        Dense Qui(Aij.U.dim[0], Aij.U.dim[1]);
+        Dense Rui(Aij.U.dim[1], Aij.U.dim[1]);
+        Aij.U.qr(Qui, Rui);
+        Qu(i, 0) = Qui;
+        Dense RS(Rui.dim[0], Aij.S.dim[1]);
+        RS.gemm(Rui, Aij.S, 1, 1);
+        Dense RSV(RS.dim[0], Aij.V.dim[1]);
+        RSV.gemm(RS, Aij.V, 1, 1);
+        B(i, 0) = RSV;
+      }
+    }
+    Dense DB(B);
+    Dense Qb(DB.dim[0], DB.dim[1]);
+    Dense Rb(DB.dim[1], DB.dim[1]);
+    DB.qr(Qb, Rb);
+    R = Rb;
+    //Slice Qb based on B
+    Hierarchical HQb(B.dim[0], B.dim[1]);
+    int rowOffset = 0;
+    for(int i=0; i<HQb.dim[0]; i++) {
+      Dense Bi(B(i, 0));
+      Dense Qbi(Bi.dim[0], Bi.dim[1]);
+      for(int row=0; row<Bi.dim[0]; row++) {
+        for(int col=0; col<Bi.dim[1]; col++) {
+          Qbi(row, col) = Qb(rowOffset + row, col);
+        }
+      }
+      HQb(i, 0) = Qbi;
+      rowOffset += Bi.dim[0];
+    }
+    Hierarchical Qj(dim[0], 1);
+    for(int i=0; i<dim[0]; i++) {
+      Qj(i, 0) = (*this)(i, j);
+      Qj(i, 0).gemm(Qu(i, 0), HQb(i, 0), 1, 0);
+    }
+    swap(Q, Qj);
   }
 }

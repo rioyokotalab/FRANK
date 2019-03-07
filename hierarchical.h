@@ -101,6 +101,9 @@ namespace hicma {
                   const Hierarchical& A, const Hierarchical& B,
                   const int& i, const int& j, const int& k_min, const int& k_max,
                   const double& alpha, const double& beta);
+
+    void qr_col(const int j, Hierarchical& Q, Dense& R);
+    
   };
 }
 #endif
