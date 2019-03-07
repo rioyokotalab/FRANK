@@ -222,8 +222,10 @@ namespace hicma {
   }
 
   void LowRank::gemm(const Dense& A, const Dense& B, const double& alpha, const double& beta) {
-    print_undefined(__func__, A.type(), B.type(), this->type());
-    abort();
+    assert(this->dim[0] == A.dim[0] && A.dim[1] == B.dim[0] && this->dim[1] == B.dim[1]);
+    Dense C(*this);
+    C.gemm(A, B, alpha, beta);
+    *this = LowRank(C, this->rank);
   }
 
   void LowRank::gemm(const Dense& A, const LowRank& B, const double& alpha, const double& beta) {
