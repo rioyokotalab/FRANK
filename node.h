@@ -41,6 +41,8 @@ namespace hicma {
 
     virtual void print() const;
 
+    virtual void transpose();
+
     virtual void getrf();
 
     virtual void trsm(const Dense& A, const char& uplo);

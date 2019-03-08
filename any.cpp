@@ -47,6 +47,10 @@ namespace hicma {
     ptr->print();
   }
 
+  void Any::transpose() {
+    ptr->transpose();
+  }
+
   void Any::getrf() {
     ptr->getrf();
   }

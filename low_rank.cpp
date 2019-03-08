@@ -140,6 +140,7 @@ namespace hicma {
   }
 
   void LowRank::transpose() {
+    std::swap(dim[0], dim[1]);
     U.transpose();
     V.transpose();
     swap(U, V);

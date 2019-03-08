@@ -255,6 +255,17 @@ namespace hicma {
     std::cout << "----------------------------------------------------------------------------------" << std::endl;
   }
 
+  void Hierarchical::transpose() {
+    Hierarchical Tr(dim[1], dim[0]);
+    for(int i=0; i<dim[0]; i++) {
+      for(int j=0; j<dim[1]; j++) {
+        (*this)(i, j).transpose();
+        Tr(j, i) = (*this)(i, j);
+      }
+    }
+    swap(*this, Tr);
+  }
+
   void Hierarchical::getrf() {
     for (int i=0; i<dim[0]; i++) {
       (*this)(i,i).getrf();

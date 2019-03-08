@@ -30,6 +30,8 @@ namespace hicma {
 
     void print() const;
 
+    void transpose();
+
     void getrf();
 
     void trsm(const Any& A, const char& uplo);

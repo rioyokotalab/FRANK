@@ -38,6 +38,8 @@ namespace hicma {
 
   void Node::print() const {};
 
+  void Node::transpose() {};
+
   void Node::getrf() {};
 
   void Node::trsm(const Dense& A, const char& uplo) {};

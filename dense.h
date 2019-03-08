@@ -95,7 +95,7 @@ namespace hicma {
 
     void print() const override;
 
-    void transpose();
+    void transpose() override;
 
     void getrf() override;
 

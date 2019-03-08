@@ -73,6 +73,8 @@ namespace hicma {
 
     void print() const override;
 
+    void transpose() override;
+
     void getrf() override;
 
     void trsm(const Dense& A, const char& uplo) override;
