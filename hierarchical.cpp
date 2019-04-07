@@ -404,8 +404,8 @@ namespace hicma {
     }
   }
 
-  void Hierarchical::blr_col_qr(Hierarchical& Q, Dense& R) {
-    assert(dim[1] == 1);
+  void Hierarchical::blr_col_qr(Hierarchical& Q, Hierarchical& R) {
+    assert(dim[1] == 1 && Q.dim[0] == dim[0] && Q.dim[1] == 1 && R.dim[0] == 1 && R.dim[1] == 1);
     Hierarchical Qu(dim[0], 1);
     Hierarchical B(dim[0], 1);
     for(int i=0; i<dim[0]; i++) {
@@ -433,7 +433,7 @@ namespace hicma {
     Dense Qb(DB.dim[0], DB.dim[1]);
     Dense Rb(DB.dim[1], DB.dim[1]);
     DB.qr(Qb, Rb);
-    R = Rb;
+    R(0, 0) = Rb;
     //Slice Qb based on B
     Hierarchical HQb(B.dim[0], B.dim[1]);
     int rowOffset = 0;
@@ -448,16 +448,13 @@ namespace hicma {
       HQb(i, 0) = Qbi;
       rowOffset += Bi.dim[0];
     }
-    Hierarchical Qj(dim[0], 1);
     for(int i=0; i<dim[0]; i++) {
-      Qj(i, 0) = (*this)(i, 0);
-      Qj(i, 0).gemm(Qu(i, 0), HQb(i, 0), 1, 0);
+      Q(i, 0).gemm(Qu(i, 0), HQb(i, 0), 1, 0);
     }
-    swap(Q, Qj);
   }
 
   void Hierarchical::split_col(Hierarchical& QL) {
-    assert(dim[1] == 1);
+    assert(dim[1] == 1 && QL.dim[0] == dim[0] && QL.dim[1] == 1);
     int rows = 0;
     int cols = 1;
     for(int i=0; i<dim[0]; i++) {
@@ -563,7 +560,7 @@ namespace hicma {
   }
 
   void Hierarchical::col_qr(const int j, Hierarchical& Q, Hierarchical &R) {
-    assert(Q.dim[0] == dim[0] && Q.dim[1] == 1);
+    assert(Q.dim[0] == dim[0] && Q.dim[1] == 1 && R.dim[0] == 1 && R.dim[1] == 1);
     bool split = false;
     Hierarchical Aj(dim[0], 1);
     for(int i=0; i<dim[0]; i++) {
@@ -573,9 +570,7 @@ namespace hicma {
       }
     }
     if(!split) {
-      Dense DR;
-      Aj.blr_col_qr(Q, DR);
-      R(0, 0) = DR;
+      Aj.blr_col_qr(Q, R);
     }
     else {
       Hierarchical QL(dim[0], 1); //Stored Q for splitted lowrank blocks

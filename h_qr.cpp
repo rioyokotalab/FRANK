@@ -79,16 +79,6 @@ int main(int argc, char** argv) {
   printTime("-DGEQRF");
   printTime("-DGEMM");
   QR.gemm(Q, R, 1, 1);
-  /*
-  print("A");
-  A.print();
-  print("Q");
-  Q.print();
-  print("R");
-  (Dense(R)).print();
-  print("QR");
-  QR.print();
-  */
   diff = (Dense(QR) - Dense(D)).norm();
   norm = D.norm();
   print("QR Accuracy");
