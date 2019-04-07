@@ -13,10 +13,10 @@
 using namespace hicma;
 
 int main(int argc, char** argv) {
-  int N = 64;
-  int Nb = 16;
+  int N = 8;
+  int Nb = 4;
   int Nc = N / Nb;
-  int rank = 8;
+  int rank = 2;
   std::vector<double> randx(N);
   Hierarchical A(Nc, Nc);
   Hierarchical D(Nc, Nc);
@@ -57,9 +57,13 @@ int main(int argc, char** argv) {
   Hierarchical _A(A); //Copy of A
   start("QR decomposition");
   for(int j = 0; j < Nc; j++) {
+    Hierarchical Aj(Nc, 1);
+    for(int i=0; i<Nc; i++) {
+      Aj(i, 0) = A(i, j);
+    }
     Hierarchical Qsj;
     Dense Rjj;
-    A.qr_col(j, Qsj, Rjj);
+    Aj.blr_col_qr(Qsj, Rjj);
     R(j, j) = Rjj;
     //Copy column of Qsj to Q
     for(int i = 0; i < Nc; i++) {

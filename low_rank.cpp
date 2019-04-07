@@ -273,8 +273,9 @@ namespace hicma {
   }
 
   void LowRank::gemm(const Hierarchical& A, const Hierarchical& B, const double& alpha, const double& beta) {
-    print_undefined(__func__, A.type(), B.type(), this->type());
-    abort();
+    Dense C(*this);
+    C.gemm(A, B, alpha, beta);
+    *this = LowRank(C, rank);
   }
 
 }

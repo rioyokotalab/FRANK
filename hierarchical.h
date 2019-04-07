@@ -104,8 +104,15 @@ namespace hicma {
                   const int& i, const int& j, const int& k_min, const int& k_max,
                   const double& alpha, const double& beta);
 
-    void qr_col(const int j, Hierarchical& Q, Dense& R);
-    
+    void blr_col_qr(Hierarchical& Q, Dense& R);
+
+    void split_col(Hierarchical& QL);
+
+    void restore_col(const Hierarchical& Sp, const Hierarchical& QL);
+
+    void col_qr(const int j, Hierarchical& Q, Hierarchical &R);
+
+    void qr(Hierarchical& Q, Hierarchical& R);
   };
 }
 #endif
