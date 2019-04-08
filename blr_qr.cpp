@@ -13,10 +13,10 @@
 using namespace hicma;
 
 int main(int argc, char** argv) {
-  int N = 8;
-  int Nb = 4;
+  int N = 256;
+  int Nb = 16;
   int Nc = N / Nb;
-  int rank = 2;
+  int rank = 8;
   std::vector<double> randx(N);
   Hierarchical A(Nc, Nc);
   Hierarchical D(Nc, Nc);
@@ -29,16 +29,16 @@ int main(int argc, char** argv) {
   for (int ic=0; ic<Nc; ic++) {
     for (int jc=0; jc<Nc; jc++) {
       Dense Aij(laplace1d, randx, Nb, Nb, Nb*ic, Nb*jc);
+      Dense Rij(zeros, randx, Nb, Nb, Nb*ic, Nb*jc);
       D(ic,jc) = Aij;
       if (std::abs(ic - jc) <= 1) {
         A(ic,jc) = Aij;
+        R(ic,jc) = Rij;
       }
       else {
         rsvd_push(A(ic,jc), Aij, rank);
+        rsvd_push(R(ic,jc), Rij, rank);
       }
-      //Fill R with zeros
-      Dense Rij(Nb, Nb);
-      R(ic, jc) = Rij;
     }
   }
   rsvd_batch();
@@ -55,16 +55,18 @@ int main(int argc, char** argv) {
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
   print("Time");
   Hierarchical _A(A); //Copy of A
+  Hierarchical QR(R);
   start("QR decomposition");
-  for(int j = 0; j < Nc; j++) {
+  for(int j=0; j<Nc; j++) {
     Hierarchical Aj(Nc, 1);
+    Hierarchical Qsj(Nc, 1);
     for(int i=0; i<Nc; i++) {
       Aj(i, 0) = A(i, j);
+      Qsj(i, 0) = A(i, j);
     }
-    Hierarchical Qsj;
-    Dense Rjj;
+    Hierarchical Rjj(1, 1);
     Aj.blr_col_qr(Qsj, Rjj);
-    R(j, j) = Rjj;
+    R(j, j) = Rjj(0, 0);
     //Copy column of Qsj to Q
     for(int i = 0; i < Nc; i++) {
       Q(i, j) = Qsj(i, 0);
@@ -73,32 +75,54 @@ int main(int argc, char** argv) {
     Hierarchical TrQsj(Qsj);
     TrQsj.transpose();
     //Process next columns
-    for(int k = j + 1; k < Nc; k++) {
+    for(int k=j+1; k<Nc; k++) {
       //Take k-th column
-      Hierarchical HAsk(Nc, 1);
-      for(int i = 0; i < Nc; i++) {
-        HAsk(i, 0) = A(i, k);
+      Hierarchical Ak(Nc, 1);
+      for(int i=0; i<Nc; i++) {
+        Ak(i, 0) = A(i, k);
       }
-      Dense DRjk(Nb, Nb);
-      DRjk.gemm(TrQsj, HAsk, 1, 1); //Rjk = Q*j^T x A*k
-      LowRank Rjk(DRjk, rank); 
-      R(j, k) = Rjk;
-
-      HAsk.gemm(Qsj, Rjk, -1, 1); //A*k = A*k - Q*j x Rjk
-      for(int i = 0; i < Nc; i++) {
-        A(i, k) = HAsk(i, 0);
+      Hierarchical Rjk(1, 1);
+      Rjk(0, 0) = R(j, k);
+      Rjk.gemm(TrQsj, Ak, 1, 1); //Rjk = Q*j^T x A*k
+      R(j, k) = Rjk(0, 0);
+      Ak.gemm(Qsj, Rjk, -1, 1); //A*k = A*k - Q*j x Rjk
+      for(int i=0; i<Nc; i++) {
+        A(i, k) = Ak(i, 0);
       }
     }
   }
   stop("QR decomposition");
   printTime("-DGEQRF");
   printTime("-DGEMM");
-  Dense QR(N, N);
-  QR.gemm(Dense(Q), Dense(R), 1, 1);
-  diff = (Dense(_A) - QR).norm();
+  QR.gemm(Q, R, 1, 1);
+  diff = (Dense(_A) - Dense(QR)).norm();
   norm = _A.norm();
   print("Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
+  //Orthogonality checking (max norm)
+  double maxNorm = 0.0;
+  for(int i=0; i<Nc; i++) {
+    for(int j=0; j<Nc; j++) {
+      Hierarchical Qi(Nc, 1);
+      Hierarchical Qj(Nc, 1);
+      for(int k=0; k<Nc; k++) {
+        Qi(k, 0) = Q(k, i);
+        Qj(k, 0) = Q(k, j);
+      }
+      Qi.transpose();
+      Hierarchical QiTQj(1, 1);
+      QiTQj(0, 0) = Dense(Nb, Nb);
+      QiTQj.gemm(Qi, Qj, 1, 1);
+      if(i == j) {
+        Dense Id(identity, randx, Nb, Nb);
+        maxNorm = fmax(maxNorm, (Dense(QiTQj) - Id).norm());
+      }
+      else {
+        maxNorm = fmax(maxNorm, QiTQj.norm());
+      }
+    }
+  }
+  print("Orthogonality (maximum off-diagonal blocks norm)", maxNorm, false);
   return 0;
 }
 
