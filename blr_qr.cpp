@@ -13,7 +13,7 @@
 using namespace hicma;
 
 int main(int argc, char** argv) {
-  int N = 256;
+  int N = 128;
   int Nb = 16;
   int Nc = N / Nb;
   int rank = 8;
@@ -99,30 +99,13 @@ int main(int argc, char** argv) {
   norm = _A.norm();
   print("Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
-  //Orthogonality checking (max norm)
-  double maxNorm = 0.0;
-  for(int i=0; i<Nc; i++) {
-    for(int j=0; j<Nc; j++) {
-      Hierarchical Qi(Nc, 1);
-      Hierarchical Qj(Nc, 1);
-      for(int k=0; k<Nc; k++) {
-        Qi(k, 0) = Q(k, i);
-        Qj(k, 0) = Q(k, j);
-      }
-      Qi.transpose();
-      Hierarchical QiTQj(1, 1);
-      QiTQj(0, 0) = Dense(Nb, Nb);
-      QiTQj.gemm(Qi, Qj, 1, 1);
-      if(i == j) {
-        Dense Id(identity, randx, Nb, Nb);
-        maxNorm = fmax(maxNorm, (Dense(QiTQj) - Id).norm());
-      }
-      else {
-        maxNorm = fmax(maxNorm, QiTQj.norm());
-      }
-    }
-  }
-  print("Orthogonality (maximum off-diagonal blocks norm)", maxNorm, false);
+  Dense DQ(Q);
+  Dense QtQ(DQ.dim[1], DQ.dim[1]);
+  QtQ.gemm(DQ, DQ, CblasTrans, CblasNoTrans, 1, 1);
+  Dense Id(identity, randx, QtQ.dim[0], QtQ.dim[1]);
+  diff = (QtQ - Id).norm();
+  norm = Id.norm();
+  print("Rel. L2 Orthogonality", std::sqrt(diff/norm), false);
   return 0;
 }
 

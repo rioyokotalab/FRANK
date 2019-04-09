@@ -58,8 +58,6 @@ int main(int argc, char** argv) {
   Hierarchical Q(zeros, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   Hierarchical R(zeros, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   Hierarchical QR(zeros, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
-  Hierarchical I(identity, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
-  Hierarchical QtQ(zeros, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   stop("Init matrix");
   printXML(A);
   admis = N / nleaf; // Full rank
@@ -83,12 +81,13 @@ int main(int argc, char** argv) {
   norm = D.norm();
   print("QR Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
-  Hierarchical Qt(Q);
-  Qt.transpose();
-  QtQ.gemm(Qt, Q, 1, 1);
-  diff = (Dense(QtQ) - Dense(I)).norm();
-  norm = I.norm();
-  print("Rel. Orthogonality", std::sqrt(diff/norm), false);
+  Dense DQ(Q);
+  Dense QtQ(DQ.dim[1], DQ.dim[1]);
+  QtQ.gemm(DQ, DQ, CblasTrans, CblasNoTrans, 1, 1);
+  Dense Id(identity, randx, QtQ.dim[0], QtQ.dim[1]);
+  diff = (QtQ - Id).norm();
+  norm = Id.norm();
+  print("Rel. L2 Orthogonality", std::sqrt(diff/norm), false);
   return 0;
 }
 
