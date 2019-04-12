@@ -50,7 +50,7 @@ blr_qr: blr_qr.o batch.o $(SOURCES)
 
 h_qr: h_qr.o batch.o $(SOURCES)
 	$(CXX) $? -lblas -llapacke
-	valgrind ./a.out 3
+	valgrind ./a.out 6
 
 rsvd_gpu: rsvd_gpu.o batch_gpu.o $(SOURCES)
 	$(CXX) $? -L/home/rioyokota/magma-2.3.0/lib -lm -lkblas-gpu -lmagma -lcusparse -lcublas -lcudart -lblas -llapacke -lpthread -lm -ldl -lstdc++ -lmkl_intel_lp64 -lmkl_sequential -lmkl_core
