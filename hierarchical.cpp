@@ -336,8 +336,10 @@ namespace hicma {
   }
 
   void Hierarchical::gemm(const Dense& A, const Dense& B, const double& alpha, const double& beta) {
-    print_undefined(__func__, A.type(), B.type(), this->type());
-    abort();
+    assert(A.dim[1] == B.dim[0]);
+    const Hierarchical& AH = Hierarchical(A, dim[0], dim[1]);
+    const Hierarchical& BH = Hierarchical(B, dim[1], dim[1]);
+    gemm(AH, BH, alpha, beta);
   }
 
   void Hierarchical::gemm(const Dense& A, const LowRank& B, const double& alpha, const double& beta) {
