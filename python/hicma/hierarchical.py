@@ -24,7 +24,14 @@ class Hierarchical(Node):
             j_abs=0,
             level=0
     ):
-        if isinstance(A, Dense):
+        if A is None:
+            super().__init__(i_abs, j_abs, level)
+            if ni is None:
+                self.dim = [0, 0]
+            else:
+                self.dim = [ni, nj or 1]
+            self.data = [None] * (self.dim[0] * self.dim[1])
+        elif isinstance(A, Dense):
             super().__init__(A.i_abs, A.j_abs, A.level)
             self.dim = [ni_level, nj_level]
             self.data = [None] * (self.dim[0] * self.dim[1])
