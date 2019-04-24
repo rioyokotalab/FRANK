@@ -65,10 +65,8 @@ class Dense(Node):
         elif A is None:
             super().__init__(i_abs, j_abs, level)
             assert isinstance(ni, int) or isinstance(nj, int)
-            if ni is None:
-                ni = 1
-            elif nj is None:
-                nj = 1
+            ni = ni or 1
+            nj = nj or 1
             self.dim = [ni, nj]
             self.data = np.zeros((ni, nj))
         else:

@@ -16,6 +16,7 @@ int main(int argc, char** argv) {
   int Nb = 16;
   int Nc = N / Nb;
   int rank = 8;
+  int admis = 1;
   std::vector<double> randx(N);
   Hierarchical x(Nc);
   Hierarchical b(Nc);
@@ -40,7 +41,7 @@ int main(int argc, char** argv) {
     for (int jc=0; jc<Nc; jc++) {
       Dense Aij(laplace1d, randx, Nb, Nb, Nb*ic, Nb*jc);
       D(ic,jc) = Aij;
-      if (std::abs(ic - jc) <= 1) {
+      if (std::abs(ic - jc) <= admis) {
         A(ic,jc) = Aij;
       }
       else {
