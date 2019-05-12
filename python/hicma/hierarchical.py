@@ -97,13 +97,13 @@ class Hierarchical(Node):
             # Recursively create subblocks
             for i in range(0, self.dim[0]):
                 for j in range(0, self.dim[1]):
-                    ni_child = ni / self.dim[0];
+                    ni_child = ni / self.dim[0]
                     if i == self.dim[0] - 1:
-                        ni_child = ni - (ni/self.dim[0]) * (self.dim[0]-1);
+                        ni_child = ni - (ni/self.dim[0]) * (self.dim[0]-1)
                     ni_child = int(ni_child)
-                    nj_child = nj / self.dim[1];
+                    nj_child = nj / self.dim[1]
                     if j == self.dim[1] - 1:
-                        nj_child = nj - (nj/self.dim[1]) * (self.dim[1]-1);
+                        nj_child = nj - (nj/self.dim[1]) * (self.dim[1]-1)
                     nj_child = int(nj_child)
                     i_begin_child = i_begin + i*int(ni / self.dim[0])
                     j_begin_child = j_begin + j*int(nj / self.dim[1])

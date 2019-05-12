@@ -250,10 +250,8 @@ class Dense(Node):
             for j in range(self.dim[1]):
                 if j >= i:
                     R[i, j] = self[i, j]
-        pass
 
     def svd(self, U, S, V):
-        work = Dense(ni=self.dim[1]-1, nj=1)
         x_gesvd = sl.get_lapack_funcs('gesvd', (self.data,))
         U.data, Sdiag, V.data, _ = x_gesvd(
             self.data, overwrite_a=False, compute_uv=True, full_matrices=True)
