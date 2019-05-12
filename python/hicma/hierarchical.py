@@ -242,7 +242,7 @@ class Hierarchical(Node):
                     for j in range(self.dim[1]):
                         self.gemm_row(AH, B, i, j, 0, AH.dim[1], alpha, beta)
             else:
-                raise NotImplemented
+                raise NotImplementedError
         elif isinstance(A, LowRank):
             if isinstance(B, LowRank):
                 AH = Hierarchical(A, ni_level=self.dim[0], nj_level=self.dim[0])
@@ -256,7 +256,7 @@ class Hierarchical(Node):
                     for j in range(self.dim[1]):
                         self.gemm_row(AH, B, i, j, 0, AH.dim[1], alpha, beta)
             else:
-                raise NotImplemented
+                raise NotImplementedError
         elif isinstance(A, Hierarchical):
             if isinstance(B, Dense):
                 BH = Hierarchical(B, ni_level=A.dim[1], nj_level=self.dim[1])
@@ -275,9 +275,9 @@ class Hierarchical(Node):
                     for j in range(self.dim[1]):
                         self.gemm_row(A, B, i, j, 0, A.dim[1], alpha, beta)
             else:
-                raise NotImplemented
+                raise NotImplementedError
         else:
-            raise NotImplemented
+            raise NotImplementedError
 
     def gemm_row(self, A, B, i, j, k_min, k_max, alpha, beta):
         rank = -1
