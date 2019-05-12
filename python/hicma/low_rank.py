@@ -2,9 +2,9 @@
 import random
 import numpy as np
 
-from hicma.node import Node
 import hicma.dense as HD
 import hicma.hierarchical as HH
+from hicma.node import Node
 
 
 class LowRank(Node):
