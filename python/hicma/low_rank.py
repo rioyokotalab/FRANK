@@ -145,7 +145,7 @@ class LowRank(Node):
                 H.trsm(A, uplo)
                 self.V = HD.Dense(H)
         else:
-            return NotImplemented
+            raise NotImplementedError
 
     def gemm(self, A, B, alpha=-1, beta=1):
         if isinstance(A, HD.Dense):
@@ -154,7 +154,7 @@ class LowRank(Node):
                 C.U.gemm(A, B.U, alpha, 0)
                 self += C
             else:
-                return NotImplemented
+                raise NotImplementedError
         elif isinstance(A, LowRank):
             if isinstance(B, HD.Dense):
                 C = LowRank(A)
@@ -170,6 +170,6 @@ class LowRank(Node):
                 C.S.gemm(SxVxU, B.S, alpha, 0)
                 self += C
             else:
-                return NotImplemented
+                raise NotImplementedError
         else:
-            return NotImplemented
+            raise NotImplementedError
