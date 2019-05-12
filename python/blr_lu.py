@@ -1,9 +1,9 @@
 import numpy as np
 import sys
 
-from hicma.hierarchical import Hierarchical
 from hicma.dense import Dense
 from hicma.low_rank import LowRank
+from hicma.hierarchical import Hierarchical
 from hicma.functions import (
     laplace1d,
     rand_data,
