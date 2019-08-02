@@ -44,13 +44,25 @@ block_qr: block_qr.o batch.o $(SOURCES)
 	$(CXX) $? -lblas -llapacke
 	valgrind ./a.out
 
+tiled_qr: tiled_qr.o batch.o $(SOURCES)
+	$(CXX) $? -lblas -llapacke
+	valgrind --track-origins=yes ./a.out
+
 blr_qr: blr_qr.o batch.o $(SOURCES)
 	$(CXX) $? -lblas -llapacke
 	valgrind ./a.out
 
+tlr_qr: tlr_qr.o batch.o $(SOURCES)
+	$(CXX) $? -lblas -llapacke
+	./a.out
+
 h_qr: h_qr.o batch.o $(SOURCES)
 	$(CXX) $? -lblas -llapacke
 	valgrind ./a.out 6
+
+htl_qr: htl_qr.o batch.o $(SOURCES)
+	$(CXX) $? -lblas -llapacke
+	./a.out 1
 
 rsvd_gpu: rsvd_gpu.o batch_gpu.o $(SOURCES)
 	$(CXX) $? -L/home/rioyokota/magma-2.3.0/lib -lm -lkblas-gpu -lmagma -lcusparse -lcublas -lcudart -lblas -llapacke -lpthread -lm -ldl -lstdc++ -lmkl_intel_lp64 -lmkl_sequential -lmkl_core
