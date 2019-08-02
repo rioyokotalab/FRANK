@@ -130,8 +130,6 @@ namespace hicma {
 
     void svd(Dense& S);
 
-    void geqrt2(Dense& T);
-
     void geqrt(Dense& T) override;
 
     void larfb(const Dense& Y, const Dense& T, const bool trans=false) override;
