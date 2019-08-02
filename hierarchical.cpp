@@ -256,14 +256,14 @@ namespace hicma {
   }
 
   void Hierarchical::transpose() {
-    Hierarchical Tr(dim[1], dim[0]);
+    Hierarchical C(*this);
+    std::swap(dim[0], dim[1]);
     for(int i=0; i<dim[0]; i++) {
       for(int j=0; j<dim[1]; j++) {
+        (*this)(i, j) = std::move(C(j, i));
         (*this)(i, j).transpose();
-        Tr(j, i) = (*this)(i, j);
       }
     }
-    swap(*this, Tr);
   }
 
   void Hierarchical::getrf() {
@@ -618,4 +618,132 @@ namespace hicma {
       }
     }
   }
+
+  void Hierarchical::geqrt(Hierarchical& T) {
+    for(int k = 0; k < dim[1]; k++) {
+      (*this)(k, k).geqrt(T(k, k));
+      for(int j = k+1; j < dim[1]; j++) {
+        (*this)(k, j).larfb((*this)(k, k), T(k, k), true);
+      }
+      int dim0 = -1;
+      int dim1 = -1;
+      if((*this)(k, k).is(HICMA_HIERARCHICAL)) {
+        Hierarchical Akk(static_cast<Hierarchical&>(*(*this)(k, k).ptr));
+        dim0 = Akk.dim[0];
+        dim1 = Akk.dim[1];
+      }
+      for(int i = k+1; i < dim[0]; i++) {
+        if((*this)(k, k).is(HICMA_HIERARCHICAL)) {
+          if((*this)(i, k).is(HICMA_DENSE))
+            (*this)(i, k) = Hierarchical(static_cast<Dense&>(*(*this)(i, k).ptr), dim0, dim1);
+          if(T(i, k).is(HICMA_DENSE))
+            T(i, k) = Hierarchical(static_cast<Dense&>(*T(i, k).ptr), dim0, dim1);
+        }
+        (*this)(i, k).tpqrt((*this)(k, k), T(i, k));
+        for(int j = k+1; j < dim[1]; j++) {
+          (*this)(i, j).tpmqrt((*this)(k, j), (*this)(i, k), T(i, k), true);
+        }
+      }
+    }
+  }
+
+  void Hierarchical::larfb(const Dense& Y, const Dense& T, const bool trans) {
+    Dense _Y(Y);
+    for(int i = 0; i < _Y.dim[0]; i++) {
+      for(int j = i; j < _Y.dim[1]; j++) {
+        if(i == j) _Y(i, j) = 1.0;
+        else _Y(i, j) = 0.0;
+      }
+    }
+    Dense YT(_Y.dim[0], T.dim[1]);
+    YT.gemm(_Y, T, CblasNoTrans, trans ? CblasTrans : CblasNoTrans, 1, 1);
+    Dense YTYt(YT.dim[0], _Y.dim[0]);
+    YTYt.gemm(YT, _Y, CblasNoTrans, CblasTrans, 1, 1);
+    Hierarchical C(*this);
+    (*this).gemm(YTYt, C, -1, 1);
+  }
+
+  void Hierarchical::larfb(const Hierarchical& Y, const Hierarchical& T, const bool trans) {
+    if(trans) {
+      for(int k = 0; k < dim[1]; k++) {
+        for(int j = k; j < dim[1]; j++) {
+          (*this)(k, j).larfb(Y(k, k), T(k, k), trans);
+        }
+        for(int i = k+1; i < dim[0]; i++) {
+          for(int j = k; j < dim[1]; j++) {
+            (*this)(i, j).tpmqrt((*this)(k, j), Y(i, k), T(i, k), trans);
+          }
+        }
+      }
+    }
+    else {
+      for(int k = dim[1]-1; k >= 0; k--) {
+        for(int i = dim[0]-1; i > k; i--) {
+          for(int j = k; j < dim[1]; j++) {
+            (*this)(i, j).tpmqrt((*this)(k, j), Y(i, k), T(i, k), trans);
+          }
+        }
+        for(int j = k; j < dim[1]; j++) {
+          (*this)(k, j).larfb(Y(k, k), T(k, k), trans);
+        }
+      }
+    }
+  }
+
+  void Hierarchical::tpqrt(Dense& A, Dense& T) {
+    print_undefined(__func__, A.type(), T.type(), this->type());
+    abort();
+  }
+
+  void Hierarchical::tpqrt(Hierarchical& A, Hierarchical& T) {
+    for(int i = 0; i < dim[0]; i++) {
+      for(int j = 0; j < dim[1]; j++) {
+        (*this)(i, j).tpqrt(A(j, j), T(i, j));
+        for(int k = j+1; k < dim[1]; k++) {
+          (*this)(i, k).tpmqrt(A(j, k), (*this)(i, j), T(i, j), true);
+        }
+      }
+    }
+  }
+
+  void Hierarchical::tpmqrt(Dense& B, const Dense& Y, const Dense& T, const bool trans) {
+    Dense C(B);
+    Dense Yt(Y);
+    Yt.transpose();
+    C.gemm(Yt, *this, 1, 1); // C = B + Yt.A
+    Dense Tt(T);
+    if(trans) Tt.transpose();
+    B.gemm(Tt, C, -1, 1); // B = B - (T or Tt)*C
+    Dense YTt(Y.dim[0], Tt.dim[1]);
+    YTt.gemm(Y, Tt, 1, 1);
+    (*this).gemm(YTt, C, -1, 1); // A = A - Y*(T or Tt)*C
+  }
+
+  void Hierarchical::tpmqrt(Dense& B, const Hierarchical& Y, const Hierarchical& T, const bool trans) {
+    Hierarchical HB(B, dim[0], dim[1]);
+    (*this).tpmqrt(HB, Y, T, trans);
+    B = Dense(HB);
+  }
+
+  void Hierarchical::tpmqrt(Hierarchical& B, const Hierarchical& Y, const Hierarchical& T, const bool trans) {
+    if(trans) {
+      for(int i = 0; i < dim[0]; i++) {
+        for(int j = 0; j < dim[1]; j++) {
+          for(int k = 0; k < dim[1]; k++) {
+            (*this)(i, k).tpmqrt(B(j, k), Y(i, j), T(i, j), trans);
+          }
+        }
+      }
+    }
+    else {
+      for(int i = dim[0]-1; i >= 0; i--) {
+        for(int j = dim[1]-1; j >= 0; j--) {
+          for(int k = dim[1]-1; k >= 0; k--) {
+            (*this)(i, k).tpmqrt(B(j, k), Y(i, j), T(i, j), trans);
+          }
+        }
+      }
+    }
+  }
+
 }

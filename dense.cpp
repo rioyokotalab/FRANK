@@ -417,4 +417,126 @@ namespace hicma {
                    &Sdiag[0], &U[0], dim[0], &V[0], dim[1], &work[0]);
     stop("-DGESVD",false);
   }
+
+  void Dense::geqrt(Dense& T) {
+    assert(T.dim[0] >= dim[1]);
+    LAPACKE_dgeqrt(LAPACK_ROW_MAJOR, dim[0], dim[1], dim[1], &data[0], dim[1], &T[0], T.dim[1]);
+  }
+
+  void Dense::geqrt2(Dense &T) {
+    LAPACKE_dgeqrt2(LAPACK_ROW_MAJOR, dim[0], dim[1], &data[0], dim[1], &T[0], T.dim[1]);
+  }
+
+  void Dense::larfb(const Dense& Y, const Dense& T, const bool trans) {
+    LAPACKE_dlarfb(LAPACK_ROW_MAJOR, 'L', (trans ? 'T' : 'N'), 'F', 'C', dim[0], dim[1], T.dim[0], &Y[0], Y.dim[1], &T[0], T.dim[1], &data[0], dim[1]);
+  }
+
+  void Dense::larfb(const Hierarchical& Y, const Hierarchical& T, const bool trans) {
+    Hierarchical C(*this, Y.dim[0], Y.dim[1]);
+    C.larfb(Y, T, trans);
+    *this = Dense(C);
+  }
+
+  void Dense::tpqrt(Dense& A, Dense& T) {
+    LAPACKE_dtpqrt(LAPACK_ROW_MAJOR, dim[0], dim[1], 0, T.dim[1], &A[0], A.dim[1], &data[0], dim[1], &T[0], T.dim[1]);
+  }
+
+  void Dense::tpqrt(Hierarchical& A, Dense& T) {
+    print_undefined(__func__, A.type(), T.type(), this->type());
+    abort();
+  }
+
+  void Dense::tpqrt(Hierarchical& A, Hierarchical& T) {
+    print_undefined(__func__, A.type(), T.type(), this->type());
+    abort();
+  }
+
+  void Dense::tpmqrt(Dense& B, const Dense& Y, const Dense &T, const bool trans) {
+    LAPACKE_dtpmqrt(LAPACK_ROW_MAJOR, 'L', (trans ? 'T': 'N'), dim[0], dim[1], Y.dim[1], 0, T.dim[1], &Y[0], Y.dim[1], &T[0], T.dim[1], &B[0], B.dim[1], &data[0], dim[1]);
+  }
+
+  void Dense::tpmqrt(Dense& B, const LowRank& Y, const Dense& T, const bool trans) {
+    Dense C(B);
+    LowRank Yt(Y);
+    Yt.transpose();
+    C.gemm(Yt, *this, 1, 1); // C = B + Yt.A
+    Dense Tt(T);
+    if(trans) Tt.transpose();
+    B.gemm(Tt, C, -1, 1); // B = B - (T or Tt)*C
+    Dense YTt(Y.dim[0], Tt.dim[1]);
+    YTt.gemm(Y, Tt, 1, 0);
+    (*this).gemm(YTt, C, -1, 1); // A = A - Y*(T or Tt)*C
+  }
+
+  void Dense::tpmqrt(Dense& B, const LowRank& Y, const LowRank& T, const bool trans) {
+    Dense C(B);
+    LowRank Yt(Y);
+    Yt.transpose();
+    C.gemm(Yt, *this, 1, 1); // C = B + Yt.A
+    LowRank Tt(T);
+    if(trans) Tt.transpose();
+    B.gemm(Tt, C, -1, 1); // B = B - (T or Tt)*C
+    Dense YTt(Y.dim[0], Tt.dim[1]);
+    YTt.gemm(Y, Tt, 1, 0);
+    (*this).gemm(YTt, C, -1, 1); // A = A - Y*(T or Tt)*C
+  }
+
+  void Dense::tpmqrt(LowRank& B, const Dense& Y, const Dense& T, const bool trans) {
+    LowRank C(B);
+    Dense Yt(Y);
+    Yt.transpose();
+    C.gemm(Yt, *this, 1, 1); // C = B + Yt.A
+    Dense Tt(T);
+    if(trans) Tt.transpose();
+    B.gemm(Tt, C, -1, 1); // B = B - (T or Tt)*C
+    Dense YTt(Y.dim[0], Tt.dim[1]);
+    YTt.gemm(Y, Tt, 1, 0);
+    (*this).gemm(YTt, C, -1, 1); // A = A - Y*(T or Tt)*C
+  }
+
+  void Dense::tpmqrt(LowRank& B, const LowRank& Y, const Dense &T, const bool trans) {
+    LowRank C(B);
+    LowRank Yt(Y);
+    Yt.transpose();
+    C.gemm(Yt, *this, 1, 1); // C = B + Yt.A
+    Dense Tt(T);
+    if(trans) Tt.transpose();
+    B.gemm(Tt, C, -1, 1); // B = B - (T or Tt)*C
+    Dense YTt(Y.dim[0], Tt.dim[1]);
+    YTt.gemm(Y, Tt, 1, 0);
+    (*this).gemm(YTt, C, -1, 1); // A = A - Y*(T or Tt)*C
+  }
+
+  void Dense::tpmqrt(LowRank& B, const LowRank& Y, const LowRank& T, const bool trans) {
+    LowRank C(B);
+    LowRank Yt(Y);
+    Yt.transpose();
+    C.gemm(Yt, *this, 1, 1); // C = B + Yt.A
+    LowRank Tt(T);
+    if(trans) Tt.transpose();
+    B.gemm(Tt, C, -1, 1); // B = B - (T or Tt)*C
+    Dense YTt(Y.dim[0], Tt.dim[1]);
+    YTt.gemm(Y, Tt, 1, 0);
+    (*this).gemm(YTt, C, -1, 1); // A = A - Y*(T or Tt)*C
+  }
+
+  void Dense::tpmqrt(Hierarchical& B, const Dense& Y, const Dense& T, const bool trans) {
+    Hierarchical C(B);
+    Dense Yt(Y);
+    Yt.transpose();
+    C.gemm(Yt, *this, 1, 1); // C = B + Yt.A
+    Dense Tt(T);
+    if(trans) Tt.transpose();
+    B.gemm(Tt, C, -1, 1); // B = B - (T or Tt)*C
+    Dense YTt(Y.dim[0], Tt.dim[1]);
+    YTt.gemm(Y, Tt, 1, 0);
+    (*this).gemm(YTt, C, -1, 1); // A = A - Y*(T or Tt)*C
+  }
+
+  void Dense::tpmqrt(Hierarchical& B, const Hierarchical& Y, const Hierarchical& T, const bool trans) {
+    Hierarchical A(*this, B.dim[0], B.dim[1]);
+    A.tpmqrt(B, Y, T, trans);
+    *this = Dense(A);
+  }
+
 }

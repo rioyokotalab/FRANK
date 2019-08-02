@@ -2,6 +2,7 @@
 #include "low_rank.h"
 #include "hierarchical.h"
 #include "print.h"
+#include "functions.h"
 
 #include <cassert>
 #include <iostream>
@@ -105,8 +106,27 @@ namespace hicma {
   const LowRank& LowRank::operator+=(const LowRank& A) {
     assert(dim[0]==A.dim[0] && dim[1]==A.dim[1]);
     if (rank+A.rank >= dim[0]) {
+      //Before recompression, observe singular value
+      // Dense TA(Dense(*this) + Dense(A));
+      // Dense Sdiag(std::min(TA.dim[0], TA.dim[1]), 1);
+      // TA.svd(Sdiag);
+      // std::cout <<"Singular value before recompression to rank " <<rank <<std::endl;
+      // Sdiag.print();
+
       *this = LowRank(Dense(*this) + Dense(A), rank);
+      // After recompression
+      // std::cout <<"Singular value after recompression to rank " <<rank <<std::endl;
+      // for(int i = 0; i < std::min(S.dim[0], S.dim[1]); i++) {
+      //   std::cout <<S(i, i) <<std::endl;
+      // }
+      // std::cout <<"Decay rate" <<std::endl;
+      // for(int i = 0; i < std::min(S.dim[0], S.dim[1]); i++) {
+      //   if(i == 0) std::cout <<S(i, i);
+      //   else std::cout <<S(i, i)/S(0, 0);
+      //   std::cout <<std::endl;
+      // }
     } else {
+      // std::cout <<"No recompression" <<std::endl;
       LowRank B(dim[0], dim[1], rank+A.rank, i_abs, j_abs, level);
       B.mergeU(*this, A);
       B.mergeS(*this, A);
@@ -140,9 +160,11 @@ namespace hicma {
   }
 
   void LowRank::transpose() {
-    std::swap(dim[0], dim[1]);
+    using std::swap;
     U.transpose();
+    S.transpose();
     V.transpose();
+    swap(dim[0], dim[1]);
     swap(U, V);
   }
 
@@ -276,6 +298,111 @@ namespace hicma {
     Dense C(*this);
     C.gemm(A, B, alpha, beta);
     *this = LowRank(C, rank);
+  }
+
+  void LowRank::larfb(const Dense& Y, const Dense& T, const bool trans) {
+    U.larfb(Y, T, trans);
+  }
+
+  void LowRank::tpqrt(Dense& A, Dense& T) {
+    Dense _V(V);
+    V.gemm(S, _V, CblasNoTrans, CblasNoTrans, 1, 0);
+    for(int i = 0; i < std::min(S.dim[0], S.dim[1]); i++) S(i, i) = 1.0;
+    //Check orthogonality of U
+    std::vector<double> randx;
+    Dense Id(identity, randx, U.dim[1], U.dim[1]);
+    Dense UtU(U.dim[1], U.dim[1]);
+    UtU.gemm(U, U, CblasTrans, CblasNoTrans, 1, 0);
+    double diff = (UtU - Id).norm();
+    double norm = Id.norm();
+    std::cout <<"Orthogonality of U before tpqrt: " <<std::sqrt(diff/norm) <<std::endl;
+    V.tpqrt(A, T);
+  }
+
+  void LowRank::tpqrt(Dense& A, LowRank& T) {
+    Dense C(*this);
+    Dense D(T);
+    C.tpqrt(A, D);
+    T = LowRank(D, T.rank);
+    *this = LowRank(C, rank);
+  }
+
+  void LowRank::tpmqrt(Dense& B, const Dense& Y, const Dense& T, const bool trans) {
+    Dense C(B);
+    Dense Yt(Y);
+    Yt.transpose();
+    C.gemm(Yt, *this, 1, 1); // C = B + Yt.A
+    Dense Tt(T);
+    if(trans) Tt.transpose();
+    B.gemm(Tt, C, -1, 1); // B = B - (T or Tt)*C
+    Dense YTt(Y.dim[0], Tt.dim[1]);
+    YTt.gemm(Y, Tt, 1, 0);
+    (*this).gemm(YTt, C, -1, 1); // A = A - Y*(T or Tt)*C
+  }
+
+  void LowRank::tpmqrt(Dense& B, const LowRank& Y, const Dense& T, const bool trans) {
+    Dense C(B);
+    LowRank Yt(Y);
+    Yt.transpose();
+    C.gemm(Yt, *this, 1, 1); // C = B + Yt.A
+    Dense Tt(T);
+    if(trans) Tt.transpose();
+    B.gemm(Tt, C, -1, 1); // B = B - (T or Tt)*C
+    Dense YTt(Y.dim[0], Tt.dim[1]);
+    YTt.gemm(Y, Tt, 1, 0);
+    (*this).gemm(YTt, C, -1, 1); // A = A - Y*(T or Tt)*C
+  }
+
+  void LowRank::tpmqrt(Dense& B, const LowRank& Y, const LowRank& T, const bool trans) {
+    Dense C(B);
+    LowRank Yt(Y);
+    Yt.transpose();
+    C.gemm(Yt, *this, 1, 1); // C = B + Yt.A
+    LowRank Tt(T);
+    if(trans) Tt.transpose();
+    B.gemm(Tt, C, -1, 1); // B = B - (T or Tt)*C
+    Dense YTt(Y.dim[0], Tt.dim[1]);
+    YTt.gemm(Y, Tt, 1, 0);
+    (*this).gemm(YTt, C, -1, 1); // A = A - Y*(T or Tt)*C
+  }
+
+  void LowRank::tpmqrt(LowRank& B, const Dense& Y, const Dense& T, const bool trans) {
+    LowRank C(B);
+    Dense Yt(Y);
+    Yt.transpose();
+    C.gemm(Yt, *this, 1, 1); // C = B + Yt.A
+    Dense Tt(T);
+    if(trans) Tt.transpose();
+    B.gemm(Tt, C, -1, 1); // B = B - (T or Tt)*C
+    Dense YTt(Y.dim[0], Tt.dim[1]);
+    YTt.gemm(Y, Tt, 1, 0);
+    (*this).gemm(YTt, C, -1, 1); // A = A - Y*(T or Tt)*C
+  }
+
+  void LowRank::tpmqrt(LowRank& B, const LowRank& Y, const Dense& T, const bool trans) {
+    LowRank C(B);
+    LowRank Yt(Y);
+    Yt.transpose();
+    C.gemm(Yt, *this, 1, 1); // C = B + Yt.A
+    Dense Tt(T);
+    if(trans) Tt.transpose();
+    B.gemm(Tt, C, -1, 1); // B = B - (T or Tt)*C
+    Dense YTt(Y.dim[0], Tt.dim[1]);
+    YTt.gemm(Y, Tt, 1, 0);
+    (*this).gemm(YTt, C, -1, 1); // A = A - Y*(T or Tt)*C
+  }
+
+  void LowRank::tpmqrt(LowRank& B, const LowRank& Y, const LowRank& T, const bool trans) {
+    LowRank C(B);
+    LowRank Yt(Y);
+    Yt.transpose();
+    C.gemm(Yt, *this, 1, 1); // C = B + Yt.A
+    LowRank Tt(T);
+    if(trans) Tt.transpose();
+    B.gemm(Tt, C, -1, 1); // B = B - (T or Tt)*C
+    Dense YTt(Y.dim[0], Tt.dim[1]);
+    YTt.gemm(Y, Tt, 1, 0);
+    (*this).gemm(YTt, C, -1, 1); // A = A - Y*(T or Tt)*C
   }
 
 }

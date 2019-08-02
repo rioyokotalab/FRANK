@@ -74,6 +74,25 @@ namespace hicma {
     void gemm(const Hierarchical& A, const LowRank& B, const double& alpha=-1, const double& beta=1) override;
 
     void gemm(const Hierarchical& A, const Hierarchical& B, const double& alpha=-1, const double& beta=1) override;
+
+    void larfb(const Dense& Y, const Dense& T, const bool trans=false) override;
+
+    void tpqrt(Dense& A, Dense& T) override;
+
+    void tpqrt(Dense& A, LowRank& T) override;
+
+    void tpmqrt(Dense& B, const Dense& Y, const Dense& T, const bool trans=false) override;
+
+    void tpmqrt(Dense& B, const LowRank& Y, const Dense& T, const bool trans=false) override;
+
+    void tpmqrt(Dense& B, const LowRank& Y, const LowRank& T, const bool trans=false) override;
+
+    void tpmqrt(LowRank& B, const Dense& Y, const Dense& T, const bool trans=false) override;
+
+    void tpmqrt(LowRank& B, const LowRank& Y, const Dense& T, const bool trans=false) override;
+
+    void tpmqrt(LowRank& B, const LowRank& Y, const LowRank& T, const bool trans=false) override;
+
   };
 }
 #endif

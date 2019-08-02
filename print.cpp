@@ -95,6 +95,10 @@ namespace hicma {
   template void print<float>(std::string s, float v, bool fixed=true);
   template void print<double>(std::string s, double v, bool fixed=true);
 
+  void print_undefined(std::string func, std::string A_type, std::string B_type, std::string C_type, std::string D_type) {
+    std::cerr << D_type << "." << func << "(" << A_type << "," << B_type <<"," <<C_type << ") undefined." << std::endl;
+  }
+
   void print_undefined(std::string func, std::string A_type, std::string B_type, std::string C_type) {
     std::cerr << C_type << "." << func << "(" << A_type << "," << B_type << ") undefined." << std::endl;
   }

@@ -38,6 +38,14 @@ namespace hicma {
 
     void gemm(const Any& A, const Any& B, const double& alpha=-1, const double& beta=1);
 
+    void geqrt(Any& T);
+
+    void larfb(const Any& Y, const Any& T, const bool trans=false);
+
+    void tpqrt(Any& A, Any& T);
+
+    void tpmqrt(Any& B, const Any& Y, const Any& T, const bool trans=false);
+
   };
 }
 

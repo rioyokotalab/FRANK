@@ -18,6 +18,8 @@ namespace hicma {
   template<typename T>
   void print(std::string s, T v, bool fixed=true);
 
+  void print_undefined(std::string func, std::string A_type, std::string B_type, std::string C_type, std::string D_type);
+
   void print_undefined(std::string func, std::string A_type, std::string B_type, std::string C_type);
 
   void print_undefined(std::string func, std::string A_type, std::string B_type);
