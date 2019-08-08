@@ -13,10 +13,9 @@
 using namespace hicma;
 
 int main(int argc, char** argv) {
-  int N = 8;
-  int Nb = 4;
+  int N = 256;
+  int Nb = 16;
   int Nc = N / Nb;
-  int Nbs = Nb;
   std::vector<double> randx(N);
   double diff, norm;
   Dense Id(identity, randx, N, N);
@@ -35,79 +34,57 @@ int main(int argc, char** argv) {
       T(ic, jc) = Tij;
     }
   }
-  Hierarchical _A(A);
+  Hierarchical ACpy(A);
   start("QR decomposition");
   for(int k = 0; k < Nc; k++) {
-    Dense Akk(A(k, k));
-    Dense Tkk(T(k, k));
-    Akk.geqrt(Tkk);
+    A(k, k).geqrt(T(k, k));
     for(int j = k+1; j < Nc; j++) {
-      Dense Akj(A(k, j));
-      Akj.larfb(Akk, Tkk, true);
-      A(k, j) = Akj;
+      A(k, j).larfb(A(k, k), T(k, k), true);
     }
-    T(k, k) = Tkk;
     for(int i = k+1; i < Nc; i++) {
-      Dense Aik(A(i, k));
-      Dense Tik(T(i, k));
-      Aik.tpqrt(Akk, Tik);
-      A(i, k) = Aik;
-      T(i, k) = Tik;
+      A(i, k).tpqrt(A(k, k), T(i, k));
       for(int j = k+1; j < Nc; j++) {
-        Dense Aij(A(i, j));
-        Dense Akj(A(k, j));
-        Aij.tpmqrt(Akj, Aik, Tik, true);
-        A(i, j) = Aij;
-        A(k, j) = Akj;
+        A(i, j).tpmqrt(A(k, j), A(i, k), T(i, k), true);
       }
     }
-    A(k, k) = Akk;
   }
   stop("QR decomposition");
-  //Take R from upper triangular part of A
-  Dense DA(A);
-  Dense DR(zeros, randx, N, N);
-  for(int i = 0; i < N; i++) {
-    for(int j = i; j < N; j++) {
-      DR(i, j) = DA(i, j);
+
+  //Apply Q^T to A to obtain R
+  Hierarchical R(ACpy);
+  for(int k = 0; k < Nc; k++) {
+    for(int j = k; j < Nc; j++) {
+      R(k, j).larfb(A(k, k), T(k, k), true);
     }
-  }
-  //Build Q
-  Dense _Q(identity, randx, N, N);
-  Hierarchical Q(_Q, Nc, Nc);
-  for(int k = Nc-1; k >= 0; k--) {
-    for(int i = Nc-1; i > k; i--) {
-      Dense Yik(A(i, k));
-      Dense Tik(T(i, k));
-      for(int j = Nc-1; j >= k; j--) {
-        Dense Qij(Q(i, j));
-        Dense Qkj(Q(k, j));
-        Qij.tpmqrt(Qkj, Yik, Tik, false);
-        Q(i, j) = Qij;
-        Q(k, j) = Qkj;
+    for(int i = k+1; i < Nc; i++) {
+      for(int j = k; j < Nc; j++) {
+        R(i, j).tpmqrt(R(k, j), A(i, k), T(i, k), true);
       }
     }
-    Dense Qkk(Q(k, k));
-    Dense Ykk(A(k, k));
-    Dense Tkk(T(k, k));
-    Qkk.larfb(Ykk, Tkk, false);
-    Q(k, k) = Qkk;
-    for(int j = k+1; j < Nc; j++) {
-      Dense Qkj(Q(k, j));
-      Qkj.larfb(Ykk, Tkk);
-      Q(k, j) = Qkj;
+  }
+  //Apply Q to Id to obtain Q
+  Hierarchical Q(Id, Nc, Nc);
+  for(int k = Nc-1; k >= 0; k--) {
+    for(int i = Nc-1; i > k; i--) {
+      for(int j = k; j < Nc; j++) {
+        Q(i, j).tpmqrt(Q(k, j), A(i, k), T(i, k), false);
+      }
+    }
+    for(int j = k; j < Nc; j++) {
+      Q(k, j).larfb(A(k, k), T(k, k), false);
     }
   }
   Dense DQ(Q);
+  Dense DR(R);
   Dense QR(N, N);
-  QR.gemm(DQ, DR, 1, 1);
-  diff = (Dense(_A) - QR).norm();
-  norm = _A.norm();
+  QR.gemm(DQ, DR, 1, 0);
+  diff = (Dense(ACpy) - QR).norm();
+  norm = ACpy.norm();
   print("Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
-  Dense QQt(N, N);
-  QQt.gemm(Q, Q, CblasNoTrans, CblasTrans, 1, 1);
-  diff = (QQt - Id).norm();
+  Dense QtQ(N, N);
+  QtQ.gemm(DQ, DQ, CblasTrans, CblasNoTrans, 1, 0);
+  diff = (QtQ - Id).norm();
   norm = Id.norm();
   print("Orthogonality of Q");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);

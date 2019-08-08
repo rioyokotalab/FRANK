@@ -46,7 +46,7 @@ block_qr: block_qr.o batch.o $(SOURCES)
 
 tiled_qr: tiled_qr.o batch.o $(SOURCES)
 	$(CXX) $? -lblas -llapacke
-	valgrind --track-origins=yes ./a.out
+	./a.out
 
 blr_qr: blr_qr.o batch.o $(SOURCES)
 	$(CXX) $? -lblas -llapacke

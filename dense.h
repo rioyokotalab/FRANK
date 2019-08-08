@@ -146,13 +146,9 @@ namespace hicma {
 
     void tpmqrt(Dense& B, const LowRank& Y, const Dense& T, const bool trans=false) override;
 
-    void tpmqrt(Dense& B, const LowRank& Y, const LowRank& T, const bool trans=false) override;
-
     void tpmqrt(LowRank& B, const Dense& Y, const Dense& T, const bool trans=false) override;
 
     void tpmqrt(LowRank& B, const LowRank& Y, const Dense &T, const bool trans=false) override;
-
-    void tpmqrt(LowRank& B, const LowRank& Y, const LowRank& T, const bool trans=false) override;
 
     void tpmqrt(Hierarchical& B, const Dense& Y, const Dense& T, const bool trans=false) override;
 
