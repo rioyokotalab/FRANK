@@ -74,8 +74,6 @@ namespace hicma {
 
   void Node::tpqrt(Dense& A, Dense& T) {};
 
-  void Node::tpqrt(Dense& A, LowRank& T) {};
-
   void Node::tpqrt(Hierarchical& A, Dense& T) {};
 
   void Node::tpqrt(Hierarchical& A, Hierarchical& T) {};
@@ -84,15 +82,11 @@ namespace hicma {
 
   void Node::tpmqrt(Dense& B, const LowRank& Y, const Dense& T, const bool trans) {};
 
-  void Node::tpmqrt(Dense& B, const LowRank& Y, const LowRank& T, const bool trans) {};
-
   void Node::tpmqrt(Dense& B, const Hierarchical& Y, const Hierarchical& T, const bool trans) {};
 
   void Node::tpmqrt(LowRank& B, const Dense& Y, const Dense& T, const bool trans) {};
 
   void Node::tpmqrt(LowRank& B, const LowRank& Y, const Dense& T, const bool trans) {};
-
-  void Node::tpmqrt(LowRank& B, const LowRank& Y, const LowRank& T, const bool trans) {};
 
   void Node::tpmqrt(Hierarchical& B, const Dense& Y, const Dense& T, const bool trans) {};
 

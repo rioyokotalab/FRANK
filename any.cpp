@@ -136,9 +136,6 @@ namespace hicma {
     if(A.is(HICMA_DENSE) && T.is(HICMA_DENSE)) {
       ptr->tpqrt(static_cast<Dense&>(*A.ptr), static_cast<Dense&>(*T.ptr));
     }
-    else if(A.is(HICMA_DENSE) && T.is(HICMA_LOWRANK)) {
-      ptr->tpqrt(static_cast<Dense&>(*A.ptr), static_cast<LowRank&>(*T.ptr));
-    }
     else if(A.is(HICMA_HIERARCHICAL) && T.is(HICMA_DENSE)) {
       ptr->tpqrt(static_cast<Hierarchical&>(*A.ptr), static_cast<Dense&>(*T.ptr));
     }
@@ -159,9 +156,6 @@ namespace hicma {
       else if(Y.is(HICMA_LOWRANK) && T.is(HICMA_DENSE)) {
         ptr->tpmqrt(static_cast<Dense&>(*B.ptr), static_cast<LowRank&>(*Y.ptr), static_cast<Dense&>(*T.ptr), trans);
       }
-      else if(Y.is(HICMA_LOWRANK) && T.is(HICMA_LOWRANK)) {
-        ptr->tpmqrt(static_cast<Dense&>(*B.ptr), static_cast<LowRank&>(*Y.ptr), static_cast<LowRank&>(*T.ptr), trans);
-      }
       else if(Y.is(HICMA_HIERARCHICAL) && T.is(HICMA_HIERARCHICAL)) {
         ptr->tpmqrt(static_cast<Dense&>(*B.ptr), static_cast<Hierarchical&>(*Y.ptr), static_cast<Hierarchical&>(*T.ptr), trans);
       }
@@ -176,9 +170,6 @@ namespace hicma {
       }
       else if(Y.is(HICMA_LOWRANK) && T.is(HICMA_DENSE)) {
         ptr->tpmqrt(static_cast<LowRank&>(*B.ptr), static_cast<LowRank&>(*Y.ptr), static_cast<Dense&>(*T.ptr), trans);
-      }
-      else if(Y.is(HICMA_LOWRANK) && T.is(HICMA_LOWRANK)) {
-        ptr->tpmqrt(static_cast<LowRank&>(*B.ptr), static_cast<LowRank&>(*Y.ptr), static_cast<LowRank&>(*T.ptr), trans);
       }
       else {
         std::cerr << "Invalid input for tpmqrt with LowRank upper rectangular block" << std::endl;

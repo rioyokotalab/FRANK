@@ -77,8 +77,6 @@ namespace hicma {
 
     virtual void tpqrt(Dense& A, Dense& T);
 
-    virtual void tpqrt(Dense& A, LowRank& T);
-
     virtual void tpqrt(Hierarchical& A, Dense& T);
 
     virtual void tpqrt(Hierarchical& A, Hierarchical& T);
@@ -87,15 +85,11 @@ namespace hicma {
 
     virtual void tpmqrt(Dense& B, const LowRank& Y, const Dense& T, const bool trans=false);
 
-    virtual void tpmqrt(Dense& B, const LowRank& Y, const LowRank& T, const bool trans=false);
-
     virtual void tpmqrt(Dense& B, const Hierarchical& Y, const Hierarchical& T, const bool trans=false);
 
     virtual void tpmqrt(LowRank& B, const Dense& Y, const Dense& T, const bool trans=false);
 
     virtual void tpmqrt(LowRank& B, const LowRank& Y, const Dense& T, const bool trans=false);
-
-    virtual void tpmqrt(LowRank& B, const LowRank& Y, const LowRank& T, const bool trans=false);
 
     virtual void tpmqrt(Hierarchical& B, const Dense& Y, const Dense& T, const bool trans=false);
 
