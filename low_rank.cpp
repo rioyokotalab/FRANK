@@ -301,9 +301,6 @@ namespace hicma {
   }
 
   void LowRank::larfb(const Dense& Y, const Dense& T, const bool trans) {
-    // Dense C(*this);
-    // C.larfb(Y, T, trans);
-    // *this = LowRank(C, rank);
     U.larfb(Y, T, trans);
   }
 
@@ -318,6 +315,7 @@ namespace hicma {
     Dense C(*this);
     C.tpmqrt(B, Y, T, trans);
     *this = LowRank(C, rank);
+
     // Dense C(B);
     // Dense Yt(Y);
     // Yt.transpose();
@@ -331,11 +329,14 @@ namespace hicma {
   }
 
   void LowRank::tpmqrt(Dense& B, const LowRank& Y, const Dense& T, const bool trans) {
+    //Weak admis
+    //Strong admis
     Dense C(*this);
     Dense UY(Y.U.dim[0], Y.V.dim[1]);
     UY.gemm(Y.U, Y.V, 1, 0);
     C.tpmqrt(B, UY, T, trans);
     *this = LowRank(C, rank);
+
     // Dense C(B);
     // LowRank Yt(Y);
     // Yt.transpose();
@@ -349,11 +350,13 @@ namespace hicma {
   }
 
   void LowRank::tpmqrt(LowRank& B, const Dense& Y, const Dense& T, const bool trans) {
+    //Strong admis
     Dense C(*this);
     Dense D(B);
     C.tpmqrt(D, Y, T, trans);
     B = LowRank(D, B.rank);
     *this = LowRank(C, rank);
+
     // LowRank C(B);
     // Dense Yt(Y);
     // Yt.transpose();
@@ -367,6 +370,7 @@ namespace hicma {
   }
 
   void LowRank::tpmqrt(LowRank& B, const LowRank& Y, const Dense& T, const bool trans) {
+    //Weak admis
     Dense C(*this);
     Dense D(B);
     Dense UY(Y.U.dim[0], Y.V.dim[1]);
@@ -374,10 +378,11 @@ namespace hicma {
     C.tpmqrt(D, UY, T, trans);
     B = LowRank(D, B.rank);
     *this = LowRank(C, rank);
+
     // LowRank C(B);
     // LowRank Yt(Y);
     // Yt.transpose();
-    // C.gemm(Yt, *this, 1, 1); // C = B + Yt.A
+    // C.gemm(Yt, *this, 1, 1); // C = B//  + Yt.A
     // Dense Tt(T);
     // if(trans) Tt.transpose();
     // B.gemm(Tt, C, -1, 1); // B = B - (T or Tt)*C
