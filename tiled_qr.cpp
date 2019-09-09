@@ -13,8 +13,8 @@
 using namespace hicma;
 
 int main(int argc, char** argv) {
-  int N = 256;
-  int Nb = 16;
+  int N = 12;
+  int Nb = 4;
   int Nc = N / Nb;
   std::vector<double> randx(N);
   double diff, norm;
@@ -50,16 +50,11 @@ int main(int argc, char** argv) {
   }
   stop("QR decomposition");
 
-  //Apply Q^T to A to obtain R
-  Hierarchical R(ACpy);
-  for(int k = 0; k < Nc; k++) {
-    for(int j = k; j < Nc; j++) {
-      R(k, j).larfb(A(k, k), T(k, k), true);
-    }
-    for(int i = k+1; i < Nc; i++) {
-      for(int j = k; j < Nc; j++) {
-        R(i, j).tpmqrt(R(k, j), A(i, k), T(i, k), true);
-      }
+  //Take upper triangular part of A as R
+  Dense DR(A);
+  for(int i = 0; i < DR.dim[0]; i++) {
+    for(int j = 0; j < i; j++) {
+      DR(i, j) = 0.0;
     }
   }
   //Apply Q to Id to obtain Q
@@ -74,8 +69,11 @@ int main(int argc, char** argv) {
       Q(k, j).larfb(A(k, k), T(k, k), false);
     }
   }
+  // print("A after");
+  // Dense(A).print();
   Dense DQ(Q);
-  Dense DR(R);
+  // print("R");
+  // DR.print();
   Dense QR(N, N);
   QR.gemm(DQ, DR, 1, 0);
   diff = (Dense(ACpy) - QR).norm();

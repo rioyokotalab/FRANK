@@ -14,10 +14,10 @@
 using namespace hicma;
 
 int main(int argc, char** argv) {
-  int N = 24;
-  int Nb = 8;
+  int N = 128;
+  int Nb = 32;
   int Nc = N / Nb;
-  int rank = 6;
+  int rank = 16;
   std::vector<double> randx(N);
   for(int i = 0; i < N; i++) {
     randx[i] = drand48();
@@ -51,7 +51,6 @@ int main(int argc, char** argv) {
 
   Dense Id(identity, randx, N, N);
   Dense Z(zeros, randx, N, N);
-  Hierarchical B(A);
   Hierarchical T(Z, Nc, Nc);
   print("Time");
   start("BLR QR decomposition");
@@ -68,19 +67,14 @@ int main(int argc, char** argv) {
     }
   }
   stop("BLR QR decomposition");
-  //Apply Q^T to A to obtain R
-  Hierarchical R(B);
-  for(int k = 0; k < Nc; k++) {
-    for(int j = k; j < Nc; j++) {
-      R(k, j).larfb(A(k, k), T(k, k), true);
-    }
-    for(int i = k+1; i < Nc; i++) {
-      for(int j = k; j < Nc; j++) {
-        R(i, j).tpmqrt(R(k, j), A(i, k), T(i, k), true);
-      }
+  //Build R: Take upper triangular part of A
+  Dense DR(A);
+  for(int i = 0; i < DR.dim[0]; i++) {
+    for(int j = 0; j < std::min(i, DR.dim[1]); j++) {
+      DR(i, j) = 0.0;
     }
   }
-  //Apply Q to Id to obtain Q
+  //Build Q: Apply Q to Id
   for(int k = Nc-1; k >= 0; k--) {
     for(int i = Nc-1; i > k; i--) {
       for(int j = k; j < Nc; j++) {
@@ -91,12 +85,11 @@ int main(int argc, char** argv) {
       Q(k, j).larfb(A(k, k), T(k, k), false);
     }
   }
-  Dense DR(R);
   Dense DQ(Q);
   Dense QR(N, N);
   QR.gemm(DQ, DR, 1, 0);
-  diff = (Dense(B) - QR).norm();
-  norm = B.norm();
+  diff = (Dense(D) - QR).norm();
+  norm = D.norm();
   print("Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
   Dense QtQ(N, N);
@@ -105,38 +98,6 @@ int main(int argc, char** argv) {
   norm = Id.norm();
   print("Orthogonality");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
-
-  std::cout <<std::endl;
-
-  //=========================Dense QR===========================
-  print("Dense QR Decomposition");
-  print("Time");
-  Dense AD(laplace1d, randx, N, N);
-  Dense _AD(AD);
-  Dense TD(N, N);
-  start("Dense QR decomposition");
-  AD.geqrt(TD);
-  stop("Dense QR decomposition");
-  //Apply Q^T to A to obtain R
-  Dense RD(_AD);
-  RD.larfb(AD, TD, true);
-  //Apply Q to Id to obtain Q
-  Dense QD(identity, randx, N, N);
-  QD.larfb(AD, TD, false);
-  print("Accuracy");
-  Dense QRD(N, N);
-  QRD.gemm(QD, RD, 1, 0);
-  diff = (_AD - QRD).norm();
-  norm = _AD.norm();
-  print("Rel. L2 Error", std::sqrt(diff/norm), false);
-  Dense QtQD(N, N);
-  QtQD.gemm(QD, QD, CblasTrans, CblasNoTrans, 1, 0);
-  diff = (QtQD - Id).norm();
-  norm = Id.norm();
-  print("Orthogonality");
-  print("Rel. L2 Error", std::sqrt(diff/norm), false);
-  //============================================================
-
   return 0;
 }
 
