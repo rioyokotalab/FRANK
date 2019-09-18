@@ -106,13 +106,13 @@ namespace hicma {
       swap(S, B.S);
       swap(V, B.V);
 #else
-      int K = rank + A.rank;
+      int K = rank + rank;
       
-      Dense Xu(rank, A.rank);
+      Dense Xu(rank, rank);
       Xu.gemm(U, A.U, CblasTrans, CblasNoTrans, 1, 0);
 
-      Dense UA_Xu(A.dim[0], A.rank);
-      Dense Yu(A.dim[0], A.rank);
+      Dense UA_Xu(A.dim[0], rank);
+      Dense Yu(A.dim[0], rank);
       UA_Xu.gemm(U, Xu, 1, 0);
 
       Yu = A.U - UA_Xu;
