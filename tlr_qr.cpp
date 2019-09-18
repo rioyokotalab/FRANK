@@ -14,7 +14,7 @@
 using namespace hicma;
 
 int main(int argc, char** argv) {
-  int N = 128;
+  int N = 256;
   int Nb = 32;
   int Nc = N / Nb;
   int rank = 16;
@@ -69,8 +69,8 @@ int main(int argc, char** argv) {
   stop("BLR QR decomposition");
   //Build R: Take upper triangular part of A
   Dense DR(A);
-  for(int i = 0; i < DR.dim[0]; i++) {
-    for(int j = 0; j < std::min(i, DR.dim[1]); j++) {
+  for(int i = 0; i < N; i++) {
+    for(int j = 0; j < i; j++) {
       DR(i, j) = 0.0;
     }
   }

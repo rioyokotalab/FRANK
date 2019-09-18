@@ -132,6 +132,8 @@ namespace hicma {
 
     void geqrt(Dense& T) override;
 
+    void geqrt2(Dense& T);
+
     void larfb(const Dense& Y, const Dense& T, const bool trans=false) override;
 
     void larfb(const Hierarchical& Y, const Hierarchical& T, const bool trans=false) override;
