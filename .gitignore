@@ -1,8 +1,7 @@
-*.a
-*.pdf
-*.o
-*.out
-*.txt
+build
+bin
+lib
+
 *.xml
 TAGS
 *~

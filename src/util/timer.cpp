@@ -1,7 +1,7 @@
 #ifndef timer_h
 #define timer_h
-#include "print.h"
-#include "timer.h"
+#include "hicma/util/print.h"
+#include "hicma/util/timer.h"
 
 #include <map>
 #include <sys/time.h>

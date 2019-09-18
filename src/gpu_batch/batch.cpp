@@ -1,6 +1,6 @@
-#include "any.h"
-#include "low_rank.h"
-#include "batch.h"
+#include "hicma/any.h"
+#include "hicma/low_rank.h"
+#include "hicma/gpu_batch/batch.h"
 
 namespace hicma {
 

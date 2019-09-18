@@ -1,6 +1,6 @@
-#include "any.h"
-#include "low_rank.h"
-#include "hierarchical.h"
+#include "hicma/any.h"
+#include "hicma/low_rank.h"
+#include "hicma/hierarchical.h"
 
 #include <iostream>
 
