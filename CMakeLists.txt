@@ -27,14 +27,9 @@ add_library(hicma
 )
 target_link_libraries(hicma util gpu_batch blas lapacke)
 
-add_executable(block_lu test/block_lu.cpp)
-target_link_libraries(block_lu hicma)
-
-add_executable(blr_lu test/blr_lu.cpp)
-target_link_libraries(blr_lu hicma)
-
-add_executable(h_lu test/h_lu.cpp)
-target_link_libraries(h_lu hicma)
-
-add_executable(rsvd test/rsvd.cpp)
-target_link_libraries(rsvd hicma)
+# Enable test for googletest
+enable_testing()
+# Import external dependency loading script
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+include(add_external)
+add_subdirectory(test)
