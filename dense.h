@@ -93,6 +93,8 @@ namespace hicma {
 
     void resize(const int dim0, const int dim1);
 
+    Dense transpose() const;
+
     void print() const override;
 
     void getrf() override;

@@ -213,6 +213,16 @@ namespace hicma {
     dim[1] = dim1;
   }
 
+  Dense Dense::transpose() const {
+    Dense A(dim[1], dim[0], i_abs, j_abs, level);
+    for (int i=0; i<dim[0]; i++) {
+      for (int j=0; j<dim[1]; j++) {
+        A(j,i) = (*this)(i,j);
+      }
+    }
+    return A;
+  }
+  
   void Dense::print() const {
     for (int i=0; i<dim[0]; i++) {
       for (int j=0; j<dim[1]; j++) {
