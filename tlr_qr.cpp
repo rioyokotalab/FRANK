@@ -9,7 +9,6 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
-#include <lapacke.h>
 
 using namespace hicma;
 
