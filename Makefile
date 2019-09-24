@@ -50,7 +50,7 @@ tiled_qr: tiled_qr.o batch.o $(SOURCES)
 
 blr_qr: blr_qr.o batch.o $(SOURCES)
 	$(CXX) $? -lblas -llapacke
-	valgrind ./a.out
+	./a.out
 
 tlr_qr: tlr_qr.o batch.o $(SOURCES)
 	$(CXX) $? -lblas -llapacke

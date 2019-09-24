@@ -13,10 +13,10 @@
 using namespace hicma;
 
 int main(int argc, char** argv) {
-  int N = 128;
-  int Nb = 16;
+  int N = 1024;
+  int Nb = 32;
   int Nc = N / Nb;
-  int rank = 8;
+  int rank = 16;
   std::vector<double> randx(N);
   Hierarchical A(Nc, Nc);
   Hierarchical D(Nc, Nc);
@@ -42,21 +42,16 @@ int main(int argc, char** argv) {
     }
   }
   rsvd_batch();
-  double diff = 0, norm = 0;
-  for (int ic=0; ic<Nc; ic++) {
-    for (int jc=0; jc<Nc; jc++) {
-      if(A(ic,jc).is(HICMA_LOWRANK)) {
-        diff += (Dense(A(ic,jc)) - D(ic,jc)).norm();
-        norm += D(ic,jc).norm();
-      }
-    }
-  }
+  double diff, norm;
+  diff = (Dense(A) - Dense(D)).norm();
+  norm = D.norm();
+  print("Ida BLR QR Decomposition");
   print("Compression Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
+
   print("Time");
-  Hierarchical _A(A); //Copy of A
   Hierarchical QR(R);
-  start("QR decomposition");
+  start("BLR QR decomposition");
   for(int j=0; j<Nc; j++) {
     Hierarchical Aj(Nc, 1);
     Hierarchical Qsj(Nc, 1);
@@ -91,12 +86,10 @@ int main(int argc, char** argv) {
       }
     }
   }
-  stop("QR decomposition");
-  printTime("-DGEQRF");
-  printTime("-DGEMM");
+  stop("BLR QR decomposition");
   QR.gemm(Q, R, 1, 1);
-  diff = (Dense(_A) - Dense(QR)).norm();
-  norm = _A.norm();
+  diff = (Dense(QR) - Dense(D)).norm();
+  norm = D.norm();
   print("Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
   Dense DQ(Q);
@@ -105,6 +98,7 @@ int main(int argc, char** argv) {
   Dense Id(identity, randx, QtQ.dim[0], QtQ.dim[1]);
   diff = (QtQ - Id).norm();
   norm = Id.norm();
+  print("Orthogonality");
   print("Rel. L2 Orthogonality", std::sqrt(diff/norm), false);
   return 0;
 }

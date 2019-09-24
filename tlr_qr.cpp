@@ -13,7 +13,7 @@
 using namespace hicma;
 
 int main(int argc, char** argv) {
-  int N = 256;
+  int N = 1024;
   int Nb = 32;
   int Nc = N / Nb;
   int rank = 16;
@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
   }
   rsvd_batch();
   double diff, norm;
-  diff = (Dense(A) - D).norm();
+  diff = (Dense(A) - Dense(D)).norm();
   norm = D.norm();
   print("BLR QR Decomposition");
   print("Compression Accuracy");
