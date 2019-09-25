@@ -32,8 +32,7 @@ namespace hicma {
                 ) {
     for (int i=0; i<ni; i++) {
       for (int j=0; j<nj; j++) {
-        if(i_begin+i == j_begin+j) data[i*nj+j] = 1;
-        else data[i*nj+j] = 0;
+        data[i*nj+j] = i_begin+i == j_begin+j ? 1 : 0;
       }
     }
   }
