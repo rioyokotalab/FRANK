@@ -14,6 +14,9 @@ add_test(NAME dense_test COMMAND dense_test)
 # add_test(NAME hierarchical_test COMMAND hierarchical_test)
 
 # Legacy execution files
+add_executable(lr_add lr_add.cpp)
+target_link_libraries(lr_add hicma)
+
 add_executable(block_lu block_lu.cpp)
 target_link_libraries(block_lu hicma)
 
