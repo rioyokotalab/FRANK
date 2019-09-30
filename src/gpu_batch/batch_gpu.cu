@@ -1,7 +1,7 @@
-#include "any.h"
-#include "low_rank.h"
-#include "batch.h"
-#include "timer.h"
+#include "hicma/any.h"
+#include "hicma/low_rank.h"
+#include "hicma/gpu_batch/batch.h"
+#include "hicma/util/timer.h"
 
 #include <cublas_v2.h>
 #include <magma_v2.h>

@@ -1,9 +1,9 @@
 #!/bin/python
 import numpy as np
 
-from hicma.node import Node
-from hicma.dense import Dense
-from hicma.low_rank import LowRank
+from .node import Node
+import hicma.dense as HD
+import hicma.low_rank as HL
 
 
 class Hierarchical(Node):
@@ -24,7 +24,14 @@ class Hierarchical(Node):
             j_abs=0,
             level=0
     ):
-        if isinstance(A, Dense):
+        if A is None:
+            super().__init__(i_abs, j_abs, level)
+            if ni is None:
+                self.dim = [0, 0]
+            else:
+                self.dim = [ni, nj or 1]
+            self.data = [None] * (self.dim[0] * self.dim[1])
+        elif isinstance(A, HD.Dense):
             super().__init__(A.i_abs, A.j_abs, A.level)
             self.dim = [ni_level, nj_level]
             self.data = [None] * (self.dim[0] * self.dim[1])
@@ -44,14 +51,14 @@ class Hierarchical(Node):
                     j_begin = int(nj / self.dim[1] * j)
                     i_abs_child = self.i_abs * self.dim[0] + i
                     j_abs_child = self.j_abs * self.dim[1] + j
-                    self[i, j] = Dense(
+                    self[i, j] = HD.Dense(
                         ni=ni_child, nj=nj_child,
                         i_abs=i_abs_child, j_abs=j_abs_child, level=self.level + 1
                     )
                     for ic in range(ni_child):
                         for jc in range(nj_child):
                             self[i, j][ic, jc] = A[i_begin+ic, j_begin+jc]
-        elif isinstance(A, LowRank):
+        elif isinstance(A, HL.LowRank):
             super().__init__(A.i_abs, A.j_abs, A.level)
             self.dim = [ni_level, nj_level]
             self.data = [None] * (self.dim[0] * self.dim[1])
@@ -72,7 +79,7 @@ class Hierarchical(Node):
                     j_begin = int(nj / self.dim[1] * j)
                     i_abs_child = self.i_abs * self.dim[0] + i
                     j_abs_child = self.j_abs * self.dim[1] + j
-                    self[i, j] = LowRank(
+                    self[i, j] = HL.LowRank(
                         m=ni_child, n=nj_child, k=rank,
                         i_abs=i_abs_child, j_abs=j_abs_child, level=self.level + 1
                     )
@@ -90,13 +97,13 @@ class Hierarchical(Node):
             # Recursively create subblocks
             for i in range(0, self.dim[0]):
                 for j in range(0, self.dim[1]):
-                    ni_child = ni / self.dim[0];
+                    ni_child = ni / self.dim[0]
                     if i == self.dim[0] - 1:
-                        ni_child = ni - (ni/self.dim[0]) * (self.dim[0]-1);
+                        ni_child = ni - (ni/self.dim[0]) * (self.dim[0]-1)
                     ni_child = int(ni_child)
-                    nj_child = nj / self.dim[1];
+                    nj_child = nj / self.dim[1]
                     if j == self.dim[1] - 1:
-                        nj_child = nj - (nj/self.dim[1]) * (self.dim[1]-1);
+                        nj_child = nj - (nj/self.dim[1]) * (self.dim[1]-1)
                     nj_child = int(nj_child)
                     i_begin_child = i_begin + i*int(ni / self.dim[0])
                     j_begin_child = j_begin + j*int(nj / self.dim[1])
@@ -106,7 +113,7 @@ class Hierarchical(Node):
                     or (ni == 1 or nj == 1):
                         if ni_child/ni_level < nleaf\
                         and nj_child/nj_level < nleaf:
-                            self[i, j] = Dense(
+                            self[i, j] = HD.Dense(
                                 A,
                                 func,
                                 ni_child,
@@ -135,8 +142,8 @@ class Hierarchical(Node):
                                 level+1
                             )
                     else:
-                        self[i, j] = LowRank(
-                            Dense(
+                        self[i, j] = HL.LowRank(
+                            HD.Dense(
                                 A,
                                 func,
                                 ni_child,
@@ -228,16 +235,16 @@ class Hierarchical(Node):
                         self[i, j].trsm(A[j, j], 'u')
 
     def gemm(self, A, B, alpha=-1, beta=1):
-        if isinstance(A, Dense):
+        if isinstance(A, HD.Dense):
             if isinstance(B, Hierarchical):
                 AH = Hierarchical(A, ni_level=self.dim[0], nj_level=B.dim[0])
                 for i in range(self.dim[0]):
                     for j in range(self.dim[1]):
                         self.gemm_row(AH, B, i, j, 0, AH.dim[1], alpha, beta)
             else:
-                raise NotImplemented
-        elif isinstance(A, LowRank):
-            if isinstance(B, LowRank):
+                raise NotImplementedError
+        elif isinstance(A, HL.LowRank):
+            if isinstance(B, HL.LowRank):
                 AH = Hierarchical(A, ni_level=self.dim[0], nj_level=self.dim[0])
                 BH = Hierarchical(B, ni_level=self.dim[1], nj_level=self.dim[1])
                 for i in range(self.dim[0]):
@@ -249,14 +256,14 @@ class Hierarchical(Node):
                     for j in range(self.dim[1]):
                         self.gemm_row(AH, B, i, j, 0, AH.dim[1], alpha, beta)
             else:
-                raise NotImplemented
+                raise NotImplementedError
         elif isinstance(A, Hierarchical):
-            if isinstance(B, Dense):
+            if isinstance(B, HD.Dense):
                 BH = Hierarchical(B, ni_level=A.dim[1], nj_level=self.dim[1])
                 for i in range(self.dim[0]):
                     for j in range(self.dim[1]):
                         self.gemm_row(A, BH, i, j, 0, A.dim[1], alpha, beta)
-            elif isinstance(B, LowRank):
+            elif isinstance(B, HL.LowRank):
                 BH = Hierarchical(B, ni_level=A.dim[1], nj_level=self.dim[1])
                 for i in range(self.dim[0]):
                     for j in range(self.dim[1]):
@@ -268,17 +275,17 @@ class Hierarchical(Node):
                     for j in range(self.dim[1]):
                         self.gemm_row(A, B, i, j, 0, A.dim[1], alpha, beta)
             else:
-                raise NotImplemented
+                raise NotImplementedError
         else:
-            raise NotImplemented
+            raise NotImplementedError
 
     def gemm_row(self, A, B, i, j, k_min, k_max, alpha, beta):
         rank = -1
-        if isinstance(self[i, j], LowRank):
+        if isinstance(self[i, j], HL.LowRank):
             rank = self[i, j].rank
-            self[i, j] = Dense(self[i, j])
+            self[i, j] = HD.Dense(self[i, j])
         for k in range(k_min, k_max):
             self[i, j].gemm(A[i, k], B[k, j], alpha, beta)
         if rank != -1:
-            assert isinstance(self[i, j], Dense)
-            self[i, j] = LowRank(self[i, j], k=rank)
+            assert isinstance(self[i, j], HD.Dense)
+            self[i, j] = HL.LowRank(self[i, j], k=rank)

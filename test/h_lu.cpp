@@ -1,10 +1,10 @@
-#include "any.h"
-#include "low_rank.h"
-#include "hierarchical.h"
-#include "functions.h"
-#include "batch.h"
-#include "print.h"
-#include "timer.h"
+#include "hicma/any.h"
+#include "hicma/low_rank.h"
+#include "hicma/hierarchical.h"
+#include "hicma/functions.h"
+#include "hicma/gpu_batch/batch.h"
+#include "hicma/util/print.h"
+#include "hicma/util/timer.h"
 
 #include <algorithm>
 #include <cmath>
@@ -13,9 +13,9 @@
 using namespace hicma;
 
 int main(int argc, char** argv) {
-  int N = 128;
-  int nleaf = 16;
-  int rank = 8;
+  int N = 1 << atoi(argv[2]);
+  int nleaf = atoi(argv[3]);
+  int rank = atoi(argv[4]);
   std::vector<double> randx(N);
   for (int i=0; i<N; i++) {
     randx[i] = drand48();
@@ -55,19 +55,19 @@ int main(int argc, char** argv) {
   Hierarchical A(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   stop("CPU compression");
   rsvd_batch();
-  printXML(A);
+  //printXML(A);
   admis = N / nleaf; // Full rank
   start("Dense tree");
-  Hierarchical D(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
+  //Hierarchical D(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   stop("Dense tree");
   Hierarchical x(random, randx, N, 1, rank, nleaf, admis, nblocks, 1);
   Hierarchical b(zeros, randx, N, 1, rank, nleaf, admis, nblocks, 1);
-  start("Verification");
-  double diff = (Dense(A) - Dense(D)).norm();
-  double norm = D.norm();
-  stop("Verification");
-  print("Compression Accuracy");
-  print("Rel. L2 Error", std::sqrt(diff/norm), false);
+  //start("Verification");
+  //double diff = (Dense(A) - Dense(D)).norm();
+  //double norm = D.norm();
+  //stop("Verification");
+  //print("Compression Accuracy");
+  //print("Rel. L2 Error", std::sqrt(diff/norm), false);
   print("Time");
   b.gemm(A, x, 1, 1);
   gemm_batch();
@@ -89,8 +89,8 @@ int main(int argc, char** argv) {
   stop("Backward substitution");
   printTime("-DTRSM");
   printTime("-DGEMM");
-  diff = (Dense(x) - Dense(b)).norm();
-  norm = x.norm();
+  double diff = (Dense(x) - Dense(b)).norm();
+  double norm = x.norm();
   print("LU Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
   return 0;

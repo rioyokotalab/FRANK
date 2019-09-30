@@ -1,15 +1,13 @@
-*.a
-*.pdf
-*.o
-*.out
-*.txt
+build
+bin
+lib
+
 *.xml
 TAGS
 *~
 
-# Python ignores
-**/__pycache__
-**/*.pyc
+# VSCode ignore
+.vscode
 
 # core dumps
 vgcore.[0-9]*

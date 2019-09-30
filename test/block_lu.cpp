@@ -1,10 +1,10 @@
-#include "any.h"
-#include "low_rank.h"
-#include "hierarchical.h"
-#include "functions.h"
-#include "batch.h"
-#include "print.h"
-#include "timer.h"
+#include "hicma/any.h"
+#include "hicma/low_rank.h"
+#include "hicma/hierarchical.h"
+#include "hicma/functions.h"
+#include "hicma/gpu_batch/batch.h"
+#include "hicma/util/print.h"
+#include "hicma/util/timer.h"
 
 #include <algorithm>
 #include <cmath>
@@ -15,16 +15,15 @@ int main(int argc, char** argv) {
   int N = 64;
   int Nb = 16;
   int Nc = N / Nb;
-  int rank = 8;
   std::vector<double> randx(N);
   Hierarchical x(Nc);
   Hierarchical b(Nc);
   Hierarchical A(Nc,Nc);
-  Hierarchical D(Nc,Nc);
   for (int i=0; i<N; i++) {
     randx[i] = drand48();
   }
   std::sort(randx.begin(), randx.end());
+  print("Time");
   start("Init matrix");
   for (int ic=0; ic<Nc; ic++) {
     Dense xi(Nb);
@@ -39,28 +38,9 @@ int main(int argc, char** argv) {
   for (int ic=0; ic<Nc; ic++) {
     for (int jc=0; jc<Nc; jc++) {
       Dense Aij(laplace1d, randx, Nb, Nb, Nb*ic, Nb*jc);
-      D(ic,jc) = Aij;
-      if (std::abs(ic - jc) <= 1) {
-        A(ic,jc) = Aij;
-      }
-      else {
-        rsvd_push(A(ic,jc), Aij, rank);
-      }
+      A(ic,jc) = Aij;
     }
   }
-  rsvd_batch();
-  double diff = 0, norm = 0;
-  for (int ic=0; ic<Nc; ic++) {
-    for (int jc=0; jc<Nc; jc++) {
-      if(A(ic,jc).is(HICMA_LOWRANK)) {
-        diff += (Dense(A(ic,jc)) - D(ic,jc)).norm();
-        norm += D(ic,jc).norm();
-      }
-    }
-  }
-  print("Compression Accuracy");
-  print("Rel. L2 Error", std::sqrt(diff/norm), false);
-  print("Time");
   b.gemm(A, x, 1, 1);
   gemm_batch();
   stop("Init matrix");
@@ -101,9 +81,9 @@ int main(int argc, char** argv) {
   stop("Backward substitution");
   printTime("-DTRSM");
   printTime("-DGEMM");
-  diff = (Dense(x) - Dense(b)).norm();
-  norm = x.norm();
-  print("LU Accuracy");
+  double diff = (Dense(x) - Dense(b)).norm();
+  double norm = x.norm();
+  print("Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
   return 0;
 }

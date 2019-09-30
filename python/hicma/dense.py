@@ -3,9 +3,9 @@ import numpy as np
 import numbers
 import scipy.linalg as sl
 
+from hicma.node import Node
 import hicma.low_rank as HL
 import hicma.hierarchical as HH
-from hicma.node import Node
 
 
 class Dense(Node):
@@ -65,10 +65,8 @@ class Dense(Node):
         elif A is None:
             super().__init__(i_abs, j_abs, level)
             assert isinstance(ni, int) or isinstance(nj, int)
-            if ni is None:
-                ni = 1
-            elif nj is None:
-                nj = 1
+            ni = ni or 1
+            nj = nj or 1
             self.dim = [ni, nj]
             self.data = np.zeros((ni, nj))
         else:
@@ -169,7 +167,7 @@ class Dense(Node):
                 H.trsm(A, uplo)
                 self.data = Dense(H).data
         else:
-            return NotImplemented
+            raise NotImplementedError
 
     def gemm_trans(self, A, B, transA, transB, alpha, beta):
         x_gemm = sl.get_blas_funcs('gemm', (self.data, A.data, B.data))
@@ -201,7 +199,7 @@ class Dense(Node):
                 C.gemm(A, B, alpha, beta)
                 self.data = Dense(C).data
             else:
-                return NotImplemented
+                raise NotImplementedError
         elif isinstance(A, HL.LowRank):
             if isinstance(B, Dense):
                 VxB = Dense(ni=A.rank, nj=self.dim[1])
@@ -224,7 +222,7 @@ class Dense(Node):
                 C.gemm(A, B, alpha, beta)
                 self.data = Dense(C).data
             else:
-                return NotImplemented
+                raise NotImplementedError
         elif isinstance(A, HH.Hierarchical):
             if isinstance(B, Dense):
                 C = HH.Hierarchical(self, ni_level=A.dim[0], nj_level=1)
@@ -235,9 +233,9 @@ class Dense(Node):
                 C.gemm(A, B, alpha, beta)
                 self.data = Dense(C).data
             else:
-                return NotImplemented
+                raise NotImplementedError
         else:
-            return NotImplemented
+            raise NotImplementedError
 
     def qr(self, Q, R):
         for i in range(self.dim[1]):
@@ -252,10 +250,8 @@ class Dense(Node):
             for j in range(self.dim[1]):
                 if j >= i:
                     R[i, j] = self[i, j]
-        pass
 
     def svd(self, U, S, V):
-        work = Dense(ni=self.dim[1]-1, nj=1)
         x_gesvd = sl.get_lapack_funcs('gesvd', (self.data,))
         U.data, Sdiag, V.data, _ = x_gesvd(
             self.data, overwrite_a=False, compute_uv=True, full_matrices=True)

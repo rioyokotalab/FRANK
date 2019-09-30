@@ -1,10 +1,10 @@
-#include "any.h"
-#include "dense.h"
-#include "low_rank.h"
-#include "hierarchical.h"
-#include "batch.h"
-#include "print.h"
-#include "timer.h"
+#include "hicma/any.h"
+#include "hicma/dense.h"
+#include "hicma/low_rank.h"
+#include "hicma/hierarchical.h"
+#include "hicma/gpu_batch/batch.h"
+#include "hicma/util/print.h"
+#include "hicma/util/timer.h"
 
 #include <cassert>
 #include <iostream>
@@ -213,6 +213,16 @@ namespace hicma {
     dim[1] = dim1;
   }
 
+  Dense Dense::transpose() const {
+    Dense A(dim[1], dim[0], i_abs, j_abs, level);
+    for (int i=0; i<dim[0]; i++) {
+      for (int j=0; j<dim[1]; j++) {
+        A(j,i) = (*this)(i,j);
+      }
+    }
+    return A;
+  }
+  
   void Dense::print() const {
     for (int i=0; i<dim[0]; i++) {
       for (int j=0; j<dim[1]; j++) {

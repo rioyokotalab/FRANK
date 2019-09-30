@@ -1,6 +1,7 @@
 #ifndef dense_h
 #define dense_h
 #include "node.h"
+#include "any.h"
 
 #include <vector>
 #ifdef USE_MKL
@@ -92,6 +93,8 @@ namespace hicma {
     int size() const;
 
     void resize(const int dim0, const int dim1);
+
+    Dense transpose() const;
 
     void print() const override;
 

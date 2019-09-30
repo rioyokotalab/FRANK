@@ -1,0 +1,6 @@
+# Cache and compiled files
+**/__pycache__
+**/*.pyc
+
+# Environment
+.env

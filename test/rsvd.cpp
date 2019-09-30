@@ -1,8 +1,8 @@
-#include "any.h"
-#include "low_rank.h"
-#include "functions.h"
-#include "print.h"
-#include "timer.h"
+#include "hicma/any.h"
+#include "hicma/low_rank.h"
+#include "hicma/functions.h"
+#include "hicma/util/print.h"
+#include "hicma/util/timer.h"
 
 #include <algorithm>
 #include <cmath>

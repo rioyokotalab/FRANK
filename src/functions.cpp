@@ -1,7 +1,7 @@
 #ifndef functions_h
 #define functions_h
 
-#include "functions.h"
+#include "hicma/functions.h"
 
 #include <cstdlib>
 #include <vector>

@@ -2,7 +2,6 @@
 #include "low_rank.h"
 #include "hierarchical.h"
 #include "print.h"
-#include "functions.h"
 
 #include <cassert>
 #include <iostream>
@@ -108,6 +107,7 @@ namespace hicma {
     if (rank+A.rank >= dim[0]) {
       *this = LowRank(Dense(*this) + Dense(A), rank);
     } else {
+#if 0
       LowRank B(dim[0], dim[1], rank+A.rank, i_abs, j_abs, level);
       B.mergeU(*this, A);
       B.mergeS(*this, A);
@@ -116,6 +116,81 @@ namespace hicma {
       swap(U, B.U);
       swap(S, B.S);
       swap(V, B.V);
+#else
+      int rank2 = rank + rank;
+      
+      Dense Xu(rank, rank);
+      Xu.gemm(U, A.U, CblasTrans, CblasNoTrans, 1, 0);
+
+      Dense Yu(A.dim[0], rank);
+      Yu.gemm(U, Xu, 1, 0);
+
+      Yu = A.U - Yu;
+
+      Dense Qu(dim[0], rank);
+      Dense Ru(rank, rank);
+      Yu.qr(Qu, Ru);
+
+      Dense Xv(rank, rank);
+      Xv.gemm(V, A.V, CblasNoTrans, CblasTrans, 1, 0);
+
+      Dense Va_Xv(dim[1], rank);
+      Va_Xv.gemm(V, Xv, CblasTrans, CblasNoTrans, 1, 0);
+      
+      Dense Yv(dim[1], rank);
+      Dense VB = A.V.transpose();
+      Yv = VB - Va_Xv;
+
+      Dense Qv(dim[1], rank);
+      Dense Rv(rank, rank);
+      Yv.qr(Qv, Rv);
+
+      Xu.gemm(Xu, A.S, 1, 0);
+      Ru.gemm(Ru, A.S, 1, 0);
+
+      Dense M(rank2, rank2);
+      Hierarchical H(M, 2, 2);
+      H(0,0) = S;
+      Dense(H(0,0)).gemm(Xu, Xv, CblasNoTrans, CblasTrans, 1, 1);
+      Dense(H(0,1)).gemm(Xu, Rv, CblasNoTrans, CblasTrans, 1, 0);
+      Dense(H(1,0)).gemm(Ru, Xv, CblasNoTrans, CblasTrans, 1, 0);
+      Dense(H(1,1)).gemm(Ru, Rv, CblasNoTrans, CblasTrans, 1, 0);
+      M = Dense(H);
+
+      Dense Uhat(rank2, rank2);
+      Dense Shat(rank2, rank2);
+      Dense Vhat(rank2, rank2);
+      M.svd(Uhat, Shat, Vhat);
+
+      Uhat.resize(rank2, rank);
+      Shat.resize(rank, rank);
+      Vhat.resize(rank, rank2);
+
+      Dense MERGE_U(dim[0], rank2);
+      Dense MERGE_V(dim[1], rank2);
+        
+      for (int i = 0; i < dim[0]; ++i) {
+        for (int j = 0; j < rank; ++j) {
+          MERGE_U(i,j) = U(i,j);
+        }
+        for (int j = 0; j < rank; ++j) {
+          MERGE_U(i, rank + j) = Qu(i,j);
+        }
+      }
+
+      for (int i = 0; i < dim[1]; ++i) {
+        for (int j = 0; j < rank; ++j) {
+          MERGE_V(i, j) = V(j,i);
+        }
+        for (int j = 0; j < rank; ++j) {
+          MERGE_V(i, j + rank) = Qv(i,j);
+        }
+      }
+
+      U.gemm(MERGE_U, Uhat, 1, 0);
+      swap(S, Shat);
+      V.gemm(Vhat, MERGE_V, CblasNoTrans, CblasTrans, 1, 0);
+#endif
     }
     return *this;
   }
