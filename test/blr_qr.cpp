@@ -1,10 +1,10 @@
-#include "any.h"
-#include "low_rank.h"
-#include "hierarchical.h"
-#include "functions.h"
-#include "batch.h"
-#include "print.h"
-#include "timer.h"
+#include "hicma/any.h"
+#include "hicma/low_rank.h"
+#include "hicma/hierarchical.h"
+#include "hicma/functions.h"
+#include "hicma/gpu_batch/batch.h"
+#include "hicma/util/print.h"
+#include "hicma/util/timer.h"
 
 #include <algorithm>
 #include <cmath>
@@ -13,7 +13,7 @@
 using namespace hicma;
 
 int main(int argc, char** argv) {
-  int N = 1024;
+  int N = 256;
   int Nb = 32;
   int Nc = N / Nb;
   int rank = 16;
@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
       Dense Aij(laplace1d, randx, Nb, Nb, Nb*ic, Nb*jc);
       Dense Rij(zeros, randx, Nb, Nb, Nb*ic, Nb*jc);
       D(ic,jc) = Aij;
-      if (std::abs(ic - jc) <= 1) {
+      if (std::abs(ic - jc) <= 0) {
         A(ic,jc) = Aij;
         R(ic,jc) = Rij;
       }

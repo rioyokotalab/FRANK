@@ -21,7 +21,7 @@ namespace hicma {
       const Hierarchical& A = static_cast<const Hierarchical&>(*_A.ptr);
       for (int i=0; i<A.dim[0]; i++) {
         for (int j=0; j<A.dim[1]; j++) {
-          pt::ptree el_subtree{};
+          pt::ptree el_subtree;
           fillXML(A(i, j), el_subtree);
           std::string el_name = "i" + std::to_string(i) + "j" + std::to_string(j);
           tree.add_child(el_name, el_subtree);

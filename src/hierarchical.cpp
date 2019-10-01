@@ -1,9 +1,9 @@
 #include "hicma/any.h"
 #include "hicma/low_rank.h"
 #include "hicma/hierarchical.h"
+#include "hicma/functions.h"
 #include "hicma/gpu_batch/batch.h"
 #include "hicma/util/print.h"
-#include "hicma/util/functions.h"
 
 #include <algorithm>
 #include <cassert>
