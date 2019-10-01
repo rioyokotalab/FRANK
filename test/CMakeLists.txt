@@ -38,5 +38,8 @@ target_link_libraries(blr_qr hicma)
 add_executable(h_lu h_lu.cpp)
 target_link_libraries(h_lu hicma)
 
+add_executable(h_qr h_qr.cpp)
+target_link_libraries(h_qr hicma)
+
 add_executable(rsvd rsvd.cpp)
 target_link_libraries(rsvd hicma)

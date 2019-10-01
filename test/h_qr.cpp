@@ -1,10 +1,10 @@
-#include "any.h"
-#include "low_rank.h"
-#include "hierarchical.h"
-#include "functions.h"
-#include "batch.h"
-#include "print.h"
-#include "timer.h"
+#include "hicma/any.h"
+#include "hicma/low_rank.h"
+#include "hicma/hierarchical.h"
+#include "hicma/functions.h"
+#include "hicma/gpu_batch/batch.h"
+#include "hicma/util/print.h"
+#include "hicma/util/timer.h"
 
 #include <algorithm>
 #include <cmath>
@@ -23,6 +23,10 @@ int main(int argc, char** argv) {
   std::sort(randx.begin(), randx.end());
   start("Init matrix");
   int nblocks=0, admis=0;
+  if(argc < 2) {
+    std::cout <<"Argument(s) needed" <<std::endl;
+    exit(1);
+  }
   if (atoi(argv[1]) == 0) {
     nblocks = N / nleaf; // 1 level
     admis = N / nleaf; // Full rank
