@@ -3,7 +3,6 @@
 
 #include "hicma/functions.h"
 
-#include <cstdlib>
 #include <cmath>
 #include <vector>
 
