@@ -4,6 +4,7 @@
 #include "hicma/functions.h"
 
 #include <cmath>
+#include <cstdlib>
 #include <vector>
 
 namespace hicma {
