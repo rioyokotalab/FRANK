@@ -63,7 +63,6 @@ int main(int argc, char** argv) {
   Hierarchical R(zeros, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   Hierarchical QR(zeros, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   stop("Init matrix");
-  printXML(A);
   admis = N / nleaf; // Full rank
   start("Dense tree");
   Hierarchical D(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);

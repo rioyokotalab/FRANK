@@ -4,6 +4,7 @@ project(HICMA
     LANGUAGES CXX
     VERSION 1.0
 )
+set(CMAKE_CXX_STANDARD 11)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
@@ -29,7 +30,15 @@ add_library(hicma
     src/functions.cpp
 )
 target_include_directories(hicma PUBLIC ${PROJECT_SOURCE_DIR}/include)
-target_link_libraries(hicma util gpu_batch blas lapacke)
+target_link_libraries(hicma util gpu_batch)
+# Flag for MKL Usage
+set(USE_MKL OFF)
+if(USE_MKL)
+  set(CMAKE_CXX_FLAGS "-DUSE_MKL")
+  target_link_libraries(hicma mkl_intel_lp64 mkl_intel_thread mkl_core iomp5 pthread)
+else()
+  target_link_libraries(hicma blas lapacke)
+endif(USE_MKL)
 
 # Enable test for googletest
 enable_testing()
