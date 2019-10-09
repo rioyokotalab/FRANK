@@ -40,6 +40,7 @@ add_library(hicma
     src/hierarchical.cpp
     src/functions.cpp
     src/getrf.cpp
+    src/trsm.cpp
 )
 target_include_directories(hicma
     PUBLIC ${PROJECT_SOURCE_DIR}/include

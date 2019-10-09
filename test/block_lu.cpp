@@ -52,8 +52,8 @@ int main(int argc, char** argv) {
   for (int ic=0; ic<Nc; ic++) {
     getrf(A(ic,ic));
     for (int jc=ic+1; jc<Nc; jc++) {
-      A(ic,jc).trsm(A(ic,ic),'l');
-      A(jc,ic).trsm(A(ic,ic),'u');
+      trsm(A(ic,ic), A(ic,jc),'l');
+      trsm(A(ic,ic), A(jc,ic),'u');
     }
     for (int jc=ic+1; jc<Nc; jc++) {
       for (int kc=ic+1; kc<Nc; kc++) {
@@ -70,7 +70,7 @@ int main(int argc, char** argv) {
     for (int jc=0; jc<ic; jc++) {
       b[ic].gemm(A(ic,jc),b[jc]);
     }
-    b[ic].trsm(A(ic,ic),'l');
+    trsm(A(ic,ic), b[ic],'l');
   }
   stop("Forward substitution");
   printTime("-DTRSM");
@@ -80,7 +80,7 @@ int main(int argc, char** argv) {
     for (int jc=Nc-1; jc>ic; jc--) {
       b[ic].gemm(A(ic,jc),b[jc]);
     }
-    b[ic].trsm(A(ic,ic),'u');
+    trsm(A(ic,ic), b[ic],'u');
   }
   stop("Backward substitution");
   printTime("-DTRSM");

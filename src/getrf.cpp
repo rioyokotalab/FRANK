@@ -30,8 +30,8 @@ BEGIN_SPECIALIZATION(
   for (int i=0; i<A.dim[0]; i++) {
     getrf(A(i,i));
     for (int j=i+1; j<A.dim[0]; j++) {
-      A(i,j).trsm(A(i,i), 'l');
-      A(j,i).trsm(A(i,i), 'u');
+      trsm(A(i,i), A(i,j), 'l');
+      trsm(A(i,i), A(j,i), 'u');
     }
     for (int j=i+1; j<A.dim[0]; j++) {
       for (int k=i+1; k<A.dim[0]; k++) {

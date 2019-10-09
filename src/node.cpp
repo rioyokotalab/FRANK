@@ -42,10 +42,6 @@ namespace hicma {
 
   void Node::transpose() {};
 
-  void Node::trsm(const Dense& A, const char& uplo) {};
-
-  void Node::trsm(const Hierarchical& A, const char& uplo) {};
-
   void Node::gemm(const Dense& A, const Dense& B, const double& alpha, const double& beta) {};
 
   void Node::gemm(const Dense& A, const LowRank& B, const double& alpha, const double& beta) {};

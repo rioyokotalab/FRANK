@@ -276,60 +276,6 @@ namespace hicma {
     swap(*this, C);
   }
 
-  void Hierarchical::trsm(const Dense& A, const char& uplo) {
-    print_undefined(__func__, A.type(), this->type());
-    abort();
-  }
-
-  void Hierarchical::trsm(const Hierarchical& A, const char& uplo) {
-    if (dim[1] == 1) {
-      switch (uplo) {
-      case 'l' :
-        for (int i=0; i<dim[0]; i++) {
-          for (int j=0; j<i; j++) {
-            (*this)[i].gemm(A(i,j), (*this)[j], -1, 1);
-          }
-          (*this)[i].trsm(A(i,i), 'l');
-        }
-        break;
-      case 'u' :
-        for (int i=dim[0]-1; i>=0; i--) {
-          for (int j=dim[0]-1; j>i; j--) {
-            (*this)[i].gemm(A(i,j), (*this)[j], -1, 1);
-          }
-          (*this)[i].trsm(A(i,i), 'u');
-        }
-        break;
-      default :
-        std::cerr << "Second argument must be 'l' for lower, 'u' for upper." << std::endl;
-        abort();
-      }
-    }
-    else {
-      switch (uplo) {
-      case 'l' :
-        for (int j=0; j<dim[1]; j++) {
-          for (int i=0; i<dim[0]; i++) {
-            gemm_row(A, *this, i, j, 0, i, -1, 1);
-            (*this)(i,j).trsm(A(i,i), 'l');
-          }
-        }
-        break;
-      case 'u' :
-        for (int i=0; i<dim[0]; i++) {
-          for (int j=0; j<dim[1]; j++) {
-            gemm_row(*this, A, i, j, 0, j, -1, 1);
-            (*this)(i,j).trsm(A(j,j), 'u');
-          }
-        }
-        break;
-      default :
-        std::cerr << "Second argument must be 'l' for lower, 'u' for upper." << std::endl;
-        abort();
-      }
-    }
-  }
-
   void Hierarchical::gemm(const Dense& A, const Dense& B, const double& alpha, const double& beta) {
     assert(A.dim[1] == B.dim[0]);
     const Hierarchical& AH = Hierarchical(A, dim[0], 1);

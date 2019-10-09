@@ -84,12 +84,12 @@ int main(int argc, char** argv) {
   printTime("-DTRSM");
   printTime("-DGEMM");
   start("Forward substitution");
-  b.trsm(A,'l');
+  trsm(A, b,'l');
   stop("Forward substitution");
   printTime("-DTRSM");
   printTime("-DGEMM");
   start("Backward substitution");
-  b.trsm(A,'u');
+  trsm(A, b,'u');
   stop("Backward substitution");
   printTime("-DTRSM");
   printTime("-DGEMM");

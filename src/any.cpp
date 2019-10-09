@@ -56,17 +56,6 @@ namespace hicma {
     ptr->transpose();
   }
 
-  void Any::trsm(const Any& A, const char& uplo) {
-    if (A.is(HICMA_DENSE)) {
-      ptr->trsm(static_cast<Dense&>(*A.ptr), uplo);
-    } else if (A.is(HICMA_HIERARCHICAL)) {
-      ptr->trsm(static_cast<Hierarchical&>(*A.ptr), uplo);
-    } else {
-      std::cerr << "Input matrix for trsm must be Hierarchical or Dense." << std::endl;
-      abort();
-    }
-  }
-
   void Any::gemm(const Any& A, const Any& B, const double& alpha, const double& beta) {
     if (A.is(HICMA_DENSE)) {
       if (B.is(HICMA_DENSE)) {

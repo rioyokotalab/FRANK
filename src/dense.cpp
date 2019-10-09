@@ -262,63 +262,6 @@ namespace hicma {
     }
   }
 
-  void Dense::trsm(const Dense& A, const char& uplo) {
-    start("-DTRSM");
-    if (dim[1] == 1) {
-      switch (uplo) {
-      case 'l' :
-        cblas_dtrsm(CblasRowMajor, CblasLeft, CblasLower, CblasNoTrans, CblasUnit,
-                    dim[0], dim[1], 1, &A[0], A.dim[1], &data[0], dim[1]);
-        break;
-      case 'u' :
-        cblas_dtrsm(CblasRowMajor, CblasLeft, CblasUpper, CblasNoTrans, CblasNonUnit,
-                    dim[0], dim[1], 1, &A[0], A.dim[1], &data[0], dim[1]);
-        break;
-      default :
-        std::cerr << "Second argument must be 'l' for lower, 'u' for upper." << std::endl;
-        abort();
-      }
-    }
-    else {
-      switch (uplo) {
-      case 'l' :
-        cblas_dtrsm(CblasRowMajor, CblasLeft, CblasLower, CblasNoTrans, CblasUnit,
-                    dim[0], dim[1], 1, &A[0], A.dim[1], &data[0], dim[1]);
-        break;
-      case 'u' :
-        cblas_dtrsm(CblasRowMajor, CblasRight, CblasUpper, CblasNoTrans, CblasNonUnit,
-                    dim[0], dim[1], 1, &A[0], A.dim[1], &data[0], dim[1]);
-        break;
-      default :
-        std::cerr << "Second argument must be 'l' for lower, 'u' for upper." << std::endl;
-        abort();
-      }
-    }
-    stop("-DTRSM",false);
-  }
-
-  void Dense::trsm(const Hierarchical& A, const char& uplo) {
-    switch (uplo) {
-    case 'l' :
-      {
-        Hierarchical H(*this, A.dim[0], 1);
-        H.trsm(A, uplo);
-        *this = Dense(H);
-        break;
-      }
-    case 'u' :
-      {
-        Hierarchical H(*this, 1, A.dim[1]);
-        H.trsm(A, uplo);
-        *this = Dense(H);
-        break;
-      }
-    default :
-      std::cerr << "Second argument must be 'l' for lower, 'u' for upper." << std::endl;
-      abort();
-    }
-  }
-
   void Dense::gemm(const Dense& A, const Dense&B, const CBLAS_TRANSPOSE TransA, const CBLAS_TRANSPOSE TransB,
                    const double& alpha, const double& beta) {
     start("-DGEMM");

@@ -277,36 +277,6 @@ namespace hicma {
     }
   }
 
-  void LowRank::trsm(const Dense& A, const char& uplo) {
-    switch (uplo) {
-    case 'l' :
-      U.trsm(A, uplo);
-      break;
-    case 'u' :
-      V.trsm(A, uplo);
-      break;
-    }
-  }
-
-  void LowRank::trsm(const Hierarchical& A, const char& uplo) {
-    switch (uplo) {
-    case 'l' :
-      {
-        Hierarchical H(U, A.dim[0], 1);
-        H.trsm(A, uplo);
-        U = Dense(H);
-        break;
-      }
-    case 'u' :
-      {
-        Hierarchical H(V, 1, A.dim[1]);
-        H.trsm(A, uplo);
-        V = Dense(H);
-        break;
-      }
-    }
-  }
-
   void LowRank::gemm(const Dense& A, const Dense& B, const double& alpha, const double& beta) {
     assert(this->dim[0] == A.dim[0] && A.dim[1] == B.dim[0] && this->dim[1] == B.dim[1]);
     Dense C(dim[0], dim[1]);

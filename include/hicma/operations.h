@@ -19,6 +19,19 @@ MULTI_METHOD(
   virtual_<Node>&
 );
 
+
+void trsm(const Any&, Any&, const char& uplo);
+void trsm(const Any&, Node&, const char& uplo);
+void trsm(const Node&, Any&, const char& uplo);
+
+void trsm(const Node&, Node&, const char& uplo);
+
+MULTI_METHOD(
+  trsm_omm, void,
+  const virtual_<Node>&,
+  virtual_<Node>&,
+  const char& uplo
+);
 } // namespace hicma
 
 #endif // operations_h

@@ -78,10 +78,6 @@ namespace hicma {
 
     void transpose() override;
 
-    void trsm(const Dense& A, const char& uplo) override;
-
-    void trsm(const Hierarchical& A, const char& uplo) override;
-
     void gemm(const Dense& A, const Dense& B, const double& alpha=-1, const double& beta=1) override;
 
     void gemm(const Dense& A, const LowRank& B, const double& alpha=-1, const double& beta=1) override;

@@ -45,10 +45,6 @@ namespace hicma {
 
     virtual void transpose();
 
-    virtual void trsm(const Dense& A, const char& uplo);
-
-    virtual void trsm(const Hierarchical& A, const char& uplo);
-
     virtual void gemm(const Dense& A, const Dense& B, const double& alpha=-1, const double& beta=1);
 
     virtual void gemm(const Dense& A, const LowRank& B, const double& alpha=-1, const double& beta=1);
