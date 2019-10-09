@@ -6,8 +6,8 @@ macro(add_external_dependency DEPENDENCY)
     # to read the download settings.
     # Googletest provides such a file as CMakeLists.txt.in.
     configure_file(
-        ${DEPENDENCY}_download.cmake
-        ${DEPENDENCY}-download/CMakeLists.txt
+        ${CMAKE_SOURCE_DIR}/cmake/${DEPENDENCY}_download.cmake
+        ${CMAKE_CURRENT_BINARY_DIR}/${DEPENDENCY}-download/CMakeLists.txt
     )
     # Configure step
     execute_process(
