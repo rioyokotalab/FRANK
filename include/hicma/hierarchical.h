@@ -4,6 +4,8 @@
 
 #include <vector>
 
+#include "yorel/multi_methods.hpp"
+
 namespace hicma {
 
   class Dense;
@@ -11,6 +13,7 @@ namespace hicma {
 
   class Hierarchical : public Node {
   public:
+    MM_CLASS(Hierarchical, Node);
     // NOTE: Take care to add members new members to swap
     int dim[2];
     std::vector<Any> data;
@@ -74,8 +77,6 @@ namespace hicma {
     void print() const override;
 
     void transpose() override;
-
-    void getrf() override;
 
     void trsm(const Dense& A, const char& uplo) override;
 

@@ -1,11 +1,15 @@
 #ifndef low_rank_h
 #define low_rank_h
+
 #include "dense.h"
+
+#include "yorel/multi_methods.hpp"
 
 namespace hicma {
 
   class LowRank : public Node {
   public:
+    MM_CLASS(LowRank, Node);
     // NOTE: Take care to add members new members to swap
     Dense U, S, V;
     int dim[2];

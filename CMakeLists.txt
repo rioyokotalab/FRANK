@@ -18,12 +18,18 @@ add_library(util
     src/util/print.cpp
     src/util/timer.cpp
 )
-target_include_directories(util PUBLIC ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(util
+    PUBLIC ${PROJECT_SOURCE_DIR}/include
+           ${CMAKE_CURRENT_BINARY_DIR}/yomm11-src/include
+)
 
 add_library(gpu_batch
     src/gpu_batch/batch.cpp
 )
-target_include_directories(gpu_batch PUBLIC ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(gpu_batch
+    PUBLIC ${PROJECT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_BINARY_DIR}/yomm11-src/include
+)
 
 add_external_dependency(yomm11)
 add_library(hicma
@@ -33,6 +39,11 @@ add_library(hicma
     src/low_rank.cpp
     src/hierarchical.cpp
     src/functions.cpp
+    src/getrf.cpp
+)
+target_include_directories(hicma
+    PUBLIC ${PROJECT_SOURCE_DIR}/include
+           ${CMAKE_CURRENT_BINARY_DIR}/yomm11-src/include
 )
 target_include_directories(hicma PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_link_libraries(hicma util gpu_batch yomm11)

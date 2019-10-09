@@ -2,6 +2,7 @@
 #include "hicma/low_rank.h"
 #include "hicma/hierarchical.h"
 #include "hicma/functions.h"
+#include "hicma/operations.h"
 #include "hicma/gpu_batch/batch.h"
 #include "hicma/util/print.h"
 #include "hicma/util/timer.h"
@@ -10,10 +11,13 @@
 #include <cmath>
 #include <iostream>
 
+#include "yorel/multi_methods.hpp"
+
 using namespace hicma;
 
 int main(int argc, char** argv) {
-  int N = 1 << atoi(argv[2]);
+  yorel::multi_methods::initialize();
+  int N = atoi(argv[2]);
   int nleaf = atoi(argv[3]);
   int rank = atoi(argv[4]);
   std::vector<double> randx(N);
@@ -74,7 +78,7 @@ int main(int argc, char** argv) {
   stop("Init matrix");
   printTime("-DGEMM");
   start("LU decomposition");
-  A.getrf();
+  getrf(A);
   stop("LU decomposition");
   printTime("-DGETRF");
   printTime("-DTRSM");

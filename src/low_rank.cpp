@@ -8,9 +8,12 @@
 #include <random>
 #include <algorithm>
 
+#include "yorel/multi_methods.hpp"
+
 namespace hicma {
 
   LowRank::LowRank() {
+    MM_INIT();
     dim[0]=0; dim[1]=0; rank=0;
   }
 
@@ -21,6 +24,7 @@ namespace hicma {
                    const int i_abs,
                    const int j_abs,
                    const int level) {
+    MM_INIT();
     dim[0]=m; dim[1]=n; rank=k;
     U = Dense(m, k, i_abs, j_abs, level);
     S = Dense(k, k, i_abs, j_abs, level);
@@ -28,6 +32,7 @@ namespace hicma {
   }
 
   LowRank::LowRank(const Dense& A, const int k) : Node(A.i_abs,A.j_abs,A.level) {
+    MM_INIT();
     dim[0] = A.dim[0];
     dim[1] = A.dim[1];
     // Rank with oversampling limited by dimensions
@@ -63,10 +68,12 @@ namespace hicma {
   }
 
   LowRank::LowRank(const LowRank& A) : Node(A.i_abs,A.j_abs,A.level), U(A.U), S(A.S), V(A.V) {
-     dim[0]=A.dim[0]; dim[1]=A.dim[1]; rank=A.rank;
+    MM_INIT();
+    dim[0]=A.dim[0]; dim[1]=A.dim[1]; rank=A.rank;
   }
 
   LowRank::LowRank(LowRank&& A) {
+    MM_INIT();
     swap(*this, A);
   }
 
@@ -115,7 +122,7 @@ namespace hicma {
     swap(V, B.V);
 #else
     int rank2 = 2 * rank;
-      
+
     Dense Xu(rank, rank);
     Xu.gemm(U, A.U, CblasTrans, CblasNoTrans, 1, 0);
 
@@ -134,7 +141,7 @@ namespace hicma {
 
     Dense Va_Xv(dim[1], rank);
     Va_Xv.gemm(V, Xv, CblasTrans, CblasNoTrans, 1, 0);
-      
+
     Dense Yv(dim[1], rank);
     Dense VB = A.V.transpose();
     Yv = VB - Va_Xv;
@@ -157,7 +164,7 @@ namespace hicma {
     M(1,0) = S;
     S.gemm(Ru_BS, Rv, CblasNoTrans, CblasTrans, 1, 0);
     M(1,1) = S;
-    
+
     Dense Uhat(rank2, rank2);
     Dense Shat(rank2, rank2);
     Dense Vhat(rank2, rank2);
@@ -169,7 +176,7 @@ namespace hicma {
 
     Dense MERGE_U(dim[0], rank2);
     Dense MERGE_V(dim[1], rank2);
-        
+
     for (int i = 0; i < dim[0]; ++i) {
       for (int j = 0; j < rank; ++j) {
         MERGE_U(i,j) = U(i,j);

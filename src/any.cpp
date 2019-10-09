@@ -1,6 +1,7 @@
 #include "hicma/any.h"
 #include "hicma/low_rank.h"
 #include "hicma/hierarchical.h"
+#include "hicma/operations.h"
 
 #include <iostream>
 
@@ -53,10 +54,6 @@ namespace hicma {
 
   void Any::transpose() {
     ptr->transpose();
-  }
-
-  void Any::getrf() {
-    ptr->getrf();
   }
 
   void Any::trsm(const Any& A, const char& uplo) {

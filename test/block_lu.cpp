@@ -2,6 +2,7 @@
 #include "hicma/low_rank.h"
 #include "hicma/hierarchical.h"
 #include "hicma/functions.h"
+#include "hicma/operations.h"
 #include "hicma/gpu_batch/batch.h"
 #include "hicma/util/print.h"
 #include "hicma/util/timer.h"
@@ -9,9 +10,12 @@
 #include <algorithm>
 #include <cmath>
 
+#include "yorel/multi_methods.hpp"
+
 using namespace hicma;
 
 int main(int argc, char** argv) {
+  yorel::multi_methods::initialize();
   int N = 64;
   int Nb = 16;
   int Nc = N / Nb;
@@ -46,7 +50,7 @@ int main(int argc, char** argv) {
   stop("Init matrix");
   start("LU decomposition");
   for (int ic=0; ic<Nc; ic++) {
-    A(ic,ic).getrf();
+    getrf(A(ic,ic));
     for (int jc=ic+1; jc<Nc; jc++) {
       A(ic,jc).trsm(A(ic,ic),'l');
       A(jc,ic).trsm(A(ic,ic),'u');

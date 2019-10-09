@@ -4,11 +4,13 @@
 #include "any.h"
 
 #include <vector>
+
 #ifdef USE_MKL
 #include <mkl.h>
 #else
 #include <cblas.h>
 #endif
+#include "yorel/multi_methods.hpp"
 
 namespace hicma {
 
@@ -17,6 +19,7 @@ namespace hicma {
 
   class Dense : public Node {
   public:
+    MM_CLASS(Dense, Node);
     // NOTE: Take care to add members new members to swap
     std::vector<double> data;
     int dim[2];
@@ -101,8 +104,6 @@ namespace hicma {
     void print() const override;
 
     void transpose() override;
-
-    void getrf() override;
 
     void trsm(const Dense& A, const char& uplo) override;
 

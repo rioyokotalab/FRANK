@@ -1,6 +1,8 @@
 #ifndef node_h
 #define node_h
 
+#include "yorel/multi_methods.hpp"
+
 namespace hicma {
 
   enum {
@@ -14,9 +16,9 @@ namespace hicma {
   class LowRank;
   class Hierarchical;
 
-  class Node {
-
+  class Node : public yorel::multi_methods::selector {
   public:
+    MM_CLASS(Node);
     int i_abs; //! Row number of the node on the current recursion level
     int j_abs; //! Column number of the node on the current recursion level
     int level; //! Recursion level of the node
@@ -42,8 +44,6 @@ namespace hicma {
     virtual void print() const;
 
     virtual void transpose();
-
-    virtual void getrf();
 
     virtual void trsm(const Dense& A, const char& uplo);
 

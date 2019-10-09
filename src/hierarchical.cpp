@@ -9,21 +9,27 @@
 #include <cassert>
 #include <iostream>
 
+#include "yorel/multi_methods.hpp"
+
 namespace hicma {
 
   Hierarchical::Hierarchical() {
+    MM_INIT();
     dim[0]=0; dim[1]=0;
   }
 
   Hierarchical::Hierarchical(const int m) {
+    MM_INIT();
     dim[0]=m; dim[1]=1; data.resize(dim[0]);
   }
 
   Hierarchical::Hierarchical(const int m, const int n) {
+    MM_INIT();
     dim[0]=m; dim[1]=n; data.resize(dim[0]*dim[1]);
   }
 
   Hierarchical::Hierarchical(const Dense& A, const int m, const int n) : Node(A.i_abs,A.j_abs,A.level) {
+    MM_INIT();
     dim[0]=m; dim[1]=n;
     data.resize(dim[0]*dim[1]);
     int ni = A.dim[0];
@@ -50,6 +56,7 @@ namespace hicma {
   }
 
   Hierarchical::Hierarchical(const LowRank& A, const int m, const int n) : Node(A.i_abs,A.j_abs,A.level) {
+    MM_INIT();
     dim[0]=m; dim[1]=n;
     data.resize(dim[0]*dim[1]);
     int ni = A.dim[0];
@@ -105,6 +112,7 @@ namespace hicma {
                              const int _j_abs,
                              const int _level
                              ) : Node(_i_abs,_j_abs,_level) {
+    MM_INIT();
     if ( !level ) {
       assert(int(x.size()) == std::max(ni,nj));
       std::sort(x.begin(),x.end());
@@ -177,10 +185,12 @@ namespace hicma {
 
   Hierarchical::Hierarchical(const Hierarchical& A)
     : Node(A.i_abs,A.j_abs,A.level), data(A.data) {
+    MM_INIT();
     dim[0]=A.dim[0]; dim[1]=A.dim[1];
   }
 
   Hierarchical::Hierarchical(Hierarchical&& A) {
+    MM_INIT();
     swap(*this, A);
   }
 
@@ -264,21 +274,6 @@ namespace hicma {
       }
     }
     swap(*this, C);
-  }
-
-  void Hierarchical::getrf() {
-    for (int i=0; i<dim[0]; i++) {
-      (*this)(i,i).getrf();
-      for (int j=i+1; j<dim[0]; j++) {
-        (*this)(i,j).trsm((*this)(i,i), 'l');
-        (*this)(j,i).trsm((*this)(i,i), 'u');
-      }
-      for (int j=i+1; j<dim[0]; j++) {
-        for (int k=i+1; k<dim[0]; k++) {
-          (*this)(j,k).gemm((*this)(j,i), (*this)(i,k), -1, 1);
-        }
-      }
-    }
   }
 
   void Hierarchical::trsm(const Dense& A, const char& uplo) {

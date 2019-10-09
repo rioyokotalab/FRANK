@@ -9,17 +9,22 @@
 #include <cassert>
 #include <iostream>
 #include <iomanip>
+
 #ifndef USE_MKL
 #include <lapacke.h>
 #endif
 
+#include "yorel/multi_methods.hpp"
+
 namespace hicma {
 
   Dense::Dense() {
+    MM_INIT();
     dim[0]=0; dim[1]=0;
   }
 
   Dense::Dense(const int m) {
+    MM_INIT();
     dim[0]=m; dim[1]=1; data.resize(dim[0],0);
   }
 
@@ -30,6 +35,7 @@ namespace hicma {
                const int j_abs,
                const int level
                ) : Node(i_abs, j_abs, level) {
+    MM_INIT();
     dim[0]=m; dim[1]=n; data.resize(dim[0]*dim[1],0);
   }
 
@@ -51,20 +57,24 @@ namespace hicma {
                const int j_abs,
                const int level
                ) : Node(i_abs,j_abs,level) {
+    MM_INIT();
     dim[0] = ni; dim[1] = nj;
     data.resize(dim[0]*dim[1]);
     func(data, x, ni, nj, i_begin, j_begin);
   }
 
   Dense::Dense(const Dense& A) : Node(A.i_abs,A.j_abs,A.level), data(A.data) {
+    MM_INIT();
     dim[0]=A.dim[0]; dim[1]=A.dim[1];
   }
 
   Dense::Dense(Dense&& A) {
+    MM_INIT();
     swap(*this, A);
   }
 
   Dense::Dense(const LowRank& A) : Node(A.i_abs,A.j_abs,A.level) {
+    MM_INIT();
     dim[0] = A.dim[0]; dim[1] = A.dim[1];
     data.resize(dim[0]*dim[1], 0);
     Dense UxS(A.dim[0], A.rank);
@@ -73,6 +83,7 @@ namespace hicma {
   }
 
   Dense::Dense(const Hierarchical& A) : Node(A.i_abs,A.j_abs,A.level) {
+    MM_INIT();
     dim[0] = 0;
     for (int i=0; i<A.dim[0]; i++) {
       Dense AD = Dense(A(i,0));
@@ -102,6 +113,7 @@ namespace hicma {
   }
 
   Dense::Dense(const Any& _A) : Node(_A.ptr->i_abs, _A.ptr->j_abs, _A.ptr->level) {
+    MM_INIT();
     if (_A.is(HICMA_DENSE)) {
       *this = static_cast<const Dense&>(*_A.ptr);
     } else if (_A.is(HICMA_LOWRANK)) {
@@ -229,7 +241,7 @@ namespace hicma {
     }
     return A;
   }
-  
+
   void Dense::print() const {
     for (int i=0; i<dim[0]; i++) {
       for (int j=0; j<dim[1]; j++) {
@@ -248,13 +260,6 @@ namespace hicma {
         data[i*dim[1]+j] = _data[j*dim[0]+i];
       }
     }
-  }
-
-  void Dense::getrf() {
-    start("-DGETRF");
-    std::vector<int> ipiv(std::min(dim[0],dim[1]));
-    LAPACKE_dgetrf(LAPACK_ROW_MAJOR, dim[0], dim[1], &data[0], dim[1], &ipiv[0]);
-    stop("-DGETRF",false);
   }
 
   void Dense::trsm(const Dense& A, const char& uplo) {
