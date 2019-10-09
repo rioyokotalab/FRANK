@@ -2,6 +2,7 @@
 #include "hicma/dense.h"
 #include "hicma/low_rank.h"
 #include "hicma/hierarchical.h"
+#include "hicma/operations.h"
 #include "hicma/gpu_batch/batch.h"
 #include "hicma/util/print.h"
 #include "hicma/util/timer.h"
@@ -78,8 +79,8 @@ namespace hicma {
     dim[0] = A.dim[0]; dim[1] = A.dim[1];
     data.resize(dim[0]*dim[1], 0);
     Dense UxS(A.dim[0], A.rank);
-    UxS.gemm(A.U, A.S);
-    this->gemm(UxS, A.V);
+    gemm(A.U, A.S, UxS, 1, 0);
+    gemm(UxS, A.V, *this, 1, 0);
   }
 
   Dense::Dense(const Hierarchical& A) : Node(A.i_abs,A.j_abs,A.level) {
@@ -262,89 +263,6 @@ namespace hicma {
     }
   }
 
-  void Dense::gemm(const Dense& A, const Dense&B, const CBLAS_TRANSPOSE TransA, const CBLAS_TRANSPOSE TransB,
-                   const double& alpha, const double& beta) {
-    start("-DGEMM");
-    if (B.dim[1] == 1) {
-      cblas_dgemv(CblasRowMajor, CblasNoTrans, A.dim[0], A.dim[1], alpha,
-                  &A[0], A.dim[1], &B[0], 1, beta, &data[0], 1);
-    }
-    else {
-      int k = TransA == CblasNoTrans ? A.dim[1] : A.dim[0];
-      cblas_dgemm(CblasRowMajor, TransA, TransB, dim[0], dim[1], k, alpha,
-                  &A[0], A.dim[1], &B[0], B.dim[1], beta, &data[0], dim[1]);
-    }
-    stop("-DGEMM",false);
-  }
-
-  void Dense::gemm(const Dense& A, const Dense& B, const double& alpha, const double& beta) {
-    assert(this->dim[0] == A.dim[0] && A.dim[1] == B.dim[0] && this->dim[1] == B.dim[1]);
-    if (alpha == 1 && beta == 1) {
-      gemm_push(A, B, this);
-    }
-    else {
-      gemm(A, B, CblasNoTrans, CblasNoTrans, alpha, beta);
-    }
-  }
-
-  void Dense::gemm(const Dense& A, const LowRank& B, const double& alpha, const double& beta) {
-    Dense AxU(dim[0], B.rank);
-    AxU.gemm(A, B.U, 1, 0);
-    Dense AxUxS(dim[0], B.rank);
-    AxUxS.gemm(AxU, B.S, 1, 0);
-    gemm(AxUxS, B.V, alpha, beta);
-  }
-
-  void Dense::gemm(const Dense& A, const Hierarchical& B, const double& alpha, const double& beta) {
-    Hierarchical C(*this, 1, B.dim[1]);
-    C.gemm(A, B, alpha, beta);
-    *this = Dense(C);
-  }
-
-  void Dense::gemm(const LowRank& A, const Dense& B, const double& alpha, const double& beta) {
-    Dense VxB(A.rank, B.dim[1]);
-    VxB.gemm(A.V, B, 1, 0);
-    Dense SxVxB(A.rank, B.dim[1]);
-    SxVxB.gemm(A.S, VxB, 1, 0);
-    gemm(A.U, SxVxB, alpha, beta);
-  }
-
-  void Dense::gemm(const LowRank& A, const LowRank& B, const double& alpha, const double& beta) {
-    Dense VxU(A.rank, B.rank);
-    VxU.gemm(A.V, B.U, 1, 0);
-    Dense SxVxU(A.rank, B.rank);
-    SxVxU.gemm(A.S, VxU, 1, 0);
-    Dense SxVxUxS(A.rank, B.rank);
-    SxVxUxS.gemm(SxVxU, B.S, 1, 0);
-    Dense UxSxVxUxS(A.dim[0], B.rank);
-    UxSxVxUxS.gemm(A.U, SxVxUxS, 1, 0);
-    gemm(UxSxVxUxS, B.V, alpha, beta);
-  }
-
-  void Dense::gemm(const LowRank& A, const Hierarchical& B, const double& alpha, const double& beta) {
-    Hierarchical C(*this, 1, B.dim[1]);
-    C.gemm(A, B, alpha, beta);
-    *this = Dense(C);
-  }
-
-  void Dense::gemm(const Hierarchical& A, const Dense& B, const double& alpha, const double& beta) {
-    Hierarchical C(*this, A.dim[0], 1);
-    C.gemm(A, B, alpha, beta);
-    *this = Dense(C);
-  }
-
-  void Dense::gemm(const Hierarchical& A, const LowRank& B, const double& alpha, const double& beta) {
-    Hierarchical C(*this, A.dim[0], 1);
-    C.gemm(A, B, alpha, beta);
-    *this = Dense(C);
-  }
-
-  void Dense::gemm(const Hierarchical& A, const Hierarchical& B, const double& alpha, const double& beta) {
-    Hierarchical C(*this, A.dim[0], B.dim[1]);
-    C.gemm(A, B, alpha, beta);
-    *this = Dense(C);
-  }
-
   void Dense::qr(Dense& Q, Dense& R) {
     start("-DGEQRF");
     std::vector<double> tau(dim[1]);
@@ -423,7 +341,7 @@ namespace hicma {
 
   void Dense::tpmqrt(Dense& B, const LowRank& Y, const Dense& T, const bool trans) {
     Dense UY(Y.U.dim[0], Y.V.dim[1]);
-    UY.gemm(Y.U, Y.V, 1, 0);
+    gemm(Y.U, Y.V, UY, 1, 0);
     tpmqrt(B, UY, T, trans);
   }
 
@@ -436,7 +354,7 @@ namespace hicma {
   void Dense::tpmqrt(LowRank& B, const LowRank& Y, const Dense& T, const bool trans) {
     Dense C(B);
     Dense UY(Y.U.dim[0], Y.V.dim[1]);
-    UY.gemm(Y.U, Y.V, 1, 0);
+    gemm(Y.U, Y.V, UY, 1, 0);
     tpmqrt(C, UY, T, trans);
     B = LowRank(C, B.rank);
   }
@@ -445,13 +363,13 @@ namespace hicma {
     Hierarchical C(B);
     Dense Yt(Y);
     Yt.transpose();
-    C.gemm(Yt, *this, 1, 1); // C = B + Yt.A
+    gemm(Yt, *this, C, 1, 1); // C = B + Yt.A
     Dense Tt(T);
     if(trans) Tt.transpose();
-    B.gemm(Tt, C, -1, 1); // B = B - (T or Tt)*C
+    gemm(Tt, C, B, -1, 1); // B = B - (T or Tt)*C
     Dense YTt(Y.dim[0], Tt.dim[1]);
-    YTt.gemm(Y, Tt, 1, 0);
-    gemm(YTt, C, -1, 1); // A = A - Y*(T or Tt)*C
+    gemm(Y, Tt, YTt, 1, 0);
+    gemm(YTt, C, *this, -1, 1); // A = A - Y*(T or Tt)*C
   }
 
   void Dense::tpmqrt(Hierarchical& B, const Hierarchical& Y, const Hierarchical& T, const bool trans) {

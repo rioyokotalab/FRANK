@@ -34,8 +34,6 @@ namespace hicma {
 
     void transpose();
 
-    void gemm(const Any& A, const Any& B, const double& alpha=-1, const double& beta=1);
-
     void geqrt(Any& T);
 
     void larfb(const Any& Y, const Any& T, const bool trans=false);

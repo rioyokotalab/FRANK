@@ -2,6 +2,7 @@
 #include "hicma/low_rank.h"
 #include "hicma/hierarchical.h"
 #include "hicma/functions.h"
+#include "hicma/operations.h"
 #include "hicma/gpu_batch/batch.h"
 #include "hicma/util/print.h"
 
@@ -276,77 +277,6 @@ namespace hicma {
     swap(*this, C);
   }
 
-  void Hierarchical::gemm(const Dense& A, const Dense& B, const double& alpha, const double& beta) {
-    assert(A.dim[1] == B.dim[0]);
-    const Hierarchical& AH = Hierarchical(A, dim[0], 1);
-    const Hierarchical& BH = Hierarchical(B, 1, dim[1]);
-    gemm(AH, BH, alpha, beta);
-  }
-
-  void Hierarchical::gemm(const Dense& A, const LowRank& B, const double& alpha, const double& beta) {
-    print_undefined(__func__, A.type(), B.type(), this->type());
-    abort();
-  }
-
-  void Hierarchical::gemm(const Dense& A, const Hierarchical& B, const double& alpha, const double& beta) {
-    const Hierarchical& AH = Hierarchical(A, dim[0], B.dim[0]);
-    gemm(AH, B, alpha, beta);
-  }
-
-  void Hierarchical::gemm(const LowRank& A, const Dense& B, const double& alpha, const double& beta) {
-    print_undefined(__func__, A.type(), B.type(), this->type());
-    abort();
-  }
-
-  void Hierarchical::gemm(const LowRank& A, const LowRank& B, const double& alpha, const double& beta) {
-    const Hierarchical& AH = Hierarchical(A, dim[0], dim[0]);
-    const Hierarchical& BH = Hierarchical(B, dim[1], dim[1]);
-    gemm(AH, BH, alpha, beta);
-  }
-
-  void Hierarchical::gemm(const LowRank& A, const Hierarchical& B, const double& alpha, const double& beta) {
-    const Hierarchical& AH = Hierarchical(A, dim[0], B.dim[0]);
-    gemm(AH, B, alpha, beta);
-  }
-
-  void Hierarchical::gemm(const Hierarchical& A, const Dense& B, const double& alpha, const double& beta) {
-    const Hierarchical& BH = Hierarchical(B, A.dim[1], dim[1]);
-    gemm(A, BH, alpha, beta);
-  }
-
-  void Hierarchical::gemm(const Hierarchical& A, const LowRank& B, const double& alpha, const double& beta) {
-    const Hierarchical& BH = Hierarchical(B, A.dim[1], dim[1]);
-    gemm(A, BH, alpha, beta);
-  }
-
-  void Hierarchical::gemm(const Hierarchical& A, const Hierarchical& B, const double& alpha, const double& beta) {
-    assert(dim[0]==A.dim[0] && dim[1]==B.dim[1] && A.dim[1] == B.dim[0]);
-    for (int i=0; i<dim[0]; i++) {
-      for (int j=0; j<dim[1]; j++) {
-        gemm_row(A, B, i, j, 0, A.dim[1], alpha, beta);
-      }
-    }
-  }
-
-  void Hierarchical::gemm_row(
-                              const Hierarchical& A, const Hierarchical& B,
-                              const int& i, const int& j, const int& k_min, const int& k_max,
-                              const double& alpha, const double& beta)
-  {
-    int rank = -1;
-    if ((*this)(i,j).is(HICMA_LOWRANK)) {
-      rank = static_cast<LowRank&>(*(*this)(i,j).ptr).rank;
-      (*this)(i,j) = Dense(static_cast<LowRank&>(*(*this)(i,j).ptr));
-    }
-    for (int k=k_min; k<k_max; k++) {
-      (*this)(i,j).gemm(A(i,k), B(k,j), alpha, beta);
-    }
-    if (rank != -1) {
-      assert((*this)(i,j).is(HICMA_DENSE));
-      (*this)(i,j) = LowRank(static_cast<Dense&>(*(*this)(i,j).ptr), rank);
-    }
-  }
-
   void Hierarchical::blr_col_qr(Hierarchical& Q, Hierarchical& R) {
     assert(dim[1] == 1 && Q.dim[0] == dim[0] && Q.dim[1] == 1 && R.dim[0] == 1 && R.dim[1] == 1);
     Hierarchical Qu(dim[0], 1);
@@ -366,9 +296,9 @@ namespace hicma {
         Ai.U.qr(Qui, Rui);
         Qu(i, 0) = Qui;
         Dense RS(Rui.dim[0], Ai.S.dim[1]);
-        RS.gemm(Rui, Ai.S, 1, 1);
+        gemm(Rui, Ai.S, RS, 1, 1);
         Dense RSV(RS.dim[0], Ai.V.dim[1]);
-        RSV.gemm(RS, Ai.V, 1, 1);
+        gemm(RS, Ai.V, RSV, 1, 1);
         B(i, 0) = RSV;
       }
     }
@@ -392,7 +322,7 @@ namespace hicma {
       rowOffset += Bi.dim[0];
     }
     for(int i=0; i<dim[0]; i++) {
-      Q(i, 0).gemm(Qu(i, 0), HQb(i, 0), 1, 0);
+      gemm(Qu(i, 0), HQb(i, 0), Q(i, 0), 1, 0);
     }
   }
 
@@ -438,9 +368,9 @@ namespace hicma {
         Ai.U.qr(Qu, Ru);
         QL(i, 0) = Qu; //Store Q
         Dense RS(Ru.dim[0], Ai.S.dim[1]);
-        RS.gemm(Ru, Ai.S, 1, 0);
+        gemm(Ru, Ai.S, RS, 1, 0);
         Dense RSV(RS.dim[0], Ai.V.dim[1]);
-        RSV.gemm(RS, Ai.V, 1, 0);
+        gemm(RS, Ai.V, RSV, 1, 0);
         //Split R*S*V
         Hierarchical BlockRSV(RSV, 1, cols);
         for(int j=0; j<cols; j++) {
@@ -550,9 +480,9 @@ namespace hicma {
         }
         Hierarchical Rjk(1, 1);
         Rjk(0, 0) = R(j, k);
-        Rjk.gemm(TrQj, Ak, 1, 1); //Rjk = Q*j^T x A*k
+        gemm(TrQj, Ak, Rjk, 1, 1); //Rjk = Q*j^T x A*k
         R(j, k) = Rjk(0, 0);
-        Ak.gemm(Qj, Rjk, -1, 1); //A*k = A*k - Q*j x Rjk
+        gemm(Qj, Rjk, Ak, -1, 1); //A*k = A*k - Q*j x Rjk
         for(int i=0; i<dim[0]; i++) {
           (*this)(i, k) = Ak(i, 0);
         }
@@ -597,11 +527,11 @@ namespace hicma {
       }
     }
     Dense YT(_Y.dim[0], T.dim[1]);
-    YT.gemm(_Y, T, CblasNoTrans, trans ? CblasTrans : CblasNoTrans, 1, 1);
+    gemm(_Y, T, YT, CblasNoTrans, trans ? CblasTrans : CblasNoTrans, 1, 1);
     Dense YTYt(YT.dim[0], _Y.dim[0]);
-    YTYt.gemm(YT, _Y, CblasNoTrans, CblasTrans, 1, 1);
+    gemm(YT, _Y, YTYt, CblasNoTrans, CblasTrans, 1, 1);
     Hierarchical C(*this);
-    gemm(YTYt, C, -1, 1);
+    gemm(YTYt, C, *this, -1, 1);
   }
 
   void Hierarchical::larfb(const Hierarchical& Y, const Hierarchical& T, const bool trans) {
@@ -651,13 +581,13 @@ namespace hicma {
     Dense C(B);
     Dense Yt(Y);
     Yt.transpose();
-    C.gemm(Yt, *this, 1, 1); // C = B + Yt.A
+    gemm(Yt, *this, C, 1, 1); // C = B + Yt.A
     Dense Tt(T);
     if(trans) Tt.transpose();
-    B.gemm(Tt, C, -1, 1); // B = B - (T or Tt)*C
+    gemm(Tt, C, B, -1, 1); // B = B - (T or Tt)*C
     Dense YTt(Y.dim[0], Tt.dim[1]);
-    YTt.gemm(Y, Tt, 1, 1);
-    gemm(YTt, C, -1, 1); // A = A - Y*(T or Tt)*C
+    gemm(Y, Tt, YTt, 1, 1);
+    gemm(YTt, C, *this, -1, 1); // A = A - Y*(T or Tt)*C
   }
 
   void Hierarchical::tpmqrt(Dense& B, const Hierarchical& Y, const Hierarchical& T, const bool trans) {

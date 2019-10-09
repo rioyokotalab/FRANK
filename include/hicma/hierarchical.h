@@ -78,29 +78,6 @@ namespace hicma {
 
     void transpose() override;
 
-    void gemm(const Dense& A, const Dense& B, const double& alpha=-1, const double& beta=1) override;
-
-    void gemm(const Dense& A, const LowRank& B, const double& alpha=-1, const double& beta=1) override;
-
-    void gemm(const Dense& A, const Hierarchical& B, const double& alpha=-1, const double& beta=1) override;
-
-    void gemm(const LowRank& A, const Dense& B, const double& alpha=-1, const double& beta=1) override;
-
-    void gemm(const LowRank& A, const LowRank& B, const double& alpha=-1, const double& beta=1) override;
-
-    void gemm(const LowRank& A, const Hierarchical& B, const double& alpha=-1, const double& beta=1) override;
-
-    void gemm(const Hierarchical& A, const Dense& B, const double& alpha=-1, const double& beta=1) override;
-
-    void gemm(const Hierarchical& A, const LowRank& B, const double& alpha=-1, const double& beta=1) override;
-
-    void gemm(const Hierarchical& A, const Hierarchical& B, const double& alpha=-1, const double& beta=1) override;
-
-    void gemm_row(
-                  const Hierarchical& A, const Hierarchical& B,
-                  const int& i, const int& j, const int& k_min, const int& k_max,
-                  const double& alpha, const double& beta);
-
     void blr_col_qr(Hierarchical& Q, Hierarchical& R);
 
     void split_col(Hierarchical& QL);

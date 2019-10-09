@@ -38,7 +38,7 @@ BEGIN_SPECIALIZATION(trsm_omm, void, const Hierarchical& A, Hierarchical& B, con
     case 'l' :
       for (int i=0; i<B.dim[0]; i++) {
         for (int j=0; j<i; j++) {
-          B[i].gemm(A(i,j), B[j], -1, 1);
+          gemm(A(i,j), B[j], B[i], -1, 1);
         }
         trsm(A(i,i), B[i], 'l');
       }
@@ -46,7 +46,7 @@ BEGIN_SPECIALIZATION(trsm_omm, void, const Hierarchical& A, Hierarchical& B, con
     case 'u' :
       for (int i=B.dim[0]-1; i>=0; i--) {
         for (int j=B.dim[0]-1; j>i; j--) {
-          B[i].gemm(A(i,j), B[j], -1, 1);
+          gemm(A(i,j), B[j], B[i], -1, 1);
         }
         trsm(A(i,i), B[i], 'u');
       }
@@ -61,7 +61,7 @@ BEGIN_SPECIALIZATION(trsm_omm, void, const Hierarchical& A, Hierarchical& B, con
     case 'l' :
       for (int j=0; j<B.dim[1]; j++) {
         for (int i=0; i<B.dim[0]; i++) {
-          B.gemm_row(A, B, i, j, 0, i, -1, 1);
+          gemm_row(A, B, B, i, j, 0, i, -1, 1);
           trsm(A(i,i), B(i,j), 'l');
         }
       }
@@ -69,7 +69,7 @@ BEGIN_SPECIALIZATION(trsm_omm, void, const Hierarchical& A, Hierarchical& B, con
     case 'u' :
       for (int i=0; i<B.dim[0]; i++) {
         for (int j=0; j<B.dim[1]; j++) {
-          B.gemm_row(B, A, i, j, 0, j, -1, 1);
+          gemm_row(B, A, B, i, j, 0, j, -1, 1);
           trsm(A(j,j), B(i,j), 'u');
         }
       }

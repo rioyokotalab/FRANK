@@ -2,6 +2,8 @@
 #include "hicma/low_rank.h"
 #include "hicma/gpu_batch/batch.h"
 
+#include "hicma/operations.h"
+
 namespace hicma {
 
   std::vector<Dense> vecA;
@@ -13,8 +15,8 @@ namespace hicma {
     A = LowRank(Aij, rank);
   }
 
-  void gemm_push(const Dense& A, const Dense& B, Dense* C) {
-    C->gemm(A, B, CblasNoTrans, CblasNoTrans, 1, 1);
+  void gemm_push(const Dense& A, const Dense& B, Dense& C) {
+    gemm(A, B, C, CblasNoTrans, CblasNoTrans, 1, 1);
   }
 
   void rsvd_batch() {}

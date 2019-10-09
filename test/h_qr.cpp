@@ -2,6 +2,7 @@
 #include "hicma/low_rank.h"
 #include "hicma/hierarchical.h"
 #include "hicma/functions.h"
+#include "hicma/operations.h"
 #include "hicma/gpu_batch/batch.h"
 #include "hicma/util/print.h"
 #include "hicma/util/timer.h"
@@ -10,9 +11,12 @@
 #include <cmath>
 #include <iostream>
 
+#include "yorel/multi_methods.hpp"
+
 using namespace hicma;
 
 int main(int argc, char** argv) {
+  yorel::multi_methods::initialize();
   int N = 128;
   int nleaf = 16;
   int rank = 8;
@@ -79,14 +83,14 @@ int main(int argc, char** argv) {
   stop("QR decomposition");
   printTime("-DGEQRF");
   printTime("-DGEMM");
-  QR.gemm(Q, R, 1, 1);
+  gemm(Q, R, QR, 1, 1);
   diff = (Dense(QR) - Dense(D)).norm();
   norm = D.norm();
   print("QR Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
   Dense DQ(Q);
   Dense QtQ(DQ.dim[1], DQ.dim[1]);
-  QtQ.gemm(DQ, DQ, CblasTrans, CblasNoTrans, 1, 1);
+  gemm(DQ, DQ, QtQ, CblasTrans, CblasNoTrans, 1, 1);
   Dense Id(identity, randx, QtQ.dim[0], QtQ.dim[1]);
   diff = (QtQ - Id).norm();
   norm = Id.norm();

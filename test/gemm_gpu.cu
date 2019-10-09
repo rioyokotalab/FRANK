@@ -105,7 +105,7 @@ int main(int argc, char** argv) {
       }
     }
     Dense D = vecC[b];
-    D.gemm(vecA[b], vecB[b], alpha, beta);
+    gemm(vecA[b], vecB[b], D, alpha, beta);
     double diff = (C - D).norm();
     double norm = D.norm();
     print("Rel. L2 Error", std::sqrt(diff/norm), false);

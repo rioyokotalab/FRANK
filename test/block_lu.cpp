@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
       A(ic,jc) = Aij;
     }
   }
-  b.gemm(A, x, 1, 1);
+  gemm(A, x, b, 1, 1);
   gemm_batch();
   stop("Init matrix");
   start("LU decomposition");
@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
     }
     for (int jc=ic+1; jc<Nc; jc++) {
       for (int kc=ic+1; kc<Nc; kc++) {
-        A(jc,kc).gemm(A(jc,ic),A(ic,kc));
+        gemm(A(jc,ic),A(ic,kc),A(jc,kc),-1,1);
       }
     }
   }
@@ -68,7 +68,7 @@ int main(int argc, char** argv) {
   start("Forward substitution");
   for (int ic=0; ic<Nc; ic++) {
     for (int jc=0; jc<ic; jc++) {
-      b[ic].gemm(A(ic,jc),b[jc]);
+      gemm(A(ic,jc),b[jc],b[ic],-1,1);
     }
     trsm(A(ic,ic), b[ic],'l');
   }
@@ -78,7 +78,7 @@ int main(int argc, char** argv) {
   start("Backward substitution");
   for (int ic=Nc-1; ic>=0; ic--) {
     for (int jc=Nc-1; jc>ic; jc--) {
-      b[ic].gemm(A(ic,jc),b[jc]);
+      gemm(A(ic,jc),b[jc],b[ic],-1,1);
     }
     trsm(A(ic,ic), b[ic],'u');
   }

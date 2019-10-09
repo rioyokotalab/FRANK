@@ -42,24 +42,6 @@ namespace hicma {
 
   void Node::transpose() {};
 
-  void Node::gemm(const Dense& A, const Dense& B, const double& alpha, const double& beta) {};
-
-  void Node::gemm(const Dense& A, const LowRank& B, const double& alpha, const double& beta) {};
-
-  void Node::gemm(const Dense& A, const Hierarchical& B, const double& alpha, const double& beta) {};
-
-  void Node::gemm(const LowRank& A, const Dense& B, const double& alpha, const double& beta) {};
-
-  void Node::gemm(const LowRank& A, const LowRank& B, const double& alpha, const double& beta) {};
-
-  void Node::gemm(const LowRank& A, const Hierarchical& B, const double& alpha, const double& beta) {};
-
-  void Node::gemm(const Hierarchical& A, const Dense& B, const double& alpha, const double& beta) {};
-
-  void Node::gemm(const Hierarchical& A, const LowRank& B, const double& alpha, const double& beta) {};
-
-  void Node::gemm(const Hierarchical& A, const Hierarchical& B, const double& alpha, const double& beta) {};
-
   void Node::geqrt(Dense& T) {};
 
   void Node::geqrt(Hierarchical& T) {};

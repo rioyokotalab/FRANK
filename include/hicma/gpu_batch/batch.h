@@ -15,7 +15,7 @@ namespace hicma {
 
   void rsvd_push(Any& A, Dense& Aij, int rank);
 
-  void gemm_push(const Dense& A, const Dense& B, Dense* C);
+  void gemm_push(const Dense& A, const Dense& B, Dense& C);
 
   void rsvd_batch();
 

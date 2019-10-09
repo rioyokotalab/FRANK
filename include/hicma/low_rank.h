@@ -57,24 +57,6 @@ namespace hicma {
 
     void mergeV(const LowRank& A, const LowRank& B);
 
-    void gemm(const Dense& A, const Dense& B, const double& alpha=-1, const double& beta=1) override;
-
-    void gemm(const Dense& A, const LowRank& B, const double& alpha=-1, const double& beta=1) override;
-
-    void gemm(const Dense& A, const Hierarchical& B, const double& alpha=-1, const double& beta=1) override;
-
-    void gemm(const LowRank& A, const Dense& B, const double& alpha=-1, const double& beta=1) override;
-
-    void gemm(const LowRank& A, const LowRank& B, const double& alpha=-1, const double& beta=1) override;
-
-    void gemm(const LowRank& A, const Hierarchical& B, const double& alpha=-1, const double& beta=1) override;
-
-    void gemm(const Hierarchical& A, const Dense& B, const double& alpha=-1, const double& beta=1) override;
-
-    void gemm(const Hierarchical& A, const LowRank& B, const double& alpha=-1, const double& beta=1) override;
-
-    void gemm(const Hierarchical& A, const Hierarchical& B, const double& alpha=-1, const double& beta=1) override;
-
     void larfb(const Dense& Y, const Dense& T, const bool trans=false) override;
 
     void tpqrt(Dense& A, Dense& T) override;

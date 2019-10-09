@@ -35,7 +35,7 @@ BEGIN_SPECIALIZATION(
     }
     for (int j=i+1; j<A.dim[0]; j++) {
       for (int k=i+1; k<A.dim[0]; k++) {
-        A(j,k).gemm(A(j,i), A(i,k), -1, 1);
+        gemm(A(j,i), A(i,k), A(j,k), -1, 1);
       }
     }
   }
