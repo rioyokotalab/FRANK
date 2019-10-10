@@ -464,13 +464,6 @@ namespace hicma {
 
   void Dense::tpmqrt(Dense& B, const Dense& Y, const Dense &T, const bool trans) {
     LAPACKE_dtprfb(LAPACK_ROW_MAJOR, 'L', (trans ? 'T': 'N'), 'F', 'C', dim[0], dim[1], Y.dim[1], 0, &Y[0], Y.dim[1], &T[0], T.dim[1], &B[0], B.dim[1], &data[0], dim[1]);
-    // Dense A(*this);
-    // Dense C(B);
-    // C.gemm(Y, A, CblasTrans, CblasNoTrans, 1, 1); //C = B + trans(Y)*A
-    // Dense YT(Y.dim[0], trans ? T.dim[0] : T.dim[1]);
-    // YT.gemm(Y, T, CblasNoTrans, trans ? CblasTrans : CblasNoTrans, 1, 0); //YT = Y*T or Y*trans(T)
-    // (*this).gemm(YT, C, CblasNoTrans, CblasNoTrans, -1, 1); //A = A - (YT*C)
-    // B.gemm(T, C, trans ? CblasTrans : CblasNoTrans, CblasNoTrans, -1, 1); //B = B - (T*C) or B - (trans(T)*C)
   }
 
   void Dense::tpmqrt(Dense& B, const LowRank& Y, const Dense& T, const bool trans) {
