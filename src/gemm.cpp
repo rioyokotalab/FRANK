@@ -8,6 +8,8 @@
 #include "hicma/util/timer.h"
 #include "hicma/gpu_batch/batch.h"
 
+#include <cassert>
+
 #include "yorel/multi_methods.hpp"
 
 #ifdef USE_MKL
@@ -307,16 +309,8 @@ void gemm_row(
               const double& alpha, const double& beta)
 {
   int rank = -1;
-  if (C(i,j).is(HICMA_LOWRANK)) {
-    rank = static_cast<LowRank&>(*C(i,j).ptr).rank;
-    C(i,j) = Dense(static_cast<LowRank&>(*C(i,j).ptr));
-  }
   for (int k=k_min; k<k_max; k++) {
     gemm(A(i,k), B(k,j), C(i,j), alpha, beta);
-  }
-  if (rank != -1) {
-    assert(C(i,j).is(HICMA_DENSE));
-    C(i,j) = LowRank(static_cast<Dense&>(*C(i,j).ptr), rank);
   }
 }
 
