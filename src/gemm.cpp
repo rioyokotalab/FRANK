@@ -20,29 +20,53 @@
 namespace hicma
 {
 
-void gemm(const NodeProxy& A, const NodeProxy& B, NodeProxy& C, const double alpha, const double beta) {
+void gemm(
+  const NodeProxy& A, const NodeProxy& B, NodeProxy& C,
+  const double alpha, const double beta
+) {
   gemm(*A.ptr.get(), *B.ptr.get(), *C.ptr.get(), alpha, beta);
 }
-void gemm(const NodeProxy& A, const NodeProxy& B, Node& C, const double alpha, const double beta) {
+void gemm(
+  const NodeProxy& A, const NodeProxy& B, Node& C,
+  const double alpha, const double beta
+) {
   gemm(*A.ptr.get(), *B.ptr.get(), C, alpha, beta);
 }
-void gemm(const NodeProxy& A, const Node& B, NodeProxy& C, const double alpha, const double beta) {
+void gemm(
+  const NodeProxy& A, const Node& B, NodeProxy& C,
+  const double alpha, const double beta
+) {
   gemm(*A.ptr.get(), B, *C.ptr.get(), alpha, beta);
 }
-void gemm(const NodeProxy& A, const Node& B, Node& C, const double alpha, const double beta) {
+void gemm(
+  const NodeProxy& A, const Node& B, Node& C,
+  const double alpha, const double beta
+) {
   gemm(*A.ptr.get(), B, C, alpha, beta);
 }
-void gemm(const Node& A, const NodeProxy& B, NodeProxy& C, const double alpha, const double beta) {
+void gemm(
+  const Node& A, const NodeProxy& B, NodeProxy& C,
+  const double alpha, const double beta
+) {
   gemm(A, *B.ptr.get(), *C.ptr.get(), alpha, beta);
 }
-void gemm(const Node& A, const NodeProxy& B, Node& C, const double alpha, const double beta) {
+void gemm(
+  const Node& A, const NodeProxy& B, Node& C,
+  const double alpha, const double beta
+) {
   gemm(A, *B.ptr.get(), C, alpha, beta);
 }
-void gemm(const Node& A, const Node& B, NodeProxy& C, const double alpha, const double beta) {
+void gemm(
+  const Node& A, const Node& B, NodeProxy& C,
+  const double alpha, const double beta
+) {
   gemm(A, B, *C.ptr.get(), alpha, beta);
 }
 
-void gemm(const Node& A, const Node& B, Node& C, const double alpha, const double beta) {
+void gemm(
+  const Node& A, const Node& B, Node& C,
+  const double alpha, const double beta
+) {
   gemm_omm(A, B, C, alpha, beta);
 }
 
@@ -53,30 +77,58 @@ void gemm(
 ) {
   start("-DGEMM");
   if (B.dim[1] == 1) {
-    cblas_dgemv(CblasRowMajor, CblasNoTrans, A.dim[0], A.dim[1], alpha,
-                &A[0], A.dim[1], &B[0], 1, beta, &C.data[0], 1);
+    cblas_dgemv(
+      CblasRowMajor,
+      CblasNoTrans,
+      A.dim[0], A.dim[1],
+      alpha,
+      &A[0], A.dim[1],
+      &B[0], 1,
+      beta,
+      &C.data[0], 1
+    );
   }
   else {
     int k = TransA == CblasNoTrans ? A.dim[1] : A.dim[0];
-    cblas_dgemm(CblasRowMajor, TransA, TransB, C.dim[0], C.dim[1], k, alpha,
-                &A[0], A.dim[1], &B[0], B.dim[1], beta, &C.data[0], C.dim[1]);
+    cblas_dgemm(
+      CblasRowMajor,
+      TransA, TransB,
+      C.dim[0], C.dim[1], k,
+      alpha,
+      &A[0], A.dim[1],
+      &B[0], B.dim[1],
+      beta,
+      &C.data[0], C.dim[1]
+    );
   }
   stop("-DGEMM",false);
 }
 
-BEGIN_SPECIALIZATION(gemm_omm, void, const Dense& A, const LowRank& B, LowRank& C, const double& alpha, const double& beta) {
+BEGIN_SPECIALIZATION(
+  gemm_omm, void,
+  const Dense& A, const LowRank& B, LowRank& C,
+  const double& alpha, const double& beta
+) {
   LowRank AxBU(B);
   gemm(A, B.U, AxBU.U, alpha, 0);
   C += AxBU;
 } END_SPECIALIZATION;
 
-BEGIN_SPECIALIZATION(gemm_omm, void, const LowRank& A, const Dense& B, LowRank& C, const double& alpha, const double& beta) {
+BEGIN_SPECIALIZATION(
+  gemm_omm, void,
+  const LowRank& A, const Dense& B, LowRank& C,
+  const double& alpha, const double& beta
+) {
   LowRank AVxB(A);
   gemm(A.V, B, AVxB.V, alpha, 0);
   C += AVxB;
 } END_SPECIALIZATION;
 
-BEGIN_SPECIALIZATION(gemm_omm, void, const LowRank& A, const LowRank& B, LowRank& C, const double& alpha, const double& beta) {
+BEGIN_SPECIALIZATION(
+  gemm_omm, void,
+  const LowRank& A, const LowRank& B, LowRank& C,
+  const double& alpha, const double& beta
+) {
   LowRank AxB(A);
   AxB.V = B.V;
   Dense VxU(A.rank, B.rank);

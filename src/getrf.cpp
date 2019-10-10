@@ -43,7 +43,12 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(getrf_omm, void, Dense& A) {
   start("-DGETRF");
   std::vector<int> ipiv(std::min(A.dim[0], A.dim[1]));
-  LAPACKE_dgetrf(LAPACK_ROW_MAJOR, A.dim[0], A.dim[1], &A.data[0], A.dim[1], &ipiv[0]);
+  LAPACKE_dgetrf(
+    LAPACK_ROW_MAJOR,
+    A.dim[0], A.dim[1],
+    &A.data[0], A.dim[1],
+    &ipiv[0]
+  );
   stop("-DGETRF",false);
 } END_SPECIALIZATION;
 

@@ -31,7 +31,11 @@ void trsm(const Node& A, Node& B, const char& uplo) {
   trsm_omm(A, B, uplo);
 }
 
-BEGIN_SPECIALIZATION(trsm_omm, void, const Hierarchical& A, Hierarchical& B, const char& uplo) {
+BEGIN_SPECIALIZATION(
+  trsm_omm, void,
+  const Hierarchical& A, Hierarchical& B,
+  const char& uplo
+) {
   if (B.dim[1] == 1) {
     switch (uplo) {
     case 'l' :
@@ -80,17 +84,35 @@ BEGIN_SPECIALIZATION(trsm_omm, void, const Hierarchical& A, Hierarchical& B, con
   }
 } END_SPECIALIZATION;
 
-BEGIN_SPECIALIZATION(trsm_omm, void, const Dense& A, Dense& B, const char& uplo) {
+BEGIN_SPECIALIZATION(
+  trsm_omm, void,
+  const Dense& A, Dense& B,
+  const char& uplo
+) {
   start("-DTRSM");
   if (B.dim[1] == 1) {
     switch (uplo) {
     case 'l' :
-      cblas_dtrsm(CblasRowMajor, CblasLeft, CblasLower, CblasNoTrans, CblasUnit,
-                  B.dim[0], B.dim[1], 1, &A[0], A.dim[1], &B.data[0], B.dim[1]);
+      cblas_dtrsm(
+        CblasRowMajor,
+        CblasLeft, CblasLower,
+        CblasNoTrans, CblasUnit,
+        B.dim[0], B.dim[1],
+        1,
+        &A[0], A.dim[1],
+        &B.data[0], B.dim[1]
+      );
       break;
     case 'u' :
-      cblas_dtrsm(CblasRowMajor, CblasLeft, CblasUpper, CblasNoTrans, CblasNonUnit,
-                  B.dim[0], B.dim[1], 1, &A[0], A.dim[1], &B.data[0], B.dim[1]);
+      cblas_dtrsm(
+        CblasRowMajor,
+        CblasLeft, CblasUpper,
+        CblasNoTrans, CblasNonUnit,
+        B.dim[0], B.dim[1],
+        1,
+        &A[0], A.dim[1],
+        &B.data[0], B.dim[1]
+      );
       break;
     default :
       std::cerr << "Second argument must be 'l' for lower, 'u' for upper." << std::endl;
@@ -100,12 +122,26 @@ BEGIN_SPECIALIZATION(trsm_omm, void, const Dense& A, Dense& B, const char& uplo)
   else {
     switch (uplo) {
     case 'l' :
-      cblas_dtrsm(CblasRowMajor, CblasLeft, CblasLower, CblasNoTrans, CblasUnit,
-                  B.dim[0], B.dim[1], 1, &A[0], A.dim[1], &B.data[0], B.dim[1]);
+      cblas_dtrsm(
+        CblasRowMajor,
+        CblasLeft, CblasLower,
+        CblasNoTrans, CblasUnit,
+        B.dim[0], B.dim[1],
+        1,
+        &A[0], A.dim[1],
+        &B.data[0], B.dim[1]
+      );
       break;
     case 'u' :
-      cblas_dtrsm(CblasRowMajor, CblasRight, CblasUpper, CblasNoTrans, CblasNonUnit,
-                  B.dim[0], B.dim[1], 1, &A[0], A.dim[1], &B.data[0], B.dim[1]);
+      cblas_dtrsm(
+        CblasRowMajor,
+        CblasRight, CblasUpper,
+        CblasNoTrans, CblasNonUnit,
+        B.dim[0], B.dim[1],
+        1,
+        &A[0], A.dim[1],
+        &B.data[0], B.dim[1]
+      );
       break;
     default :
       std::cerr << "Second argument must be 'l' for lower, 'u' for upper." << std::endl;
@@ -115,7 +151,11 @@ BEGIN_SPECIALIZATION(trsm_omm, void, const Dense& A, Dense& B, const char& uplo)
   stop("-DTRSM",false);
 } END_SPECIALIZATION;
 
-BEGIN_SPECIALIZATION(trsm_omm, void, const Dense& A, LowRank& B, const char& uplo) {
+BEGIN_SPECIALIZATION(
+  trsm_omm, void,
+  const Dense& A, LowRank& B,
+  const char& uplo
+) {
   switch (uplo) {
   case 'l' :
     trsm(A, B.U, uplo);
@@ -126,7 +166,11 @@ BEGIN_SPECIALIZATION(trsm_omm, void, const Dense& A, LowRank& B, const char& upl
   }
 } END_SPECIALIZATION;
 
-BEGIN_SPECIALIZATION(trsm_omm, void, const Hierarchical& A, LowRank& B, const char& uplo) {
+BEGIN_SPECIALIZATION(
+  trsm_omm, void,
+  const Hierarchical& A, LowRank& B,
+  const char& uplo
+) {
   switch (uplo) {
   case 'l' :
     {
@@ -145,7 +189,11 @@ BEGIN_SPECIALIZATION(trsm_omm, void, const Hierarchical& A, LowRank& B, const ch
   }
 } END_SPECIALIZATION;
 
-BEGIN_SPECIALIZATION(trsm_omm, void, const Hierarchical& A, Dense& B, const char& uplo) {
+BEGIN_SPECIALIZATION(
+  trsm_omm, void,
+  const Hierarchical& A, Dense& B,
+  const char& uplo
+) {
   switch (uplo) {
   case 'l' :
     {
@@ -168,7 +216,11 @@ BEGIN_SPECIALIZATION(trsm_omm, void, const Hierarchical& A, Dense& B, const char
 } END_SPECIALIZATION;
 
 // Fallback default, abort with error message
-BEGIN_SPECIALIZATION(trsm_omm, void, const Node& A, Node& B, const char& uplo) {
+BEGIN_SPECIALIZATION(
+  trsm_omm, void,
+  const Node& A, Node& B,
+  const char& uplo
+) {
   std::cerr << "trsm(";
   std::cerr << A.type() << "," << B.type();
   std::cerr << ") undefined." << std::endl;
