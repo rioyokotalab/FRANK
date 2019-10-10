@@ -113,15 +113,9 @@ namespace hicma {
     }
   }
 
-  Dense::Dense(const Any& _A) : Node(_A.ptr->i_abs, _A.ptr->j_abs, _A.ptr->level) {
+  Dense::Dense(const Any& A) : Node(A.ptr->i_abs, A.ptr->j_abs, A.ptr->level) {
     MM_INIT();
-    if (_A.is(HICMA_DENSE)) {
-      *this = static_cast<const Dense&>(*_A.ptr);
-    } else if (_A.is(HICMA_LOWRANK)) {
-      *this = Dense(static_cast<const LowRank&>(*_A.ptr));
-    } else if (_A.is(HICMA_HIERARCHICAL)) {
-      *this = Dense(static_cast<const Hierarchical&>(*_A.ptr));
-    }
+    *this = make_dense(*A.ptr);
   }
 
   Dense* Dense::clone() const {
@@ -377,5 +371,22 @@ namespace hicma {
     A.tpmqrt(B, Y, T, trans);
     *this = Dense(A);
   }
+
+  BEGIN_SPECIALIZATION(make_dense, Dense, const Hierarchical& A){
+    return Dense(A);
+  } END_SPECIALIZATION;
+
+  BEGIN_SPECIALIZATION(make_dense, Dense, const LowRank& A){
+    return Dense(A);
+  } END_SPECIALIZATION;
+
+  BEGIN_SPECIALIZATION(make_dense, Dense, const Dense& A){
+    return Dense(A);
+  } END_SPECIALIZATION;
+
+  BEGIN_SPECIALIZATION(make_dense, Dense, const Node& A){
+    std::cout << "Cannot create dense from " << A.type() << "!" << std::endl;
+    abort();
+  } END_SPECIALIZATION;
 
 }

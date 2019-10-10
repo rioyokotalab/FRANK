@@ -11,6 +11,7 @@
 #include <cblas.h>
 #endif
 #include "yorel/multi_methods.hpp"
+using yorel::multi_methods::virtual_;
 
 namespace hicma {
 
@@ -138,5 +139,8 @@ namespace hicma {
     void tpmqrt(Hierarchical& B, const Hierarchical& Y, const Hierarchical& T, const bool trans=false) override;
 
   };
+
+  MULTI_METHOD(make_dense, Dense, const virtual_<Node>&);
+
 }
 #endif
