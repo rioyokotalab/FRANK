@@ -203,10 +203,6 @@ namespace hicma {
     return *this;
   }
 
-  bool LowRank::is(const int enum_id) const {
-    return enum_id == HICMA_LOWRANK;
-  }
-
   const char* LowRank::type() const { return "LowRank"; }
 
   double LowRank::norm() const {

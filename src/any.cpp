@@ -24,8 +24,6 @@ namespace hicma {
     return *this;
   }
 
-  bool Any::is(const int i) const { return ptr->is(i); }
-
   const char* Any::type() const { return ptr->type(); }
 
   double Any::norm() const {

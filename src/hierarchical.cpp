@@ -228,10 +228,6 @@ namespace hicma {
     return data[i*dim[1]+j];
   }
 
-  bool Hierarchical::is(const int enum_id) const {
-    return enum_id == HICMA_HIERARCHICAL;
-  }
-
   const char* Hierarchical::type() const { return "Hierarchical"; }
 
   double Hierarchical::norm() const {

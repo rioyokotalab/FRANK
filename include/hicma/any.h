@@ -22,8 +22,6 @@ namespace hicma {
 
     const Any& operator=(Any A);
 
-    bool is(const int i) const;
-
     const char* type() const;
 
     double norm() const;

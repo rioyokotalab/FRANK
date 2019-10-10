@@ -68,8 +68,6 @@ namespace hicma {
 
     Any& operator()(const int i, const int j);
 
-    bool is(const int enum_id) const override;
-
     const char* type() const override;
 
     double norm() const override;

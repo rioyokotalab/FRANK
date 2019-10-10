@@ -197,10 +197,6 @@ namespace hicma {
     return data[i*dim[1]+j];
   }
 
-  bool Dense::is(const int enum_id) const {
-    return enum_id == HICMA_DENSE;
-  }
-
   const char* Dense::type() const { return "Dense"; }
 
   double Dense::norm() const {
