@@ -7,9 +7,9 @@ namespace hicma {
 
   extern bool VERBOSE;
 
-  class Any;
+  class NodeProxy;
 
-  void printXML(const Any& A);
+  void printXML(const NodeProxy& A);
 
   void print(std::string s);
 

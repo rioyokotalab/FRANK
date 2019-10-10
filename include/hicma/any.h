@@ -6,21 +6,21 @@ namespace hicma {
 
   class Node;
 
-  class Any {
+  class NodeProxy {
   public:
     std::unique_ptr<Node> ptr;
 
-    Any();
+    NodeProxy();
 
-    Any(const Any& A);
+    NodeProxy(const NodeProxy& A);
 
-    Any(const Node& A);
+    NodeProxy(const Node& A);
 
-    ~Any();
+    ~NodeProxy();
 
-    friend void swap(Any&, Any&);
+    friend void swap(NodeProxy&, NodeProxy&);
 
-    const Any& operator=(Any A);
+    const NodeProxy& operator=(NodeProxy A);
 
     const char* type() const;
 
@@ -30,13 +30,13 @@ namespace hicma {
 
     void transpose();
 
-    void geqrt(Any& T);
+    void geqrt(NodeProxy& T);
 
-    void larfb(const Any& Y, const Any& T, const bool trans=false);
+    void larfb(const NodeProxy& Y, const NodeProxy& T, const bool trans=false);
 
-    void tpqrt(Any& A, Any& T);
+    void tpqrt(NodeProxy& A, NodeProxy& T);
 
-    void tpmqrt(Any& B, const Any& Y, const Any& T, const bool trans=false);
+    void tpmqrt(NodeProxy& B, const NodeProxy& Y, const NodeProxy& T, const bool trans=false);
 
   };
 }

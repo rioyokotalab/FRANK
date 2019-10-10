@@ -7,38 +7,38 @@
 
 namespace hicma {
 
-  Any::Any() = default;
+  NodeProxy::NodeProxy() = default;
 
-  Any::Any(const Any& A) : ptr(A.ptr->clone()) {}
+  NodeProxy::NodeProxy(const NodeProxy& A) : ptr(A.ptr->clone()) {}
 
-  Any::Any(const Node& A) : ptr(A.clone()) {}
+  NodeProxy::NodeProxy(const Node& A) : ptr(A.clone()) {}
 
-  Any::~Any() = default;
+  NodeProxy::~NodeProxy() = default;
 
-  void swap(Any& A, Any& B){
+  void swap(NodeProxy& A, NodeProxy& B){
     A.ptr.swap(B.ptr);
   }
 
-  const Any& Any::operator=(Any A) {
+  const NodeProxy& NodeProxy::operator=(NodeProxy A) {
     this->ptr = std::move(A.ptr);
     return *this;
   }
 
-  const char* Any::type() const { return ptr->type(); }
+  const char* NodeProxy::type() const { return ptr->type(); }
 
-  double Any::norm() const {
+  double NodeProxy::norm() const {
     return ptr->norm();
   }
 
-  void Any::print() const {
+  void NodeProxy::print() const {
     ptr->print();
   }
 
-  void Any::transpose() {
+  void NodeProxy::transpose() {
     ptr->transpose();
   }
 
-  void Any::geqrt(Any& T) {
+  void NodeProxy::geqrt(NodeProxy& T) {
     if(T.is(HICMA_DENSE)) {
       ptr->geqrt(static_cast<Dense&>(*T.ptr));
     }
@@ -51,7 +51,7 @@ namespace hicma {
     }
   }
 
-  void Any::larfb(const Any& Y, const Any& T, const bool trans) {
+  void NodeProxy::larfb(const NodeProxy& Y, const NodeProxy& T, const bool trans) {
     if(Y.is(HICMA_DENSE) && T.is(HICMA_DENSE)) {
       ptr->larfb(static_cast<Dense&>(*Y.ptr), static_cast<Dense&>(*T.ptr), trans);
     }
@@ -64,7 +64,7 @@ namespace hicma {
     }
   }
 
-  void Any::tpqrt(Any& A, Any& T) {
+  void NodeProxy::tpqrt(NodeProxy& A, NodeProxy& T) {
     if(A.is(HICMA_DENSE) && T.is(HICMA_DENSE)) {
       ptr->tpqrt(static_cast<Dense&>(*A.ptr), static_cast<Dense&>(*T.ptr));
     }
@@ -80,7 +80,7 @@ namespace hicma {
     }
   }
 
-  void Any::tpmqrt(Any& B, const Any& Y, const Any& T, const bool trans) {
+  void NodeProxy::tpmqrt(NodeProxy& B, const NodeProxy& Y, const NodeProxy& T, const bool trans) {
     if(B.is(HICMA_DENSE)) {
       if(Y.is(HICMA_DENSE) && T.is(HICMA_DENSE)) {
         ptr->tpmqrt(static_cast<Dense&>(*B.ptr), static_cast<Dense&>(*Y.ptr), static_cast<Dense&>(*T.ptr), trans);

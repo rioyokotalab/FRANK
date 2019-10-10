@@ -1,6 +1,7 @@
 #ifndef low_rank_h
 #define low_rank_h
 
+#include "any.h"
 #include "dense.h"
 
 #include "yorel/multi_methods.hpp"
@@ -31,7 +32,7 @@ namespace hicma {
 
     LowRank(LowRank&& A);
 
-    LowRank(const Any& _A, const int k=1);
+    LowRank(const NodeProxy& _A, const int k=1);
 
     LowRank* clone() const override;
 

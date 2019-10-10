@@ -15,7 +15,7 @@ using yorel::multi_methods::virtual_;
 namespace hicma
 {
 
-void getrf(Any&);
+void getrf(NodeProxy&);
 
 void getrf(Node&);
 
@@ -25,9 +25,9 @@ MULTI_METHOD(
 );
 
 
-void trsm(const Any&, Any&, const char& uplo);
-void trsm(const Any&, Node&, const char& uplo);
-void trsm(const Node&, Any&, const char& uplo);
+void trsm(const NodeProxy&, NodeProxy&, const char& uplo);
+void trsm(const NodeProxy&, Node&, const char& uplo);
+void trsm(const Node&, NodeProxy&, const char& uplo);
 
 void trsm(const Node&, Node&, const char& uplo);
 
@@ -39,13 +39,13 @@ MULTI_METHOD(
 );
 
 
-void gemm(const Any&, const Any&, Any&, const double, const double);
-void gemm(const Any&, const Any&, Node&, const double, const double);
-void gemm(const Any&, const Node&, Any&, const double, const double);
-void gemm(const Any&, const Node&, Node&, const double, const double);
-void gemm(const Node&, const Any&, Any&, const double, const double);
-void gemm(const Node&, const Any&, Node&, const double, const double);
-void gemm(const Node&, const Node&, Any&, const double, const double);
+void gemm(const NodeProxy&, const NodeProxy&, NodeProxy&, const double, const double);
+void gemm(const NodeProxy&, const NodeProxy&, Node&, const double, const double);
+void gemm(const NodeProxy&, const Node&, NodeProxy&, const double, const double);
+void gemm(const NodeProxy&, const Node&, Node&, const double, const double);
+void gemm(const Node&, const NodeProxy&, NodeProxy&, const double, const double);
+void gemm(const Node&, const NodeProxy&, Node&, const double, const double);
+void gemm(const Node&, const Node&, NodeProxy&, const double, const double);
 
 void gemm(const Node&, const Node&, Node&, const double, const double);
 

@@ -16,7 +16,7 @@ namespace hicma {
     MM_CLASS(Hierarchical, Node);
     // NOTE: Take care to add members new members to swap
     int dim[2];
-    std::vector<Any> data;
+    std::vector<NodeProxy> data;
 
     Hierarchical();
 
@@ -60,13 +60,13 @@ namespace hicma {
 
     friend void swap(Hierarchical& A, Hierarchical& B);
 
-    const Any& operator[](const int i) const;
+    const NodeProxy& operator[](const int i) const;
 
-    Any& operator[](const int i);
+    NodeProxy& operator[](const int i);
 
-    const Any& operator()(const int i, const int j) const;
+    const NodeProxy& operator()(const int i, const int j) const;
 
-    Any& operator()(const int i, const int j);
+    NodeProxy& operator()(const int i, const int j);
 
     const char* type() const override;
 

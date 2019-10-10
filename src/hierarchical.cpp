@@ -208,22 +208,22 @@ namespace hicma {
     swap(A.level, B.level);
   }
 
-  const Any& Hierarchical::operator[](const int i) const {
+  const NodeProxy& Hierarchical::operator[](const int i) const {
     assert(i<dim[0]*dim[1]);
     return data[i];
   }
 
-  Any& Hierarchical::operator[](const int i) {
+  NodeProxy& Hierarchical::operator[](const int i) {
     assert(i<dim[0]*dim[1]);
     return data[i];
   }
 
-  const Any& Hierarchical::operator()(const int i, const int j) const {
+  const NodeProxy& Hierarchical::operator()(const int i, const int j) const {
     assert(i<dim[0] && j<dim[1]);
     return data[i*dim[1]+j];
   }
 
-  Any& Hierarchical::operator()(const int i, const int j) {
+  NodeProxy& Hierarchical::operator()(const int i, const int j) {
     assert(i<dim[0] && j<dim[1]);
     return data[i*dim[1]+j];
   }

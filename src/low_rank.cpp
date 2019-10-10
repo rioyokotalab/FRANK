@@ -78,7 +78,7 @@ namespace hicma {
     swap(*this, A);
   }
 
-  LowRank::LowRank(const Any& _A, const int k) : Node(_A.ptr->i_abs, _A.ptr->j_abs, _A.ptr->level) {
+  LowRank::LowRank(const NodeProxy& _A, const int k) : Node(_A.ptr->i_abs, _A.ptr->j_abs, _A.ptr->level) {
     if (_A.is(HICMA_LOWRANK)) {
       *this = static_cast<const LowRank&>(*_A.ptr);
     } else if (_A.is(HICMA_DENSE)) {

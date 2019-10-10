@@ -20,25 +20,25 @@
 namespace hicma
 {
 
-void gemm(const Any& A, const Any& B, Any& C, const double alpha, const double beta) {
+void gemm(const NodeProxy& A, const NodeProxy& B, NodeProxy& C, const double alpha, const double beta) {
   gemm(*A.ptr.get(), *B.ptr.get(), *C.ptr.get(), alpha, beta);
 }
-void gemm(const Any& A, const Any& B, Node& C, const double alpha, const double beta) {
+void gemm(const NodeProxy& A, const NodeProxy& B, Node& C, const double alpha, const double beta) {
   gemm(*A.ptr.get(), *B.ptr.get(), C, alpha, beta);
 }
-void gemm(const Any& A, const Node& B, Any& C, const double alpha, const double beta) {
+void gemm(const NodeProxy& A, const Node& B, NodeProxy& C, const double alpha, const double beta) {
   gemm(*A.ptr.get(), B, *C.ptr.get(), alpha, beta);
 }
-void gemm(const Any& A, const Node& B, Node& C, const double alpha, const double beta) {
+void gemm(const NodeProxy& A, const Node& B, Node& C, const double alpha, const double beta) {
   gemm(*A.ptr.get(), B, C, alpha, beta);
 }
-void gemm(const Node& A, const Any& B, Any& C, const double alpha, const double beta) {
+void gemm(const Node& A, const NodeProxy& B, NodeProxy& C, const double alpha, const double beta) {
   gemm(A, *B.ptr.get(), *C.ptr.get(), alpha, beta);
 }
-void gemm(const Node& A, const Any& B, Node& C, const double alpha, const double beta) {
+void gemm(const Node& A, const NodeProxy& B, Node& C, const double alpha, const double beta) {
   gemm(A, *B.ptr.get(), C, alpha, beta);
 }
-void gemm(const Node& A, const Node& B, Any& C, const double alpha, const double beta) {
+void gemm(const Node& A, const Node& B, NodeProxy& C, const double alpha, const double beta) {
   gemm(A, B, *C.ptr.get(), alpha, beta);
 }
 

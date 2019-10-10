@@ -17,13 +17,13 @@
 namespace hicma
 {
 
-void trsm(const Any& A, Any& B, const char& uplo) {
+void trsm(const NodeProxy& A, NodeProxy& B, const char& uplo) {
   trsm(*A.ptr.get(), *B.ptr.get(), uplo);
 }
-void trsm(const Any& A, Node& B, const char& uplo) {
+void trsm(const NodeProxy& A, Node& B, const char& uplo) {
   trsm(*A.ptr.get(), B, uplo);
 }
-void trsm(const Node& A, Any& B, const char& uplo) {
+void trsm(const Node& A, NodeProxy& B, const char& uplo) {
   trsm(A, *B.ptr.get(), uplo);
 }
 

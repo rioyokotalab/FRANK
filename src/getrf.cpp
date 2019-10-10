@@ -14,7 +14,7 @@
 namespace hicma
 {
 
-void getrf(Any& A) {
+void getrf(NodeProxy& A) {
   getrf_omm(*A.ptr.get());
 }
 
