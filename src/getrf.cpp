@@ -4,13 +4,12 @@
 #include "hicma/hierarchical.h"
 #include "hicma/util/timer.h"
 
-#include "yorel/multi_methods.hpp"
-
 #ifdef USE_MKL
 #include <mkl.h>
 #else
 #include <lapacke.h>
 #endif
+#include "yorel/multi_methods.hpp"
 
 namespace hicma
 {

@@ -7,13 +7,12 @@
 #include "hicma/util/timer.h"
 #include "hicma/util/print.h"
 
-#include "yorel/multi_methods.hpp"
-
 #ifdef USE_MKL
 #include <mkl.h>
 #else
 #include <cblas.h>
 #endif
+#include "yorel/multi_methods.hpp"
 
 namespace hicma
 {

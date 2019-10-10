@@ -10,13 +10,12 @@
 
 #include <cassert>
 
-#include "yorel/multi_methods.hpp"
-
 #ifdef USE_MKL
 #include <mkl.h>
 #else
 #include <cblas.h>
 #endif
+#include "yorel/multi_methods.hpp"
 
 namespace hicma
 {
