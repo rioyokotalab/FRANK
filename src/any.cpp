@@ -13,22 +13,6 @@ namespace hicma {
 
   Any::Any(const Node& A) : ptr(A.clone()) {}
 
-  Any::Any(Node&& A) {
-    if (A.is(HICMA_DENSE)) {
-      ptr = std::unique_ptr<Dense>(new Dense);
-      swap(static_cast<Dense&>(*ptr), static_cast<Dense&>(A));
-    } else if (A.is(HICMA_LOWRANK)) {
-      ptr = std::unique_ptr<LowRank>(new LowRank);
-      swap(static_cast<LowRank&>(*ptr), static_cast<LowRank&>(A));
-    } else if (A.is(HICMA_HIERARCHICAL)) {
-      ptr = std::unique_ptr<Hierarchical>(new Hierarchical);
-      swap(static_cast<Hierarchical&>(*ptr), static_cast<Hierarchical&>(A));
-    } else {
-      std::cerr << "Node is of an undefined type." << std::endl;
-      abort();
-    }
-  }
-
   Any::~Any() = default;
 
   void swap(Any& A, Any& B){

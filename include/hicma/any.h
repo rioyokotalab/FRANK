@@ -16,8 +16,6 @@ namespace hicma {
 
     Any(const Node& A);
 
-    Any(Node&& A);
-
     ~Any();
 
     friend void swap(Any&, Any&);
