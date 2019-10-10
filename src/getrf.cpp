@@ -53,7 +53,7 @@ BEGIN_SPECIALIZATION(getrf_omm, void, Dense& A) {
 } END_SPECIALIZATION;
 
 BEGIN_SPECIALIZATION(getrf_omm, void, Node& A) {
-  std::cout << "getrf(" << A.type() << ") not defined!" << std::endl;
+  std::cerr << "getrf(" << A.type() << ") undefined!" << std::endl;
   abort();
 } END_SPECIALIZATION;
 
