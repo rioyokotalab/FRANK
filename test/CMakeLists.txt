@@ -1,9 +1,9 @@
 add_external_dependency(googletest)
 
 # Class tests
-# add_executable(dense_test dense_test.cpp)
-# target_link_libraries(dense_test gtest_main hicma)
-# add_test(NAME dense_test COMMAND dense_test)
+add_executable(dense_test dense_test.cpp)
+target_link_libraries(dense_test gtest_main hicma)
+add_test(NAME dense_test COMMAND dense_test)
 
 # add_executable(low_rank_test low_rank_test.cpp)
 # target_link_libraries(low_rank_test gtest_main hicma)
