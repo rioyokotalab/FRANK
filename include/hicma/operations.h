@@ -1,7 +1,7 @@
 #ifndef operations_h
 #define operations_h
 
-#include "any.h"
+#include "node_proxy.h"
 #include "node.h"
 
 #ifdef USE_MKL

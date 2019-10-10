@@ -1,7 +1,7 @@
 #ifndef print_h
 #define print_h
 #include "hicma/util/print.h"
-#include "hicma/any.h"
+#include "hicma/node_proxy.h"
 #include "hicma/low_rank.h"
 #include "hicma/hierarchical.h"
 

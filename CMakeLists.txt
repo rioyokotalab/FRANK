@@ -33,8 +33,8 @@ target_include_directories(gpu_batch
 
 add_external_dependency(yomm11)
 add_library(hicma
-    src/any.cpp
     src/node.cpp
+    src/node_proxy.cpp
     src/dense.cpp
     src/low_rank.cpp
     src/hierarchical.cpp

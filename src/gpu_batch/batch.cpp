@@ -1,4 +1,4 @@
-#include "hicma/any.h"
+#include "hicma/node_proxy.h"
 #include "hicma/low_rank.h"
 #include "hicma/gpu_batch/batch.h"
 

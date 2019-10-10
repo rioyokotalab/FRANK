@@ -1,7 +1,7 @@
 #ifndef dense_h
 #define dense_h
 #include "node.h"
-#include "any.h"
+#include "node_proxy.h"
 
 #include <vector>
 

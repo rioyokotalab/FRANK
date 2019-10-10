@@ -1,6 +1,6 @@
 #include "hicma/operations.h"
 
-#include "hicma/any.h"
+#include "hicma/node_proxy.h"
 #include "hicma/dense.h"
 #include "hicma/low_rank.h"
 #include "hicma/hierarchical.h"
