@@ -247,18 +247,7 @@ namespace hicma {
   void Hierarchical::print() const {
     for (int i=0; i<dim[0]; i++) {
       for (int j=0; j<dim[1]; j++) {
-        if ((*this)(i,j).is(HICMA_DENSE)) {
-          std::cout << "D (" << i << "," << j << ")" << std::endl;
-        }
-        else if ((*this)(i,j).is(HICMA_LOWRANK)) {
-          std::cout << "L (" << i << "," << j << ")" << std::endl;
-        }
-        else if ((*this)(i,j).is(HICMA_HIERARCHICAL)) {
-          std::cout << "H (" << i << "," << j << ")" << std::endl;
-        }
-        else {
-          std::cout << "? (" << i << "," << j << ")" << std::endl;
-        }
+        std::cout << (*this)(i, j).type() << " (" << i << "," << j << ")" << std::endl;
         (*this)(i,j).print();
       }
       std::cout << std::endl;
