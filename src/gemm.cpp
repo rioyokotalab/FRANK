@@ -175,7 +175,9 @@ BEGIN_SPECIALIZATION(
   const Dense& A, const Dense& B, Dense& C,
   const double& alpha, const double& beta
 ) {
-  assert(C.dim[0] == A.dim[0] && A.dim[1] == B.dim[0] && C.dim[1] == B.dim[1]);
+  assert(C.dim[0] == A.dim[0]);
+  assert(A.dim[1] == B.dim[0]);
+  assert(C.dim[1] == B.dim[1]);
   if (alpha == 1 && beta == 1) {
     gemm_push(A, B, C);
   }
@@ -336,7 +338,9 @@ BEGIN_SPECIALIZATION(
   const Hierarchical& A, const Hierarchical& B, Hierarchical& C,
   const double& alpha, const double& beta
 ) {
-  assert(C.dim[0]==A.dim[0] && C.dim[1]==B.dim[1] && A.dim[1] == B.dim[0]);
+  assert(C.dim[0]==A.dim[0]);
+  assert(C.dim[1]==B.dim[1]);
+  assert(A.dim[1] == B.dim[0]);
   for (int i=0; i<C.dim[0]; i++) {
     for (int j=0; j<C.dim[1]; j++) {
       gemm_row(A, B, C, i, j, 0, A.dim[1], alpha, beta);
