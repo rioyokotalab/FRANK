@@ -469,12 +469,12 @@ namespace hicma {
   void Dense::tpmqrt(Dense& B, const LowRank& Y, const Dense& T, const bool trans) {
     Dense UY(Y.U.dim[0], Y.V.dim[1]);
     UY.gemm(Y.U, Y.V, 1, 0);
-    (*this).tpmqrt(B, UY, T, trans);
+    tpmqrt(B, UY, T, trans);
   }
 
   void Dense::tpmqrt(LowRank& B, const Dense& Y, const Dense& T, const bool trans) {
     Dense C(B);
-    (*this).tpmqrt(C, Y, T, trans);
+    tpmqrt(C, Y, T, trans);
     B = LowRank(C, B.rank);
   }
 
@@ -482,7 +482,7 @@ namespace hicma {
     Dense C(B);
     Dense UY(Y.U.dim[0], Y.V.dim[1]);
     UY.gemm(Y.U, Y.V, 1, 0);
-    (*this).tpmqrt(C, UY, T, trans);
+    tpmqrt(C, UY, T, trans);
     B = LowRank(C, B.rank);
   }
 
@@ -496,7 +496,7 @@ namespace hicma {
     B.gemm(Tt, C, -1, 1); // B = B - (T or Tt)*C
     Dense YTt(Y.dim[0], Tt.dim[1]);
     YTt.gemm(Y, Tt, 1, 0);
-    (*this).gemm(YTt, C, -1, 1); // A = A - Y*(T or Tt)*C
+    gemm(YTt, C, -1, 1); // A = A - Y*(T or Tt)*C
   }
 
   void Dense::tpmqrt(Hierarchical& B, const Hierarchical& Y, const Hierarchical& T, const bool trans) {

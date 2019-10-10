@@ -594,7 +594,7 @@ namespace hicma {
       }
       Hierarchical Rjj(1, 1);
       Rjj(0, 0) = R(j, j);
-      (*this).col_qr(j, Qj, Rjj);
+      col_qr(j, Qj, Rjj);
       R(j, j) = Rjj(0, 0);
       for(int i=0; i<dim[0]; i++) {
         Q(i, j) = Qj(i, 0);
@@ -660,7 +660,7 @@ namespace hicma {
     Dense YTYt(YT.dim[0], _Y.dim[0]);
     YTYt.gemm(YT, _Y, CblasNoTrans, CblasTrans, 1, 1);
     Hierarchical C(*this);
-    (*this).gemm(YTYt, C, -1, 1);
+    gemm(YTYt, C, -1, 1);
   }
 
   void Hierarchical::larfb(const Hierarchical& Y, const Hierarchical& T, const bool trans) {
@@ -716,12 +716,12 @@ namespace hicma {
     B.gemm(Tt, C, -1, 1); // B = B - (T or Tt)*C
     Dense YTt(Y.dim[0], Tt.dim[1]);
     YTt.gemm(Y, Tt, 1, 1);
-    (*this).gemm(YTt, C, -1, 1); // A = A - Y*(T or Tt)*C
+    gemm(YTt, C, -1, 1); // A = A - Y*(T or Tt)*C
   }
 
   void Hierarchical::tpmqrt(Dense& B, const Hierarchical& Y, const Hierarchical& T, const bool trans) {
     Hierarchical HB(B, dim[0], dim[1]);
-    (*this).tpmqrt(HB, Y, T, trans);
+    tpmqrt(HB, Y, T, trans);
     B = Dense(HB);
   }
 
