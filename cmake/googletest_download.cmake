@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8.2)
 include(ExternalProject)
+project(googletest)
 ExternalProject_Add(
     googletest
     GIT_REPOSITORY    https://github.com/google/googletest.git

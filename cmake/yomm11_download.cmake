@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 include(ExternalProject)
+project(yomm11 VERSION 1.1)
 ExternalProject_Add(
     yomm11
     GIT_REPOSITORY    https://github.com/jll63/yomm11.git
