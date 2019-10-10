@@ -256,14 +256,14 @@ namespace hicma {
   }
 
   void Hierarchical::transpose() {
-    Hierarchical C(*this);
-    std::swap(dim[0], dim[1]);
+    Hierarchical C(dim[1], dim[0]);
     for(int i=0; i<dim[0]; i++) {
       for(int j=0; j<dim[1]; j++) {
-        (*this)(i, j) = std::move(C(j, i));
-        (*this)(i, j).transpose();
+        C(j, i) = std::move((*this)(i, j));
+        C(j, i).transpose();
       }
     }
+    swap(*this, C);
   }
 
   void Hierarchical::getrf() {
@@ -315,7 +315,7 @@ namespace hicma {
       case 'l' :
         for (int j=0; j<dim[1]; j++) {
           for (int i=0; i<dim[0]; i++) {
-            (*this).gemm_row(A, *this, i, j, 0, i, -1, 1);
+            gemm_row(A, *this, i, j, 0, i, -1, 1);
             (*this)(i,j).trsm(A(i,i), 'l');
           }
         }
@@ -323,7 +323,7 @@ namespace hicma {
       case 'u' :
         for (int i=0; i<dim[0]; i++) {
           for (int j=0; j<dim[1]; j++) {
-            (*this).gemm_row(*this, A, i, j, 0, j, -1, 1);
+            gemm_row(*this, A, i, j, 0, j, -1, 1);
             (*this)(i,j).trsm(A(j,j), 'u');
           }
         }
@@ -337,8 +337,8 @@ namespace hicma {
 
   void Hierarchical::gemm(const Dense& A, const Dense& B, const double& alpha, const double& beta) {
     assert(A.dim[1] == B.dim[0]);
-    const Hierarchical& AH = Hierarchical(A, dim[0], dim[1]);
-    const Hierarchical& BH = Hierarchical(B, dim[1], dim[1]);
+    const Hierarchical& AH = Hierarchical(A, dim[0], 1);
+    const Hierarchical& BH = Hierarchical(B, 1, dim[1]);
     gemm(AH, BH, alpha, beta);
   }
 
@@ -382,7 +382,7 @@ namespace hicma {
     assert(dim[0]==A.dim[0] && dim[1]==B.dim[1] && A.dim[1] == B.dim[0]);
     for (int i=0; i<dim[0]; i++) {
       for (int j=0; j<dim[1]; j++) {
-        (*this).gemm_row(A, B, i, j, 0, A.dim[1], alpha, beta);
+        gemm_row(A, B, i, j, 0, A.dim[1], alpha, beta);
       }
     }
   }
