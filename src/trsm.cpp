@@ -169,7 +169,9 @@ BEGIN_SPECIALIZATION(trsm_omm, void, const Hierarchical& A, Dense& B, const char
 
 // Fallback default, abort with error message
 BEGIN_SPECIALIZATION(trsm_omm, void, const Node& A, Node& B, const char& uplo) {
-  print_undefined(__func__, A.type(), B.type());
+  std::cerr << "trsm(";
+  std::cerr << A.type() << "," << B.type();
+  std::cerr << ") undefined." << std::endl;
   abort();
 } END_SPECIALIZATION;
 

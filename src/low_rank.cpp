@@ -84,7 +84,8 @@ namespace hicma {
     } else if (_A.is(HICMA_DENSE)) {
       *this = LowRank(static_cast<const Dense&>(*_A.ptr), k);
     } else if (_A.is(HICMA_HIERARCHICAL)) {
-      print_undefined(__func__, "Hierarchical", "LowRank");
+      std::cerr << this->type() << "(" << _A.type();
+      std::cerr << ") undefined." << std::endl;
       abort();
     }
   }

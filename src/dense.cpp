@@ -316,12 +316,16 @@ namespace hicma {
   }
 
   void Dense::tpqrt(Hierarchical& A, Dense& T) {
-    print_undefined(__func__, A.type(), T.type(), this->type());
+    std::cerr << this->type() << ".tpqrt(";
+    std::cerr << A.type() << "," << T.type();
+    std::cerr << ") undefined." << std::endl;
     abort();
   }
 
   void Dense::tpqrt(Hierarchical& A, Hierarchical& T) {
-    print_undefined(__func__, A.type(), T.type(), this->type());
+    std::cerr << this->type() << ".tpqrt(";
+    std::cerr << A.type() << "," << T.type();
+    std::cerr << ") undefined." << std::endl;
     abort();
   }
 

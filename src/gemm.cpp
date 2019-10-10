@@ -298,7 +298,9 @@ BEGIN_SPECIALIZATION(
   const Node& A, const Node& B, Node& C,
   const double& alpha, const double& beta
 ) {
-  print_undefined(__func__, A.type(), B.type(), C.type());
+  std::cerr << "gemm(";
+  std::cerr << A.type() << "," << B.type() << "," << C.type();
+  std::cerr << ") undefined." << std::endl;
   abort();
 } END_SPECIALIZATION;
 

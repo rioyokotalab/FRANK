@@ -1,7 +1,7 @@
 #ifndef low_rank_h
 #define low_rank_h
 
-#include "any.h"
+#include "node_proxy.h"
 #include "dense.h"
 
 #include "yorel/multi_methods.hpp"
