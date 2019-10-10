@@ -1,7 +1,7 @@
 #ifndef print_h
 #define print_h
 
-#include <boost/property_tree/ptree.hpp>
+#include <string>
 
 namespace hicma {
 
@@ -10,8 +10,6 @@ namespace hicma {
   class Any;
 
   void printXML(const Any& A);
-
-  void fillXML(const Any& A, boost::property_tree::ptree tree);
 
   void print(std::string s);
 
