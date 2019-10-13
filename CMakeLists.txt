@@ -32,13 +32,17 @@ add_library(hicma
 target_include_directories(hicma PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_link_libraries(hicma util gpu_batch)
 # Flag for MKL Usage
-set(USE_MKL OFF)
+if(NOT USE_MKL)
+    set(USE_MKL OFF)
+endif()
 if(USE_MKL)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_MKL")
-  target_link_libraries(hicma mkl_intel_lp64 mkl_intel_thread mkl_core iomp5 pthread)
+    # target_compile_options(hicma PUBLIC -DUSE_MKL) #Correct one
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_MKL")
+    target_link_libraries(hicma mkl_intel_lp64 mkl_intel_thread mkl_core iomp5 pthread)
 else()
-  target_link_libraries(hicma blas lapacke)
+    target_link_libraries(hicma blas lapacke)
 endif(USE_MKL)
+unset(USE_MKL CACHE)
 
 # Enable test for googletest
 enable_testing()
