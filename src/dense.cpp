@@ -163,6 +163,13 @@ namespace hicma {
     return *this;
   }
 
+  const Dense& Dense::operator*=(const double a) {
+    for (int i=0; i<dim[0]*dim[1]; i++) {
+      (*this)[i] *= a;
+    }
+    return *this;
+  }
+
   double& Dense::operator[](const int i) {
     assert(i<dim[0]*dim[1]);
     return data[i];

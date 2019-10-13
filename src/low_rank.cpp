@@ -302,9 +302,10 @@ namespace hicma {
 
   void LowRank::gemm(const Dense& A, const Dense& B, const double& alpha, const double& beta) {
     assert(this->dim[0] == A.dim[0] && A.dim[1] == B.dim[0] && this->dim[1] == B.dim[1]);
-    Dense C(*this);
-    C.gemm(A, B, alpha, beta);
-    *this = LowRank(C, this->rank);
+    Dense C(dim[0], dim[1]);
+    C.gemm(A, B, alpha, 0);
+    S *= beta;
+    *this += LowRank(C, this->rank);
   }
 
   void LowRank::gemm(const Dense& A, const LowRank& B, const double& alpha, const double& beta) {
