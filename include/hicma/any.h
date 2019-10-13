@@ -20,6 +20,8 @@ namespace hicma {
 
     ~Any();
 
+    friend void swap(Any&, Any&);
+
     const Any& operator=(Any A);
 
     bool is(const int i) const;

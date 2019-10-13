@@ -259,7 +259,7 @@ namespace hicma {
     Hierarchical C(dim[1], dim[0]);
     for(int i=0; i<dim[0]; i++) {
       for(int j=0; j<dim[1]; j++) {
-        C(j, i) = std::move((*this)(i, j));
+        swap((*this)(i, j), C(j, i));
         C(j, i).transpose();
       }
     }
