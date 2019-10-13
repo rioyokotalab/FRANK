@@ -352,6 +352,13 @@ namespace hicma {
   }
 
   void LowRank::gemm(const Hierarchical& A, const Hierarchical& B, const double& alpha, const double& beta) {
+    /*
+      Making a Hierarchical out of this might be better
+      But LowRank(Hierarchical, rank) constructor is needed
+      Hierarchical C(*this);
+      C.gemm(A, B, alpha, beta);
+      *this = LowRank(C, rank);
+    */
     Dense C(*this);
     C.gemm(A, B, alpha, beta);
     *this = LowRank(C, rank);
