@@ -4,7 +4,7 @@
 #include "hicma/functions.h"
 
 #include <cmath>
-#include <cstdlib>
+#include <random>
 #include <vector>
 
 namespace hicma {
@@ -46,9 +46,12 @@ namespace hicma {
               const int& i_begin,
               const int& j_begin
               ) {
+    std::random_device rd;
+    std::mt19937 mt(rd());
+    std::uniform_real_distribution<double> dist(0.0, 1.0);
     for (int i=0; i<ni; i++) {
       for (int j=0; j<nj; j++) {
-        data[i*nj+j] = drand48();
+        data[i*nj+j] = dist(mt);
       }
     }
   }
