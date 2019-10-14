@@ -475,32 +475,4 @@ namespace hicma {
   //   }
   // }
 
-  // void Hierarchical::geqrt(Hierarchical& T) {
-  //   for(int k = 0; k < dim[1]; k++) {
-  //     (*this)(k, k).geqrt(T(k, k));
-  //     for(int j = k+1; j < dim[1]; j++) {
-  //       larfb((*this)(k, k), T(k, k), (*this)(k, j), true);
-  //     }
-  //     int dim0 = -1;
-  //     int dim1 = -1;
-  //     if((*this)(k, k).is(HICMA_HIERARCHICAL)) {
-  //       Hierarchical Akk(static_cast<Hierarchical&>(*(*this)(k, k).ptr));
-  //       dim0 = Akk.dim[0];
-  //       dim1 = Akk.dim[1];
-  //     }
-  //     for(int i = k+1; i < dim[0]; i++) {
-  //       if((*this)(k, k).is(HICMA_HIERARCHICAL)) {
-  //         if((*this)(i, k).is(HICMA_DENSE))
-  //           (*this)(i, k) = Hierarchical(static_cast<Dense&>(*(*this)(i, k).ptr), dim0, dim1);
-  //         if(T(i, k).is(HICMA_DENSE))
-  //           T(i, k) = Hierarchical(static_cast<Dense&>(*T(i, k).ptr), dim0, dim1);
-  //       }
-  //       tpqrt((*this)(k, k), (*this)(i, k), T(i, k));
-  //       for(int j = k+1; j < dim[1]; j++) {
-  //         tpmqrt((*this)(i, k), T(i, k), (*this)(k, j), (*this)(i, j), true);
-  //       }
-  //     }
-  //   }
-  // }
-
 }

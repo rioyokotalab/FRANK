@@ -38,17 +38,4 @@ namespace hicma {
     ptr->transpose();
   }
 
-  // void NodeProxy::geqrt(NodeProxy& T) {
-  //   if(T.is(HICMA_DENSE)) {
-  //     ptr->geqrt(static_cast<Dense&>(*T.ptr));
-  //   }
-  //   else if(T.is(HICMA_HIERARCHICAL)) {
-  //     ptr->geqrt(static_cast<Hierarchical&>(*T.ptr));
-  //   }
-  //   else {
-  //     std::cerr << "Input matrix for geqrt must be Hierarchical or Dense." << std::endl;
-  //     abort();
-  //   }
-  // }
-
 }

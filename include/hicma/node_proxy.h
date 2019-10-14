@@ -30,8 +30,6 @@ namespace hicma {
 
     void transpose();
 
-    // void geqrt(NodeProxy& T);
-
   };
 }
 

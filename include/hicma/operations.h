@@ -7,5 +7,6 @@
 #include "hicma/operations/tpmqrt.h"
 #include "hicma/operations/tpqrt.h"
 #include "hicma/operations/larfb.h"
+#include "hicma/operations/geqrt.h"
 
 #endif // operations_h

@@ -87,8 +87,6 @@ namespace hicma {
 
     // void qr(Hierarchical& Q, Hierarchical& R);
 
-    // void geqrt(Hierarchical& T) override;
-
   };
 }
 #endif

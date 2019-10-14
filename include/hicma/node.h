@@ -36,10 +36,6 @@ namespace hicma {
 
     virtual void transpose();
 
-    // virtual void geqrt(Dense& T);
-
-    // virtual void geqrt(Hierarchical& T);
-
   };
 
 }

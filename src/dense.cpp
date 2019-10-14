@@ -291,16 +291,6 @@ namespace hicma {
     stop("-DGESVD",false);
   }
 
-  // void Dense::geqrt(Dense& T) {
-  //   assert(T.dim[0] == dim[1] && T.dim[1] == dim[1]);
-  //   LAPACKE_dgeqrt3(LAPACK_ROW_MAJOR, dim[0], dim[1], &data[0], dim[1], &T[0], T.dim[1]);
-  // }
-
-  // void Dense::geqrt2(Dense& T) {
-  //   assert(T.dim[0] == dim[1] && T.dim[1] == dim[1]);
-  //   LAPACKE_dgeqrt2(LAPACK_ROW_MAJOR, dim[0], dim[1], &data[0], dim[1], &T[0], T.dim[1]);
-  // }
-
   BEGIN_SPECIALIZATION(make_dense, Dense, const Hierarchical& A){
     return Dense(A);
   } END_SPECIALIZATION;

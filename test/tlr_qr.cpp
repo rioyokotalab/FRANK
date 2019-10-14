@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
   print("Time");
   start("BLR QR decomposition");
   for(int k = 0; k < Nc; k++) {
-    A(k, k).geqrt(T(k, k));
+    geqrt(A(k, k), T(k, k));
     for(int j = k+1; j < Nc; j++) {
       larfb(A(k, k), T(k, k), A(k, j), true);
     }

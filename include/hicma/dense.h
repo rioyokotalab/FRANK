@@ -110,10 +110,6 @@ namespace hicma {
 
     void svd(Dense& S);
 
-    // void geqrt(Dense& T) override;
-
-    // void geqrt2(Dense& T);
-
   };
 
   MULTI_METHOD(make_dense, Dense, const virtual_<Node>&);

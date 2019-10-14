@@ -38,8 +38,4 @@ namespace hicma {
 
   void Node::transpose() {};
 
-  // void Node::geqrt(Dense& T) {};
-
-  // void Node::geqrt(Hierarchical& T) {};
-
 }
