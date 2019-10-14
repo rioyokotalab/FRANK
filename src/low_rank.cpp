@@ -111,6 +111,10 @@ namespace hicma {
     return *this;
   }
 
+  bool LowRank::is(const int enum_id) const {
+    return enum_id == HICMA_LOWRANK;
+  }
+
   const LowRank& LowRank::operator+=(const LowRank& A) {
     assert(dim[0]==A.dim[0] && dim[1]==A.dim[1] && rank==A.rank);
 #if 0

@@ -61,6 +61,8 @@ namespace hicma {
 
     friend void swap(Hierarchical& A, Hierarchical& B);
 
+    bool is(const int enum_id) const override;
+
     const NodeProxy& operator[](const int i) const;
 
     NodeProxy& operator[](const int i);

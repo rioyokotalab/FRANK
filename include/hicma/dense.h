@@ -82,6 +82,8 @@ namespace hicma {
 
     const Dense& operator*=(const double);
 
+    bool is(const int enum_id) const override;
+
     double& operator[](const int i);
 
     const double& operator[](const int i) const;

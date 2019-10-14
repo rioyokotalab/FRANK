@@ -40,6 +40,8 @@ namespace hicma {
 
     const LowRank& operator=(LowRank A);
 
+    bool is(const int enum_id) const override;
+
     const LowRank& operator+=(const LowRank& A);
 
     const char* type() const override;

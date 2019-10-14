@@ -22,6 +22,8 @@ namespace hicma {
 
     const NodeProxy& operator=(NodeProxy A);
 
+    bool is(const int enum_id) const;
+
     const char* type() const;
 
     double norm() const;

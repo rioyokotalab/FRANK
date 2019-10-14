@@ -5,6 +5,13 @@
 
 namespace hicma {
 
+  enum {
+    HICMA_NODE,
+    HICMA_HIERARCHICAL,
+    HICMA_LOWRANK,
+    HICMA_DENSE
+  };
+
   class Dense;
   class LowRank;
   class Hierarchical;
@@ -27,6 +34,8 @@ namespace hicma {
     virtual Node* clone() const;
 
     const Node& operator=(Node&& A);
+
+    virtual bool is(const int enum_id) const;
 
     virtual const char* type() const;
 
