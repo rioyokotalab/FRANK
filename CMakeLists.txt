@@ -44,6 +44,7 @@ add_library(hicma
     src/operations/gemm.cpp
     src/operations/tpmqrt.cpp
     src/operations/tpqrt.cpp
+    src/operations/larfb.cpp
 )
 target_include_directories(hicma
     PUBLIC ${PROJECT_SOURCE_DIR}/include

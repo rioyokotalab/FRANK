@@ -114,10 +114,6 @@ namespace hicma {
 
     // void geqrt2(Dense& T);
 
-    // void larfb(const Dense& Y, const Dense& T, const bool trans=false) override;
-
-    // void larfb(const Hierarchical& Y, const Hierarchical& T, const bool trans=false) override;
-
   };
 
   MULTI_METHOD(make_dense, Dense, const virtual_<Node>&);

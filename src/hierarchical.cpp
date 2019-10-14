@@ -479,7 +479,7 @@ namespace hicma {
   //   for(int k = 0; k < dim[1]; k++) {
   //     (*this)(k, k).geqrt(T(k, k));
   //     for(int j = k+1; j < dim[1]; j++) {
-  //       (*this)(k, j).larfb((*this)(k, k), T(k, k), true);
+  //       larfb((*this)(k, k), T(k, k), (*this)(k, j), true);
   //     }
   //     int dim0 = -1;
   //     int dim1 = -1;
@@ -498,49 +498,6 @@ namespace hicma {
   //       tpqrt((*this)(k, k), (*this)(i, k), T(i, k));
   //       for(int j = k+1; j < dim[1]; j++) {
   //         tpmqrt((*this)(i, k), T(i, k), (*this)(k, j), (*this)(i, j), true);
-  //       }
-  //     }
-  //   }
-  // }
-
-  // void Hierarchical::larfb(const Dense& Y, const Dense& T, const bool trans) {
-  //   Dense _Y(Y);
-  //   for(int i = 0; i < _Y.dim[0]; i++) {
-  //     for(int j = i; j < _Y.dim[1]; j++) {
-  //       if(i == j) _Y(i, j) = 1.0;
-  //       else _Y(i, j) = 0.0;
-  //     }
-  //   }
-  //   Dense YT(_Y.dim[0], T.dim[1]);
-  //   gemm(_Y, T, YT, CblasNoTrans, trans ? CblasTrans : CblasNoTrans, 1, 1);
-  //   Dense YTYt(YT.dim[0], _Y.dim[0]);
-  //   gemm(YT, _Y, YTYt, CblasNoTrans, CblasTrans, 1, 1);
-  //   Hierarchical C(*this);
-  //   gemm(YTYt, C, *this, -1, 1);
-  // }
-
-  // void Hierarchical::larfb(const Hierarchical& Y, const Hierarchical& T, const bool trans) {
-  //   if(trans) {
-  //     for(int k = 0; k < dim[1]; k++) {
-  //       for(int j = k; j < dim[1]; j++) {
-  //         (*this)(k, j).larfb(Y(k, k), T(k, k), trans);
-  //       }
-  //       for(int i = k+1; i < dim[0]; i++) {
-  //         for(int j = k; j < dim[1]; j++) {
-  //           tpmqrt(Y(i, k), T(i, k), (*this)(k, j), (*this)(i, j), trans);
-  //         }
-  //       }
-  //     }
-  //   }
-  //   else {
-  //     for(int k = dim[1]-1; k >= 0; k--) {
-  //       for(int i = dim[0]-1; i > k; i--) {
-  //         for(int j = k; j < dim[1]; j++) {
-  //           tpmqrt(Y(i, k), T(i, k), (*this)(k, j), (*this)(i, j), trans);
-  //         }
-  //       }
-  //       for(int j = k; j < dim[1]; j++) {
-  //         (*this)(k, j).larfb(Y(k, k), T(k, k), trans);
   //       }
   //     }
   //   }

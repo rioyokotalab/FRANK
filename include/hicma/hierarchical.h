@@ -89,10 +89,6 @@ namespace hicma {
 
     // void geqrt(Hierarchical& T) override;
 
-    // void larfb(const Dense& Y, const Dense& T, const bool trans=false) override;
-
-    // void larfb(const Hierarchical& Y, const Hierarchical& T, const bool trans=false) override;
-
   };
 }
 #endif

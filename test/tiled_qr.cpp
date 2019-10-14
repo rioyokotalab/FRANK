@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
   for(int k = 0; k < Nc; k++) {
     A(k, k).geqrt(T(k, k));
     for(int j = k+1; j < Nc; j++) {
-      A(k, j).larfb(A(k, k), T(k, k), true);
+      larfb(A(k, k), T(k, k), A(k, j), true);
     }
     for(int i = k+1; i < Nc; i++) {
       tpqrt(A(k, k), A(i, k), T(i, k));
@@ -70,7 +70,7 @@ int main(int argc, char** argv) {
       }
     }
     for(int j = k; j < Nc; j++) {
-      Q(k, j).larfb(A(k, k), T(k, k), false);
+      larfb(A(k, k), T(k, k), Q(k, j), false);
     }
   }
   // print("A after");

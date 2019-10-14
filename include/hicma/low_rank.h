@@ -56,8 +56,6 @@ namespace hicma {
 
     void mergeV(const LowRank& A, const LowRank& B);
 
-    // void larfb(const Dense& Y, const Dense& T, const bool trans=false) override;
-
   };
 }
 #endif

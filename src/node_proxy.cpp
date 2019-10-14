@@ -51,17 +51,4 @@ namespace hicma {
   //   }
   // }
 
-  // void NodeProxy::larfb(const NodeProxy& Y, const NodeProxy& T, const bool trans) {
-  //   if(Y.is(HICMA_DENSE) && T.is(HICMA_DENSE)) {
-  //     ptr->larfb(static_cast<Dense&>(*Y.ptr), static_cast<Dense&>(*T.ptr), trans);
-  //   }
-  //   else if(Y.is(HICMA_HIERARCHICAL) && T.is(HICMA_HIERARCHICAL)) {
-  //     ptr->larfb(static_cast<Hierarchical&>(*Y.ptr), static_cast<Hierarchical&>(*T.ptr), trans);
-  //   }
-  //   else {
-  //     std::cerr << "Input matrix for larfb must be (Dense,Dense) or (Hierarchical,Hierarchical)." << std::endl;
-  //     abort();
-  //   }
-  // }
-
 }

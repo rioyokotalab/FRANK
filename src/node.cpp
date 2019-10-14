@@ -42,8 +42,4 @@ namespace hicma {
 
   // void Node::geqrt(Hierarchical& T) {};
 
-  // void Node::larfb(const Dense& Y, const Dense& T, const bool trans) {};
-
-  // void Node::larfb(const Hierarchical& Y, const Hierarchical& T, const bool trans) {};
-
 }

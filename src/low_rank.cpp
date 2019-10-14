@@ -275,8 +275,4 @@ namespace hicma {
     }
   }
 
-  // void LowRank::larfb(const Dense& Y, const Dense& T, const bool trans) {
-  //   U.larfb(Y, T, trans);
-  // }
-
 }

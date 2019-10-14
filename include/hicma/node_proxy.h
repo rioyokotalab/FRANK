@@ -32,8 +32,6 @@ namespace hicma {
 
     // void geqrt(NodeProxy& T);
 
-    // void larfb(const NodeProxy& Y, const NodeProxy& T, const bool trans=false);
-
   };
 }
 

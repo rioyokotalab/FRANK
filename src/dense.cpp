@@ -301,16 +301,6 @@ namespace hicma {
   //   LAPACKE_dgeqrt2(LAPACK_ROW_MAJOR, dim[0], dim[1], &data[0], dim[1], &T[0], T.dim[1]);
   // }
 
-  // void Dense::larfb(const Dense& Y, const Dense& T, const bool trans) {
-  //   LAPACKE_dlarfb(LAPACK_ROW_MAJOR, 'L', (trans ? 'T' : 'N'), 'F', 'C', dim[0], dim[1], T.dim[1], &Y[0], Y.dim[1], &T[0], T.dim[1], &data[0], dim[1]);
-  // }
-
-  // void Dense::larfb(const Hierarchical& Y, const Hierarchical& T, const bool trans) {
-  //   Hierarchical C(*this, Y.dim[0], Y.dim[1]);
-  //   C.larfb(Y, T, trans);
-  //   *this = Dense(C);
-  // }
-
   BEGIN_SPECIALIZATION(make_dense, Dense, const Hierarchical& A){
     return Dense(A);
   } END_SPECIALIZATION;

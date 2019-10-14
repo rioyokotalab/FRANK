@@ -40,10 +40,6 @@ namespace hicma {
 
     // virtual void geqrt(Hierarchical& T);
 
-    // virtual void larfb(const Dense& Y, const Dense& T, const bool trans=false);
-
-    // virtual void larfb(const Hierarchical& Y, const Hierarchical& T, const bool trans=false);
-
   };
 
 }
