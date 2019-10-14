@@ -39,9 +39,9 @@ add_library(hicma
     src/low_rank.cpp
     src/hierarchical.cpp
     src/functions.cpp
-    src/getrf.cpp
-    src/trsm.cpp
-    src/gemm.cpp
+    src/operations/getrf.cpp
+    src/operations/trsm.cpp
+    src/operations/gemm.cpp
 )
 target_include_directories(hicma
     PUBLIC ${PROJECT_SOURCE_DIR}/include
@@ -58,7 +58,7 @@ if(USE_MKL)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_MKL")
     target_link_libraries(hicma mkl_intel_lp64 mkl_intel_thread mkl_core iomp5 pthread)
 else()
-    target_link_libraries(hicma cblas lapacke)
+    target_link_libraries(hicma blas lapacke)
 endif(USE_MKL)
 unset(USE_MKL CACHE)
 

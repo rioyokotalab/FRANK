@@ -1,14 +1,15 @@
-#include "hicma/operations.h"
+#include "hicma/operations/gemm.h"
 
 #include "hicma/node.h"
+#include "hicma/node_proxy.h"
 #include "hicma/dense.h"
 #include "hicma/low_rank.h"
 #include "hicma/hierarchical.h"
-#include "hicma/util/print.h"
 #include "hicma/util/timer.h"
 #include "hicma/gpu_batch/batch.h"
 
 #include <cassert>
+#include <iostream>
 
 #ifdef USE_MKL
 #include <mkl.h>

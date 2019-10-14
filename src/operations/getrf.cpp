@@ -1,8 +1,12 @@
-#include "hicma/operations.h"
+#include "hicma/operations/getrf.h"
 
 #include "hicma/dense.h"
 #include "hicma/hierarchical.h"
+#include "hicma/operations/trsm.h"
+#include "hicma/operations/gemm.h"
 #include "hicma/util/timer.h"
+
+#include <iostream>
 
 #ifdef USE_MKL
 #include <mkl.h>

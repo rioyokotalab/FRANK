@@ -1,8 +1,8 @@
 #ifndef low_rank_h
 #define low_rank_h
 
-#include "node_proxy.h"
-#include "dense.h"
+#include "hicma/node_proxy.h"
+#include "hicma/dense.h"
 
 #include "yorel/multi_methods.hpp"
 

@@ -1,7 +1,7 @@
 #ifndef dense_h
 #define dense_h
-#include "node.h"
-#include "node_proxy.h"
+#include "hicma/node.h"
+#include "hicma/node_proxy.h"
 
 #include <vector>
 

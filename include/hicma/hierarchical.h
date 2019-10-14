@@ -1,6 +1,7 @@
 #ifndef hierarchical_h
 #define hierarchical_h
-#include "node.h"
+#include "hicma/node.h"
+#include "hicma/node_proxy.h"
 
 #include <vector>
 
