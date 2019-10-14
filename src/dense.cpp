@@ -155,7 +155,8 @@ namespace hicma {
   }
 
   const Dense& Dense::operator+=(const Dense& A) {
-    assert(dim[0] == A.dim[0] && dim[1] == A.dim[1]);
+    assert(dim[0] == A.dim[0]);
+    assert(dim[1] == A.dim[1]);
     for (int i=0; i<dim[0]*dim[1]; i++) {
       (*this)[i] += A[i];
     }
@@ -163,7 +164,8 @@ namespace hicma {
   }
 
   const Dense& Dense::operator-=(const Dense& A) {
-    assert(dim[0] == A.dim[0] && dim[1] == A.dim[1]);
+    assert(dim[0] == A.dim[0]);
+    assert(dim[1] == A.dim[1]);
     for (int i=0; i<dim[0]*dim[1]; i++) {
       (*this)[i] -= A[i];
     }
@@ -182,22 +184,24 @@ namespace hicma {
   }
 
   double& Dense::operator[](const int i) {
-    assert(i<dim[0]*dim[1]);
+    assert(i < dim[0]*dim[1]);
     return data[i];
   }
 
   const double& Dense::operator[](const int i) const {
-    assert(i<dim[0]*dim[1]);
+    assert(i < dim[0]*dim[1]);
     return data[i];
   }
 
   double& Dense::operator()(const int i, const int j) {
-    assert(i<dim[0] && j<dim[1]);
+    assert(i < dim[0]);
+    assert(j < dim[1]);
     return data[i*dim[1]+j];
   }
 
   const double& Dense::operator()(const int i, const int j) const {
-    assert(i<dim[0] && j<dim[1]);
+    assert(i < dim[0]);
+    assert(j < dim[1]);
     return data[i*dim[1]+j];
   }
 

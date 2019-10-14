@@ -116,7 +116,9 @@ namespace hicma {
   }
 
   const LowRank& LowRank::operator+=(const LowRank& A) {
-    assert(dim[0]==A.dim[0] && dim[1]==A.dim[1] && rank==A.rank);
+    assert(dim[0] == A.dim[0]);
+    assert(dim[1] == A.dim[1]);
+    assert(rank == A.rank);
 #if 0
     LowRank B(dim[0], dim[1], rank+A.rank, i_abs, j_abs, level);
     B.mergeU(*this, A);
