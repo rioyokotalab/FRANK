@@ -23,37 +23,37 @@ namespace hicma
 void tpqrt(
   NodeProxy& A, NodeProxy& B, NodeProxy& T
 ) {
-  tpqrt(*A.ptr.get(), *B.ptr.get(), *T.ptr.get());
+  tpqrt(*A.ptr, *B.ptr, *T.ptr);
 }
 void tpqrt(
   NodeProxy& A, NodeProxy& B, Node& T
 ) {
-  tpqrt(*A.ptr.get(), *B.ptr.get(), T);
+  tpqrt(*A.ptr, *B.ptr, T);
 }
 void tpqrt(
   NodeProxy& A, Node& B, NodeProxy& T
 ) {
-  tpqrt(*A.ptr.get(), B, *T.ptr.get());
+  tpqrt(*A.ptr, B, *T.ptr);
 }
 void tpqrt(
   NodeProxy& A, Node& B, Node& T
 ) {
-  tpqrt(*A.ptr.get(), B, T);
+  tpqrt(*A.ptr, B, T);
 }
 void tpqrt(
   Node& A, NodeProxy& B, NodeProxy& T
 ) {
-  tpqrt(A, *B.ptr.get(), *T.ptr.get());
+  tpqrt(A, *B.ptr, *T.ptr);
 }
 void tpqrt(
   Node& A, NodeProxy& B, Node& T
 ) {
-  tpqrt(A, *B.ptr.get(), T);
+  tpqrt(A, *B.ptr, T);
 }
 void tpqrt(
   Node& A, Node& B, NodeProxy& T
 ) {
-  tpqrt(A, B, *T.ptr.get());
+  tpqrt(A, B, *T.ptr);
 }
 
 void tpqrt(
