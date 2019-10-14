@@ -172,14 +172,14 @@ BEGIN_SPECIALIZATION(
 ) {
   Dense Vt(V);
   Vt.transpose();
-  Hierarchical C(A);
-  gemm(Vt, B, C, 1, 1); // C = A + Vt.B
+  Hierarchical AH(A);
+  gemm(Vt, B, AH, 1, 1); // AH = A + Vt*B
   Dense Tt(T);
   if(trans) Tt.transpose();
-  gemm(Tt, C, A, -1, 1); // A = A - (T or Tt)*C
+  gemm(Tt, AH, A, -1, 1); // A = A - (T or Tt)*AH
   Dense VTt(V.dim[0], Tt.dim[1]);
   gemm(V, Tt, VTt, 1, 0);
-  gemm(VTt, C, B, -1, 1); // B = B - V*(T or Tt)*C
+  gemm(VTt, AH, B, -1, 1); // B = B - V*(T or Tt)*AH
 } END_SPECIALIZATION;
 
 BEGIN_SPECIALIZATION(
@@ -190,7 +190,6 @@ BEGIN_SPECIALIZATION(
   Hierarchical BH(B, A.dim[0], A.dim[1]);
   tpmqrt(V, T, A, BH, trans);
   B = Dense(BH);
-
 } END_SPECIALIZATION;
 
 BEGIN_SPECIALIZATION(
@@ -202,7 +201,6 @@ BEGIN_SPECIALIZATION(
   tpmqrt(V, T, A, BD, trans);
   B = LowRank(BD, B.rank);
 } END_SPECIALIZATION;
-
 
 BEGIN_SPECIALIZATION(
   tpmqrt_omm, void,
