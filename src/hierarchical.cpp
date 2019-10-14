@@ -497,7 +497,7 @@ namespace hicma {
   //       }
   //       (*this)(i, k).tpqrt((*this)(k, k), T(i, k));
   //       for(int j = k+1; j < dim[1]; j++) {
-  //         (*this)(i, j).tpmqrt((*this)(k, j), (*this)(i, k), T(i, k), true);
+  //         tpmqrt((*this)(i, k), T(i, k), (*this)(k, j), (*this)(i, j), true);
   //       }
   //     }
   //   }
@@ -527,7 +527,7 @@ namespace hicma {
   //       }
   //       for(int i = k+1; i < dim[0]; i++) {
   //         for(int j = k; j < dim[1]; j++) {
-  //           (*this)(i, j).tpmqrt((*this)(k, j), Y(i, k), T(i, k), trans);
+  //           tpmqrt(Y(i, k), T(i, k), (*this)(k, j), (*this)(i, j), trans);
   //         }
   //       }
   //     }
@@ -536,7 +536,7 @@ namespace hicma {
   //     for(int k = dim[1]-1; k >= 0; k--) {
   //       for(int i = dim[0]-1; i > k; i--) {
   //         for(int j = k; j < dim[1]; j++) {
-  //           (*this)(i, j).tpmqrt((*this)(k, j), Y(i, k), T(i, k), trans);
+  //           tpmqrt(Y(i, k), T(i, k), (*this)(k, j), (*this)(i, j), trans);
   //         }
   //       }
   //       for(int j = k; j < dim[1]; j++) {
@@ -558,47 +558,7 @@ namespace hicma {
   //     for(int j = 0; j < dim[1]; j++) {
   //       (*this)(i, j).tpqrt(A(j, j), T(i, j));
   //       for(int k = j+1; k < dim[1]; k++) {
-  //         (*this)(i, k).tpmqrt(A(j, k), (*this)(i, j), T(i, j), true);
-  //       }
-  //     }
-  //   }
-  // }
-
-  // void Hierarchical::tpmqrt(Dense& B, const Dense& Y, const Dense& T, const bool trans) {
-  //   Dense C(B);
-  //   Dense Yt(Y);
-  //   Yt.transpose();
-  //   gemm(Yt, *this, C, 1, 1); // C = B + Yt.A
-  //   Dense Tt(T);
-  //   if(trans) Tt.transpose();
-  //   gemm(Tt, C, B, -1, 1); // B = B - (T or Tt)*C
-  //   Dense YTt(Y.dim[0], Tt.dim[1]);
-  //   gemm(Y, Tt, YTt, 1, 1);
-  //   gemm(YTt, C, *this, -1, 1); // A = A - Y*(T or Tt)*C
-  // }
-
-  // void Hierarchical::tpmqrt(Dense& B, const Hierarchical& Y, const Hierarchical& T, const bool trans) {
-  //   Hierarchical HB(B, dim[0], dim[1]);
-  //   tpmqrt(HB, Y, T, trans);
-  //   B = Dense(HB);
-  // }
-
-  // void Hierarchical::tpmqrt(Hierarchical& B, const Hierarchical& Y, const Hierarchical& T, const bool trans) {
-  //   if(trans) {
-  //     for(int i = 0; i < dim[0]; i++) {
-  //       for(int j = 0; j < dim[1]; j++) {
-  //         for(int k = 0; k < dim[1]; k++) {
-  //           (*this)(i, k).tpmqrt(B(j, k), Y(i, j), T(i, j), trans);
-  //         }
-  //       }
-  //     }
-  //   }
-  //   else {
-  //     for(int i = dim[0]-1; i >= 0; i--) {
-  //       for(int j = dim[1]-1; j >= 0; j--) {
-  //         for(int k = dim[1]-1; k >= 0; k--) {
-  //           (*this)(i, k).tpmqrt(B(j, k), Y(i, j), T(i, j), trans);
-  //         }
+  //         tpmqrt((*this)(i, j), T(i, j), A(j, k), (*this)(i, k), true);
   //       }
   //     }
   //   }

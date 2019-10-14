@@ -42,6 +42,7 @@ add_library(hicma
     src/operations/getrf.cpp
     src/operations/trsm.cpp
     src/operations/gemm.cpp
+    src/operations/tpmqrt.cpp
 )
 target_include_directories(hicma
     PUBLIC ${PROJECT_SOURCE_DIR}/include

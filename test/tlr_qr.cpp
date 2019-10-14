@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
     for(int i = k+1; i < Nc; i++) {
       A(i, k).tpqrt(A(k, k), T(i, k));
       for(int j = k+1; j < Nc; j++) {
-        A(i, j).tpmqrt(A(k, j), A(i, k), T(i, k), true);
+        tpmqrt(A(i, k), T(i, k), A(k, j), A(i, j), true);
       }
     }
   }
@@ -81,7 +81,7 @@ int main(int argc, char** argv) {
   for(int k = Nc-1; k >= 0; k--) {
     for(int i = Nc-1; i > k; i--) {
       for(int j = k; j < Nc; j++) {
-        Q(i, j).tpmqrt(Q(k, j), A(i, k), T(i, k), false);
+        tpmqrt(A(i, k), T(i, k), Q(k, j), Q(i, j), false);
       }
     }
     for(int j = k; j < Nc; j++) {

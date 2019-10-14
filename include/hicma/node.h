@@ -50,20 +50,6 @@ namespace hicma {
 
     // virtual void tpqrt(Hierarchical& A, Hierarchical& T);
 
-    // virtual void tpmqrt(Dense& B, const Dense& Y, const Dense& T, const bool trans=false);
-
-    // virtual void tpmqrt(Dense& B, const LowRank& Y, const Dense& T, const bool trans=false);
-
-    // virtual void tpmqrt(Dense& B, const Hierarchical& Y, const Hierarchical& T, const bool trans=false);
-
-    // virtual void tpmqrt(LowRank& B, const Dense& Y, const Dense& T, const bool trans=false);
-
-    // virtual void tpmqrt(LowRank& B, const LowRank& Y, const Dense& T, const bool trans=false);
-
-    // virtual void tpmqrt(Hierarchical& B, const Dense& Y, const Dense& T, const bool trans=false);
-
-    // virtual void tpmqrt(Hierarchical& B, const Hierarchical& Y, const Hierarchical& T, const bool trans=false);
-
   };
 
 }

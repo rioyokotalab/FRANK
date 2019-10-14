@@ -329,49 +329,6 @@ namespace hicma {
   //   abort();
   // }
 
-  // void Dense::tpmqrt(Dense& B, const Dense& Y, const Dense &T, const bool trans) {
-  //   LAPACKE_dtprfb(LAPACK_ROW_MAJOR, 'L', (trans ? 'T': 'N'), 'F', 'C', dim[0], dim[1], Y.dim[1], 0, &Y[0], Y.dim[1], &T[0], T.dim[1], &B[0], B.dim[1], &data[0], dim[1]);
-  // }
-
-  // void Dense::tpmqrt(Dense& B, const LowRank& Y, const Dense& T, const bool trans) {
-  //   Dense UY(Y.U.dim[0], Y.V.dim[1]);
-  //   gemm(Y.U, Y.V, UY, 1, 0);
-  //   tpmqrt(B, UY, T, trans);
-  // }
-
-  // void Dense::tpmqrt(LowRank& B, const Dense& Y, const Dense& T, const bool trans) {
-  //   Dense C(B);
-  //   tpmqrt(C, Y, T, trans);
-  //   B = LowRank(C, B.rank);
-  // }
-
-  // void Dense::tpmqrt(LowRank& B, const LowRank& Y, const Dense& T, const bool trans) {
-  //   Dense C(B);
-  //   Dense UY(Y.U.dim[0], Y.V.dim[1]);
-  //   gemm(Y.U, Y.V, UY, 1, 0);
-  //   tpmqrt(C, UY, T, trans);
-  //   B = LowRank(C, B.rank);
-  // }
-
-  // void Dense::tpmqrt(Hierarchical& B, const Dense& Y, const Dense& T, const bool trans) {
-  //   Hierarchical C(B);
-  //   Dense Yt(Y);
-  //   Yt.transpose();
-  //   gemm(Yt, *this, C, 1, 1); // C = B + Yt.A
-  //   Dense Tt(T);
-  //   if(trans) Tt.transpose();
-  //   gemm(Tt, C, B, -1, 1); // B = B - (T or Tt)*C
-  //   Dense YTt(Y.dim[0], Tt.dim[1]);
-  //   gemm(Y, Tt, YTt, 1, 0);
-  //   gemm(YTt, C, *this, -1, 1); // A = A - Y*(T or Tt)*C
-  // }
-
-  // void Dense::tpmqrt(Hierarchical& B, const Hierarchical& Y, const Hierarchical& T, const bool trans) {
-  //   Hierarchical A(*this, B.dim[0], B.dim[1]);
-  //   A.tpmqrt(B, Y, T, trans);
-  //   *this = Dense(A);
-  // }
-
   BEGIN_SPECIALIZATION(make_dense, Dense, const Hierarchical& A){
     return Dense(A);
   } END_SPECIALIZATION;

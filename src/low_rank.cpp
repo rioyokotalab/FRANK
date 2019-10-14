@@ -286,36 +286,4 @@ namespace hicma {
   //   V.tpqrt(A, T);
   // }
 
-  // void LowRank::tpmqrt(Dense& B, const Dense& Y, const Dense& T, const bool trans) {
-  //   Dense C(*this);
-  //   C.tpmqrt(B, Y, T, trans);
-  //   *this = LowRank(C, rank);
-  // }
-
-  // void LowRank::tpmqrt(Dense& B, const LowRank& Y, const Dense& T, const bool trans) {
-  //   Dense C(*this);
-  //   Dense UY(Y.U.dim[0], Y.V.dim[1]);
-  //   gemm(Y.U, Y.V, UY, 1, 0);
-  //   C.tpmqrt(B, UY, T, trans);
-  //   *this = LowRank(C, rank);
-  // }
-
-  // void LowRank::tpmqrt(LowRank& B, const Dense& Y, const Dense& T, const bool trans) {
-  //   Dense C(*this);
-  //   Dense D(B);
-  //   C.tpmqrt(D, Y, T, trans);
-  //   B = LowRank(D, B.rank);
-  //   *this = LowRank(C, rank);
-  // }
-
-  // void LowRank::tpmqrt(LowRank& B, const LowRank& Y, const Dense& T, const bool trans) {
-  //   Dense C(*this);
-  //   Dense D(B);
-  //   Dense UY(Y.U.dim[0], Y.V.dim[1]);
-  //   gemm(Y.U, Y.V, UY, 1, 0);
-  //   C.tpmqrt(D, UY, T, trans);
-  //   B = LowRank(D, B.rank);
-  //   *this = LowRank(C, rank);
-  // }
-
 }

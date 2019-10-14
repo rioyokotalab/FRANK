@@ -124,18 +124,6 @@ namespace hicma {
 
     // void tpqrt(Hierarchical& A, Hierarchical& T) override;
 
-    // void tpmqrt(Dense& B, const Dense& Y, const Dense& T, const bool trans=false) override;
-
-    // void tpmqrt(Dense& B, const LowRank& Y, const Dense& T, const bool trans=false) override;
-
-    // void tpmqrt(LowRank& B, const Dense& Y, const Dense& T, const bool trans=false) override;
-
-    // void tpmqrt(LowRank& B, const LowRank& Y, const Dense &T, const bool trans=false) override;
-
-    // void tpmqrt(Hierarchical& B, const Dense& Y, const Dense& T, const bool trans=false) override;
-
-    // void tpmqrt(Hierarchical& B, const Hierarchical& Y, const Hierarchical& T, const bool trans=false) override;
-
   };
 
   MULTI_METHOD(make_dense, Dense, const virtual_<Node>&);
