@@ -20,26 +20,26 @@ target_link_libraries(lr_add hicma)
 add_executable(block_lu block_lu.cpp)
 target_link_libraries(block_lu hicma)
 
-add_executable(block_qr block_qr.cpp)
-target_link_libraries(block_qr hicma)
+# add_executable(block_qr block_qr.cpp)
+# target_link_libraries(block_qr hicma)
 
-add_executable(tiled_qr tiled_qr.cpp)
-target_link_libraries(tiled_qr hicma)
+# add_executable(tiled_qr tiled_qr.cpp)
+# target_link_libraries(tiled_qr hicma)
 
-add_executable(tlr_qr tlr_qr.cpp)
-target_link_libraries(tlr_qr hicma)
+# add_executable(tlr_qr tlr_qr.cpp)
+# target_link_libraries(tlr_qr hicma)
 
 add_executable(blr_lu blr_lu.cpp)
 target_link_libraries(blr_lu hicma)
 
-add_executable(blr_qr blr_qr.cpp)
-target_link_libraries(blr_qr hicma)
+# add_executable(blr_qr blr_qr.cpp)
+# target_link_libraries(blr_qr hicma)
 
 add_executable(h_lu h_lu.cpp)
 target_link_libraries(h_lu hicma)
 
-add_executable(h_qr h_qr.cpp)
-target_link_libraries(h_qr hicma)
+# add_executable(h_qr h_qr.cpp)
+# target_link_libraries(h_qr hicma)
 
 add_executable(rsvd rsvd.cpp)
 target_link_libraries(rsvd hicma)

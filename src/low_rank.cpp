@@ -78,17 +78,17 @@ namespace hicma {
     swap(*this, A);
   }
 
-  LowRank::LowRank(const NodeProxy& _A, const int k) : Node(_A.ptr->i_abs, _A.ptr->j_abs, _A.ptr->level) {
-    if (_A.is(HICMA_LOWRANK)) {
-      *this = static_cast<const LowRank&>(*_A.ptr);
-    } else if (_A.is(HICMA_DENSE)) {
-      *this = LowRank(static_cast<const Dense&>(*_A.ptr), k);
-    } else if (_A.is(HICMA_HIERARCHICAL)) {
-      std::cerr << this->type() << "(" << _A.type();
-      std::cerr << ") undefined." << std::endl;
-      abort();
-    }
-  }
+  // LowRank::LowRank(const NodeProxy& _A, const int k) : Node(_A.ptr->i_abs, _A.ptr->j_abs, _A.ptr->level) {
+  //   if (_A.is(HICMA_LOWRANK)) {
+  //     *this = static_cast<const LowRank&>(*_A.ptr);
+  //   } else if (_A.is(HICMA_DENSE)) {
+  //     *this = LowRank(static_cast<const Dense&>(*_A.ptr), k);
+  //   } else if (_A.is(HICMA_HIERARCHICAL)) {
+  //     std::cerr << this->type() << "(" << _A.type();
+  //     std::cerr << ") undefined." << std::endl;
+  //     abort();
+  //   }
+  // }
 
   LowRank* LowRank::clone() const {
     return new LowRank(*this);
@@ -275,47 +275,47 @@ namespace hicma {
     }
   }
 
-  void LowRank::larfb(const Dense& Y, const Dense& T, const bool trans) {
-    U.larfb(Y, T, trans);
-  }
+  // void LowRank::larfb(const Dense& Y, const Dense& T, const bool trans) {
+  //   U.larfb(Y, T, trans);
+  // }
 
-  void LowRank::tpqrt(Dense& A, Dense& T) {
-    Dense _V(V);
-    gemm(S, _V, V, CblasNoTrans, CblasNoTrans, 1, 0);
-    for(int i = 0; i < std::min(S.dim[0], S.dim[1]); i++) S(i, i) = 1.0;
-    V.tpqrt(A, T);
-  }
+  // void LowRank::tpqrt(Dense& A, Dense& T) {
+  //   Dense _V(V);
+  //   gemm(S, _V, V, CblasNoTrans, CblasNoTrans, 1, 0);
+  //   for(int i = 0; i < std::min(S.dim[0], S.dim[1]); i++) S(i, i) = 1.0;
+  //   V.tpqrt(A, T);
+  // }
 
-  void LowRank::tpmqrt(Dense& B, const Dense& Y, const Dense& T, const bool trans) {
-    Dense C(*this);
-    C.tpmqrt(B, Y, T, trans);
-    *this = LowRank(C, rank);
-  }
+  // void LowRank::tpmqrt(Dense& B, const Dense& Y, const Dense& T, const bool trans) {
+  //   Dense C(*this);
+  //   C.tpmqrt(B, Y, T, trans);
+  //   *this = LowRank(C, rank);
+  // }
 
-  void LowRank::tpmqrt(Dense& B, const LowRank& Y, const Dense& T, const bool trans) {
-    Dense C(*this);
-    Dense UY(Y.U.dim[0], Y.V.dim[1]);
-    gemm(Y.U, Y.V, UY, 1, 0);
-    C.tpmqrt(B, UY, T, trans);
-    *this = LowRank(C, rank);
-  }
+  // void LowRank::tpmqrt(Dense& B, const LowRank& Y, const Dense& T, const bool trans) {
+  //   Dense C(*this);
+  //   Dense UY(Y.U.dim[0], Y.V.dim[1]);
+  //   gemm(Y.U, Y.V, UY, 1, 0);
+  //   C.tpmqrt(B, UY, T, trans);
+  //   *this = LowRank(C, rank);
+  // }
 
-  void LowRank::tpmqrt(LowRank& B, const Dense& Y, const Dense& T, const bool trans) {
-    Dense C(*this);
-    Dense D(B);
-    C.tpmqrt(D, Y, T, trans);
-    B = LowRank(D, B.rank);
-    *this = LowRank(C, rank);
-  }
+  // void LowRank::tpmqrt(LowRank& B, const Dense& Y, const Dense& T, const bool trans) {
+  //   Dense C(*this);
+  //   Dense D(B);
+  //   C.tpmqrt(D, Y, T, trans);
+  //   B = LowRank(D, B.rank);
+  //   *this = LowRank(C, rank);
+  // }
 
-  void LowRank::tpmqrt(LowRank& B, const LowRank& Y, const Dense& T, const bool trans) {
-    Dense C(*this);
-    Dense D(B);
-    Dense UY(Y.U.dim[0], Y.V.dim[1]);
-    gemm(Y.U, Y.V, UY, 1, 0);
-    C.tpmqrt(D, UY, T, trans);
-    B = LowRank(D, B.rank);
-    *this = LowRank(C, rank);
-  }
+  // void LowRank::tpmqrt(LowRank& B, const LowRank& Y, const Dense& T, const bool trans) {
+  //   Dense C(*this);
+  //   Dense D(B);
+  //   Dense UY(Y.U.dim[0], Y.V.dim[1]);
+  //   gemm(Y.U, Y.V, UY, 1, 0);
+  //   C.tpmqrt(D, UY, T, trans);
+  //   B = LowRank(D, B.rank);
+  //   *this = LowRank(C, rank);
+  // }
 
 }

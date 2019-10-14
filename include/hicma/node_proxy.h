@@ -30,13 +30,13 @@ namespace hicma {
 
     void transpose();
 
-    void geqrt(NodeProxy& T);
+    // void geqrt(NodeProxy& T);
 
-    void larfb(const NodeProxy& Y, const NodeProxy& T, const bool trans=false);
+    // void larfb(const NodeProxy& Y, const NodeProxy& T, const bool trans=false);
 
-    void tpqrt(NodeProxy& A, NodeProxy& T);
+    // void tpqrt(NodeProxy& A, NodeProxy& T);
 
-    void tpmqrt(NodeProxy& B, const NodeProxy& Y, const NodeProxy& T, const bool trans=false);
+    // void tpmqrt(NodeProxy& B, const NodeProxy& Y, const NodeProxy& T, const bool trans=false);
 
   };
 }

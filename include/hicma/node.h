@@ -36,33 +36,33 @@ namespace hicma {
 
     virtual void transpose();
 
-    virtual void geqrt(Dense& T);
+    // virtual void geqrt(Dense& T);
 
-    virtual void geqrt(Hierarchical& T);
+    // virtual void geqrt(Hierarchical& T);
 
-    virtual void larfb(const Dense& Y, const Dense& T, const bool trans=false);
+    // virtual void larfb(const Dense& Y, const Dense& T, const bool trans=false);
 
-    virtual void larfb(const Hierarchical& Y, const Hierarchical& T, const bool trans=false);
+    // virtual void larfb(const Hierarchical& Y, const Hierarchical& T, const bool trans=false);
 
-    virtual void tpqrt(Dense& A, Dense& T);
+    // virtual void tpqrt(Dense& A, Dense& T);
 
-    virtual void tpqrt(Hierarchical& A, Dense& T);
+    // virtual void tpqrt(Hierarchical& A, Dense& T);
 
-    virtual void tpqrt(Hierarchical& A, Hierarchical& T);
+    // virtual void tpqrt(Hierarchical& A, Hierarchical& T);
 
-    virtual void tpmqrt(Dense& B, const Dense& Y, const Dense& T, const bool trans=false);
+    // virtual void tpmqrt(Dense& B, const Dense& Y, const Dense& T, const bool trans=false);
 
-    virtual void tpmqrt(Dense& B, const LowRank& Y, const Dense& T, const bool trans=false);
+    // virtual void tpmqrt(Dense& B, const LowRank& Y, const Dense& T, const bool trans=false);
 
-    virtual void tpmqrt(Dense& B, const Hierarchical& Y, const Hierarchical& T, const bool trans=false);
+    // virtual void tpmqrt(Dense& B, const Hierarchical& Y, const Hierarchical& T, const bool trans=false);
 
-    virtual void tpmqrt(LowRank& B, const Dense& Y, const Dense& T, const bool trans=false);
+    // virtual void tpmqrt(LowRank& B, const Dense& Y, const Dense& T, const bool trans=false);
 
-    virtual void tpmqrt(LowRank& B, const LowRank& Y, const Dense& T, const bool trans=false);
+    // virtual void tpmqrt(LowRank& B, const LowRank& Y, const Dense& T, const bool trans=false);
 
-    virtual void tpmqrt(Hierarchical& B, const Dense& Y, const Dense& T, const bool trans=false);
+    // virtual void tpmqrt(Hierarchical& B, const Dense& Y, const Dense& T, const bool trans=false);
 
-    virtual void tpmqrt(Hierarchical& B, const Hierarchical& Y, const Hierarchical& T, const bool trans=false);
+    // virtual void tpmqrt(Hierarchical& B, const Hierarchical& Y, const Hierarchical& T, const bool trans=false);
 
   };
 

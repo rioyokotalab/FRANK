@@ -32,7 +32,7 @@ namespace hicma {
 
     LowRank(LowRank&& A);
 
-    LowRank(const NodeProxy& _A, const int k=1);
+    // LowRank(const NodeProxy& _A, const int k=1);
 
     LowRank* clone() const override;
 
@@ -56,17 +56,17 @@ namespace hicma {
 
     void mergeV(const LowRank& A, const LowRank& B);
 
-    void larfb(const Dense& Y, const Dense& T, const bool trans=false) override;
+    // void larfb(const Dense& Y, const Dense& T, const bool trans=false) override;
 
-    void tpqrt(Dense& A, Dense& T) override;
+    // void tpqrt(Dense& A, Dense& T) override;
 
-    void tpmqrt(Dense& B, const Dense& Y, const Dense& T, const bool trans=false) override;
+    // void tpmqrt(Dense& B, const Dense& Y, const Dense& T, const bool trans=false) override;
 
-    void tpmqrt(Dense& B, const LowRank& Y, const Dense& T, const bool trans=false) override;
+    // void tpmqrt(Dense& B, const LowRank& Y, const Dense& T, const bool trans=false) override;
 
-    void tpmqrt(LowRank& B, const Dense& Y, const Dense& T, const bool trans=false) override;
+    // void tpmqrt(LowRank& B, const Dense& Y, const Dense& T, const bool trans=false) override;
 
-    void tpmqrt(LowRank& B, const LowRank& Y, const Dense& T, const bool trans=false) override;
+    // void tpmqrt(LowRank& B, const LowRank& Y, const Dense& T, const bool trans=false) override;
 
   };
 }
