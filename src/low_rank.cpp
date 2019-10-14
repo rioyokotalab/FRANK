@@ -279,11 +279,4 @@ namespace hicma {
   //   U.larfb(Y, T, trans);
   // }
 
-  // void LowRank::tpqrt(Dense& A, Dense& T) {
-  //   Dense _V(V);
-  //   gemm(S, _V, V, CblasNoTrans, CblasNoTrans, 1, 0);
-  //   for(int i = 0; i < std::min(S.dim[0], S.dim[1]); i++) S(i, i) = 1.0;
-  //   V.tpqrt(A, T);
-  // }
-
 }

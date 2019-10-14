@@ -5,5 +5,6 @@
 #include "hicma/operations/trsm.h"
 #include "hicma/operations/gemm.h"
 #include "hicma/operations/tpmqrt.h"
+#include "hicma/operations/tpqrt.h"
 
 #endif // operations_h

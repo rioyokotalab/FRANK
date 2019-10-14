@@ -44,12 +44,6 @@ namespace hicma {
 
     // virtual void larfb(const Hierarchical& Y, const Hierarchical& T, const bool trans=false);
 
-    // virtual void tpqrt(Dense& A, Dense& T);
-
-    // virtual void tpqrt(Hierarchical& A, Dense& T);
-
-    // virtual void tpqrt(Hierarchical& A, Hierarchical& T);
-
   };
 
 }

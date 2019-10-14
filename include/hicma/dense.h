@@ -118,12 +118,6 @@ namespace hicma {
 
     // void larfb(const Hierarchical& Y, const Hierarchical& T, const bool trans=false) override;
 
-    // void tpqrt(Dense& A, Dense& T) override;
-
-    // void tpqrt(Hierarchical& A, Dense& T) override;
-
-    // void tpqrt(Hierarchical& A, Hierarchical& T) override;
-
   };
 
   MULTI_METHOD(make_dense, Dense, const virtual_<Node>&);

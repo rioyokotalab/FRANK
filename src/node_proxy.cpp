@@ -64,20 +64,4 @@ namespace hicma {
   //   }
   // }
 
-  // void NodeProxy::tpqrt(NodeProxy& A, NodeProxy& T) {
-  //   if(A.is(HICMA_DENSE) && T.is(HICMA_DENSE)) {
-  //     ptr->tpqrt(static_cast<Dense&>(*A.ptr), static_cast<Dense&>(*T.ptr));
-  //   }
-  //   else if(A.is(HICMA_HIERARCHICAL) && T.is(HICMA_DENSE)) {
-  //     ptr->tpqrt(static_cast<Hierarchical&>(*A.ptr), static_cast<Dense&>(*T.ptr));
-  //   }
-  //   else if(A.is(HICMA_HIERARCHICAL) && T.is(HICMA_HIERARCHICAL)) {
-  //     ptr->tpqrt(static_cast<Hierarchical&>(*A.ptr), static_cast<Hierarchical&>(*T.ptr));
-  //   }
-  //   else {
-  //     std::cerr << "Input matrix for tpqrt must be (Dense,Dense), (Hierarchical, Dense) or (Hierarchical,Hierarchical)." << std::endl;
-  //     abort();
-  //   }
-  // }
-
 }

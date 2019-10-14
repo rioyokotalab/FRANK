@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
       A(k, j).larfb(A(k, k), T(k, k), true);
     }
     for(int i = k+1; i < Nc; i++) {
-      A(i, k).tpqrt(A(k, k), T(i, k));
+      tpqrt(A(k, k), A(i, k), T(i, k));
       for(int j = k+1; j < Nc; j++) {
         tpmqrt(A(i, k), T(i, k), A(k, j), A(i, j), true);
       }

@@ -58,8 +58,6 @@ namespace hicma {
 
     // void larfb(const Dense& Y, const Dense& T, const bool trans=false) override;
 
-    // void tpqrt(Dense& A, Dense& T) override;
-
   };
 }
 #endif

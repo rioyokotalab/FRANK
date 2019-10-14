@@ -311,24 +311,6 @@ namespace hicma {
   //   *this = Dense(C);
   // }
 
-  // void Dense::tpqrt(Dense& A, Dense& T) {
-  //   LAPACKE_dtpqrt2(LAPACK_ROW_MAJOR, dim[0], dim[1], 0, &A[0], A.dim[1], &data[0], dim[1], &T[0], T.dim[1]);
-  // }
-
-  // void Dense::tpqrt(Hierarchical& A, Dense& T) {
-  //   std::cerr << this->type() << ".tpqrt(";
-  //   std::cerr << A.type() << "," << T.type();
-  //   std::cerr << ") undefined." << std::endl;
-  //   abort();
-  // }
-
-  // void Dense::tpqrt(Hierarchical& A, Hierarchical& T) {
-  //   std::cerr << this->type() << ".tpqrt(";
-  //   std::cerr << A.type() << "," << T.type();
-  //   std::cerr << ") undefined." << std::endl;
-  //   abort();
-  // }
-
   BEGIN_SPECIALIZATION(make_dense, Dense, const Hierarchical& A){
     return Dense(A);
   } END_SPECIALIZATION;
