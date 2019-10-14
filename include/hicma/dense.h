@@ -76,6 +76,8 @@ namespace hicma {
 
     const Dense& operator-=(const Dense& A);
 
+    const Dense& operator*=(const double);
+
     double& operator[](const int i);
 
     const double& operator[](const int i) const;
@@ -97,6 +99,8 @@ namespace hicma {
     Dense transpose() const;
 
     void print() const override;
+
+    void transpose() override;
 
     void getrf() override;
 
@@ -130,6 +134,33 @@ namespace hicma {
     void svd(Dense& U, Dense& S, Dense& V);
 
     void svd(Dense& S);
+
+    void geqrt(Dense& T) override;
+
+    void geqrt2(Dense& T);
+
+    void larfb(const Dense& Y, const Dense& T, const bool trans=false) override;
+
+    void larfb(const Hierarchical& Y, const Hierarchical& T, const bool trans=false) override;
+
+    void tpqrt(Dense& A, Dense& T) override;
+
+    void tpqrt(Hierarchical& A, Dense& T) override;
+
+    void tpqrt(Hierarchical& A, Hierarchical& T) override;
+
+    void tpmqrt(Dense& B, const Dense& Y, const Dense& T, const bool trans=false) override;
+
+    void tpmqrt(Dense& B, const LowRank& Y, const Dense& T, const bool trans=false) override;
+
+    void tpmqrt(LowRank& B, const Dense& Y, const Dense& T, const bool trans=false) override;
+
+    void tpmqrt(LowRank& B, const LowRank& Y, const Dense &T, const bool trans=false) override;
+
+    void tpmqrt(Hierarchical& B, const Dense& Y, const Dense& T, const bool trans=false) override;
+
+    void tpmqrt(Hierarchical& B, const Hierarchical& Y, const Hierarchical& T, const bool trans=false) override;
+
   };
 }
 #endif

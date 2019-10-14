@@ -38,6 +38,8 @@ namespace hicma {
 
   void Node::print() const {};
 
+  void Node::transpose() {};
+
   void Node::getrf() {};
 
   void Node::trsm(const Dense& A, const char& uplo) {};
@@ -61,4 +63,33 @@ namespace hicma {
   void Node::gemm(const Hierarchical& A, const LowRank& B, const double& alpha, const double& beta) {};
 
   void Node::gemm(const Hierarchical& A, const Hierarchical& B, const double& alpha, const double& beta) {};
+
+  void Node::geqrt(Dense& T) {};
+
+  void Node::geqrt(Hierarchical& T) {};
+
+  void Node::larfb(const Dense& Y, const Dense& T, const bool trans) {};
+
+  void Node::larfb(const Hierarchical& Y, const Hierarchical& T, const bool trans) {};
+
+  void Node::tpqrt(Dense& A, Dense& T) {};
+
+  void Node::tpqrt(Hierarchical& A, Dense& T) {};
+
+  void Node::tpqrt(Hierarchical& A, Hierarchical& T) {};
+
+  void Node::tpmqrt(Dense& B, const Dense& Y, const Dense& T, const bool trans) {};
+
+  void Node::tpmqrt(Dense& B, const LowRank& Y, const Dense& T, const bool trans) {};
+
+  void Node::tpmqrt(Dense& B, const Hierarchical& Y, const Hierarchical& T, const bool trans) {};
+
+  void Node::tpmqrt(LowRank& B, const Dense& Y, const Dense& T, const bool trans) {};
+
+  void Node::tpmqrt(LowRank& B, const LowRank& Y, const Dense& T, const bool trans) {};
+
+  void Node::tpmqrt(Hierarchical& B, const Dense& Y, const Dense& T, const bool trans) {};
+
+  void Node::tpmqrt(Hierarchical& B, const Hierarchical& Y, const Hierarchical& T, const bool trans) {};
+
 }

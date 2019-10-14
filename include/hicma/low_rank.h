@@ -27,6 +27,8 @@ namespace hicma {
 
     LowRank(LowRank&& A);
 
+    LowRank(const Any& _A, const int k=1);
+
     LowRank* clone() const override;
 
     friend void swap(LowRank& A, LowRank& B);
@@ -42,6 +44,8 @@ namespace hicma {
     double norm() const override;
 
     void print() const override;
+
+    void transpose() override;
 
     void mergeU(const LowRank& A, const LowRank& B);
 
@@ -70,6 +74,19 @@ namespace hicma {
     void gemm(const Hierarchical& A, const LowRank& B, const double& alpha=-1, const double& beta=1) override;
 
     void gemm(const Hierarchical& A, const Hierarchical& B, const double& alpha=-1, const double& beta=1) override;
+
+    void larfb(const Dense& Y, const Dense& T, const bool trans=false) override;
+
+    void tpqrt(Dense& A, Dense& T) override;
+
+    void tpmqrt(Dense& B, const Dense& Y, const Dense& T, const bool trans=false) override;
+
+    void tpmqrt(Dense& B, const LowRank& Y, const Dense& T, const bool trans=false) override;
+
+    void tpmqrt(LowRank& B, const Dense& Y, const Dense& T, const bool trans=false) override;
+
+    void tpmqrt(LowRank& B, const LowRank& Y, const Dense& T, const bool trans=false) override;
+
   };
 }
 #endif

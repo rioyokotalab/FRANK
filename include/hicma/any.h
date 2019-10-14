@@ -20,6 +20,8 @@ namespace hicma {
 
     ~Any();
 
+    friend void swap(Any&, Any&);
+
     const Any& operator=(Any A);
 
     bool is(const int i) const;
@@ -30,11 +32,21 @@ namespace hicma {
 
     void print() const;
 
+    void transpose();
+
     void getrf();
 
     void trsm(const Any& A, const char& uplo);
 
     void gemm(const Any& A, const Any& B, const double& alpha=-1, const double& beta=1);
+
+    void geqrt(Any& T);
+
+    void larfb(const Any& Y, const Any& T, const bool trans=false);
+
+    void tpqrt(Any& A, Any& T);
+
+    void tpmqrt(Any& B, const Any& Y, const Any& T, const bool trans=false);
 
   };
 }

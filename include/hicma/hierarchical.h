@@ -73,6 +73,8 @@ namespace hicma {
 
     void print() const override;
 
+    void transpose() override;
+
     void getrf() override;
 
     void trsm(const Dense& A, const char& uplo) override;
@@ -101,6 +103,33 @@ namespace hicma {
                   const Hierarchical& A, const Hierarchical& B,
                   const int& i, const int& j, const int& k_min, const int& k_max,
                   const double& alpha, const double& beta);
+
+    void blr_col_qr(Hierarchical& Q, Hierarchical& R);
+
+    void split_col(Hierarchical& QL);
+
+    void restore_col(const Hierarchical& Sp, const Hierarchical& QL);
+
+    void col_qr(const int j, Hierarchical& Q, Hierarchical &R);
+
+    void qr(Hierarchical& Q, Hierarchical& R);
+
+    void geqrt(Hierarchical& T) override;
+
+    void larfb(const Dense& Y, const Dense& T, const bool trans=false) override;
+
+    void larfb(const Hierarchical& Y, const Hierarchical& T, const bool trans=false) override;
+
+    void tpqrt(Dense& A, Dense& T) override;
+
+    void tpqrt(Hierarchical& A, Hierarchical& T) override;
+
+    void tpmqrt(Dense& B, const Dense& Y, const Dense& T, const bool trans=false) override;
+
+    void tpmqrt(Dense& B, const Hierarchical& Y, const Hierarchical& T, const bool trans=false) override;
+
+    void tpmqrt(Hierarchical& B, const Hierarchical& Y, const Hierarchical& T, const bool trans=false) override;
+
   };
 }
 #endif

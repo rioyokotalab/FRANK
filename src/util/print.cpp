@@ -21,7 +21,7 @@ namespace hicma {
       const Hierarchical& A = static_cast<const Hierarchical&>(*_A.ptr);
       for (int i=0; i<A.dim[0]; i++) {
         for (int j=0; j<A.dim[1]; j++) {
-          pt::ptree el_subtree{};
+          pt::ptree el_subtree;
           fillXML(A(i, j), el_subtree);
           std::string el_name = "i" + std::to_string(i) + "j" + std::to_string(j);
           tree.add_child(el_name, el_subtree);
@@ -94,6 +94,10 @@ namespace hicma {
   template void print<size_t>(std::string s, size_t v, bool fixed=true);
   template void print<float>(std::string s, float v, bool fixed=true);
   template void print<double>(std::string s, double v, bool fixed=true);
+
+  void print_undefined(std::string func, std::string A_type, std::string B_type, std::string C_type, std::string D_type) {
+    std::cerr << D_type << "." << func << "(" << A_type << "," << B_type <<"," <<C_type << ") undefined." << std::endl;
+  }
 
   void print_undefined(std::string func, std::string A_type, std::string B_type, std::string C_type) {
     std::cerr << C_type << "." << func << "(" << A_type << "," << B_type << ") undefined." << std::endl;

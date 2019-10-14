@@ -1,6 +1,7 @@
 #include "hicma/any.h"
 #include "hicma/low_rank.h"
 #include "hicma/hierarchical.h"
+#include "hicma/functions.h"
 #include "hicma/gpu_batch/batch.h"
 #include "hicma/util/print.h"
 
@@ -254,6 +255,17 @@ namespace hicma {
     std::cout << "----------------------------------------------------------------------------------" << std::endl;
   }
 
+  void Hierarchical::transpose() {
+    Hierarchical C(dim[1], dim[0]);
+    for(int i=0; i<dim[0]; i++) {
+      for(int j=0; j<dim[1]; j++) {
+        swap((*this)(i, j), C(j, i));
+        C(j, i).transpose();
+      }
+    }
+    swap(*this, C);
+  }
+
   void Hierarchical::getrf() {
     for (int i=0; i<dim[0]; i++) {
       (*this)(i,i).getrf();
@@ -303,7 +315,7 @@ namespace hicma {
       case 'l' :
         for (int j=0; j<dim[1]; j++) {
           for (int i=0; i<dim[0]; i++) {
-            (*this).gemm_row(A, *this, i, j, 0, i, -1, 1);
+            gemm_row(A, *this, i, j, 0, i, -1, 1);
             (*this)(i,j).trsm(A(i,i), 'l');
           }
         }
@@ -311,7 +323,7 @@ namespace hicma {
       case 'u' :
         for (int i=0; i<dim[0]; i++) {
           for (int j=0; j<dim[1]; j++) {
-            (*this).gemm_row(*this, A, i, j, 0, j, -1, 1);
+            gemm_row(*this, A, i, j, 0, j, -1, 1);
             (*this)(i,j).trsm(A(j,j), 'u');
           }
         }
@@ -324,8 +336,10 @@ namespace hicma {
   }
 
   void Hierarchical::gemm(const Dense& A, const Dense& B, const double& alpha, const double& beta) {
-    print_undefined(__func__, A.type(), B.type(), this->type());
-    abort();
+    assert(A.dim[1] == B.dim[0]);
+    const Hierarchical& AH = Hierarchical(A, dim[0], 1);
+    const Hierarchical& BH = Hierarchical(B, 1, dim[1]);
+    gemm(AH, BH, alpha, beta);
   }
 
   void Hierarchical::gemm(const Dense& A, const LowRank& B, const double& alpha, const double& beta) {
@@ -368,7 +382,7 @@ namespace hicma {
     assert(dim[0]==A.dim[0] && dim[1]==B.dim[1] && A.dim[1] == B.dim[0]);
     for (int i=0; i<dim[0]; i++) {
       for (int j=0; j<dim[1]; j++) {
-        (*this).gemm_row(A, B, i, j, 0, A.dim[1], alpha, beta);
+        gemm_row(A, B, i, j, 0, A.dim[1], alpha, beta);
       }
     }
   }
@@ -391,4 +405,345 @@ namespace hicma {
       (*this)(i,j) = LowRank(static_cast<Dense&>(*(*this)(i,j).ptr), rank);
     }
   }
+
+  void Hierarchical::blr_col_qr(Hierarchical& Q, Hierarchical& R) {
+    assert(dim[1] == 1 && Q.dim[0] == dim[0] && Q.dim[1] == 1 && R.dim[0] == 1 && R.dim[1] == 1);
+    Hierarchical Qu(dim[0], 1);
+    Hierarchical B(dim[0], 1);
+    for(int i=0; i<dim[0]; i++) {
+      assert((*this)(i, 0).is(HICMA_DENSE) || (*this)(i, 0).is(HICMA_LOWRANK));
+      if((*this)(i, 0).is(HICMA_DENSE)) {
+        Dense Ai(static_cast<Dense&>(*(*this)(i, 0).ptr));
+        std::vector<double> x;
+        Qu(i, 0) = Dense(identity, x, Ai.dim[0], Ai.dim[0]);
+        B(i, 0) = Ai;
+      }
+      else if((*this)(i, 0).is(HICMA_LOWRANK)) {
+        LowRank Ai(static_cast<LowRank&>(*(*this)(i, 0).ptr));
+        Dense Qui(Ai.U.dim[0], Ai.U.dim[1]);
+        Dense Rui(Ai.U.dim[1], Ai.U.dim[1]);
+        Ai.U.qr(Qui, Rui);
+        Qu(i, 0) = Qui;
+        Dense RS(Rui.dim[0], Ai.S.dim[1]);
+        RS.gemm(Rui, Ai.S, 1, 1);
+        Dense RSV(RS.dim[0], Ai.V.dim[1]);
+        RSV.gemm(RS, Ai.V, 1, 1);
+        B(i, 0) = RSV;
+      }
+    }
+    Dense DB(B);
+    Dense Qb(DB.dim[0], DB.dim[1]);
+    Dense Rb(DB.dim[1], DB.dim[1]);
+    DB.qr(Qb, Rb);
+    R(0, 0) = Rb;
+    //Slice Qb based on B
+    Hierarchical HQb(B.dim[0], B.dim[1]);
+    int rowOffset = 0;
+    for(int i=0; i<HQb.dim[0]; i++) {
+      Dense Bi(B(i, 0));
+      Dense Qbi(Bi.dim[0], Bi.dim[1]);
+      for(int row=0; row<Bi.dim[0]; row++) {
+        for(int col=0; col<Bi.dim[1]; col++) {
+          Qbi(row, col) = Qb(rowOffset + row, col);
+        }
+      }
+      HQb(i, 0) = Qbi;
+      rowOffset += Bi.dim[0];
+    }
+    for(int i=0; i<dim[0]; i++) {
+      Q(i, 0).gemm(Qu(i, 0), HQb(i, 0), 1, 0);
+    }
+  }
+
+  void Hierarchical::split_col(Hierarchical& QL) {
+    assert(dim[1] == 1 && QL.dim[0] == dim[0] && QL.dim[1] == 1);
+    int rows = 0;
+    int cols = 1;
+    for(int i=0; i<dim[0]; i++) {
+      QL(i, 0) = Dense(0, 0);
+      if((*this)(i, 0).is(HICMA_HIERARCHICAL)) {
+        Hierarchical Ai(static_cast<Hierarchical&>(*(*this)(i, 0).ptr));
+        rows += Ai.dim[0];
+        cols = Ai.dim[1];
+      }
+      else {
+        rows++;
+      }
+    }
+    Hierarchical spA(rows, cols);
+    int curRow = 0;
+    for(int i=0; i<dim[0]; i++) {
+      if((*this)(i, 0).is(HICMA_HIERARCHICAL)) {
+        Hierarchical Ai(static_cast<Hierarchical&>(*(*this)(i, 0).ptr));
+        for(int j=0; j<Ai.dim[0]; j++) {
+          for(int k=0; k<Ai.dim[1]; k++) {
+            spA(curRow, k) = Ai(j, k);
+          }
+          curRow++;
+        }
+      }
+      else if((*this)(i, 0).is(HICMA_DENSE)) {
+        Dense Ai((*this)(i, 0));
+        Hierarchical BlockAi(Ai, 1, cols);
+        for(int j=0; j<cols; j++) {
+          spA(curRow, j) = BlockAi(0, j);
+        }
+        curRow++;
+      }
+      else if((*this)(i, 0).is(HICMA_LOWRANK)) {
+        LowRank Ai(static_cast<LowRank&>(*(*this)(i, 0).ptr));
+        Dense Qu(Ai.U.dim[0], Ai.U.dim[1]);
+        Dense Ru(Ai.U.dim[1], Ai.U.dim[1]);
+        Ai.U.qr(Qu, Ru);
+        QL(i, 0) = Qu; //Store Q
+        Dense RS(Ru.dim[0], Ai.S.dim[1]);
+        RS.gemm(Ru, Ai.S, 1, 0);
+        Dense RSV(RS.dim[0], Ai.V.dim[1]);
+        RSV.gemm(RS, Ai.V, 1, 0);
+        //Split R*S*V
+        Hierarchical BlockRSV(RSV, 1, cols);
+        for(int j=0; j<cols; j++) {
+          spA(curRow, j) = BlockRSV(0, j);
+        }
+        curRow++;
+      }
+    }
+    swap(*this, spA);
+  }
+
+  void Hierarchical::restore_col(const Hierarchical& Sp, const Hierarchical& QL) {
+    assert(dim[1] == 1 && dim[0] == QL.dim[0] && QL.dim[1] == 1);
+    int curSpRow = 0;
+    for(int i=0; i<dim[0]; i++) {
+      if((*this)(i, 0).is(HICMA_HIERARCHICAL)) {
+        //In case of hierarchical, just put element in respective cells
+        Hierarchical Ai(static_cast<Hierarchical&>(*(*this)(i, 0).ptr));
+        assert(Sp.dim[1] == Ai.dim[1]);
+        for(int p=0; p<Ai.dim[0]; p++) {
+          for(int q=0; q<Ai.dim[1]; q++) {
+            Ai(p, q) = Sp(curSpRow, q);
+          }
+          curSpRow++;
+        }
+        (*this)(i, 0) = Ai;
+      }
+      else if((*this)(i, 0).is(HICMA_DENSE)) {
+        //In case of dense, combine the spllited dense matrices into one dense matrix
+        Dense Ai(static_cast<Dense&>(*(*this)(i, 0).ptr));
+        Hierarchical SpCurRow(1, Sp.dim[1]);
+        for(int q=0; q<Sp.dim[1]; q++) {
+          SpCurRow(0, q) = Sp(curSpRow, q);
+        }
+        Dense SpCurRowCombined(SpCurRow);
+        assert(Ai.dim[0] == SpCurRowCombined.dim[0] && Ai.dim[1] == SpCurRowCombined.dim[1]);
+        (*this)(i, 0) = SpCurRowCombined;
+        curSpRow++;
+      }
+      else if((*this)(i, 0).is(HICMA_LOWRANK)) {
+        //In case of lowrank, combine splitted dense matrices into single dense matrix
+        //Then form a lowrank matrix with the stored QL
+        LowRank Ai(static_cast<LowRank&>(*(*this)(i, 0).ptr));
+        Hierarchical SpCurRow(1, Sp.dim[1]);
+        for(int q=0; q<Sp.dim[1]; q++) {
+          SpCurRow(0, q) = Sp(curSpRow, q);
+        }
+        Dense SpCurRowCombined(SpCurRow);
+        Dense QLi(QL(i, 0));
+        assert(QLi.dim[0] == Ai.dim[0] && QLi.dim[1] == Ai.rank && SpCurRowCombined.dim[0] == Ai.rank && SpCurRowCombined.dim[1] == Ai.dim[1]);
+        Ai.U = QLi;
+        Ai.V = SpCurRowCombined;
+        //Fill S with identity matrix
+        std::vector<double> x;
+        Ai.S = Dense(identity, x, Ai.rank, Ai.rank);
+        (*this)(i, 0) = Ai;
+        curSpRow++;
+      }
+    }
+  }
+
+  void Hierarchical::col_qr(const int j, Hierarchical& Q, Hierarchical &R) {
+    assert(Q.dim[0] == dim[0] && Q.dim[1] == 1 && R.dim[0] == 1 && R.dim[1] == 1);
+    bool split = false;
+    Hierarchical Aj(dim[0], 1);
+    for(int i=0; i<dim[0]; i++) {
+      Aj(i, 0) = (*this)(i, j);
+      if((*this)(i, j).is(HICMA_HIERARCHICAL)) {
+        split = true;
+      }
+    }
+    if(!split) {
+      Aj.blr_col_qr(Q, R);
+    }
+    else {
+      Hierarchical QL(dim[0], 1); //Stored Q for splitted lowrank blocks
+      Hierarchical Rjj(static_cast<Hierarchical&>(*R(0, 0).ptr));
+      Aj.split_col(QL);
+      Hierarchical SpQj(Aj);
+      Aj.qr(SpQj, Rjj);
+      Q.restore_col(SpQj, QL);
+      R(0, 0) = Rjj;
+    }
+  }
+
+  void Hierarchical::qr(Hierarchical& Q, Hierarchical &R) {
+    assert(Q.dim[0] == dim[0] && Q.dim[1] == dim[1] && R.dim[0] == dim[1] && R.dim[1] == dim[1]);
+    for(int j=0; j<dim[1]; j++) {
+      Hierarchical Qj(dim[0], 1);
+      for(int i = 0; i < dim[0]; i++) {
+        Qj(i, 0) = Q(i, j);
+      }
+      Hierarchical Rjj(1, 1);
+      Rjj(0, 0) = R(j, j);
+      col_qr(j, Qj, Rjj);
+      R(j, j) = Rjj(0, 0);
+      for(int i=0; i<dim[0]; i++) {
+        Q(i, j) = Qj(i, 0);
+      }
+      Hierarchical TrQj(Qj);
+      TrQj.transpose();
+      for(int k=j+1; k<dim[1]; k++) {
+        //Take k-th column
+        Hierarchical Ak(dim[0], 1);
+        for(int i=0; i<dim[0]; i++) {
+          Ak(i, 0) = (*this)(i, k);
+        }
+        Hierarchical Rjk(1, 1);
+        Rjk(0, 0) = R(j, k);
+        Rjk.gemm(TrQj, Ak, 1, 1); //Rjk = Q*j^T x A*k
+        R(j, k) = Rjk(0, 0);
+        Ak.gemm(Qj, Rjk, -1, 1); //A*k = A*k - Q*j x Rjk
+        for(int i=0; i<dim[0]; i++) {
+          (*this)(i, k) = Ak(i, 0);
+        }
+      }
+    }
+  }
+
+  void Hierarchical::geqrt(Hierarchical& T) {
+    for(int k = 0; k < dim[1]; k++) {
+      (*this)(k, k).geqrt(T(k, k));
+      for(int j = k+1; j < dim[1]; j++) {
+        (*this)(k, j).larfb((*this)(k, k), T(k, k), true);
+      }
+      int dim0 = -1;
+      int dim1 = -1;
+      if((*this)(k, k).is(HICMA_HIERARCHICAL)) {
+        Hierarchical Akk(static_cast<Hierarchical&>(*(*this)(k, k).ptr));
+        dim0 = Akk.dim[0];
+        dim1 = Akk.dim[1];
+      }
+      for(int i = k+1; i < dim[0]; i++) {
+        if((*this)(k, k).is(HICMA_HIERARCHICAL)) {
+          if((*this)(i, k).is(HICMA_DENSE))
+            (*this)(i, k) = Hierarchical(static_cast<Dense&>(*(*this)(i, k).ptr), dim0, dim1);
+          if(T(i, k).is(HICMA_DENSE))
+            T(i, k) = Hierarchical(static_cast<Dense&>(*T(i, k).ptr), dim0, dim1);
+        }
+        (*this)(i, k).tpqrt((*this)(k, k), T(i, k));
+        for(int j = k+1; j < dim[1]; j++) {
+          (*this)(i, j).tpmqrt((*this)(k, j), (*this)(i, k), T(i, k), true);
+        }
+      }
+    }
+  }
+
+  void Hierarchical::larfb(const Dense& Y, const Dense& T, const bool trans) {
+    Dense _Y(Y);
+    for(int i = 0; i < _Y.dim[0]; i++) {
+      for(int j = i; j < _Y.dim[1]; j++) {
+        if(i == j) _Y(i, j) = 1.0;
+        else _Y(i, j) = 0.0;
+      }
+    }
+    Dense YT(_Y.dim[0], T.dim[1]);
+    YT.gemm(_Y, T, CblasNoTrans, trans ? CblasTrans : CblasNoTrans, 1, 1);
+    Dense YTYt(YT.dim[0], _Y.dim[0]);
+    YTYt.gemm(YT, _Y, CblasNoTrans, CblasTrans, 1, 1);
+    Hierarchical C(*this);
+    gemm(YTYt, C, -1, 1);
+  }
+
+  void Hierarchical::larfb(const Hierarchical& Y, const Hierarchical& T, const bool trans) {
+    if(trans) {
+      for(int k = 0; k < dim[1]; k++) {
+        for(int j = k; j < dim[1]; j++) {
+          (*this)(k, j).larfb(Y(k, k), T(k, k), trans);
+        }
+        for(int i = k+1; i < dim[0]; i++) {
+          for(int j = k; j < dim[1]; j++) {
+            (*this)(i, j).tpmqrt((*this)(k, j), Y(i, k), T(i, k), trans);
+          }
+        }
+      }
+    }
+    else {
+      for(int k = dim[1]-1; k >= 0; k--) {
+        for(int i = dim[0]-1; i > k; i--) {
+          for(int j = k; j < dim[1]; j++) {
+            (*this)(i, j).tpmqrt((*this)(k, j), Y(i, k), T(i, k), trans);
+          }
+        }
+        for(int j = k; j < dim[1]; j++) {
+          (*this)(k, j).larfb(Y(k, k), T(k, k), trans);
+        }
+      }
+    }
+  }
+
+  void Hierarchical::tpqrt(Dense& A, Dense& T) {
+    print_undefined(__func__, A.type(), T.type(), this->type());
+    abort();
+  }
+
+  void Hierarchical::tpqrt(Hierarchical& A, Hierarchical& T) {
+    for(int i = 0; i < dim[0]; i++) {
+      for(int j = 0; j < dim[1]; j++) {
+        (*this)(i, j).tpqrt(A(j, j), T(i, j));
+        for(int k = j+1; k < dim[1]; k++) {
+          (*this)(i, k).tpmqrt(A(j, k), (*this)(i, j), T(i, j), true);
+        }
+      }
+    }
+  }
+
+  void Hierarchical::tpmqrt(Dense& B, const Dense& Y, const Dense& T, const bool trans) {
+    Dense C(B);
+    Dense Yt(Y);
+    Yt.transpose();
+    C.gemm(Yt, *this, 1, 1); // C = B + Yt.A
+    Dense Tt(T);
+    if(trans) Tt.transpose();
+    B.gemm(Tt, C, -1, 1); // B = B - (T or Tt)*C
+    Dense YTt(Y.dim[0], Tt.dim[1]);
+    YTt.gemm(Y, Tt, 1, 1);
+    gemm(YTt, C, -1, 1); // A = A - Y*(T or Tt)*C
+  }
+
+  void Hierarchical::tpmqrt(Dense& B, const Hierarchical& Y, const Hierarchical& T, const bool trans) {
+    Hierarchical HB(B, dim[0], dim[1]);
+    tpmqrt(HB, Y, T, trans);
+    B = Dense(HB);
+  }
+
+  void Hierarchical::tpmqrt(Hierarchical& B, const Hierarchical& Y, const Hierarchical& T, const bool trans) {
+    if(trans) {
+      for(int i = 0; i < dim[0]; i++) {
+        for(int j = 0; j < dim[1]; j++) {
+          for(int k = 0; k < dim[1]; k++) {
+            (*this)(i, k).tpmqrt(B(j, k), Y(i, j), T(i, j), trans);
+          }
+        }
+      }
+    }
+    else {
+      for(int i = dim[0]-1; i >= 0; i--) {
+        for(int j = dim[1]-1; j >= 0; j--) {
+          for(int k = dim[1]-1; k >= 0; k--) {
+            (*this)(i, k).tpmqrt(B(j, k), Y(i, j), T(i, j), trans);
+          }
+        }
+      }
+    }
+  }
+
 }

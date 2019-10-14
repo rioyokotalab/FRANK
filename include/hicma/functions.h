@@ -12,6 +12,15 @@ namespace hicma {
             const int& j_begin
             );
 
+  void identity(
+                std::vector<double>& data,
+                std::vector<double>& x,
+                const int& ni,
+                const int& nj,
+                const int& i_begin,
+                const int& j_begin
+                );
+
   void random(
             std::vector<double>& data,
             std::vector<double>& x,

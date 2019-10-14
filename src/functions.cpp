@@ -4,6 +4,7 @@
 #include "hicma/functions.h"
 
 #include <cmath>
+#include <random>
 #include <vector>
 
 namespace hicma {
@@ -22,6 +23,21 @@ namespace hicma {
     }
   }
 
+  void identity(
+                std::vector<double>& data,
+                std::vector<double>& x,
+                const int& ni,
+                const int& nj,
+                const int& i_begin,
+                const int& j_begin
+                ) {
+    for (int i=0; i<ni; i++) {
+      for (int j=0; j<nj; j++) {
+        data[i*nj+j] = i_begin+i == j_begin+j ? 1 : 0;
+      }
+    }
+  }
+
   void random(
               std::vector<double>& data,
               std::vector<double>& x,
@@ -30,9 +46,12 @@ namespace hicma {
               const int& i_begin,
               const int& j_begin
               ) {
+    std::random_device rd;
+    std::mt19937 mt(rd());
+    std::uniform_real_distribution<double> dist(0.0, 1.0);
     for (int i=0; i<ni; i++) {
       for (int j=0; j<nj; j++) {
-        data[i*nj+j] = drand48();
+        data[i*nj+j] = dist(mt);
       }
     }
   }
