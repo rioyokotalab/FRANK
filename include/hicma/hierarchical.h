@@ -79,15 +79,15 @@ namespace hicma {
 
     void transpose() override;
 
-    // void blr_col_qr(Hierarchical& Q, Hierarchical& R);
+    void blr_col_qr(Hierarchical& Q, Hierarchical& R);
 
-    // void split_col(Hierarchical& QL);
+    void split_col(Hierarchical& QL);
 
-    // void restore_col(const Hierarchical& Sp, const Hierarchical& QL);
+    void restore_col(const Hierarchical& Sp, const Hierarchical& QL);
 
-    // void col_qr(const int j, Hierarchical& Q, Hierarchical &R);
+    void col_qr(const int j, Hierarchical& Q, Hierarchical &R);
 
-    // void qr(Hierarchical& Q, Hierarchical& R);
+    void qr(Hierarchical& Q, Hierarchical& R);
 
   };
 }

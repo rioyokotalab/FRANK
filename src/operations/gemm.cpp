@@ -156,6 +156,32 @@ BEGIN_SPECIALIZATION(
 
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
+  const Hierarchical& A, const LowRank& B, LowRank& C,
+  const double& alpha, const double& beta
+) {
+  Hierarchical BH(B, A.dim[1], 1);
+  Hierarchical CH(C, A.dim[0], 1);
+  gemm(A, BH, CH, alpha, beta);
+  // NOTE: This is likely inefficient!!
+  // Make LowRank(Hierarchical) constructor?
+  C = LowRank(Dense(CH), C.rank);
+} END_SPECIALIZATION;
+
+BEGIN_SPECIALIZATION(
+  gemm_omm, void,
+  const LowRank& A, const Hierarchical& B, LowRank& C,
+  const double& alpha, const double& beta
+) {
+  Hierarchical AH(A, 1, B.dim[0]);
+  Hierarchical CH(C, 1, B.dim[1]);
+  gemm(AH, B, CH, alpha, beta);
+  // NOTE: This is likely inefficient!!
+  // Make LowRank(Hierarchical) constructor?
+  C = LowRank(Dense(CH), C.rank);
+} END_SPECIALIZATION;
+
+BEGIN_SPECIALIZATION(
+  gemm_omm, void,
   const Hierarchical& A, const Hierarchical& B, LowRank& C,
   const double& alpha, const double& beta
 ) {
