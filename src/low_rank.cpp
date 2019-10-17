@@ -51,12 +51,12 @@ namespace hicma {
     gemm(A, RN, Y, CblasNoTrans, CblasNoTrans, 1, 0); // Y = A * RN
     Dense Q(dim[0],rank);
     Dense R(rank,rank);
-    Y.qr(Q, R); // [Q, R] = qr(Y)
+    qr(Y, Q, R); // [Q, R] = qr(Y)
     Dense Bt(dim[1],rank);
     gemm(A, Q, Bt, CblasTrans, CblasNoTrans, 1, 0); // B' = A' * Q
     Dense Qb(dim[1],rank);
     Dense Rb(rank,rank);
-    Bt.qr(Qb,Rb); // [Qb, Rb] = qr(B')
+    qr(Bt, Qb, Rb); // [Qb, Rb] = qr(B')
     Dense Ur(rank,rank);
     Dense Vr(rank,rank);
     Rb.svd(Vr,S,Ur); // [Vr, S, Ur] = svd(Rb);
@@ -142,7 +142,7 @@ namespace hicma {
 
     Dense Qu(dim[0], rank);
     Dense Ru(rank, rank);
-    Yu.qr(Qu, Ru);
+    qr(Yu, Qu, Ru);
 
     Dense Xv(rank, rank);
     gemm(V, A.V, Xv, CblasNoTrans, CblasTrans, 1, 0);
@@ -156,7 +156,7 @@ namespace hicma {
 
     Dense Qv(dim[1], rank);
     Dense Rv(rank, rank);
-    Yv.qr(Qv, Rv);
+    qr(Yv, Qv, Rv);
 
     Hierarchical M(2, 2);
     Dense Xu_BS(rank, rank);

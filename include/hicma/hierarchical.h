@@ -87,8 +87,6 @@ namespace hicma {
 
     void col_qr(const int j, Hierarchical& Q, Hierarchical &R);
 
-    void qr(Hierarchical& Q, Hierarchical& R);
-
   };
 }
 #endif

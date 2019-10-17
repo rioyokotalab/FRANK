@@ -8,5 +8,6 @@
 #include "hicma/operations/tpqrt.h"
 #include "hicma/operations/larfb.h"
 #include "hicma/operations/geqrt.h"
+#include "hicma/operations/qr.h"
 
 #endif // operations_h

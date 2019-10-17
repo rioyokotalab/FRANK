@@ -70,7 +70,6 @@ void gemm(
 ) {
   gemm_omm(A, B, C, alpha, beta);
 }
-
 void gemm(
   const Dense& A, const Dense& B, Dense& C,
   const CBLAS_TRANSPOSE TransA, const CBLAS_TRANSPOSE TransB,

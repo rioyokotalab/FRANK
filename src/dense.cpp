@@ -261,23 +261,6 @@ namespace hicma {
     }
   }
 
-  void Dense::qr(Dense& Q, Dense& R) {
-    start("-DGEQRF");
-    std::vector<double> tau(dim[1]);
-    for (int i=0; i<dim[1]; i++) Q[i*dim[1]+i] = 1.0;
-    LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, dim[0], dim[1], &data[0], dim[1], &tau[0]);
-    LAPACKE_dormqr(LAPACK_ROW_MAJOR, 'L', 'N', dim[0], dim[1], dim[1],
-                   &data[0], dim[1], &tau[0], &Q[0], dim[1]);
-    for(int i=0; i<dim[1]; i++) {
-      for(int j=0; j<dim[1]; j++) {
-        if(j>=i){
-          R[i*dim[1]+j] = data[i*dim[1]+j];
-        }
-      }
-    }
-    stop("-DGEQRF",false);
-  }
-
   void Dense::svd(Dense& U, Dense& S, Dense& V) {
     start("-DGESVD");
     Dense Sdiag(dim[0],1);

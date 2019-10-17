@@ -106,8 +106,6 @@ namespace hicma {
 
     void transpose() override;
 
-    void qr(Dense& Q, Dense& R);
-
     void svd(Dense& U, Dense& S, Dense& V);
 
     void svd(Dense& S);

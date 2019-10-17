@@ -79,7 +79,7 @@ int main(int argc, char** argv) {
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
   print("Time");
   start("QR decomposition");
-  A.qr(Q, R);
+  qr(A, Q, R);
   stop("QR decomposition");
   printTime("-DGEQRF");
   printTime("-DGEMM");

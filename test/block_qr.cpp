@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
     Dense DAsj(HAsj);
     Dense DQsj(DAsj.dim[0], DAsj.dim[1]);
     Dense Rjj(Nb, Nb);
-    DAsj.qr(DQsj, Rjj); //[Q*j, Rjj] = QR(A*j)
+    qr(DAsj, DQsj, Rjj); //[Q*j, Rjj] = QR(A*j)
     R(j, j) = Rjj;
     //Copy Dense Qsj to Hierarchical Q
     Hierarchical HQsj(DQsj, Nc, 1);
