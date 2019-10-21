@@ -40,6 +40,7 @@ add_library(hicma
     src/hierarchical.cpp
     src/functions.cpp
     src/operations/getrf.cpp
+    src/operations/trmm.cpp
     src/operations/trsm.cpp
     src/operations/gemm.cpp
     src/operations/tpmqrt.cpp
