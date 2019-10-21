@@ -5,23 +5,30 @@
 
 #include <memory>
 
+#include "yorel/multi_methods.hpp"
 
 namespace hicma
 {
-LowRankShared::LowRankShared() {}
+LowRankShared::LowRankShared() {
+  MM_INIT();
+}
 
 LowRankShared::LowRankShared(
   const Dense& S,
   std::shared_ptr<Dense> U, std::shared_ptr<Dense> V
-) : Node(S.i_abs, S.j_abs, S.level), U(U), S(S), V(V) {}
+) : Node(S.i_abs, S.j_abs, S.level), U(U), S(S), V(V)
+{
+  MM_INIT();
+}
 
 LowRankShared::LowRankShared(const LowRankShared& A)
   : Node(A.i_abs,A.j_abs,A.level), U(A.U), S(A.S), V(A.V)
 {
-
+  MM_INIT();
 }
 
 LowRankShared::LowRankShared(LowRankShared&& A) {
+  MM_INIT();
   swap(*this, A);
 }
 

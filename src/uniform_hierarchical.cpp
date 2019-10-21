@@ -12,12 +12,14 @@
 #include <cassert>
 #include <cmath>
 #include <memory>
+
 #ifndef USE_MKL
 #include <cblas.h>
 #include <lapacke.h>
 #else
 #include <mkl.h>
 #endif
+#include "yorel/multi_methods.hpp"
 
 
 #include <cstdio>
@@ -25,7 +27,9 @@
 namespace hicma
 {
 
-UniformHierarchical::UniformHierarchical() {}
+UniformHierarchical::UniformHierarchical() {
+  MM_INIT();
+}
 
 UniformHierarchical::UniformHierarchical(
   void (*func)(
@@ -44,6 +48,7 @@ UniformHierarchical::UniformHierarchical(
   const int i_abs, const int j_abs,
   const int level
 ) : Node(i_abs, j_abs, level) {
+  MM_INIT();
   if (!level) {
     assert(int(x.size()) == std::max(ni,nj));
     std::sort(x.begin(),x.end());
@@ -153,10 +158,12 @@ UniformHierarchical::UniformHierarchical(
 
 UniformHierarchical::UniformHierarchical(const UniformHierarchical& A)
   : Node(A.i_abs, A.j_abs, A.level), data(A.data) {
+  MM_INIT();
   dim[0]=A.dim[0]; dim[1]=A.dim[1];
 }
 
 UniformHierarchical::UniformHierarchical(UniformHierarchical&& A) {
+  MM_INIT();
   swap(*this, A);
 }
 

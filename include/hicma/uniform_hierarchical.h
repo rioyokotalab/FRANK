@@ -7,11 +7,14 @@
 #include <memory>
 #include <vector>
 
+#include "yorel/multi_methods.hpp"
+
 namespace hicma
 {
 
 class UniformHierarchical : public Node {
  public:
+  MM_CLASS(UniformHierarchical, Node);
   int dim[2];
   std::vector<NodeProxy> data;
   std::vector<std::shared_ptr<Dense>> row_basis, col_basis;

@@ -6,10 +6,13 @@
 
 #include <memory>
 
+#include "yorel/multi_methods.hpp"
+
 namespace hicma {
 
 class LowRankShared : public Node {
  public:
+  MM_CLASS(LowRankShared, Node);
   std::shared_ptr<Dense> U, V;
   Dense S;
 
