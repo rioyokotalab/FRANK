@@ -40,11 +40,6 @@ MULTI_METHOD(
   const double
 );
 
-void gemm_row(
-              const Hierarchical& A, const Hierarchical& B, Hierarchical& C,
-              const int& i, const int& j, const int& k_min, const int& k_max,
-              const double& alpha, const double& beta);
-
 } // namespace hicma
 
 #endif // operations_gemm_h

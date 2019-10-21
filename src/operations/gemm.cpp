@@ -374,7 +374,9 @@ BEGIN_SPECIALIZATION(
   assert(A.dim[1] == B.dim[0]);
   for (int i=0; i<C.dim[0]; i++) {
     for (int j=0; j<C.dim[1]; j++) {
-      gemm_row(A, B, C, i, j, 0, A.dim[1], alpha, beta);
+      for (int k=0; k<A.dim[1]; k++) {
+        gemm(A(i,k), B(k,j), C(i,j), alpha, beta);
+      }
     }
   }
 } END_SPECIALIZATION;
@@ -390,16 +392,5 @@ BEGIN_SPECIALIZATION(
   std::cerr << ") undefined." << std::endl;
   abort();
 } END_SPECIALIZATION;
-
-void gemm_row(
-              const Hierarchical& A, const Hierarchical& B, Hierarchical& C,
-              const int& i, const int& j, const int& k_min, const int& k_max,
-              const double& alpha, const double& beta)
-{
-  int rank = -1;
-  for (int k=k_min; k<k_max; k++) {
-    gemm(A(i,k), B(k,j), C(i,j), alpha, beta);
-  }
-}
 
 } // namespace hicma

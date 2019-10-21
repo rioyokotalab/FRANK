@@ -67,7 +67,9 @@ BEGIN_SPECIALIZATION(
     case 'l' :
       for (int j=0; j<B.dim[1]; j++) {
         for (int i=0; i<B.dim[0]; i++) {
-          gemm_row(A, B, B, i, j, 0, i, -1, 1);
+          for (int k=0; k<i; k++) {
+            gemm(A(i,k), B(k,j), B(i,j), -1, 1);
+          }
           trsm(A(i,i), B(i,j), 'l');
         }
       }
@@ -75,7 +77,9 @@ BEGIN_SPECIALIZATION(
     case 'u' :
       for (int i=0; i<B.dim[0]; i++) {
         for (int j=0; j<B.dim[1]; j++) {
-          gemm_row(B, A, B, i, j, 0, j, -1, 1);
+          for (int k=0; k<j; k++) {
+            gemm(B(i,k), A(k,j), B(i,j), -1, 1);
+          }
           trsm(A(j,j), B(i,j), 'u');
         }
       }
