@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
   double diff = 0, norm = 0;
   for (int ic=0; ic<Nc; ic++) {
     for (int jc=0; jc<Nc; jc++) {
-      diff += (Dense(A(ic,jc)) - D(ic,jc)).norm();
+      diff += (Dense(A(ic,jc)) - Dense(D(ic,jc))).norm();
       norm += D(ic,jc).norm();
     }
   }
