@@ -5,6 +5,7 @@
 #include "hicma/hierarchical.h"
 #include "hicma/operations/gemm.h"
 #include "hicma/operations/tpmqrt.h"
+#include "hicma/operations/trmm.h"
 
 #ifdef USE_MKL
 #include <mkl.h>
@@ -111,12 +112,12 @@ BEGIN_SPECIALIZATION(
       else V_lower_tri(i, j) = 0.0;
     }
   }
-  Dense VT(V_lower_tri.dim[0], T.dim[1]);
-  gemm(V_lower_tri, T, VT, CblasNoTrans, trans ? CblasTrans : CblasNoTrans, 1, 1);
-  Dense YTYt(VT.dim[0], V_lower_tri.dim[0]);
-  gemm(VT, V_lower_tri, YTYt, CblasNoTrans, CblasTrans, 1, 1);
+  Dense VT(V_lower_tri);
+  trmm(T, VT, 'r', 'u', trans ? 't' : 'n', 'n', 1);
+  Dense VTVt(VT.dim[0], V_lower_tri.dim[0]);
+  gemm(VT, V_lower_tri, VTVt, CblasNoTrans, CblasTrans, 1, 0);
   Hierarchical C_copy(C);
-  gemm(YTYt, C_copy, C, -1, 1);
+  gemm(VTVt, C_copy, C, -1, 1);
 } END_SPECIALIZATION;
 
 BEGIN_SPECIALIZATION(
