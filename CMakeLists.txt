@@ -38,7 +38,9 @@ add_library(hicma
     src/node_proxy.cpp
     src/dense.cpp
     src/low_rank.cpp
+    src/low_rank_shared.cpp
     src/hierarchical.cpp
+    src/uniform_hierarchical.cpp
     src/functions.cpp
     src/operations/getrf.cpp
     src/operations/trmm.cpp
