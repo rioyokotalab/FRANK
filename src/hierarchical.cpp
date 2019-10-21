@@ -208,10 +208,6 @@ namespace hicma {
     swap(A.level, B.level);
   }
 
-  bool Hierarchical::is(const int enum_id) const {
-    return enum_id == HICMA_HIERARCHICAL;
-  }
-
   const NodeProxy& Hierarchical::operator[](const int i) const {
     assert(i < dim[0]*dim[1]);
     return data[i];

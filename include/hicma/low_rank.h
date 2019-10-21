@@ -32,15 +32,11 @@ namespace hicma {
 
     LowRank(LowRank&& A);
 
-    // LowRank(const NodeProxy& _A, const int k=1);
-
     LowRank* clone() const override;
 
     friend void swap(LowRank& A, LowRank& B);
 
     const LowRank& operator=(LowRank A);
-
-    bool is(const int enum_id) const override;
 
     const LowRank& operator+=(const LowRank& A);
 

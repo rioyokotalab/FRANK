@@ -59,18 +59,7 @@ BEGIN_SPECIALIZATION(geqrt_omm, void, Hierarchical& A, Hierarchical&T) {
     }
     int dim0 = -1;
     int dim1 = -1;
-    if(A(k, k).is(HICMA_HIERARCHICAL)) {
-      Hierarchical Akk(static_cast<Hierarchical&>(*A(k, k).ptr));
-      dim0 = Akk.dim[0];
-      dim1 = Akk.dim[1];
-    }
     for(int i = k+1; i < A.dim[0]; i++) {
-      if(A(k, k).is(HICMA_HIERARCHICAL)) {
-        if(A(i, k).is(HICMA_DENSE))
-          A(i, k) = Hierarchical(static_cast<Dense&>(*A(i, k).ptr), dim0, dim1);
-        if(T(i, k).is(HICMA_DENSE))
-          T(i, k) = Hierarchical(static_cast<Dense&>(*T(i, k).ptr), dim0, dim1);
-      }
       tpqrt(A(k, k), A(i, k), T(i, k));
       for(int j = k+1; j < A.dim[1]; j++) {
         tpmqrt(A(i, k), T(i, k), A(k, j), A(i, j), true);

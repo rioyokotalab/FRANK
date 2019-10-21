@@ -24,8 +24,6 @@ namespace hicma {
     return *this;
   }
 
-  bool NodeProxy::is(const int enum_id) const { return ptr->is(enum_id); }
-
   const char* NodeProxy::type() const { return ptr->type(); }
 
   double NodeProxy::norm() const {

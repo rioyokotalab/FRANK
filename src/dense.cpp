@@ -179,10 +179,6 @@ namespace hicma {
     return *this;
   }
 
-  bool Dense::is(const int enum_id) const {
-    return enum_id == HICMA_DENSE;
-  }
-
   double& Dense::operator[](const int i) {
     assert(i < dim[0]*dim[1]);
     return data[i];

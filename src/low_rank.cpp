@@ -78,18 +78,6 @@ namespace hicma {
     swap(*this, A);
   }
 
-  // LowRank::LowRank(const NodeProxy& _A, const int k) : Node(_A.ptr->i_abs, _A.ptr->j_abs, _A.ptr->level) {
-  //   if (_A.is(HICMA_LOWRANK)) {
-  //     *this = static_cast<const LowRank&>(*_A.ptr);
-  //   } else if (_A.is(HICMA_DENSE)) {
-  //     *this = LowRank(static_cast<const Dense&>(*_A.ptr), k);
-  //   } else if (_A.is(HICMA_HIERARCHICAL)) {
-  //     std::cerr << this->type() << "(" << _A.type();
-  //     std::cerr << ") undefined." << std::endl;
-  //     abort();
-  //   }
-  // }
-
   LowRank* LowRank::clone() const {
     return new LowRank(*this);
   }
@@ -109,10 +97,6 @@ namespace hicma {
   const LowRank& LowRank::operator=(LowRank A) {
     swap(*this, A);
     return *this;
-  }
-
-  bool LowRank::is(const int enum_id) const {
-    return enum_id == HICMA_LOWRANK;
   }
 
   const LowRank& LowRank::operator+=(const LowRank& A) {
