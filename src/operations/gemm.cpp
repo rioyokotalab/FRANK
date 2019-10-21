@@ -111,6 +111,7 @@ BEGIN_SPECIALIZATION(
 ) {
   LowRank AxBU(B);
   gemm(A, B.U, AxBU.U, alpha, 0);
+  C.S *= beta;
   C += AxBU;
 } END_SPECIALIZATION;
 
@@ -121,6 +122,7 @@ BEGIN_SPECIALIZATION(
 ) {
   LowRank AVxB(A);
   gemm(A.V, B, AVxB.V, alpha, 0);
+  C.S *= beta;
   C += AVxB;
 } END_SPECIALIZATION;
 
@@ -136,6 +138,7 @@ BEGIN_SPECIALIZATION(
   Dense SxVxU(A.rank, B.rank);
   gemm(A.S, VxU, SxVxU, 1, 0);
   gemm(SxVxU, B.S, AxB.S, alpha, 0);
+  C.S *= beta;
   C += AxB;
 } END_SPECIALIZATION;
 
