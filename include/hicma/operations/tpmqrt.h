@@ -4,9 +4,6 @@
 #include "hicma/node_proxy.h"
 #include "hicma/node.h"
 
-#include "yorel/multi_methods.hpp"
-using yorel::multi_methods::virtual_;
-
 namespace hicma
 {
 
@@ -73,13 +70,6 @@ void tpmqrt(
 
 void tpmqrt(
   const Node&, const Node&, Node&, Node&,
-  const bool
-);
-
-MULTI_METHOD(
-  tpmqrt_omm, void,
-  const virtual_<Node>&, const virtual_<Node>&,
-  virtual_<Node>&, virtual_<Node>&,
   const bool
 );
 

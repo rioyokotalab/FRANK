@@ -20,6 +20,13 @@
 namespace hicma
 {
 
+MULTI_METHOD(
+  tpqrt_omm, void,
+  virtual_<Node>&,
+  virtual_<Node>&,
+  virtual_<Node>&
+);
+
 void tpqrt(
   NodeProxy& A, NodeProxy& B, NodeProxy& T
 ) {

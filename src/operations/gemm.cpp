@@ -21,6 +21,15 @@
 namespace hicma
 {
 
+MULTI_METHOD(
+  gemm_omm, void,
+  const virtual_<Node>&,
+  const virtual_<Node>&,
+  virtual_<Node>&,
+  const double,
+  const double
+);
+
 void gemm(
   const NodeProxy& A, const NodeProxy& B, NodeProxy& C,
   const double alpha, const double beta

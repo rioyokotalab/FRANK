@@ -20,6 +20,13 @@
 namespace hicma
 {
 
+MULTI_METHOD(
+  trsm_omm, void,
+  const virtual_<Node>&,
+  virtual_<Node>&,
+  const char& uplo
+);
+
 void trsm(const NodeProxy& A, NodeProxy& B, const char& uplo) {
   trsm(*A.ptr.get(), *B.ptr.get(), uplo);
 }

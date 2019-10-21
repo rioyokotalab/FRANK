@@ -4,9 +4,6 @@
 #include "hicma/node_proxy.h"
 #include "hicma/node.h"
 
-#include "yorel/multi_methods.hpp"
-using yorel::multi_methods::virtual_;
-
 namespace hicma
 {
 
@@ -19,13 +16,6 @@ void tpqrt(Node&, NodeProxy&, Node&);
 void tpqrt(Node&, Node&, NodeProxy&);
 
 void tpqrt(Node&, Node&, Node&);
-
-MULTI_METHOD(
-  tpqrt_omm, void,
-  virtual_<Node>&,
-  virtual_<Node>&,
-  virtual_<Node>&
-);
 
 } // namespace hicma
 

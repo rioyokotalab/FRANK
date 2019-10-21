@@ -19,6 +19,34 @@
 
 namespace hicma
 {
+
+  MULTI_METHOD(
+    qr_omm, void,
+    virtual_<Node>&, virtual_<Node>&, virtual_<Node>&
+  );
+  MULTI_METHOD(
+    need_split_omm, bool,
+    const virtual_<Node>&
+  );
+  MULTI_METHOD(
+    make_left_orthogonal_omm, void,
+    const virtual_<Node>&, NodeProxy&, NodeProxy&
+  );
+  MULTI_METHOD(
+    update_splitted_size_omm, void,
+    const virtual_<Node>&, int&, int&
+  );
+  MULTI_METHOD(
+    split_by_column_omm, void,
+    const virtual_<Node>&, virtual_<Node>&,
+    int&, NodeProxy&
+  );
+  MULTI_METHOD(
+    concat_columns_omm, void,
+    const virtual_<Node>&, const virtual_<Node>&, NodeProxy&,
+    int&, const virtual_<Node>&
+  );
+
   void qr(NodeProxy& A, NodeProxy& Q, NodeProxy& R) {
     qr(*A.ptr, *Q.ptr, *R.ptr);
   }

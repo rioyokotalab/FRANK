@@ -20,6 +20,11 @@
 namespace hicma
 {
 
+MULTI_METHOD(
+  geqrt_omm, void,
+  virtual_<Node>&, virtual_<Node>&
+);
+
 void geqrt(NodeProxy& A, NodeProxy& T) {
   geqrt(*A.ptr, *T.ptr);
 }
