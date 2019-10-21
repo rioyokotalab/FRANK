@@ -111,6 +111,7 @@ BEGIN_SPECIALIZATION(
 ) {
   LowRank AxBU(B);
   gemm(A, B.U, AxBU.U, alpha, 0);
+  C.S *= beta;
   C += AxBU;
 } END_SPECIALIZATION;
 
@@ -121,6 +122,7 @@ BEGIN_SPECIALIZATION(
 ) {
   LowRank AVxB(A);
   gemm(A.V, B, AVxB.V, alpha, 0);
+  C.S *= beta;
   C += AVxB;
 } END_SPECIALIZATION;
 
@@ -129,13 +131,16 @@ BEGIN_SPECIALIZATION(
   const LowRank& A, const LowRank& B, LowRank& C,
   const double& alpha, const double& beta
 ) {
-  LowRank AxB(A);
+  assert(A.rank == B.rank);
+  LowRank AxB(A.dim[0], B.dim[1], A.rank);
+  AxB.U = A.U;
   AxB.V = B.V;
   Dense VxU(A.rank, B.rank);
   gemm(A.V, B.U, VxU, 1, 0);
   Dense SxVxU(A.rank, B.rank);
   gemm(A.S, VxU, SxVxU, 1, 0);
   gemm(SxVxU, B.S, AxB.S, alpha, 0);
+  C.S *= beta;
   C += AxB;
 } END_SPECIALIZATION;
 
