@@ -96,43 +96,43 @@ UniformHierarchical::UniformHierarchical(
       else {
         if (col_basis[i].get() == nullptr) {
           // Take entire row block of matrix (slim and wide)
-          Dense bottom_row(
+          Dense row_block(
             func,
             x,
             ni_child, nj_child*(std::pow(nj_level, level+1)),
             i_begin_child, 0
           );
           // Split into parts
-          Hierarchical bottom_row_h(bottom_row, 1, std::pow(nj_level, level+1));
+          Hierarchical row_block_h(row_block, 1, std::pow(nj_level, level+1));
           // Set part covered by dense blocks to 0
           for (int j_b=0; j_b<std::pow(nj_level, level+1); ++j_b) {
             if (std::abs(j_b - i_abs_child) <= admis)
-              static_cast<Dense&>(*bottom_row_h[j_b].ptr) = 0.0;
+              static_cast<Dense&>(*row_block_h[j_b].ptr) = 0.0;
           }
           // Reconvert to dense and get U of top row
           // Likely not efficient either!
           col_basis[i] = std::make_shared<Dense>(
-            LowRank(Dense(bottom_row_h), rank).U);
+            LowRank(Dense(row_block_h), rank).U);
         }
         if (row_basis[j].get() == nullptr) {
           // Take entire column block of matrix (tall and slim)
-          Dense left_col(
+          Dense col_block(
             func,
             x,
             ni_child*std::pow(ni_level, level+1), nj_child,
             0, j_begin_child
           );
           // Split into parts
-          Hierarchical left_col_h(left_col, std::pow(ni_level, level+1), 1);
+          Hierarchical col_block_h(col_block, std::pow(ni_level, level+1), 1);
           // Set part covered by (*this)(0, 0) to 0
           for (int i_b=0; i_b<std::pow(ni_level, level+1); ++i_b) {
             if (std::abs(i_b - j_abs_child) <= admis)
-              static_cast<Dense&>(*left_col_h[i_b].ptr) = 0.0;
+              static_cast<Dense&>(*col_block_h[i_b].ptr) = 0.0;
           }
           // Reconvert to dense and get V of right col
           // Likely not efficient either!
           row_basis[j] = std::make_shared<Dense>(
-            LowRank(Dense(left_col_h), rank).V);
+            LowRank(Dense(col_block_h), rank).V);
         }
         Dense D(
           func,
