@@ -99,13 +99,13 @@ UniformHierarchical::UniformHierarchical(
           Dense bottom_row(
             func,
             x,
-            ni_child, nj*(std::pow(nj_level, level)),
-            i_begin + ni_child*i, 0
+            ni_child, nj_child*(std::pow(nj_level, level+1)),
+            i_begin_child, 0
           );
           // Split into parts
-          Hierarchical bottom_row_h(bottom_row, 1, std::pow(nj_level, level));
+          Hierarchical bottom_row_h(bottom_row, 1, std::pow(nj_level, level+1));
           // Set part covered by dense blocks to 0
-          for (int j_b=0; j_b<std::pow(nj_level, level); ++j_b) {
+          for (int j_b=0; j_b<std::pow(nj_level, level+1); ++j_b) {
             if (std::abs(j_b - i_abs_child) <= admis)
               static_cast<Dense&>(*bottom_row_h[j_b].ptr) = 0.0;
           }
@@ -119,13 +119,13 @@ UniformHierarchical::UniformHierarchical(
           Dense left_col(
             func,
             x,
-            ni*std::pow(ni_level, level), nj_child,
-            0, j_begin + nj_child*j
+            ni_child*std::pow(ni_level, level+1), nj_child,
+            0, j_begin_child
           );
           // Split into parts
-          Hierarchical left_col_h(left_col, std::pow(ni_level, level), 1);
+          Hierarchical left_col_h(left_col, std::pow(ni_level, level+1), 1);
           // Set part covered by (*this)(0, 0) to 0
-          for (int i_b=0; i_b<std::pow(ni_level, level); ++i_b) {
+          for (int i_b=0; i_b<std::pow(ni_level, level+1); ++i_b) {
             if (std::abs(i_b - j_abs_child) <= admis)
               static_cast<Dense&>(*left_col_h[i_b].ptr) = 0.0;
           }
