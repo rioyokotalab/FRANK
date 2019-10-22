@@ -21,9 +21,13 @@ namespace hicma {
 
     Hierarchical();
 
-    Hierarchical(const int m);
-
-    Hierarchical(const int m, const int n);
+    Hierarchical(
+      const int ni_level,
+      const int nj_level=1,
+      const int i_abs=0,
+      const int j_abs=0,
+      const int level=0
+    );
 
     Hierarchical(const Dense& A, const int m, const int n);
 

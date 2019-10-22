@@ -27,7 +27,7 @@
 namespace hicma
 {
 
-UniformHierarchical::UniformHierarchical() {
+UniformHierarchical::UniformHierarchical() : Hierarchical() {
   MM_INIT();
 }
 
@@ -47,15 +47,12 @@ UniformHierarchical::UniformHierarchical(
   const int i_begin, const int j_begin,
   const int i_abs, const int j_abs,
   const int level
-) : Node(i_abs, j_abs, level) {
+) : Hierarchical(ni_level, nj_level, i_abs, j_abs, level) {
   MM_INIT();
   if (!level) {
     assert(int(x.size()) == std::max(ni,nj));
     std::sort(x.begin(),x.end());
   }
-  dim[0] = std::min(ni_level,ni);
-  dim[1] = std::min(nj_level,nj);
-  data.resize(dim[0]*dim[1]);
   col_basis.resize(dim[0]);
   row_basis.resize(dim[1]);
   for (int i=0; i<dim[0]; i++) {
@@ -157,9 +154,8 @@ UniformHierarchical::UniformHierarchical(
 }
 
 UniformHierarchical::UniformHierarchical(const UniformHierarchical& A)
-  : Node(A.i_abs, A.j_abs, A.level), data(A.data) {
+  : Hierarchical(A) {
   MM_INIT();
-  dim[0]=A.dim[0]; dim[1]=A.dim[1];
 }
 
 UniformHierarchical::UniformHierarchical(UniformHierarchical&& A) {

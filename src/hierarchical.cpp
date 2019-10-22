@@ -20,14 +20,15 @@ namespace hicma {
     dim[0]=0; dim[1]=0;
   }
 
-  Hierarchical::Hierarchical(const int m) {
+  Hierarchical::Hierarchical(
+    const int ni_level,
+    const int nj_level,
+    const int i_abs,
+    const int j_abs,
+    const int level
+  ) : Node(i_abs, j_abs, level) {
     MM_INIT();
-    dim[0]=m; dim[1]=1; data.resize(dim[0]);
-  }
-
-  Hierarchical::Hierarchical(const int m, const int n) {
-    MM_INIT();
-    dim[0]=m; dim[1]=n; data.resize(dim[0]*dim[1]);
+    dim[0]=ni_level; dim[1]=nj_level; data.resize(dim[0]*dim[1]);
   }
 
   Hierarchical::Hierarchical(const Dense& A, const int m, const int n) : Node(A.i_abs,A.j_abs,A.level) {
