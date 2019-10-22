@@ -13,7 +13,18 @@ namespace hicma {
 class LowRankShared : public Node {
  public:
   MM_CLASS(LowRankShared, Node);
-  std::shared_ptr<Dense> U, V;
+  int dim[2];
+  int rank;
+
+  class SharedBasis {
+  public:
+    // operator Dense& () { return *value; }
+    operator const Dense& () const { return *value; }
+    SharedBasis() = default;
+    SharedBasis(std::shared_ptr<Dense> A) : value(A) {};
+  private:
+    std::shared_ptr<Dense> value;
+  } U, V;
   Dense S;
 
   LowRankShared();
