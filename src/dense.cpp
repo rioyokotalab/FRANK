@@ -319,7 +319,7 @@ namespace hicma {
   } END_SPECIALIZATION;
 
   BEGIN_SPECIALIZATION(make_dense, Dense, const Node& A){
-    std::cout << "Cannot create dense from " << A.type() << "!" << std::endl;
+    std::cout << "Cannot create Dense from " << A.type() << "!" << std::endl;
     abort();
   } END_SPECIALIZATION;
 
