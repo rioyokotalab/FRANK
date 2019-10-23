@@ -1,5 +1,6 @@
 #include "hicma/dense.h"
 #include "hicma/low_rank.h"
+#include "hicma/low_rank_shared.h"
 #include "hicma/hierarchical.h"
 #include "hicma/uniform_hierarchical.h"
 #include "hicma/functions.h"
@@ -34,6 +35,19 @@ int main(int argc, char const *argv[])
   Hierarchical H(
     laplace1d, randx, N, N, rank, nleaf, admis, ni_level, nj_level);
   Dense D(laplace1d, randx, N, N);
+  Hierarchical DH(D, ni_level, nj_level);
+  LowRankShared& LRS = static_cast<LowRankShared&>(*A(0, 1).ptr);
+  Dense(LRS.U).print();
+  LRS.S.print();
+  Dense(LRS.V).print();
+  LowRank& LR = static_cast<LowRank&>(*H(0, 1).ptr);
+  Dense(LR.U).print();
+  LR.S.print();
+  Dense(LR.V).print();
+  // Dense(A(0, 1)).print();
+  // Dense(H(0, 1)).print();
+  // Dense(DH(0, 1)).print();
+
   start("Verification");
   double norm = D.norm();
   double diff1 = (D - Dense(H)).norm();
