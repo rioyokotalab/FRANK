@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
   start("Dense tree");
   //Hierarchical D(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   stop("Dense tree");
-  Hierarchical x(random, randx, N, 1, rank, nleaf, admis, nblocks, 1);
+  Hierarchical x(random_uniform, randx, N, 1, rank, nleaf, admis, nblocks, 1);
   Hierarchical b(zeros, randx, N, 1, rank, nleaf, admis, nblocks, 1);
   //start("Verification");
   //double diff = (Dense(A) - Dense(D)).norm();

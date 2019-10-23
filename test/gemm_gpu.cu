@@ -34,9 +34,9 @@ int main(int argc, char** argv) {
   std::vector<Dense> vecC;
   for (int b=0; b<batchCount; b++) {
     std::vector<double> x;
-    Dense A(random, x, h_m[b], h_k[b], 0, 0);
-    Dense B(random, x, h_k[b], h_n[b], 0, 0);
-    Dense C(random, x, h_m[b], h_n[b], 0, 0);
+    Dense A(random_uniform, x, h_m[b], h_k[b], 0, 0);
+    Dense B(random_uniform, x, h_k[b], h_n[b], 0, 0);
+    Dense C(random_uniform, x, h_m[b], h_n[b], 0, 0);
     vecA.push_back(A);
     vecB.push_back(B);
     vecC.push_back(C);

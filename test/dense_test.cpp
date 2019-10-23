@@ -19,7 +19,7 @@ TEST(DenseTest, ContructorHierarchical) {
         randx[i] = drand48();
     }
     // Construct single level all-dense hierarchical
-    Hierarchical H(random, randx, N, N, 0, nleaf, nblocks, nblocks, nblocks);
+    Hierarchical H(random_uniform, randx, N, N, 0, nleaf, nblocks, nblocks, nblocks);
     Dense D(H);
     // Check block-by-block and element-by-element if values match
     for (int ib=0; ib<nblocks; ++ib) {
