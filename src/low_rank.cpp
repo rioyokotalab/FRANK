@@ -1,7 +1,8 @@
 #include "hicma/node.h"
 #include "hicma/low_rank.h"
 #include "hicma/hierarchical.h"
-#include "hicma/operations.h"
+#include "hicma/operations/gemm.h"
+#include "hicma/operations/qr.h"
 #include "hicma/util/print.h"
 #include "hicma/util/counter.h"
 

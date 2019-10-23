@@ -10,6 +10,7 @@
 #include <cassert>
 #include <iostream>
 #include <iomanip>
+#include <utility>
 
 #ifndef USE_MKL
 #include <lapacke.h>

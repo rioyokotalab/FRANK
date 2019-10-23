@@ -1,5 +1,6 @@
 #ifndef functions_h
 #define functions_h
+
 #include <vector>
 
 namespace hicma {

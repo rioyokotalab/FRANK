@@ -18,7 +18,7 @@ namespace hicma {
 
     Node();
 
-    Node(const int _i_abs, const int _j_abs, const int _level);
+    Node(const int i_abs, const int j_abs, const int level);
 
     Node(const Node& A);
 

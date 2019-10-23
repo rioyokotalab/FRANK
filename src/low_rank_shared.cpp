@@ -5,6 +5,7 @@
 #include "hicma/low_rank.h"
 
 #include <memory>
+#include <utility>
 
 #include "yorel/multi_methods.hpp"
 

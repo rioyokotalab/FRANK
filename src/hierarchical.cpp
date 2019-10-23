@@ -1,15 +1,22 @@
-#include "hicma/node_proxy.h"
-#include "hicma/low_rank.h"
 #include "hicma/hierarchical.h"
+
+#include "hicma/node.h"
+#include "hicma/node_proxy.h"
+#include "hicma/dense.h"
+#include "hicma/low_rank.h"
 #include "hicma/functions.h"
-#include "hicma/operations.h"
+#include "hicma/operations/gemm.h"
+#include "hicma/operations/get_dim.h"
+#include "hicma/operations/qr.h"
 #include "hicma/gpu_batch/batch.h"
 #include "hicma/util/print.h"
 
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <iostream>
 #include <tuple>
+#include <utility>
 
 #include "yorel/multi_methods.hpp"
 

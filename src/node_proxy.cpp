@@ -1,10 +1,10 @@
 #include "hicma/node_proxy.h"
-#include "hicma/low_rank.h"
-#include "hicma/hierarchical.h"
-#include "hicma/operations.h"
+
+#include "hicma/node.h"
 
 #include <cassert>
 #include <iostream>
+#include <utility>
 
 namespace hicma {
 

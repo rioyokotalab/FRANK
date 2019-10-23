@@ -1,8 +1,6 @@
-#pragma once
+#ifndef uniform_hierarchical_h
+#define uniform_hierarchical_h
 
-#include "hicma/node.h"
-#include "hicma/node_proxy.h"
-#include "hicma/dense.h"
 #include "hicma/hierarchical.h"
 
 #include <memory>
@@ -13,11 +11,12 @@
 namespace hicma
 {
 
+class NodeProxy;
+class Dense;
+
 class UniformHierarchical : public Hierarchical {
  public:
   MM_CLASS(UniformHierarchical, Hierarchical);
-  // int dim[2];
-  // std::vector<NodeProxy> data;
   std::vector<std::shared_ptr<Dense>> row_basis, col_basis;
 
   UniformHierarchical();
@@ -66,3 +65,5 @@ class UniformHierarchical : public Hierarchical {
 };
 
 } // namespace hicma
+
+#endif // uniform_hierarchical_h

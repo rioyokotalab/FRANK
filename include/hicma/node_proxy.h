@@ -1,5 +1,6 @@
 #ifndef any_h
 #define any_h
+
 #include <memory>
 
 namespace hicma {

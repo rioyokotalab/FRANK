@@ -106,8 +106,8 @@ UniformHierarchical::UniformHierarchical(
           Hierarchical row_block_h(row_block, 1, std::pow(nj_level, level+1));
           // Set part covered by dense blocks to 0
           for (int j_b=0; j_b<std::pow(nj_level, level+1); ++j_b) {
-            if (std::abs(j_b - i_abs_child) <= admis)
-              static_cast<Dense&>(*row_block_h[j_b].ptr) = 0.0;
+            // if (std::abs(j_b - i_abs_child) <= admis)
+            //   static_cast<Dense&>(*row_block_h[j_b].ptr) = 0.0;
           }
           // Reconvert to dense and get U of top row
           // Likely not efficient either!
@@ -126,8 +126,8 @@ UniformHierarchical::UniformHierarchical(
           Hierarchical col_block_h(col_block, std::pow(ni_level, level+1), 1);
           // Set part covered by (*this)(0, 0) to 0
           for (int i_b=0; i_b<std::pow(ni_level, level+1); ++i_b) {
-            if (std::abs(i_b - j_abs_child) <= admis)
-              static_cast<Dense&>(*col_block_h[i_b].ptr) = 0.0;
+            // if (std::abs(i_b - j_abs_child) <= admis)
+            //   static_cast<Dense&>(*col_block_h[i_b].ptr) = 0.0;
           }
           // Reconvert to dense and get V of right col
           // Likely not efficient either!

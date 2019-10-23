@@ -1,20 +1,16 @@
 #ifndef dense_h
 #define dense_h
+
 #include "hicma/node.h"
-#include "hicma/node_proxy.h"
 
 #include <vector>
 
-#ifdef USE_MKL
-#include <mkl.h>
-#else
-#include <cblas.h>
-#endif
 #include "yorel/multi_methods.hpp"
 using yorel::multi_methods::virtual_;
 
 namespace hicma {
 
+  class NodeProxy;
   class LowRank;
   class Hierarchical;
 
