@@ -1,7 +1,8 @@
-#include "hicma/any.h"
+#include "hicma/node_proxy.h"
 #include "hicma/dense.h"
 #include "hicma/low_rank.h"
 #include "hicma/hierarchical.h"
+#include "hicma/operations.h"
 #include "hicma/gpu_batch/batch.h"
 #include "hicma/util/print.h"
 #include "hicma/util/timer.h"
@@ -9,17 +10,22 @@
 #include <cassert>
 #include <iostream>
 #include <iomanip>
+
 #ifndef USE_MKL
 #include <lapacke.h>
 #endif
 
+#include "yorel/multi_methods.hpp"
+
 namespace hicma {
 
   Dense::Dense() {
+    MM_INIT();
     dim[0]=0; dim[1]=0;
   }
 
   Dense::Dense(const int m) {
+    MM_INIT();
     dim[0]=m; dim[1]=1; data.resize(dim[0],0);
   }
 
@@ -30,6 +36,7 @@ namespace hicma {
                const int j_abs,
                const int level
                ) : Node(i_abs, j_abs, level) {
+    MM_INIT();
     dim[0]=m; dim[1]=n; data.resize(dim[0]*dim[1],0);
   }
 
@@ -51,28 +58,33 @@ namespace hicma {
                const int j_abs,
                const int level
                ) : Node(i_abs,j_abs,level) {
+    MM_INIT();
     dim[0] = ni; dim[1] = nj;
     data.resize(dim[0]*dim[1]);
     func(data, x, ni, nj, i_begin, j_begin);
   }
 
   Dense::Dense(const Dense& A) : Node(A.i_abs,A.j_abs,A.level), data(A.data) {
+    MM_INIT();
     dim[0]=A.dim[0]; dim[1]=A.dim[1];
   }
 
   Dense::Dense(Dense&& A) {
+    MM_INIT();
     swap(*this, A);
   }
 
   Dense::Dense(const LowRank& A) : Node(A.i_abs,A.j_abs,A.level) {
+    MM_INIT();
     dim[0] = A.dim[0]; dim[1] = A.dim[1];
     data.resize(dim[0]*dim[1], 0);
     Dense UxS(A.dim[0], A.rank);
-    UxS.gemm(A.U, A.S);
-    this->gemm(UxS, A.V);
+    gemm(A.U, A.S, UxS, 1, 0);
+    gemm(UxS, A.V, *this, 1, 0);
   }
 
   Dense::Dense(const Hierarchical& A) : Node(A.i_abs,A.j_abs,A.level) {
+    MM_INIT();
     dim[0] = 0;
     for (int i=0; i<A.dim[0]; i++) {
       Dense AD = Dense(A(i,0));
@@ -101,14 +113,9 @@ namespace hicma {
     }
   }
 
-  Dense::Dense(const Any& _A) : Node(_A.ptr->i_abs, _A.ptr->j_abs, _A.ptr->level) {
-    if (_A.is(HICMA_DENSE)) {
-      *this = static_cast<const Dense&>(*_A.ptr);
-    } else if (_A.is(HICMA_LOWRANK)) {
-      *this = Dense(static_cast<const LowRank&>(*_A.ptr));
-    } else if (_A.is(HICMA_HIERARCHICAL)) {
-      *this = Dense(static_cast<const Hierarchical&>(*_A.ptr));
-    }
+  Dense::Dense(const NodeProxy& A) : Node(A.ptr->i_abs, A.ptr->j_abs, A.ptr->level) {
+    MM_INIT();
+    *this = make_dense(*A.ptr);
   }
 
   Dense* Dense::clone() const {
@@ -148,7 +155,8 @@ namespace hicma {
   }
 
   const Dense& Dense::operator+=(const Dense& A) {
-    assert(dim[0] == A.dim[0] && dim[1] == A.dim[1]);
+    assert(dim[0] == A.dim[0]);
+    assert(dim[1] == A.dim[1]);
     for (int i=0; i<dim[0]*dim[1]; i++) {
       (*this)[i] += A[i];
     }
@@ -156,7 +164,8 @@ namespace hicma {
   }
 
   const Dense& Dense::operator-=(const Dense& A) {
-    assert(dim[0] == A.dim[0] && dim[1] == A.dim[1]);
+    assert(dim[0] == A.dim[0]);
+    assert(dim[1] == A.dim[1]);
     for (int i=0; i<dim[0]*dim[1]; i++) {
       (*this)[i] -= A[i];
     }
@@ -171,27 +180,25 @@ namespace hicma {
   }
 
   double& Dense::operator[](const int i) {
-    assert(i<dim[0]*dim[1]);
+    assert(i < dim[0]*dim[1]);
     return data[i];
   }
 
   const double& Dense::operator[](const int i) const {
-    assert(i<dim[0]*dim[1]);
+    assert(i < dim[0]*dim[1]);
     return data[i];
   }
 
   double& Dense::operator()(const int i, const int j) {
-    assert(i<dim[0] && j<dim[1]);
+    assert(i < dim[0]);
+    assert(j < dim[1]);
     return data[i*dim[1]+j];
   }
 
   const double& Dense::operator()(const int i, const int j) const {
-    assert(i<dim[0] && j<dim[1]);
+    assert(i < dim[0]);
+    assert(j < dim[1]);
     return data[i*dim[1]+j];
-  }
-
-  bool Dense::is(const int enum_id) const {
-    return enum_id == HICMA_DENSE;
   }
 
   const char* Dense::type() const { return "Dense"; }
@@ -229,7 +236,7 @@ namespace hicma {
     }
     return A;
   }
-  
+
   void Dense::print() const {
     for (int i=0; i<dim[0]; i++) {
       for (int j=0; j<dim[1]; j++) {
@@ -248,170 +255,6 @@ namespace hicma {
         data[i*dim[1]+j] = _data[j*dim[0]+i];
       }
     }
-  }
-
-  void Dense::getrf() {
-    start("-DGETRF");
-    std::vector<int> ipiv(std::min(dim[0],dim[1]));
-    LAPACKE_dgetrf(LAPACK_ROW_MAJOR, dim[0], dim[1], &data[0], dim[1], &ipiv[0]);
-    stop("-DGETRF",false);
-  }
-
-  void Dense::trsm(const Dense& A, const char& uplo) {
-    start("-DTRSM");
-    if (dim[1] == 1) {
-      switch (uplo) {
-      case 'l' :
-        cblas_dtrsm(CblasRowMajor, CblasLeft, CblasLower, CblasNoTrans, CblasUnit,
-                    dim[0], dim[1], 1, &A[0], A.dim[1], &data[0], dim[1]);
-        break;
-      case 'u' :
-        cblas_dtrsm(CblasRowMajor, CblasLeft, CblasUpper, CblasNoTrans, CblasNonUnit,
-                    dim[0], dim[1], 1, &A[0], A.dim[1], &data[0], dim[1]);
-        break;
-      default :
-        std::cerr << "Second argument must be 'l' for lower, 'u' for upper." << std::endl;
-        abort();
-      }
-    }
-    else {
-      switch (uplo) {
-      case 'l' :
-        cblas_dtrsm(CblasRowMajor, CblasLeft, CblasLower, CblasNoTrans, CblasUnit,
-                    dim[0], dim[1], 1, &A[0], A.dim[1], &data[0], dim[1]);
-        break;
-      case 'u' :
-        cblas_dtrsm(CblasRowMajor, CblasRight, CblasUpper, CblasNoTrans, CblasNonUnit,
-                    dim[0], dim[1], 1, &A[0], A.dim[1], &data[0], dim[1]);
-        break;
-      default :
-        std::cerr << "Second argument must be 'l' for lower, 'u' for upper." << std::endl;
-        abort();
-      }
-    }
-    stop("-DTRSM",false);
-  }
-
-  void Dense::trsm(const Hierarchical& A, const char& uplo) {
-    switch (uplo) {
-    case 'l' :
-      {
-        Hierarchical H(*this, A.dim[0], 1);
-        H.trsm(A, uplo);
-        *this = Dense(H);
-        break;
-      }
-    case 'u' :
-      {
-        Hierarchical H(*this, 1, A.dim[1]);
-        H.trsm(A, uplo);
-        *this = Dense(H);
-        break;
-      }
-    default :
-      std::cerr << "Second argument must be 'l' for lower, 'u' for upper." << std::endl;
-      abort();
-    }
-  }
-
-  void Dense::gemm(const Dense& A, const Dense&B, const CBLAS_TRANSPOSE TransA, const CBLAS_TRANSPOSE TransB,
-                   const double& alpha, const double& beta) {
-    start("-DGEMM");
-    if (B.dim[1] == 1) {
-      cblas_dgemv(CblasRowMajor, CblasNoTrans, A.dim[0], A.dim[1], alpha,
-                  &A[0], A.dim[1], &B[0], 1, beta, &data[0], 1);
-    }
-    else {
-      int k = TransA == CblasNoTrans ? A.dim[1] : A.dim[0];
-      cblas_dgemm(CblasRowMajor, TransA, TransB, dim[0], dim[1], k, alpha,
-                  &A[0], A.dim[1], &B[0], B.dim[1], beta, &data[0], dim[1]);
-    }
-    stop("-DGEMM",false);
-  }
-
-  void Dense::gemm(const Dense& A, const Dense& B, const double& alpha, const double& beta) {
-    assert(this->dim[0] == A.dim[0] && A.dim[1] == B.dim[0] && this->dim[1] == B.dim[1]);
-    if (alpha == 1 && beta == 1) {
-      gemm_push(A, B, this);
-    }
-    else {
-      gemm(A, B, CblasNoTrans, CblasNoTrans, alpha, beta);
-    }
-  }
-
-  void Dense::gemm(const Dense& A, const LowRank& B, const double& alpha, const double& beta) {
-    Dense AxU(dim[0], B.rank);
-    AxU.gemm(A, B.U, 1, 0);
-    Dense AxUxS(dim[0], B.rank);
-    AxUxS.gemm(AxU, B.S, 1, 0);
-    gemm(AxUxS, B.V, alpha, beta);
-  }
-
-  void Dense::gemm(const Dense& A, const Hierarchical& B, const double& alpha, const double& beta) {
-    Hierarchical C(*this, 1, B.dim[1]);
-    C.gemm(A, B, alpha, beta);
-    *this = Dense(C);
-  }
-
-  void Dense::gemm(const LowRank& A, const Dense& B, const double& alpha, const double& beta) {
-    Dense VxB(A.rank, B.dim[1]);
-    VxB.gemm(A.V, B, 1, 0);
-    Dense SxVxB(A.rank, B.dim[1]);
-    SxVxB.gemm(A.S, VxB, 1, 0);
-    gemm(A.U, SxVxB, alpha, beta);
-  }
-
-  void Dense::gemm(const LowRank& A, const LowRank& B, const double& alpha, const double& beta) {
-    Dense VxU(A.rank, B.rank);
-    VxU.gemm(A.V, B.U, 1, 0);
-    Dense SxVxU(A.rank, B.rank);
-    SxVxU.gemm(A.S, VxU, 1, 0);
-    Dense SxVxUxS(A.rank, B.rank);
-    SxVxUxS.gemm(SxVxU, B.S, 1, 0);
-    Dense UxSxVxUxS(A.dim[0], B.rank);
-    UxSxVxUxS.gemm(A.U, SxVxUxS, 1, 0);
-    gemm(UxSxVxUxS, B.V, alpha, beta);
-  }
-
-  void Dense::gemm(const LowRank& A, const Hierarchical& B, const double& alpha, const double& beta) {
-    Hierarchical C(*this, 1, B.dim[1]);
-    C.gemm(A, B, alpha, beta);
-    *this = Dense(C);
-  }
-
-  void Dense::gemm(const Hierarchical& A, const Dense& B, const double& alpha, const double& beta) {
-    Hierarchical C(*this, A.dim[0], 1);
-    C.gemm(A, B, alpha, beta);
-    *this = Dense(C);
-  }
-
-  void Dense::gemm(const Hierarchical& A, const LowRank& B, const double& alpha, const double& beta) {
-    Hierarchical C(*this, A.dim[0], 1);
-    C.gemm(A, B, alpha, beta);
-    *this = Dense(C);
-  }
-
-  void Dense::gemm(const Hierarchical& A, const Hierarchical& B, const double& alpha, const double& beta) {
-    Hierarchical C(*this, A.dim[0], B.dim[1]);
-    C.gemm(A, B, alpha, beta);
-    *this = Dense(C);
-  }
-
-  void Dense::qr(Dense& Q, Dense& R) {
-    start("-DGEQRF");
-    std::vector<double> tau(dim[1]);
-    for (int i=0; i<dim[1]; i++) Q[i*dim[1]+i] = 1.0;
-    LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, dim[0], dim[1], &data[0], dim[1], &tau[0]);
-    LAPACKE_dormqr(LAPACK_ROW_MAJOR, 'L', 'N', dim[0], dim[1], dim[1],
-                   &data[0], dim[1], &tau[0], &Q[0], dim[1]);
-    for(int i=0; i<dim[1]; i++) {
-      for(int j=0; j<dim[1]; j++) {
-        if(j>=i){
-          R[i*dim[1]+j] = data[i*dim[1]+j];
-        }
-      }
-    }
-    stop("-DGEQRF",false);
   }
 
   void Dense::svd(Dense& U, Dense& S, Dense& V) {
@@ -435,81 +278,21 @@ namespace hicma {
     stop("-DGESVD",false);
   }
 
-  void Dense::geqrt(Dense& T) {
-    assert(T.dim[0] == dim[1] && T.dim[1] == dim[1]);
-    LAPACKE_dgeqrt3(LAPACK_ROW_MAJOR, dim[0], dim[1], &data[0], dim[1], &T[0], T.dim[1]);
-  }
+  BEGIN_SPECIALIZATION(make_dense, Dense, const Hierarchical& A){
+    return Dense(A);
+  } END_SPECIALIZATION;
 
-  void Dense::geqrt2(Dense& T) {
-    assert(T.dim[0] == dim[1] && T.dim[1] == dim[1]);
-    LAPACKE_dgeqrt2(LAPACK_ROW_MAJOR, dim[0], dim[1], &data[0], dim[1], &T[0], T.dim[1]);
-  }
+  BEGIN_SPECIALIZATION(make_dense, Dense, const LowRank& A){
+    return Dense(A);
+  } END_SPECIALIZATION;
 
-  void Dense::larfb(const Dense& Y, const Dense& T, const bool trans) {
-    LAPACKE_dlarfb(LAPACK_ROW_MAJOR, 'L', (trans ? 'T' : 'N'), 'F', 'C', dim[0], dim[1], T.dim[1], &Y[0], Y.dim[1], &T[0], T.dim[1], &data[0], dim[1]);
-  }
+  BEGIN_SPECIALIZATION(make_dense, Dense, const Dense& A){
+    return Dense(A);
+  } END_SPECIALIZATION;
 
-  void Dense::larfb(const Hierarchical& Y, const Hierarchical& T, const bool trans) {
-    Hierarchical C(*this, Y.dim[0], Y.dim[1]);
-    C.larfb(Y, T, trans);
-    *this = Dense(C);
-  }
-
-  void Dense::tpqrt(Dense& A, Dense& T) {
-    LAPACKE_dtpqrt2(LAPACK_ROW_MAJOR, dim[0], dim[1], 0, &A[0], A.dim[1], &data[0], dim[1], &T[0], T.dim[1]);
-  }
-
-  void Dense::tpqrt(Hierarchical& A, Dense& T) {
-    print_undefined(__func__, A.type(), T.type(), this->type());
+  BEGIN_SPECIALIZATION(make_dense, Dense, const Node& A){
+    std::cout << "Cannot create dense from " << A.type() << "!" << std::endl;
     abort();
-  }
-
-  void Dense::tpqrt(Hierarchical& A, Hierarchical& T) {
-    print_undefined(__func__, A.type(), T.type(), this->type());
-    abort();
-  }
-
-  void Dense::tpmqrt(Dense& B, const Dense& Y, const Dense &T, const bool trans) {
-    LAPACKE_dtprfb(LAPACK_ROW_MAJOR, 'L', (trans ? 'T': 'N'), 'F', 'C', dim[0], dim[1], Y.dim[1], 0, &Y[0], Y.dim[1], &T[0], T.dim[1], &B[0], B.dim[1], &data[0], dim[1]);
-  }
-
-  void Dense::tpmqrt(Dense& B, const LowRank& Y, const Dense& T, const bool trans) {
-    Dense UY(Y.U.dim[0], Y.V.dim[1]);
-    UY.gemm(Y.U, Y.V, 1, 0);
-    tpmqrt(B, UY, T, trans);
-  }
-
-  void Dense::tpmqrt(LowRank& B, const Dense& Y, const Dense& T, const bool trans) {
-    Dense C(B);
-    tpmqrt(C, Y, T, trans);
-    B = LowRank(C, B.rank);
-  }
-
-  void Dense::tpmqrt(LowRank& B, const LowRank& Y, const Dense& T, const bool trans) {
-    Dense C(B);
-    Dense UY(Y.U.dim[0], Y.V.dim[1]);
-    UY.gemm(Y.U, Y.V, 1, 0);
-    tpmqrt(C, UY, T, trans);
-    B = LowRank(C, B.rank);
-  }
-
-  void Dense::tpmqrt(Hierarchical& B, const Dense& Y, const Dense& T, const bool trans) {
-    Hierarchical C(B);
-    Dense Yt(Y);
-    Yt.transpose();
-    C.gemm(Yt, *this, 1, 1); // C = B + Yt.A
-    Dense Tt(T);
-    if(trans) Tt.transpose();
-    B.gemm(Tt, C, -1, 1); // B = B - (T or Tt)*C
-    Dense YTt(Y.dim[0], Tt.dim[1]);
-    YTt.gemm(Y, Tt, 1, 0);
-    gemm(YTt, C, -1, 1); // A = A - Y*(T or Tt)*C
-  }
-
-  void Dense::tpmqrt(Hierarchical& B, const Hierarchical& Y, const Hierarchical& T, const bool trans) {
-    Hierarchical A(*this, B.dim[0], B.dim[1]);
-    A.tpmqrt(B, Y, T, trans);
-    *this = Dense(A);
-  }
+  } END_SPECIALIZATION;
 
 }

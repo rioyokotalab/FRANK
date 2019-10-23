@@ -1,7 +1,8 @@
-#include "hicma/any.h"
+#include "hicma/node_proxy.h"
 #include "hicma/low_rank.h"
 #include "hicma/hierarchical.h"
 #include "hicma/functions.h"
+#include "hicma/operations.h"
 #include "hicma/gpu_batch/batch.h"
 #include "hicma/util/print.h"
 #include "hicma/util/timer.h"
@@ -10,9 +11,12 @@
 #include <cmath>
 #include <iostream>
 
+#include "yorel/multi_methods.hpp"
+
 using namespace hicma;
 
 int main(int argc, char** argv) {
+  yorel::multi_methods::initialize();
   int N = 256;
   int Nb = 32;
   int Nc = N / Nb;
@@ -78,23 +82,23 @@ int main(int argc, char** argv) {
       }
       Hierarchical Rjk(1, 1);
       Rjk(0, 0) = R(j, k);
-      Rjk.gemm(TrQsj, Ak, 1, 1); //Rjk = Q*j^T x A*k
+      gemm(TrQsj, Ak, Rjk, 1, 1); //Rjk = Q*j^T x A*k
       R(j, k) = Rjk(0, 0);
-      Ak.gemm(Qsj, Rjk, -1, 1); //A*k = A*k - Q*j x Rjk
+      gemm(Qsj, Rjk, Ak, -1, 1); //A*k = A*k - Q*j x Rjk
       for(int i=0; i<Nc; i++) {
         A(i, k) = Ak(i, 0);
       }
     }
   }
   stop("BLR QR decomposition");
-  QR.gemm(Q, R, 1, 1);
+  gemm(Q, R, QR, 1, 1);
   diff = (Dense(QR) - Dense(D)).norm();
   norm = D.norm();
   print("Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
   Dense DQ(Q);
   Dense QtQ(DQ.dim[1], DQ.dim[1]);
-  QtQ.gemm(DQ, DQ, CblasTrans, CblasNoTrans, 1, 1);
+  gemm(DQ, DQ, QtQ, CblasTrans, CblasNoTrans, 1, 1);
   Dense Id(identity, randx, QtQ.dim[0], QtQ.dim[1]);
   diff = (QtQ - Id).norm();
   norm = Id.norm();

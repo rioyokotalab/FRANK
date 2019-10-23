@@ -1,7 +1,8 @@
-#include "hicma/any.h"
+#include "hicma/node_proxy.h"
 #include "hicma/low_rank.h"
 #include "hicma/hierarchical.h"
 #include "hicma/functions.h"
+#include "hicma/operations.h"
 #include "hicma/gpu_batch/batch.h"
 #include "hicma/util/print.h"
 #include "hicma/util/timer.h"
@@ -9,9 +10,12 @@
 #include <algorithm>
 #include <cmath>
 
+#include "yorel/multi_methods.hpp"
+
 using namespace hicma;
 
 int main(int argc, char** argv) {
+  yorel::multi_methods::initialize();
   int N = 64;
   int Nb = 16;
   int Nc = N / Nb;
@@ -53,28 +57,26 @@ int main(int argc, char** argv) {
   double diff = 0, norm = 0;
   for (int ic=0; ic<Nc; ic++) {
     for (int jc=0; jc<Nc; jc++) {
-      if(A(ic,jc).is(HICMA_LOWRANK)) {
-        diff += (Dense(A(ic,jc)) - D(ic,jc)).norm();
-        norm += D(ic,jc).norm();
-      }
+      diff += (Dense(A(ic,jc)) - Dense(D(ic,jc))).norm();
+      norm += D(ic,jc).norm();
     }
   }
   print("Compression Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
   print("Time");
-  b.gemm(A, x, 1, 1);
+  gemm(A, x, b, 1, 1);
   gemm_batch();
   stop("Init matrix");
   start("LU decomposition");
   for (int ic=0; ic<Nc; ic++) {
-    A(ic,ic).getrf();
+    getrf(A(ic,ic));
     for (int jc=ic+1; jc<Nc; jc++) {
-      A(ic,jc).trsm(A(ic,ic),'l');
-      A(jc,ic).trsm(A(ic,ic),'u');
+      trsm(A(ic,ic), A(ic,jc),'l');
+      trsm(A(ic,ic), A(jc,ic),'u');
     }
     for (int jc=ic+1; jc<Nc; jc++) {
       for (int kc=ic+1; kc<Nc; kc++) {
-        A(jc,kc).gemm(A(jc,ic),A(ic,kc));
+        gemm(A(jc,ic),A(ic,kc),A(jc,kc),-1,1);
       }
     }
   }
@@ -85,9 +87,9 @@ int main(int argc, char** argv) {
   start("Forward substitution");
   for (int ic=0; ic<Nc; ic++) {
     for (int jc=0; jc<ic; jc++) {
-      b[ic].gemm(A(ic,jc),b[jc]);
+      gemm(A(ic,jc),b[jc],b[ic],-1,1);
     }
-    b[ic].trsm(A(ic,ic),'l');
+    trsm(A(ic,ic), b[ic],'l');
   }
   stop("Forward substitution");
   printTime("-DTRSM");
@@ -95,9 +97,9 @@ int main(int argc, char** argv) {
   start("Backward substitution");
   for (int ic=Nc-1; ic>=0; ic--) {
     for (int jc=Nc-1; jc>ic; jc--) {
-      b[ic].gemm(A(ic,jc),b[jc]);
+      gemm(A(ic,jc),b[jc],b[ic],-1,1);
     }
-    b[ic].trsm(A(ic,ic),'u');
+    trsm(A(ic,ic), b[ic],'u');
   }
   stop("Backward substitution");
   printTime("-DTRSM");

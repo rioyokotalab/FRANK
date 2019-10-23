@@ -1,7 +1,8 @@
-#include "hicma/any.h"
+#include "hicma/node_proxy.h"
 #include "hicma/low_rank.h"
 #include "hicma/hierarchical.h"
 #include "hicma/functions.h"
+#include "hicma/operations.h"
 #include "hicma/gpu_batch/batch.h"
 #include "hicma/util/print.h"
 #include "hicma/util/timer.h"
@@ -9,9 +10,12 @@
 #include <algorithm>
 #include <cmath>
 
+#include "yorel/multi_methods.hpp"
+
 using namespace hicma;
 
 int main(int argc, char** argv) {
+  yorel::multi_methods::initialize();
   int N = 64;
   int Nb = 16;
   int Nc = N / Nb;
@@ -45,7 +49,7 @@ int main(int argc, char** argv) {
     Dense DAsj(HAsj);
     Dense DQsj(DAsj.dim[0], DAsj.dim[1]);
     Dense Rjj(Nb, Nb);
-    DAsj.qr(DQsj, Rjj); //[Q*j, Rjj] = QR(A*j)
+    qr(DAsj, DQsj, Rjj); //[Q*j, Rjj] = QR(A*j)
     R(j, j) = Rjj;
     //Copy Dense Qsj to Hierarchical Q
     Hierarchical HQsj(DQsj, Nc, 1);
@@ -61,9 +65,9 @@ int main(int argc, char** argv) {
       }
       Dense DAsk(HAsk);
       Dense DRjk(Nb, Nb);
-      DRjk.gemm(DQsj, DAsk, CblasTrans, CblasNoTrans, 1, 1); //Rjk = Qsj^T x Ask
+      gemm(DQsj, DAsk, DRjk, CblasTrans, CblasNoTrans, 1, 1); //Rjk = Qsj^T x Ask
       R(j, k) = DRjk;
-      DAsk.gemm(DQsj, DRjk, -1, 1); //A*k = A*k - Q*j x Rjk
+      gemm(DQsj, DRjk, DAsk, -1, 1); //A*k = A*k - Q*j x Rjk
       Hierarchical _HAsk(DAsk, Nc, 1);
       for(int i = 0; i < Nc; i++) {
         A(i, k) = _HAsk(i, 0);
@@ -74,7 +78,7 @@ int main(int argc, char** argv) {
   printTime("-DGEQRF");
   printTime("-DGEMM");
   Dense QR(N, N);
-  QR.gemm(Dense(Q), Dense(R), 1, 1);
+  gemm(Dense(Q), Dense(R), QR, 1, 1);
   double diff = (Dense(_A) - QR).norm();
   double norm = _A.norm();
   print("Accuracy");

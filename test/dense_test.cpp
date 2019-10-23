@@ -21,7 +21,7 @@ TEST(DenseTest, ContructorHierarchical) {
     // Check block-by-block and element-by-element if values match
     for (int ib=0; ib<nblocks; ++ib) {
         for (int jb=0; jb<nblocks; ++jb) {
-            Dense D_compare = H(ib, jb);
+            Dense D_compare = Dense(H(ib, jb));
             for (int i=0; i<nleaf; ++i) {
                 for (int j=0; j<nleaf; ++j) {
                     ASSERT_EQ(D(nleaf*ib+i, nleaf*jb+j), D_compare(i, j));

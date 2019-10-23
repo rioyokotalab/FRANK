@@ -10,27 +10,50 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
+# Import external dependency loading script
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+include(add_external)
+
 add_library(util
     src/util/print.cpp
     src/util/timer.cpp
 )
-target_include_directories(util PUBLIC ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(util
+    PUBLIC ${PROJECT_SOURCE_DIR}/include
+           ${CMAKE_CURRENT_BINARY_DIR}/yomm11-src/include
+)
 
 add_library(gpu_batch
     src/gpu_batch/batch.cpp
 )
-target_include_directories(gpu_batch PUBLIC ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(gpu_batch
+    PUBLIC ${PROJECT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_BINARY_DIR}/yomm11-src/include
+)
 
+add_external_dependency(yomm11)
 add_library(hicma
-    src/any.cpp
     src/node.cpp
+    src/node_proxy.cpp
     src/dense.cpp
     src/low_rank.cpp
     src/hierarchical.cpp
     src/functions.cpp
+    src/operations/getrf.cpp
+    src/operations/trsm.cpp
+    src/operations/gemm.cpp
+    src/operations/tpmqrt.cpp
+    src/operations/tpqrt.cpp
+    src/operations/larfb.cpp
+    src/operations/geqrt.cpp
+    src/operations/qr.cpp
+)
+target_include_directories(hicma
+    PUBLIC ${PROJECT_SOURCE_DIR}/include
+           ${CMAKE_CURRENT_BINARY_DIR}/yomm11-src/include
 )
 target_include_directories(hicma PUBLIC ${PROJECT_SOURCE_DIR}/include)
-target_link_libraries(hicma util gpu_batch)
+target_link_libraries(hicma util gpu_batch yomm11)
 # Flag for MKL Usage
 if(NOT USE_MKL)
     set(USE_MKL OFF)
@@ -46,7 +69,4 @@ unset(USE_MKL CACHE)
 
 # Enable test for googletest
 enable_testing()
-# Import external dependency loading script
-set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-include(add_external)
 add_subdirectory(test)

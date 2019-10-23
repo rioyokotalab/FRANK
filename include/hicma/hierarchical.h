@@ -1,8 +1,11 @@
 #ifndef hierarchical_h
 #define hierarchical_h
-#include "node.h"
+#include "hicma/node.h"
+#include "hicma/node_proxy.h"
 
 #include <vector>
+
+#include "yorel/multi_methods.hpp"
 
 namespace hicma {
 
@@ -11,9 +14,10 @@ namespace hicma {
 
   class Hierarchical : public Node {
   public:
+    MM_CLASS(Hierarchical, Node);
     // NOTE: Take care to add members new members to swap
     int dim[2];
-    std::vector<Any> data;
+    std::vector<NodeProxy> data;
 
     Hierarchical();
 
@@ -57,15 +61,13 @@ namespace hicma {
 
     friend void swap(Hierarchical& A, Hierarchical& B);
 
-    const Any& operator[](const int i) const;
+    const NodeProxy& operator[](const int i) const;
 
-    Any& operator[](const int i);
+    NodeProxy& operator[](const int i);
 
-    const Any& operator()(const int i, const int j) const;
+    const NodeProxy& operator()(const int i, const int j) const;
 
-    Any& operator()(const int i, const int j);
-
-    bool is(const int enum_id) const override;
+    NodeProxy& operator()(const int i, const int j);
 
     const char* type() const override;
 
@@ -75,35 +77,6 @@ namespace hicma {
 
     void transpose() override;
 
-    void getrf() override;
-
-    void trsm(const Dense& A, const char& uplo) override;
-
-    void trsm(const Hierarchical& A, const char& uplo) override;
-
-    void gemm(const Dense& A, const Dense& B, const double& alpha=-1, const double& beta=1) override;
-
-    void gemm(const Dense& A, const LowRank& B, const double& alpha=-1, const double& beta=1) override;
-
-    void gemm(const Dense& A, const Hierarchical& B, const double& alpha=-1, const double& beta=1) override;
-
-    void gemm(const LowRank& A, const Dense& B, const double& alpha=-1, const double& beta=1) override;
-
-    void gemm(const LowRank& A, const LowRank& B, const double& alpha=-1, const double& beta=1) override;
-
-    void gemm(const LowRank& A, const Hierarchical& B, const double& alpha=-1, const double& beta=1) override;
-
-    void gemm(const Hierarchical& A, const Dense& B, const double& alpha=-1, const double& beta=1) override;
-
-    void gemm(const Hierarchical& A, const LowRank& B, const double& alpha=-1, const double& beta=1) override;
-
-    void gemm(const Hierarchical& A, const Hierarchical& B, const double& alpha=-1, const double& beta=1) override;
-
-    void gemm_row(
-                  const Hierarchical& A, const Hierarchical& B,
-                  const int& i, const int& j, const int& k_min, const int& k_max,
-                  const double& alpha, const double& beta);
-
     void blr_col_qr(Hierarchical& Q, Hierarchical& R);
 
     void split_col(Hierarchical& QL);
@@ -111,24 +84,6 @@ namespace hicma {
     void restore_col(const Hierarchical& Sp, const Hierarchical& QL);
 
     void col_qr(const int j, Hierarchical& Q, Hierarchical &R);
-
-    void qr(Hierarchical& Q, Hierarchical& R);
-
-    void geqrt(Hierarchical& T) override;
-
-    void larfb(const Dense& Y, const Dense& T, const bool trans=false) override;
-
-    void larfb(const Hierarchical& Y, const Hierarchical& T, const bool trans=false) override;
-
-    void tpqrt(Dense& A, Dense& T) override;
-
-    void tpqrt(Hierarchical& A, Hierarchical& T) override;
-
-    void tpmqrt(Dense& B, const Dense& Y, const Dense& T, const bool trans=false) override;
-
-    void tpmqrt(Dense& B, const Hierarchical& Y, const Hierarchical& T, const bool trans=false) override;
-
-    void tpmqrt(Hierarchical& B, const Hierarchical& Y, const Hierarchical& T, const bool trans=false) override;
 
   };
 }

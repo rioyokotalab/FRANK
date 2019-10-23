@@ -1,4 +1,4 @@
-#include "hicma/any.h"
+#include "hicma/node_proxy.h"
 #include "hicma/low_rank.h"
 #include "hicma/gpu_batch/batch.h"
 #include "hicma/util/timer.h"
@@ -18,9 +18,9 @@ namespace hicma {
   std::vector<Dense> vecA;
   std::vector<Dense> vecB;
   std::vector<Dense*> vecC;
-  std::vector<Any*> vecLR;
+  std::vector<NodeProxy*> vecLR;
 
-  void rsvd_push(Any& A, Dense& Aij, int rank) {
+  void rsvd_push(NodeProxy& A, Dense& Aij, int rank) {
     vecA.push_back(Aij);
     vecLR.push_back(&A);
   }

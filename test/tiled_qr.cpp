@@ -1,7 +1,8 @@
-#include "hicma/any.h"
+#include "hicma/node_proxy.h"
 #include "hicma/low_rank.h"
 #include "hicma/hierarchical.h"
 #include "hicma/functions.h"
+#include "hicma/operations.h"
 #include "hicma/gpu_batch/batch.h"
 #include "hicma/util/print.h"
 #include "hicma/util/timer.h"
@@ -10,9 +11,12 @@
 #include <cmath>
 #include <iostream>
 
+#include "yorel/multi_methods.hpp"
+
 using namespace hicma;
 
 int main(int argc, char** argv) {
+  yorel::multi_methods::initialize();
   int N = 256;
   int Nb = 32;
   int Nc = N / Nb;
@@ -37,14 +41,14 @@ int main(int argc, char** argv) {
   Hierarchical ACpy(A);
   start("QR decomposition");
   for(int k = 0; k < Nc; k++) {
-    A(k, k).geqrt(T(k, k));
+    geqrt(A(k, k), T(k, k));
     for(int j = k+1; j < Nc; j++) {
-      A(k, j).larfb(A(k, k), T(k, k), true);
+      larfb(A(k, k), T(k, k), A(k, j), true);
     }
     for(int i = k+1; i < Nc; i++) {
-      A(i, k).tpqrt(A(k, k), T(i, k));
+      tpqrt(A(k, k), A(i, k), T(i, k));
       for(int j = k+1; j < Nc; j++) {
-        A(i, j).tpmqrt(A(k, j), A(i, k), T(i, k), true);
+        tpmqrt(A(i, k), T(i, k), A(k, j), A(i, j), true);
       }
     }
   }
@@ -62,11 +66,11 @@ int main(int argc, char** argv) {
   for(int k = Nc-1; k >= 0; k--) {
     for(int i = Nc-1; i > k; i--) {
       for(int j = k; j < Nc; j++) {
-        Q(i, j).tpmqrt(Q(k, j), A(i, k), T(i, k), false);
+        tpmqrt(A(i, k), T(i, k), Q(k, j), Q(i, j), false);
       }
     }
     for(int j = k; j < Nc; j++) {
-      Q(k, j).larfb(A(k, k), T(k, k), false);
+      larfb(A(k, k), T(k, k), Q(k, j), false);
     }
   }
   // print("A after");
@@ -75,13 +79,13 @@ int main(int argc, char** argv) {
   // print("R");
   // DR.print();
   Dense QR(N, N);
-  QR.gemm(DQ, DR, 1, 0);
+  gemm(DQ, DR, QR, 1, 0);
   diff = (Dense(ACpy) - QR).norm();
   norm = ACpy.norm();
   print("Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
   Dense QtQ(N, N);
-  QtQ.gemm(DQ, DQ, CblasTrans, CblasNoTrans, 1, 0);
+  gemm(DQ, DQ, QtQ, CblasTrans, CblasNoTrans, 1, 0);
   diff = (QtQ - Id).norm();
   norm = Id.norm();
   print("Orthogonality of Q");

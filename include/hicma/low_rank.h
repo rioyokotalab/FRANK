@@ -1,11 +1,16 @@
 #ifndef low_rank_h
 #define low_rank_h
-#include "dense.h"
+
+#include "hicma/node_proxy.h"
+#include "hicma/dense.h"
+
+#include "yorel/multi_methods.hpp"
 
 namespace hicma {
 
   class LowRank : public Node {
   public:
+    MM_CLASS(LowRank, Node);
     // NOTE: Take care to add members new members to swap
     Dense U, S, V;
     int dim[2];
@@ -27,8 +32,6 @@ namespace hicma {
 
     LowRank(LowRank&& A);
 
-    LowRank(const Any& _A, const int k=1);
-
     LowRank* clone() const override;
 
     friend void swap(LowRank& A, LowRank& B);
@@ -36,8 +39,6 @@ namespace hicma {
     const LowRank& operator=(LowRank A);
 
     const LowRank& operator+=(const LowRank& A);
-
-    bool is(const int enum_id) const override;
 
     const char* type() const override;
 
@@ -52,40 +53,6 @@ namespace hicma {
     void mergeS(const LowRank& A, const LowRank& B);
 
     void mergeV(const LowRank& A, const LowRank& B);
-
-    void trsm(const Dense& A, const char& uplo) override;
-
-    void trsm(const Hierarchical& A, const char& uplo) override;
-
-    void gemm(const Dense& A, const Dense& B, const double& alpha=-1, const double& beta=1) override;
-
-    void gemm(const Dense& A, const LowRank& B, const double& alpha=-1, const double& beta=1) override;
-
-    void gemm(const Dense& A, const Hierarchical& B, const double& alpha=-1, const double& beta=1) override;
-
-    void gemm(const LowRank& A, const Dense& B, const double& alpha=-1, const double& beta=1) override;
-
-    void gemm(const LowRank& A, const LowRank& B, const double& alpha=-1, const double& beta=1) override;
-
-    void gemm(const LowRank& A, const Hierarchical& B, const double& alpha=-1, const double& beta=1) override;
-
-    void gemm(const Hierarchical& A, const Dense& B, const double& alpha=-1, const double& beta=1) override;
-
-    void gemm(const Hierarchical& A, const LowRank& B, const double& alpha=-1, const double& beta=1) override;
-
-    void gemm(const Hierarchical& A, const Hierarchical& B, const double& alpha=-1, const double& beta=1) override;
-
-    void larfb(const Dense& Y, const Dense& T, const bool trans=false) override;
-
-    void tpqrt(Dense& A, Dense& T) override;
-
-    void tpmqrt(Dense& B, const Dense& Y, const Dense& T, const bool trans=false) override;
-
-    void tpmqrt(Dense& B, const LowRank& Y, const Dense& T, const bool trans=false) override;
-
-    void tpmqrt(LowRank& B, const Dense& Y, const Dense& T, const bool trans=false) override;
-
-    void tpmqrt(LowRank& B, const LowRank& Y, const Dense& T, const bool trans=false) override;
 
   };
 }

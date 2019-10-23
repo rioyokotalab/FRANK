@@ -1,13 +1,16 @@
 #ifndef print_h
 #define print_h
 #include "hicma/util/print.h"
-#include "hicma/any.h"
+#include "hicma/node_proxy.h"
 #include "hicma/low_rank.h"
 #include "hicma/hierarchical.h"
 
 #include <iostream>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
+namespace pt = boost::property_tree;
+#include "yorel/multi_methods.hpp"
+using yorel::multi_methods::virtual_;
 
 namespace hicma {
 
@@ -15,51 +18,72 @@ namespace hicma {
   static const int stringLength = 24; //!< Length of formatted string
   static const int decimal = 7; //!< Decimal precision
 
-  void fillXML(const Any& _A, boost::property_tree::ptree& tree) {
-    namespace pt = boost::property_tree;
-    if (_A.is(HICMA_HIERARCHICAL)) {
-      const Hierarchical& A = static_cast<const Hierarchical&>(*_A.ptr);
-      for (int i=0; i<A.dim[0]; i++) {
-        for (int j=0; j<A.dim[1]; j++) {
-          pt::ptree el_subtree;
-          fillXML(A(i, j), el_subtree);
-          std::string el_name = "i" + std::to_string(i) + "j" + std::to_string(j);
-          tree.add_child(el_name, el_subtree);
-          tree.put(el_name + ".<xmlattr>.type", A(i, j).type());
-        }
-      }
-      tree.put("<xmlattr>.type", A.type());
-      tree.put("<xmlattr>.dim0", A.dim[0]);
-      tree.put("<xmlattr>.dim1", A.dim[1]);
-    } else if (_A.is(HICMA_LOWRANK)) {
-      const LowRank& A = static_cast<const LowRank&>(*_A.ptr);
-      Dense S(A.dim[0],1);
-      Dense(A).svd(S);
-      std::string singular_values = std::to_string(S[0]);
-      for (int i=1; i<A.dim[0]; ++i)
-        singular_values += std::string(",") + std::to_string(S[i]);
-      tree.put("<xmlattr>.type", A.type());
-      tree.put("<xmlattr>.dim0", A.dim[0]);
-      tree.put("<xmlattr>.dim1", A.dim[1]);
-      tree.put("<xmlattr>.rank", A.rank);
-      tree.put("<xmlattr>.svalues", singular_values);
-    } else if (_A.is(HICMA_DENSE)) {
-      const Dense& A = static_cast<const Dense&>(*_A.ptr);
-      Dense S(A.dim[0],1);
-      Dense(A).svd(S);
-      std::string singular_values = std::to_string(S[0]);
-      for (int i=1; i<A.dim[0]; ++i)
-        singular_values += std::string(",") + std::to_string(S[i]);
-      tree.put("<xmlattr>.type", A.type());
-      tree.put("<xmlattr>.dim0", A.dim[0]);
-      tree.put("<xmlattr>.dim1", A.dim[1]);
-      tree.put("<xmlattr>.svalues", singular_values);
-    } else {
-      tree.add("Node", "test");
-    }
+  MULTI_METHOD(
+    fillXML_omm, void,
+    const virtual_<Node>&, boost::property_tree::ptree& tree
+  );
+
+  void fillXML(const NodeProxy& A, boost::property_tree::ptree& tree) {
+    fillXML_omm(*A.ptr, tree);
   }
 
-  void printXML(const Any& A) {
+  BEGIN_SPECIALIZATION(
+    fillXML_omm, void,
+    const Hierarchical& A, boost::property_tree::ptree& tree
+  ) {
+    for (int i=0; i<A.dim[0]; i++) {
+      for (int j=0; j<A.dim[1]; j++) {
+        pt::ptree el_subtree{};
+        fillXML(A(i, j), el_subtree);
+        std::string el_name = "i" + std::to_string(i) + "j" + std::to_string(j);
+        tree.add_child(el_name, el_subtree);
+        tree.put(el_name + ".<xmlattr>.type", A(i, j).type());
+      }
+    }
+    tree.put("<xmlattr>.type", A.type());
+    tree.put("<xmlattr>.dim0", A.dim[0]);
+    tree.put("<xmlattr>.dim1", A.dim[1]);
+  } END_SPECIALIZATION;
+
+  BEGIN_SPECIALIZATION(
+    fillXML_omm, void,
+    const LowRank& A, boost::property_tree::ptree& tree
+  ) {
+    Dense S(A.dim[0],1);
+    Dense(A).svd(S);
+    std::string singular_values = std::to_string(S[0]);
+    for (int i=1; i<A.dim[0]; ++i)
+      singular_values += std::string(",") + std::to_string(S[i]);
+    tree.put("<xmlattr>.type", A.type());
+    tree.put("<xmlattr>.dim0", A.dim[0]);
+    tree.put("<xmlattr>.dim1", A.dim[1]);
+    tree.put("<xmlattr>.rank", A.rank);
+    tree.put("<xmlattr>.svalues", singular_values);
+  } END_SPECIALIZATION;
+
+  BEGIN_SPECIALIZATION(
+    fillXML_omm, void,
+    const Dense& A, boost::property_tree::ptree& tree
+  ) {
+    Dense S(A.dim[0],1);
+    Dense(A).svd(S);
+    std::string singular_values = std::to_string(S[0]);
+    for (int i=1; i<A.dim[0]; ++i)
+      singular_values += std::string(",") + std::to_string(S[i]);
+    tree.put("<xmlattr>.type", A.type());
+    tree.put("<xmlattr>.dim0", A.dim[0]);
+    tree.put("<xmlattr>.dim1", A.dim[1]);
+    tree.put("<xmlattr>.svalues", singular_values);
+  } END_SPECIALIZATION;
+
+  BEGIN_SPECIALIZATION(
+    fillXML_omm, void,
+    const Node& A, boost::property_tree::ptree& tree
+  ) {
+    std::cerr << "WARNING: XML output not defined for " << A.type() << "!" << std::endl;
+  } END_SPECIALIZATION;
+
+  void printXML(const NodeProxy& A) {
     namespace pt = boost::property_tree;
     pt::ptree tree;
     // Write any header info you want here, like a time stamp
@@ -95,16 +119,5 @@ namespace hicma {
   template void print<float>(std::string s, float v, bool fixed=true);
   template void print<double>(std::string s, double v, bool fixed=true);
 
-  void print_undefined(std::string func, std::string A_type, std::string B_type, std::string C_type, std::string D_type) {
-    std::cerr << D_type << "." << func << "(" << A_type << "," << B_type <<"," <<C_type << ") undefined." << std::endl;
-  }
-
-  void print_undefined(std::string func, std::string A_type, std::string B_type, std::string C_type) {
-    std::cerr << C_type << "." << func << "(" << A_type << "," << B_type << ") undefined." << std::endl;
-  }
-
-  void print_undefined(std::string func, std::string A_type, std::string B_type) {
-    std::cerr << B_type << "." << func << "(" << A_type << ") undefined." << std::endl;
-  }
 }
 #endif

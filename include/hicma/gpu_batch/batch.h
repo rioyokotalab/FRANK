@@ -5,17 +5,17 @@
 
 namespace hicma {
 
-  class Any;
+  class NodeProxy;
   class Dense;
 
   extern std::vector<Dense> vecA;
   extern std::vector<Dense> vecB;
   extern std::vector<Dense*> vecC;
-  extern std::vector<Any*> vecLR;
+  extern std::vector<NodeProxy*> vecLR;
 
-  void rsvd_push(Any& A, Dense& Aij, int rank);
+  void rsvd_push(NodeProxy& A, Dense& Aij, int rank);
 
-  void gemm_push(const Dense& A, const Dense& B, Dense* C);
+  void gemm_push(const Dense& A, const Dense& B, Dense& C);
 
   void rsvd_batch();
 

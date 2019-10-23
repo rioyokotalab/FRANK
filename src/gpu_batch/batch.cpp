@@ -1,20 +1,22 @@
-#include "hicma/any.h"
+#include "hicma/node_proxy.h"
 #include "hicma/low_rank.h"
 #include "hicma/gpu_batch/batch.h"
+
+#include "hicma/operations.h"
 
 namespace hicma {
 
   std::vector<Dense> vecA;
   std::vector<Dense> vecB;
   std::vector<Dense*> vecC;
-  std::vector<Any*> vecLR;
+  std::vector<NodeProxy*> vecLR;
 
-  void rsvd_push(Any& A, Dense& Aij, int rank) {
+  void rsvd_push(NodeProxy& A, Dense& Aij, int rank) {
     A = LowRank(Aij, rank);
   }
 
-  void gemm_push(const Dense& A, const Dense& B, Dense* C) {
-    C->gemm(A, B, CblasNoTrans, CblasNoTrans, 1, 1);
+  void gemm_push(const Dense& A, const Dense& B, Dense& C) {
+    gemm(A, B, C, CblasNoTrans, CblasNoTrans, 1, 1);
   }
 
   void rsvd_batch() {}
