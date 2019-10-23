@@ -18,11 +18,6 @@
 namespace hicma
 {
 
-MULTI_METHOD(
-  getrf_omm, void,
-  virtual_<Node>&
-);
-
 void getrf(NodeProxy& A) {
   getrf_omm(*A.ptr.get());
 }

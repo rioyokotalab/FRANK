@@ -16,14 +16,6 @@
 namespace hicma
 {
 
-MULTI_METHOD(
-  larfb_omm, void,
-  const virtual_<Node>&,
-  const virtual_<Node>&,
-  virtual_<Node>&,
-  const bool
-);
-
 void larfb(
   const NodeProxy& V, const NodeProxy& T, NodeProxy& C,
   const bool trans
