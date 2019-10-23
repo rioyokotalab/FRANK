@@ -6,6 +6,7 @@
 #include "hicma/hierarchical.h"
 #include "hicma/util/timer.h"
 
+#include <cassert>
 #include <iostream>
 
 #include "yorel/multi_methods.hpp"
