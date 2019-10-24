@@ -25,81 +25,36 @@
 namespace hicma
 {
 
-enum {
-  SPLIT_HORIZONTALLY,
-  SPLIT_VERTICALLY,
-  SPLIT_BOTH
-};
-
-Hierarchical split(const Dense& A, const std::vector<int> dim, const int type) {
-  Hierarchical H(
-    type == SPLIT_HORIZONTALLY || type == SPLIT_BOTH ? 2 : 1,
-    type == SPLIT_VERTICALLY || type == SPLIT_BOTH ? 2 : 1
-  );
-  if (type == SPLIT_HORIZONTALLY) {
-    assert(dim.size() == 1);
-    Dense left(A.dim[0], dim[0]), right(A.dim[0], A.dim[1]-dim[0]);
-    for (int i=0; i<left.dim[0]; ++i) {
-      for (int j = 0; j < left.dim[1]; ++j) {
-        left(i, j) = A(i, j);
-      }
+Hierarchical split(const Dense& A, int split_row, int split_col) {
+  Hierarchical H(2, 2);
+  Dense top_left(split_row, split_col);
+  for (int i=0; i<top_left.dim[0]; ++i) {
+    for (int j = 0; j < top_left.dim[1]; ++j) {
+      top_left(i, j) = A(i, j);
     }
-    H[0] = left;
-    for (int i=0; i<right.dim[0]; ++i) {
-      for (int j = 0; j < right.dim[1]; ++j) {
-        right(i, j) = A(i, dim[0]+j);
-      }
-    }
-    H[1] = right;
-  } else if (type == SPLIT_VERTICALLY) {
-    assert(dim.size() == 1);
-    Dense top(dim[0], A.dim[1]), bottom(A.dim[0]-dim[0], A.dim[1]);
-    for (int i=0; i<top.dim[0]; ++i) {
-      for (int j = 0; j < top.dim[1]; ++j) {
-        top(i, j) = A(i, j);
-      }
-    }
-    H[0] = top;
-    for (int i=0; i<bottom.dim[0]; ++i) {
-      for (int j = 0; j < bottom.dim[1]; ++j) {
-        bottom(i, j) = A(dim[0]+i, j);
-      }
-    }
-    H[1] = bottom;
-  } else if (type == SPLIT_BOTH) {
-    assert(dim.size() == 2);
-    Dense top_left(dim[0], dim[1]);
-    Dense top_right(dim[0], A.dim[1]-dim[1]);
-    Dense bottom_left(A.dim[0]-dim[0], dim[1]);
-    Dense bottom_right(A.dim[0]-dim[0], A.dim[1]-dim[1]);
-    for (int i=0; i<top_left.dim[0]; ++i) {
-      for (int j = 0; j < top_left.dim[1]; ++j) {
-        top_left(i, j) = A(i, j);
-      }
-    }
-    H(0, 0) = top_left;
-    for (int i=0; i<top_right.dim[0]; ++i) {
-      for (int j = 0; j < top_right.dim[1]; ++j) {
-        top_right(i, j) = A(i, dim[1]+j);
-      }
-    }
-    H(0, 1) = top_right;
-    for (int i=0; i<bottom_left.dim[0]; ++i) {
-      for (int j = 0; j < bottom_left.dim[1]; ++j) {
-        bottom_left(i, j) = A(dim[0]+i, j);
-      }
-    }
-    H(1, 0) = bottom_left;
-    for (int i=0; i<bottom_right.dim[0]; ++i) {
-      for (int j = 0; j < bottom_right.dim[1]; ++j) {
-        bottom_right(i, j) = A(dim[0]+i, dim[1]+j);
-      }
-    }
-    H(1, 1) = bottom_right;
-  } else {
-    std::cerr << "Wrong type specified for split!" << std::endl;
-    throw;
   }
+  H(0, 0) = top_left;
+  Dense top_right(split_row, A.dim[1]-split_col);
+  for (int i=0; i<top_right.dim[0]; ++i) {
+    for (int j = 0; j < top_right.dim[1]; ++j) {
+      top_right(i, j) = A(i, split_col+j);
+    }
+  }
+  H(0, 1) = top_right;
+  Dense bottom_left(A.dim[0]-split_row, split_col);
+  for (int i=0; i<bottom_left.dim[0]; ++i) {
+    for (int j = 0; j < bottom_left.dim[1]; ++j) {
+      bottom_left(i, j) = A(split_row+i, j);
+    }
+  }
+  H(1, 0) = bottom_left;
+  Dense bottom_right(A.dim[0]-split_row, A.dim[1]-split_col);
+  for (int i=0; i<bottom_right.dim[0]; ++i) {
+    for (int j = 0; j < bottom_right.dim[1]; ++j) {
+      bottom_right(i, j) = A(split_row+i, split_col+j);
+    }
+  }
+  H(1, 1) = bottom_right;
   return H;
 }
 
@@ -160,7 +115,7 @@ BEGIN_SPECIALIZATION(
   std::vector<int> P = qrp(A, Q, R);
   if (k < std::max(A.dim[0], A.dim[1])) {
     // The split is inefficient! Full copy, only part needed. Move?
-    Hierarchical RH = split(R, {k, k}, SPLIT_BOTH);
+    Hierarchical RH = split(R, k, k);
     Dense& T = static_cast<Dense&>(*RH(0, 1).ptr);
     Dense& R11 = static_cast<Dense&>(*RH(0, 0).ptr);
     cblas_dtrsm(
