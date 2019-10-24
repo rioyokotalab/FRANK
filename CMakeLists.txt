@@ -42,18 +42,19 @@ add_library(hicma
     src/hierarchical.cpp
     src/uniform_hierarchical.cpp
     src/functions.cpp
-    src/operations/getrf.cpp
-    src/operations/trmm.cpp
-    src/operations/trsm.cpp
     src/operations/gemm.cpp
+    src/operations/geqrt.cpp
+    src/operations/getrf.cpp
+    src/operations/get_dim.cpp
+    src/operations/id.cpp
+    src/operations/larfb.cpp
+    src/operations/latms.cpp
+    src/operations/misc.cpp
+    src/operations/qr.cpp
     src/operations/tpmqrt.cpp
     src/operations/tpqrt.cpp
-    src/operations/larfb.cpp
-    src/operations/geqrt.cpp
-    src/operations/latms.cpp
-    src/operations/qr.cpp
-    src/operations/get_dim.cpp
-    src/operations/misc.cpp
+    src/operations/trmm.cpp
+    src/operations/trsm.cpp
 )
 
 # Custom compilation options
@@ -83,7 +84,7 @@ if(USE_MKL)
     target_compile_definitions(hicma PUBLIC -DUSE_MKL)
     target_link_libraries(hicma mkl_intel_lp64 mkl_intel_thread mkl_core iomp5 pthread)
 else()
-    target_link_libraries(hicma blas lapacke)
+    target_link_libraries(hicma cblas lapacke)
 endif(USE_MKL)
 unset(USE_MKL CACHE)
 

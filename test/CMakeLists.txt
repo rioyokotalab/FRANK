@@ -5,13 +5,9 @@ add_executable(dense_test dense_test.cpp)
 target_link_libraries(dense_test gtest_main hicma)
 add_test(NAME dense_test COMMAND dense_test)
 
-# add_executable(low_rank_test low_rank_test.cpp)
-# target_link_libraries(low_rank_test gtest_main hicma)
-# add_test(NAME low_rank_test COMMAND low_rank_test)
-
-# add_executable(hierarchical_test hierarchical_test.cpp)
-# target_link_libraries(hierarchical_test gtest_main hicma)
-# add_test(NAME hierarchical_test COMMAND hierarchical_test)
+add_executable(id_test id_test.cpp)
+target_link_libraries(id_test gtest_main hicma)
+add_test(NAME id_test COMMAND id_test)
 
 # Legacy execution files
 add_executable(lr_add lr_add.cpp)
