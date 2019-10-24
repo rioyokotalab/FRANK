@@ -6,7 +6,7 @@
 #include "hicma/low_rank.h"
 #include "hicma/low_rank_shared.h"
 #include "hicma/hierarchical.h"
-#include "hicma/operations/gemm.h"
+#include "hicma/operations/id.h"
 
 #include <algorithm>
 #include <cassert>
@@ -55,6 +55,8 @@ UniformHierarchical::UniformHierarchical(
   }
   col_basis.resize(dim[0]);
   row_basis.resize(dim[1]);
+  std::vector<std::vector<int>> selected_rows(dim[0]);
+  std::vector<std::vector<int>> selected_cols(dim[1]);
   for (int i=0; i<dim[0]; i++) {
     for (int j=0; j<dim[1]; j++) {
       int ni_child = ni/dim[0];
@@ -95,44 +97,44 @@ UniformHierarchical::UniformHierarchical(
       }
       else {
         if (col_basis[i].get() == nullptr) {
-          // Take entire row block of matrix (slim and wide)
-          Dense row_block(
-            func,
-            x,
-            ni_child, nj_child*(std::pow(nj_level, level+1)),
-            i_begin_child, 0
-          );
-          // Split into parts
-          Hierarchical row_block_h(row_block, 1, std::pow(nj_level, level+1));
-          // Set part covered by dense blocks to 0
-          for (int j_b=0; j_b<std::pow(nj_level, level+1); ++j_b) {
-            // if (std::abs(j_b - i_abs_child) <= admis)
-            //   static_cast<Dense&>(*row_block_h[j_b].ptr) = 0.0;
+          // Create row block without admissible blocks
+          Hierarchical row_block_h(1, std::pow(nj_level, level+1)-1-2*admis);
+          // Note the ins counter!
+          for (int j_b=0, ins=0; j_b<std::pow(nj_level, level+1); ++j_b) {
+            if (std::abs(j_b - i_abs_child) > admis)
+              row_block_h[ins++] = Dense(
+                func,
+                x,
+                ni_child, nj_child,
+                i_begin_child, nj_child*j_b
+              );
           }
-          // Reconvert to dense and get U of top row
-          // Likely not efficient either!
-          col_basis[i] = std::make_shared<Dense>(
-            LowRank(Dense(row_block_h), rank).U);
+          Dense row_block(row_block_h);
+          // Construct U using the ID and remember the selected rows
+          Dense Ut(rank, ni_child);
+          row_block.transpose();
+          selected_rows[i] = id(row_block, Ut, rank);
+          Ut.transpose();
+          col_basis[i] = std::make_shared<Dense>(std::move(Ut));
         }
         if (row_basis[j].get() == nullptr) {
-          // Take entire column block of matrix (tall and slim)
-          Dense col_block(
-            func,
-            x,
-            ni_child*std::pow(ni_level, level+1), nj_child,
-            0, j_begin_child
-          );
-          // Split into parts
-          Hierarchical col_block_h(col_block, std::pow(ni_level, level+1), 1);
-          // Set part covered by (*this)(0, 0) to 0
-          for (int i_b=0; i_b<std::pow(ni_level, level+1); ++i_b) {
-            // if (std::abs(i_b - j_abs_child) <= admis)
-            //   static_cast<Dense&>(*col_block_h[i_b].ptr) = 0.0;
+          // Create col block without admissible blocks
+          Hierarchical col_block_h(std::pow(ni_level, level+1)-1-2*admis, 1);
+          // Note the ins counter!
+          for (int i_b=0, ins=0; i_b<std::pow(ni_level, level+1); ++i_b) {
+            if (std::abs(i_b - j_abs_child) > admis)
+              col_block_h[ins++] = Dense(
+                func,
+                x,
+                ni_child, nj_child,
+                ni_child*i_b, j_begin_child
+              );
           }
-          // Reconvert to dense and get V of right col
-          // Likely not efficient either!
-          row_basis[j] = std::make_shared<Dense>(
-            LowRank(Dense(col_block_h), rank).V);
+          Dense col_block(col_block_h);\
+          // Construct V using the ID and remember the selected cols
+          Dense V(rank, nj_child);
+          selected_cols[j] = id(col_block, V, rank);
+          row_basis[j] = std::make_shared<Dense>(std::move(V));
         }
         Dense D(
           func,
@@ -140,10 +142,12 @@ UniformHierarchical::UniformHierarchical(
           ni_child, nj_child,
           i_begin_child, j_begin_child
         );
-        Dense UtxD(rank, rank);
-        gemm(*col_basis[i], D, UtxD, CblasTrans, CblasNoTrans, 1, 0);
-        Dense S(rank, rank, i_abs_child, j_abs_child, level+1);
-        gemm(UtxD, *row_basis[j], S, CblasNoTrans, CblasTrans, 1, 0);
+        Dense S(rank, rank);
+        for (int ic=0; ic<rank; ++ic) {
+          for (int jc=0; jc<rank; ++jc) {
+            S(ic, jc) = D(selected_rows[i][ic], selected_cols[j][jc]);
+          }
+        }
         (*this)(i, j) = LowRankShared(
           S,
           col_basis[i], row_basis[j]
