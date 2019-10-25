@@ -7,9 +7,9 @@ namespace hicma {
   class Node;
 
   class NodeProxy {
-  public:
+  private:
     std::unique_ptr<Node> ptr;
-
+  public:
     NodeProxy();
 
     NodeProxy(const NodeProxy& A);
@@ -17,6 +17,14 @@ namespace hicma {
     NodeProxy(const Node& A);
 
     ~NodeProxy();
+
+    const Node* operator->() const;
+
+    Node* operator->();
+
+    operator const Node& () const;
+
+    operator Node& ();
 
     friend void swap(NodeProxy&, NodeProxy&);
 

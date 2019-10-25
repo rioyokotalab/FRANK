@@ -1,9 +1,6 @@
 #ifndef operations_gemm_h
 #define operations_gemm_h
 
-#include "hicma/node_proxy.h"
-#include "hicma/node.h"
-
 #ifdef USE_MKL
 #include <mkl.h>
 #else
@@ -15,13 +12,8 @@ using yorel::multi_methods::virtual_;
 namespace hicma
 {
 
-void gemm(const NodeProxy&, const NodeProxy&, NodeProxy&, const double, const double);
-void gemm(const NodeProxy&, const NodeProxy&, Node&, const double, const double);
-void gemm(const NodeProxy&, const Node&, NodeProxy&, const double, const double);
-void gemm(const NodeProxy&, const Node&, Node&, const double, const double);
-void gemm(const Node&, const NodeProxy&, NodeProxy&, const double, const double);
-void gemm(const Node&, const NodeProxy&, Node&, const double, const double);
-void gemm(const Node&, const Node&, NodeProxy&, const double, const double);
+class Node;
+class Dense;
 
 void gemm(const Node&, const Node&, Node&, const double, const double);
 

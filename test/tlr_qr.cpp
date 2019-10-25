@@ -1,4 +1,3 @@
-#include "hicma/node_proxy.h"
 #include "hicma/low_rank.h"
 #include "hicma/hierarchical.h"
 #include "hicma/functions.h"

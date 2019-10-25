@@ -1,13 +1,13 @@
 #include "hicma/operations/tpqrt.h"
 
 #include "hicma/node.h"
-#include "hicma/node_proxy.h"
 #include "hicma/dense.h"
 #include "hicma/low_rank.h"
 #include "hicma/hierarchical.h"
 #include "hicma/operations/gemm.h"
 #include "hicma/operations/tpmqrt.h"
 
+#include <algorithm>
 #include <iostream>
 
 #ifdef USE_MKL
@@ -19,42 +19,6 @@
 
 namespace hicma
 {
-
-void tpqrt(
-  NodeProxy& A, NodeProxy& B, NodeProxy& T
-) {
-  tpqrt(*A.ptr, *B.ptr, *T.ptr);
-}
-void tpqrt(
-  NodeProxy& A, NodeProxy& B, Node& T
-) {
-  tpqrt(*A.ptr, *B.ptr, T);
-}
-void tpqrt(
-  NodeProxy& A, Node& B, NodeProxy& T
-) {
-  tpqrt(*A.ptr, B, *T.ptr);
-}
-void tpqrt(
-  NodeProxy& A, Node& B, Node& T
-) {
-  tpqrt(*A.ptr, B, T);
-}
-void tpqrt(
-  Node& A, NodeProxy& B, NodeProxy& T
-) {
-  tpqrt(A, *B.ptr, *T.ptr);
-}
-void tpqrt(
-  Node& A, NodeProxy& B, Node& T
-) {
-  tpqrt(A, *B.ptr, T);
-}
-void tpqrt(
-  Node& A, Node& B, NodeProxy& T
-) {
-  tpqrt(A, B, *T.ptr);
-}
 
 void tpqrt(
   Node& A, Node& B, Node& T

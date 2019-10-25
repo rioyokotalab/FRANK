@@ -1,5 +1,6 @@
 #include "hicma/operations/larfb.h"
 
+#include "hicma/node.h"
 #include "hicma/dense.h"
 #include "hicma/low_rank.h"
 #include "hicma/hierarchical.h"
@@ -15,49 +16,6 @@
 
 namespace hicma
 {
-
-void larfb(
-  const NodeProxy& V, const NodeProxy& T, NodeProxy& C,
-  const bool trans
-) {
-  larfb(*V.ptr, *T.ptr, *C.ptr, trans);
-}
-void larfb(
-  const NodeProxy& V, const NodeProxy& T, Node& C,
-  const bool trans
-) {
-  larfb(*V.ptr, *T.ptr, C, trans);
-}
-void larfb(
-  const NodeProxy& V, const Node& T, NodeProxy& C,
-  const bool trans
-) {
-  larfb(*V.ptr, T, *C.ptr, trans);
-}
-void larfb(
-  const NodeProxy& V, const Node& T, Node& C,
-  const bool trans
-) {
-  larfb(*V.ptr, T, C, trans);
-}
-void larfb(
-  const Node& V, const NodeProxy& T, NodeProxy& C,
-  const bool trans
-) {
-  larfb(V, *T.ptr, *C.ptr, trans);
-}
-void larfb(
-  const Node& V, const NodeProxy& T, Node& C,
-  const bool trans
-) {
-  larfb(V, *T.ptr, C, trans);
-}
-void larfb(
-  const Node& V, const Node& T, NodeProxy& C,
-  const bool trans
-) {
-  larfb(V, T, *C.ptr, trans);
-}
 
 void larfb(
   const Node& V, const Node& T, Node& C,

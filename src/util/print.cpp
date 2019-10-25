@@ -1,7 +1,7 @@
 #ifndef print_h
 #define print_h
 #include "hicma/util/print.h"
-#include "hicma/node_proxy.h"
+#include "hicma/node.h"
 #include "hicma/low_rank.h"
 #include "hicma/hierarchical.h"
 
@@ -23,8 +23,8 @@ namespace hicma {
     const virtual_<Node>&, boost::property_tree::ptree& tree
   );
 
-  void fillXML(const NodeProxy& A, boost::property_tree::ptree& tree) {
-    fillXML_omm(*A.ptr, tree);
+  void fillXML(const Node& A, boost::property_tree::ptree& tree) {
+    fillXML_omm(A, tree);
   }
 
   BEGIN_SPECIALIZATION(
@@ -83,7 +83,7 @@ namespace hicma {
     std::cerr << "WARNING: XML output not defined for " << A.type() << "!" << std::endl;
   } END_SPECIALIZATION;
 
-  void printXML(const NodeProxy& A) {
+  void printXML(const Node& A) {
     namespace pt = boost::property_tree;
     pt::ptree tree;
     // Write any header info you want here, like a time stamp

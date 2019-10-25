@@ -15,6 +15,18 @@ namespace hicma {
 
   NodeProxy::~NodeProxy() = default;
 
+  const Node* NodeProxy::operator->() const {
+    return ptr.get();
+  }
+
+  Node* NodeProxy::operator->() {
+    return ptr.get();
+  }
+
+  NodeProxy::operator const Node& () const { return *ptr; }
+
+  NodeProxy::operator Node& () { return *ptr; }
+
   void swap(NodeProxy& A, NodeProxy& B){
     A.ptr.swap(B.ptr);
   }

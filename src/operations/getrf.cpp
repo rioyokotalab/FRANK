@@ -1,5 +1,6 @@
 #include "hicma/operations/getrf.h"
 
+#include "hicma/node.h"
 #include "hicma/dense.h"
 #include "hicma/hierarchical.h"
 #include "hicma/operations/trsm.h"
@@ -17,10 +18,6 @@
 
 namespace hicma
 {
-
-void getrf(NodeProxy& A) {
-  getrf_omm(*A.ptr.get());
-}
 
 void getrf(Node& A) {
   getrf_omm(A);

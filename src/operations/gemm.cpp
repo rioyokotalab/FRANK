@@ -1,7 +1,6 @@
 #include "hicma/operations/gemm.h"
 
 #include "hicma/node.h"
-#include "hicma/node_proxy.h"
 #include "hicma/dense.h"
 #include "hicma/low_rank.h"
 #include "hicma/hierarchical.h"
@@ -20,49 +19,6 @@
 
 namespace hicma
 {
-
-void gemm(
-  const NodeProxy& A, const NodeProxy& B, NodeProxy& C,
-  const double alpha, const double beta
-) {
-  gemm(*A.ptr.get(), *B.ptr.get(), *C.ptr.get(), alpha, beta);
-}
-void gemm(
-  const NodeProxy& A, const NodeProxy& B, Node& C,
-  const double alpha, const double beta
-) {
-  gemm(*A.ptr.get(), *B.ptr.get(), C, alpha, beta);
-}
-void gemm(
-  const NodeProxy& A, const Node& B, NodeProxy& C,
-  const double alpha, const double beta
-) {
-  gemm(*A.ptr.get(), B, *C.ptr.get(), alpha, beta);
-}
-void gemm(
-  const NodeProxy& A, const Node& B, Node& C,
-  const double alpha, const double beta
-) {
-  gemm(*A.ptr.get(), B, C, alpha, beta);
-}
-void gemm(
-  const Node& A, const NodeProxy& B, NodeProxy& C,
-  const double alpha, const double beta
-) {
-  gemm(A, *B.ptr.get(), *C.ptr.get(), alpha, beta);
-}
-void gemm(
-  const Node& A, const NodeProxy& B, Node& C,
-  const double alpha, const double beta
-) {
-  gemm(A, *B.ptr.get(), C, alpha, beta);
-}
-void gemm(
-  const Node& A, const Node& B, NodeProxy& C,
-  const double alpha, const double beta
-) {
-  gemm(A, B, *C.ptr.get(), alpha, beta);
-}
 
 void gemm(
   const Node& A, const Node& B, Node& C,

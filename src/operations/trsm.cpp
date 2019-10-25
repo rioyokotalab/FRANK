@@ -1,11 +1,10 @@
 #include "hicma/operations/trsm.h"
 
-#include "hicma/operations/gemm.h"
-
-#include "hicma/node_proxy.h"
+#include "hicma/node.h"
 #include "hicma/dense.h"
 #include "hicma/low_rank.h"
 #include "hicma/hierarchical.h"
+#include "hicma/operations/gemm.h"
 #include "hicma/util/timer.h"
 
 #include <iostream>
@@ -19,16 +18,6 @@
 
 namespace hicma
 {
-
-void trsm(const NodeProxy& A, NodeProxy& B, const char& uplo) {
-  trsm(*A.ptr.get(), *B.ptr.get(), uplo);
-}
-void trsm(const NodeProxy& A, Node& B, const char& uplo) {
-  trsm(*A.ptr.get(), B, uplo);
-}
-void trsm(const Node& A, NodeProxy& B, const char& uplo) {
-  trsm(A, *B.ptr.get(), uplo);
-}
 
 void trsm(const Node& A, Node& B, const char& uplo) {
   trsm_omm(A, B, uplo);

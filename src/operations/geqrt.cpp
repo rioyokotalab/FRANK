@@ -1,7 +1,6 @@
 #include "hicma/operations/geqrt.h"
 
 #include "hicma/node.h"
-#include "hicma/node_proxy.h"
 #include "hicma/dense.h"
 #include "hicma/hierarchical.h"
 #include "hicma/operations/tpmqrt.h"
@@ -19,16 +18,6 @@
 
 namespace hicma
 {
-
-void geqrt(NodeProxy& A, NodeProxy& T) {
-  geqrt(*A.ptr, *T.ptr);
-}
-void geqrt(Node& A, NodeProxy& T) {
-  geqrt(A, *T.ptr);
-}
-void geqrt(NodeProxy& A, Node& T) {
-  geqrt(*A.ptr, T);
-}
 
 void geqrt(Node& A, Node& T) {
   geqrt_omm(A, T);

@@ -1,7 +1,6 @@
 #include "hicma/operations/qr.h"
 
 #include "hicma/node.h"
-#include "hicma/node_proxy.h"
 #include "hicma/dense.h"
 #include "hicma/low_rank.h"
 #include "hicma/hierarchical.h"
@@ -9,6 +8,8 @@
 #include "hicma/operations/gemm.h"
 
 #include <cassert>
+#include <iostream>
+#include <utility>
 
 #ifdef USE_MKL
 #include <mkl.h>
@@ -20,60 +21,27 @@
 namespace hicma
 {
 
-  void qr(NodeProxy& A, NodeProxy& Q, NodeProxy& R) {
-    qr(*A.ptr, *Q.ptr, *R.ptr);
-  }
-  void qr(NodeProxy& A, NodeProxy& Q, Node& R) {
-    qr(*A.ptr, *Q.ptr, R);
-  }
-  void qr(NodeProxy& A, Node& Q, NodeProxy& R) {
-    qr(*A.ptr, Q, *R.ptr);
-  }
-  void qr(NodeProxy& A, Node& Q, Node& R) {
-    qr(*A.ptr, Q, R);
-  }
-  void qr(Node& A, NodeProxy& Q, NodeProxy& R) {
-    qr(A, *Q.ptr, *R.ptr);
-  }
-  void qr(Node& A, NodeProxy& Q, Node& R) {
-    qr(A, *Q.ptr, R);
-  }
-  void qr(Node& A, Node& Q, NodeProxy& R) {
-    qr(A, Q, *R.ptr);
-  }
   void qr(Node& A, Node& Q, Node& R) {
     qr_omm(A, Q, R);
   }
 
-  bool need_split(const NodeProxy& A) {
-    return need_split(*A.ptr.get());
-  }
   bool need_split(const Node& A) {
     return need_split_omm(A);
   }
 
-  void make_left_orthogonal(const NodeProxy& A, NodeProxy& L, NodeProxy& R) {
-    make_left_orthogonal_omm(*A.ptr, L, R);
+  void make_left_orthogonal(const Node& A, Node& L, Node& R) {
+    make_left_orthogonal_omm(A, L, R);
   }
 
-  void update_splitted_size(const NodeProxy& A, int& rows, int& cols) {
-    update_splitted_size(*A.ptr, rows, cols);
-  }
   void update_splitted_size(const Node& A, int& rows, int& cols) {
     update_splitted_size_omm(A, rows, cols);
   }
 
-  void split_by_column(const NodeProxy& A, Node& storage, int &currentRow, NodeProxy& Q) {
-    split_by_column(*A.ptr, storage, currentRow, Q);
-  }
-  void split_by_column(const Node& A, Node& storage, int &currentRow, NodeProxy& Q) {
+  void split_by_column(const Node& A, Node& storage, int &currentRow, Node& Q) {
     split_by_column_omm(A, storage, currentRow, Q);
   }
 
-  void concat_columns(const NodeProxy& A, const Node& splitted, NodeProxy& restored, int& currentRow, const NodeProxy& Q) {
-    concat_columns(*A.ptr, splitted, restored, currentRow, *Q.ptr);
-  }
-  void concat_columns(const Node& A, const Node& splitted, NodeProxy& restored, int& currentRow, const Node& Q) {
+  void concat_columns(const Node& A, const Node& splitted, Node& restored, int& currentRow, const Node& Q) {
     concat_columns_omm(A, splitted, restored, currentRow, Q);
   }
 
@@ -146,7 +114,7 @@ namespace hicma
   } END_SPECIALIZATION;
 
 
-  BEGIN_SPECIALIZATION(make_left_orthogonal_omm, void, const Dense& A, NodeProxy& L, NodeProxy& R) {
+  BEGIN_SPECIALIZATION(make_left_orthogonal_omm, void, const Dense& A, Node& L, Node& R) {
     std::vector<double> x;
     Dense Id(identity, x, A.dim[0], A.dim[0]);
     Dense _A(A);
@@ -154,7 +122,7 @@ namespace hicma
     R = std::move(_A);
   } END_SPECIALIZATION;
 
-  BEGIN_SPECIALIZATION(make_left_orthogonal_omm, void, const LowRank& A, NodeProxy& L, NodeProxy& R) {
+  BEGIN_SPECIALIZATION(make_left_orthogonal_omm, void, const LowRank& A, Node& L, Node& R) {
     LowRank _A(A);
     Dense Qu(_A.U.dim[0], _A.U.dim[1]);
     Dense Ru(_A.U.dim[1], _A.U.dim[1]);
@@ -167,7 +135,7 @@ namespace hicma
     R = std::move(RSV);
   } END_SPECIALIZATION;
 
-  BEGIN_SPECIALIZATION(make_left_orthogonal_omm, void, const Node& A, NodeProxy& L, NodeProxy& R) {
+  BEGIN_SPECIALIZATION(make_left_orthogonal_omm, void, const Node& A, Node& L, Node& R) {
     std::cerr << "make_left_orthogonal(";
     std::cerr << A.type() << "," << L.type() << "," << R.type();
     std::cerr << ") undefined." << std::endl;
@@ -185,14 +153,14 @@ namespace hicma
   } END_SPECIALIZATION;
 
 
-  BEGIN_SPECIALIZATION(split_by_column_omm, void, const Dense& A, Hierarchical& storage, int& currentRow, NodeProxy& Q) {
+  BEGIN_SPECIALIZATION(split_by_column_omm, void, const Dense& A, Hierarchical& storage, int& currentRow, Node& Q) {
     Hierarchical splitted(A, 1, storage.dim[1]);
     for(int i=0; i<storage.dim[1]; i++)
       storage(currentRow, i) = splitted(0, i);
     currentRow++;
   } END_SPECIALIZATION;
 
-  BEGIN_SPECIALIZATION(split_by_column_omm, void, const LowRank& A, Hierarchical& storage, int& currentRow, NodeProxy& Q) {
+  BEGIN_SPECIALIZATION(split_by_column_omm, void, const LowRank& A, Hierarchical& storage, int& currentRow, Node& Q) {
     LowRank _A(A);
     Dense Qu(_A.U.dim[0], _A.U.dim[1]);
     Dense Ru(_A.U.dim[1], _A.U.dim[1]);
@@ -210,7 +178,7 @@ namespace hicma
     currentRow++;
   } END_SPECIALIZATION;
 
-  BEGIN_SPECIALIZATION(split_by_column_omm, void, const Hierarchical& A, Hierarchical& storage, int& currentRow, NodeProxy& Q) {
+  BEGIN_SPECIALIZATION(split_by_column_omm, void, const Hierarchical& A, Hierarchical& storage, int& currentRow, Node& Q) {
     for(int i=0; i<A.dim[0]; i++) {
       for(int j=0; j<A.dim[1]; j++) {
         storage(currentRow, j) = A(i, j);
@@ -219,7 +187,7 @@ namespace hicma
     }
   } END_SPECIALIZATION;
 
-  BEGIN_SPECIALIZATION(split_by_column_omm, void, const Node& A, Node& storage, int& currentRow, NodeProxy& Q) {
+  BEGIN_SPECIALIZATION(split_by_column_omm, void, const Node& A, Node& storage, int& currentRow, Node& Q) {
     std::cerr << "split_by_column(";
     std::cerr << A.type() << "," << storage.type() << ",int," << Q.type();
     std::cerr << ") undefined." << std::endl;
@@ -227,7 +195,7 @@ namespace hicma
   } END_SPECIALIZATION;
 
 
-  BEGIN_SPECIALIZATION(concat_columns_omm, void, const Dense& A, const Hierarchical& splitted, NodeProxy& restored, int& currentRow, const Dense& Q) {
+  BEGIN_SPECIALIZATION(concat_columns_omm, void, const Dense& A, const Hierarchical& splitted, Node& restored, int& currentRow, const Dense& Q) {
     //In case of dense, combine the spllited dense matrices into one dense matrix
     Hierarchical SpCurRow(1, splitted.dim[1]);
     for(int i=0; i<splitted.dim[1]; i++) {
@@ -240,7 +208,7 @@ namespace hicma
     currentRow++;
   } END_SPECIALIZATION;
 
-  BEGIN_SPECIALIZATION(concat_columns_omm, void, const LowRank& A, const Hierarchical& splitted, NodeProxy& restored, int& currentRow, const Dense& Q) {
+  BEGIN_SPECIALIZATION(concat_columns_omm, void, const LowRank& A, const Hierarchical& splitted, Node& restored, int& currentRow, const Dense& Q) {
     //In case of lowrank, combine splitted dense matrices into single dense matrix
     //Then form a lowrank matrix with the stored Q
     std::vector<double> x;
@@ -261,7 +229,7 @@ namespace hicma
     currentRow++;
   } END_SPECIALIZATION;
 
-  BEGIN_SPECIALIZATION(concat_columns_omm, void, const Hierarchical& A, const Hierarchical& splitted, NodeProxy& restored, int& currentRow, const Dense& Q) {
+  BEGIN_SPECIALIZATION(concat_columns_omm, void, const Hierarchical& A, const Hierarchical& splitted, Node& restored, int& currentRow, const Dense& Q) {
     //In case of hierarchical, just put element in respective cells
     assert(splitted.dim[1] == A.dim[1]);
     Hierarchical concatenatedRow(A.dim[0], A.dim[1]);
@@ -274,7 +242,7 @@ namespace hicma
     restored = std::move(concatenatedRow);
   } END_SPECIALIZATION;
 
-  BEGIN_SPECIALIZATION(concat_columns_omm, void, const Node& A, const Node& splitted, NodeProxy& restored, int& currentRow, const Node& Q) {
+  BEGIN_SPECIALIZATION(concat_columns_omm, void, const Node& A, const Node& splitted, Node& restored, int& currentRow, const Node& Q) {
     std::cerr << "concat_columns(";
     std::cerr << A.type() << "," << splitted.type() << "," << restored.type() << ",int," << Q.type();
     std::cerr << ") undefined." << std::endl;

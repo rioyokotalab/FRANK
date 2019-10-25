@@ -1,7 +1,6 @@
 #include "hicma/operations/tpmqrt.h"
 
 #include "hicma/node.h"
-#include "hicma/node_proxy.h"
 #include "hicma/dense.h"
 #include "hicma/low_rank.h"
 #include "hicma/hierarchical.h"
@@ -18,97 +17,6 @@
 
 namespace hicma
 {
-
-void tpmqrt(
-  const NodeProxy& V, const NodeProxy& T, NodeProxy& A, NodeProxy& B,
-  const bool trans
-) {
-  tpmqrt(*V.ptr, *T.ptr, *A.ptr, *B.ptr, trans);
-}
-void tpmqrt(
-  const NodeProxy& V, const NodeProxy& T, NodeProxy& A, Node& B,
-  const bool trans
-) {
-  tpmqrt(*V.ptr, *T.ptr, *A.ptr, B, trans);
-}
-void tpmqrt(
-  const NodeProxy& V, const NodeProxy& T, Node& A, NodeProxy& B,
-  const bool trans
-) {
-  tpmqrt(*V.ptr, *T.ptr, A, *B.ptr, trans);
-}
-void tpmqrt(
-  const NodeProxy& V, const NodeProxy& T, Node& A, Node& B,
-  const bool trans
-) {
-  tpmqrt(*V.ptr, *T.ptr, A, B, trans);
-}
-void tpmqrt(
-  const NodeProxy& V, const Node& T, NodeProxy& A, NodeProxy& B,
-  const bool trans
-) {
-  tpmqrt(*V.ptr, T, *A.ptr, *B.ptr, trans);
-}
-void tpmqrt(
-  const NodeProxy& V, const Node& T, NodeProxy& A, Node& B,
-  const bool trans
-) {
-  tpmqrt(*V.ptr, T, *A.ptr, B, trans);
-}
-void tpmqrt(
-  const NodeProxy& V, const Node& T, Node& A, NodeProxy& B,
-  const bool trans
-) {
-  tpmqrt(*V.ptr, T, A, *B.ptr, trans);
-}
-void tpmqrt(
-  const NodeProxy& V, const Node& T, Node& A, Node& B,
-  const bool trans
-) {
-  tpmqrt(*V.ptr, T, A, B, trans);
-}
-void tpmqrt(
-  const Node& V, const NodeProxy& T, NodeProxy& A, NodeProxy& B,
-  const bool trans
-) {
-  tpmqrt(V, *T.ptr, *A.ptr, *B.ptr, trans);
-}
-void tpmqrt(
-  const Node& V, const NodeProxy& T, NodeProxy& A, Node& B,
-  const bool trans
-) {
-  tpmqrt(V, *T.ptr, *A.ptr, B, trans);
-}
-void tpmqrt(
-  const Node& V, const NodeProxy& T, Node& A, NodeProxy& B,
-  const bool trans
-) {
-  tpmqrt(V, *T.ptr, A, *B.ptr, trans);
-}
-void tpmqrt(
-  const Node& V, const NodeProxy& T, Node& A, Node& B,
-  const bool trans
-) {
-  tpmqrt(V, *T.ptr, A, B, trans);
-}
-void tpmqrt(
-  const Node& V, const Node& T, NodeProxy& A, NodeProxy& B,
-  const bool trans
-) {
-  tpmqrt(V, T, *A.ptr, *B.ptr, trans);
-}
-void tpmqrt(
-  const Node& V, const Node& T, NodeProxy& A, Node& B,
-  const bool trans
-) {
-  tpmqrt(V, T, *A.ptr, B, trans);
-}
-void tpmqrt(
-  const Node& V, const Node& T, Node& A, NodeProxy& B,
-  const bool trans
-) {
-  tpmqrt(V, T, A, *B.ptr, trans);
-}
 
 void tpmqrt(
   const Node& V, const Node& T, Node& A, Node& B,
