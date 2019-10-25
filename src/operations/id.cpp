@@ -6,6 +6,7 @@
 #include "hicma/hierarchical.h"
 #include "hicma/functions.h"
 #include "hicma/operations/gemm.h"
+#include "hicma/operations/geqp3.h"
 #include "hicma/operations/qr.h"
 #include "hicma/operations/trsm.h"
 
@@ -58,35 +59,6 @@ Hierarchical split(const Dense& A, int split_row, int split_col) {
   return H;
 }
 
-std::vector<int> qrp(Dense& A, Dense& Q, Dense& R) {
-  // Pivoted QR
-  for (int i=0; i<std::min(A.dim[0], A.dim[1]); i++) Q(i, i) = 1.0;
-  std::vector<int> jpvt(A.dim[1], 0);
-  std::vector<double> tau(std::min(A.dim[0], A.dim[1]));
-  LAPACKE_dgeqp3(
-    LAPACK_ROW_MAJOR,
-    A.dim[0], A.dim[1],
-    &A[0], A.dim[1],
-    &jpvt[0], &tau[0]
-  );
-  LAPACKE_dormqr(
-    LAPACK_ROW_MAJOR,
-    'L', 'N',
-    A.dim[0], A.dim[1], A.dim[0],
-    &A[0], A.dim[0],
-    &tau[0],
-    &Q[0], Q.dim[1]
-  );
-  // jpvt is 1-based, bad for indexing!
-  for (int& i : jpvt) --i;
-  for(int i=0; i<std::min(A.dim[0], A.dim[1]); i++) {
-    for(int j=0; j<A.dim[1]; j++) {
-      if (j >= i) R(i, j) = A(i, j);
-    }
-  }
-  return jpvt;
-}
-
 Dense interleave_id(const Dense& A, std::vector<int>& P) {
   int k = P.size() - A.dim[1];
   assert(k >= 0); // 0 case if for k=min(M, N), ie full rank
@@ -112,7 +84,7 @@ BEGIN_SPECIALIZATION(
   Dense Atest(A);
   Dense Q(A.dim[0], A.dim[1]);
   Dense R(A.dim[1], A.dim[1]);
-  std::vector<int> P = qrp(A, Q, R);
+  std::vector<int> P = geqp3(A, Q, R);
   if (k < std::max(A.dim[0], A.dim[1])) {
     // The split is inefficient! Full copy, only part needed. Move?
     Hierarchical RH = split(R, k, k);

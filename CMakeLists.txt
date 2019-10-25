@@ -44,6 +44,7 @@ add_library(hicma
     src/functions.cpp
     src/operations/gemm.cpp
     src/operations/geqrt.cpp
+    src/operations/geqp3.cpp
     src/operations/getrf.cpp
     src/operations/get_dim.cpp
     src/operations/id.cpp
