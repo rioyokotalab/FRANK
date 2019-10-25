@@ -7,9 +7,12 @@
 #include <algorithm>
 #include <cmath>
 
+#include "yorel/multi_methods.hpp"
+
 using namespace hicma;
 
 int main(int argc, char** argv) {
+  yorel::multi_methods::initialize();
   int N = 32;
   int rank = 16;
   std::vector<double> randx(2*N);

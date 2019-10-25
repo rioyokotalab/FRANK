@@ -4,9 +4,12 @@
 
 #include "gtest/gtest.h"
 
+#include "yorel/multi_methods.hpp"
+
 using namespace hicma;
 
 TEST(DenseTest, ContructorHierarchical) {
+    yorel::multi_methods::initialize();
     // Check whether the Dense(Hierarchical) constructor works correctly.
     int N = 128;
     int nblocks = 4;
