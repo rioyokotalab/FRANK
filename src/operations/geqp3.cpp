@@ -33,7 +33,7 @@ BEGIN_SPECIALIZATION(
   // Pivoted QR
   for (int i=0; i<std::min(A.dim[0], A.dim[1]); i++) Q(i, i) = 1.0;
   std::vector<int> jpvt(A.dim[1], 0);
-  std::vector<double> tau(std::min(A.dim[0], A.dim[1]));
+  std::vector<double> tau(std::min(A.dim[0], A.dim[1]), 0);
   LAPACKE_dgeqp3(
     LAPACK_ROW_MAJOR,
     A.dim[0], A.dim[1],
@@ -43,8 +43,8 @@ BEGIN_SPECIALIZATION(
   LAPACKE_dormqr(
     LAPACK_ROW_MAJOR,
     'L', 'N',
-    A.dim[0], A.dim[1], A.dim[0],
-    &A[0], A.dim[0],
+    A.dim[0], A.dim[1], std::min(A.dim[0], A.dim[1]),
+    &A[0], A.dim[1],
     &tau[0],
     &Q[0], Q.dim[1]
   );
