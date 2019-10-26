@@ -21,6 +21,10 @@ namespace hicma {
 
     ~NodeProxy();
 
+    const Node& operator*() const;
+
+    Node& operator*();
+
     const Node* operator->() const;
 
     Node* operator->();

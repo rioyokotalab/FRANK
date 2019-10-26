@@ -47,7 +47,7 @@ TEST(IDTest, Precision) {
   for (double& a : randx) a = drand48();
   std::sort(randx.begin(), randx.end());
   Hierarchical H(laplace1d, randx, M*2, N*2, k, std::max(M, N), 1);
-  Dense& A = static_cast<Dense&>(*H(M>=N, M<N).ptr);
+  Dense& A = static_cast<Dense&>(*H(M>=N, M<N));
   Dense Awork(A);
 
   Dense V(k, N);

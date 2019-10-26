@@ -68,6 +68,7 @@ BEGIN_SPECIALIZATION(
   Dense Q(A.dim[0], A.dim[1]);
   Dense R(A.dim[1], A.dim[1]);
   std::vector<int> P = geqp3(A, Q, R);
+  if (k < std::max(A.dim[0], A.dim[1])) {
     Dense R11, T;
     std::tie(R11, T) = get_R11_R12(R, k);
     cblas_dtrsm(

@@ -36,6 +36,8 @@ int main(int argc, char const *argv[])
     laplace1d, randx, N, N, rank, nleaf, admis, ni_level, nj_level);
   Dense D(laplace1d, randx, N, N);
   Hierarchical DH(D, ni_level, nj_level);
+  LowRankShared& LRS = static_cast<LowRankShared&>(*A(0, 1));
+  LowRank& LR = static_cast<LowRank&>(*H(0, 1));
 
   start("Verification");
   double norm = D.norm();

@@ -18,6 +18,16 @@ namespace hicma {
 
   NodeProxy::~NodeProxy() = default;
 
+  const Node& NodeProxy::operator*() const {
+    assert(ptr.get() != nullptr);
+    return *ptr.get();
+  }
+
+  Node& NodeProxy::operator*() {
+    assert(ptr.get() != nullptr);
+    return *ptr.get();
+  }
+
   const Node* NodeProxy::operator->() const {
     return ptr.get();
   }
