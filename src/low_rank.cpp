@@ -82,6 +82,10 @@ namespace hicma {
     return new LowRank(*this);
   }
 
+  LowRank* LowRank::move_clone() {
+    return new LowRank(std::move(*this));
+  }
+
   void swap(LowRank& A, LowRank& B) {
     using std::swap;
     swap(A.U, B.U);

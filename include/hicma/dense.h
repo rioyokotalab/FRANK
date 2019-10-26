@@ -66,6 +66,8 @@ namespace hicma {
 
     Dense* clone() const override;
 
+    Dense* move_clone() override;
+
     friend void swap(Dense& A, Dense& B);
 
     const Dense& operator=(Dense A);

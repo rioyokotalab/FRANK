@@ -23,6 +23,10 @@ namespace hicma {
     return new Node(*this);
   }
 
+  Node* Node::move_clone() {
+    return new Node(std::move(*this));
+  }
+
   const Node& Node::operator=(Node&& A) {
     return *this;
   }

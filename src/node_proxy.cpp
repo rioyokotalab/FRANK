@@ -14,6 +14,8 @@ namespace hicma {
 
   NodeProxy::NodeProxy(const Node& A) : ptr(A.clone()) {}
 
+  NodeProxy::NodeProxy(Node&& A) : ptr(A.move_clone()) {}
+
   NodeProxy::~NodeProxy() = default;
 
   const Node* NodeProxy::operator->() const {

@@ -122,6 +122,10 @@ namespace hicma {
     return new Dense(*this);
   }
 
+  Dense* Dense::move_clone() {
+    return new Dense(std::move(*this));
+  }
+
   void swap(Dense& A, Dense& B) {
     using std::swap;
     swap(A.data, B.data);

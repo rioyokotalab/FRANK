@@ -59,6 +59,8 @@ namespace hicma {
 
     Hierarchical* clone() const override;
 
+    Hierarchical* move_clone() override;
+
     friend void swap(Hierarchical& A, Hierarchical& B);
 
     const NodeProxy& operator[](const int i) const;

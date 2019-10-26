@@ -200,6 +200,10 @@ namespace hicma {
     return new Hierarchical(*this);
   }
 
+  Hierarchical* Hierarchical::move_clone() {
+    return new Hierarchical(std::move(*this));
+  }
+
   void swap(Hierarchical& A, Hierarchical& B) {
     using std::swap;
     swap(A.data, B.data);
@@ -292,7 +296,8 @@ namespace hicma {
           Qbi(row, col) = Qb(rowOffset + row, col);
         }
       }
-      HQb(i, 0) = Qbi;
+      // Using move should now make a difference. Why is this not auto-optimized?
+      HQb(i, 0) = std::move(Qbi);
       rowOffset += Bi.dim[0];
     }
     for(int i=0; i<dim[0]; i++) {

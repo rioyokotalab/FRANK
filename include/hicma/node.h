@@ -26,6 +26,8 @@ namespace hicma {
 
     virtual Node* clone() const;
 
+    virtual Node* move_clone();
+
     const Node& operator=(Node&& A);
 
     virtual const char* type() const;

@@ -16,6 +16,8 @@ namespace hicma {
 
     NodeProxy(const Node& A);
 
+    NodeProxy(Node&& A);
+
     ~NodeProxy();
 
     const Node* operator->() const;

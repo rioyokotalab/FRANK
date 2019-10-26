@@ -34,6 +34,8 @@ namespace hicma {
 
     LowRank* clone() const override;
 
+    LowRank* move_clone() override;
+
     friend void swap(LowRank& A, LowRank& B);
 
     const LowRank& operator=(LowRank A);
