@@ -9,6 +9,7 @@ using yorel::multi_methods::virtual_;
 namespace hicma
 {
   class Node;
+  class NodeProxy;
   class Dense;
 
   typedef std::tuple<Dense, Dense> dense_tuple;
@@ -21,9 +22,9 @@ namespace hicma
 
   void update_splitted_size(const Node&, int&, int&);
 
-  void split_by_column(const Node&, Node&, int&, Node&);
+  NodeProxy split_by_column(const Node&, Node&, int&);
 
-  void concat_columns(const Node&, const Node&, Node&, int&, const Node&);
+  NodeProxy concat_columns(const Node&, const Node&, int&, const Node&);
 
   MULTI_METHOD(
     qr_omm, void,
@@ -42,13 +43,13 @@ namespace hicma
     const virtual_<Node>&, int&, int&
   );
   MULTI_METHOD(
-    split_by_column_omm, void,
+    split_by_column_omm, NodeProxy,
     const virtual_<Node>&, virtual_<Node>&,
-    int&, Node&
+    int&
   );
   MULTI_METHOD(
-    concat_columns_omm, void,
-    const virtual_<Node>&, const virtual_<Node>&, Node&,
+    concat_columns_omm, NodeProxy,
+    const virtual_<Node>&, const virtual_<Node>&,
     int&, const virtual_<Node>&
   );
 

@@ -307,13 +307,12 @@ namespace hicma {
     int rows = 0;
     int cols = 1;
     for(int i=0; i<dim[0]; i++) {
-      QL(i, 0) = Dense(0, 0);
       update_splitted_size((*this)(i, 0), rows, cols);
     }
     Hierarchical spA(rows, cols);
     int curRow = 0;
     for(int i=0; i<dim[0]; i++) {
-      split_by_column((*this)(i, 0), spA, curRow, QL(i, 0));
+      QL(i, 0) = split_by_column((*this)(i, 0), spA, curRow);
     }
     swap(*this, spA);
   }
@@ -325,7 +324,7 @@ namespace hicma {
     Hierarchical restoredA(dim[0], dim[1]);
     int curSpRow = 0;
     for(int i=0; i<dim[0]; i++) {
-      concat_columns((*this)(i, 0), Sp, restoredA(i, 0), curSpRow, QL(i, 0));
+      restoredA(i, 0) = concat_columns((*this)(i, 0), Sp, curSpRow, QL(i, 0));
     }
     swap(*this, restoredA);
   }
