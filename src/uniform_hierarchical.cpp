@@ -6,6 +6,7 @@
 #include "hicma/low_rank.h"
 #include "hicma/low_rank_shared.h"
 #include "hicma/hierarchical.h"
+#include "hicma/operations/gemm.h"
 #include "hicma/operations/id.h"
 
 #include <algorithm>
@@ -110,6 +111,7 @@ UniformHierarchical::UniformHierarchical(
               );
           }
           Dense row_block(row_block_h);
+          // col_basis[i] = std::make_shared<Dense>(LowRank(row_block, rank).U);
           // Construct U using the ID and remember the selected rows
           Dense Ut(rank, ni_child);
           row_block.transpose();
@@ -130,7 +132,8 @@ UniformHierarchical::UniformHierarchical(
                 ni_child*i_b, j_begin_child
               );
           }
-          Dense col_block(col_block_h);\
+          Dense col_block(col_block_h);
+          // row_basis[j] = std::make_shared<Dense>(LowRank(col_block, rank).V);
           // Construct V using the ID and remember the selected cols
           Dense V(rank, nj_child);
           selected_cols[j] = id(col_block, V, rank);
@@ -143,6 +146,9 @@ UniformHierarchical::UniformHierarchical(
           i_begin_child, j_begin_child
         );
         Dense S(rank, rank);
+        // Dense UD(col_basis[i]->dim[1], D.dim[1]);
+        // gemm(*col_basis[i], D, UD, CblasTrans, CblasNoTrans, 1, 0);
+        // gemm(UD, *row_basis[j], S, CblasNoTrans, CblasTrans, 1, 0);
         for (int ic=0; ic<rank; ++ic) {
           for (int jc=0; jc<rank; ++jc) {
             S(ic, jc) = D(selected_rows[i][ic], selected_cols[j][jc]);
