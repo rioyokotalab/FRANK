@@ -26,37 +26,20 @@
 namespace hicma
 {
 
-Hierarchical split(const Dense& A, int split_row, int split_col) {
-  Hierarchical H(2, 2);
-  Dense top_left(split_row, split_col);
-  for (int i=0; i<top_left.dim[0]; ++i) {
-    for (int j = 0; j < top_left.dim[1]; ++j) {
-      top_left(i, j) = A(i, j);
+std::tuple<Dense, Dense> get_R11_R12(const Dense& R, int k) {
+  Dense R11(k, k);
+  for (int i=0; i<R11.dim[0]; ++i) {
+    for (int j = 0; j < R11.dim[1]; ++j) {
+      R11(i, j) = R(i, j);
     }
   }
-  H(0, 0) = top_left;
-  Dense top_right(split_row, A.dim[1]-split_col);
-  for (int i=0; i<top_right.dim[0]; ++i) {
-    for (int j = 0; j < top_right.dim[1]; ++j) {
-      top_right(i, j) = A(i, split_col+j);
+  Dense R22(k, R.dim[1]-k);
+  for (int i=0; i<R22.dim[0]; ++i) {
+    for (int j = 0; j < R22.dim[1]; ++j) {
+      R22(i, j) = R(i, k+j);
     }
   }
-  H(0, 1) = top_right;
-  Dense bottom_left(A.dim[0]-split_row, split_col);
-  for (int i=0; i<bottom_left.dim[0]; ++i) {
-    for (int j = 0; j < bottom_left.dim[1]; ++j) {
-      bottom_left(i, j) = A(split_row+i, j);
-    }
-  }
-  H(1, 0) = bottom_left;
-  Dense bottom_right(A.dim[0]-split_row, A.dim[1]-split_col);
-  for (int i=0; i<bottom_right.dim[0]; ++i) {
-    for (int j = 0; j < bottom_right.dim[1]; ++j) {
-      bottom_right(i, j) = A(split_row+i, split_col+j);
-    }
-  }
-  H(1, 1) = bottom_right;
-  return H;
+  return {R11, R22};
 }
 
 Dense interleave_id(const Dense& A, std::vector<int>& P) {
@@ -85,11 +68,8 @@ BEGIN_SPECIALIZATION(
   Dense Q(A.dim[0], A.dim[1]);
   Dense R(A.dim[1], A.dim[1]);
   std::vector<int> P = geqp3(A, Q, R);
-  if (k < std::max(A.dim[0], A.dim[1])) {
-    // The split is inefficient! Full copy, only part needed. Move?
-    Hierarchical RH = split(R, k, k);
-    Dense& T = static_cast<Dense&>(*RH(0, 1).ptr);
-    Dense& R11 = static_cast<Dense&>(*RH(0, 0).ptr);
+    Dense R11, T;
+    std::tie(R11, T) = get_R11_R12(R, k);
     cblas_dtrsm(
       CblasRowMajor,
       CblasLeft, CblasUpper,
