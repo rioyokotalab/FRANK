@@ -3,6 +3,7 @@
 #include "hicma/hierarchical.h"
 #include "hicma/operations.h"
 
+#include <cassert>
 #include <iostream>
 
 namespace hicma {
@@ -23,9 +24,15 @@ namespace hicma {
     return ptr.get();
   }
 
-  NodeProxy::operator const Node& () const { return *ptr; }
+  NodeProxy::operator const Node& () const {
+    assert(ptr.get() != nullptr);
+    return *ptr;
+  }
 
-  NodeProxy::operator Node& () { return *ptr; }
+  NodeProxy::operator Node& () {
+    assert(ptr.get() != nullptr);
+    return *ptr;
+  }
 
   void swap(NodeProxy& A, NodeProxy& B){
     A.ptr.swap(B.ptr);
