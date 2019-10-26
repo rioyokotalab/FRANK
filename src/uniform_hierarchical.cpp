@@ -171,6 +171,10 @@ UniformHierarchical* UniformHierarchical::clone() const {
   return new UniformHierarchical(*this);
 }
 
+UniformHierarchical* UniformHierarchical::move_clone() {
+  return new UniformHierarchical(std::move(*this));
+}
+
 void swap(UniformHierarchical& A, UniformHierarchical& B) {
   using std::swap;
   swap(static_cast<Node&>(A), static_cast<Node&>(B));

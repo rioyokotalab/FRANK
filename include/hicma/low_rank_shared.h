@@ -40,6 +40,8 @@ class LowRankShared : public Node {
 
   LowRankShared* clone() const override;
 
+  LowRankShared* move_clone() override;
+
   friend void swap(LowRankShared& A, LowRankShared& B);
 
   const LowRankShared& operator=(LowRankShared A);

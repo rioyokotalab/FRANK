@@ -51,6 +51,8 @@ class UniformHierarchical : public Hierarchical {
 
   UniformHierarchical* clone() const override;
 
+  UniformHierarchical* move_clone() override;
+
   friend void swap(UniformHierarchical& A, UniformHierarchical& B);
 
   const char* type() const override;

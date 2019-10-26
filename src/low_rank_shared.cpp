@@ -41,6 +41,11 @@ LowRankShared* LowRankShared::clone() const {
   return new LowRankShared(*this);
 }
 
+LowRankShared* LowRankShared::move_clone() {
+  return new LowRankShared(std::move(*this));
+}
+
+
 void swap(LowRankShared& A, LowRankShared& B) {
   using std::swap;
   swap(static_cast<Node&>(A), static_cast<Node&>(B));
