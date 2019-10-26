@@ -9,6 +9,7 @@
 
 #include <cassert>
 #include <iostream>
+#include <tuple>
 #include <utility>
 
 #ifdef USE_MKL
@@ -29,8 +30,8 @@ namespace hicma
     return need_split_omm(A);
   }
 
-  void make_left_orthogonal(const Node& A, Node& L, Node& R) {
-    make_left_orthogonal_omm(A, L, R);
+  std::tuple<Dense, Dense> make_left_orthogonal(const Node& A) {
+    return make_left_orthogonal_omm(A);
   }
 
   void update_splitted_size(const Node& A, int& rows, int& cols) {
@@ -114,30 +115,28 @@ namespace hicma
   } END_SPECIALIZATION;
 
 
-  BEGIN_SPECIALIZATION(make_left_orthogonal_omm, void, const Dense& A, Node& L, Node& R) {
+  BEGIN_SPECIALIZATION(make_left_orthogonal_omm, dense_tuple, const Dense& A) {
     std::vector<double> x;
     Dense Id(identity, x, A.dim[0], A.dim[0]);
     Dense _A(A);
-    L = std::move(Id);
-    R = std::move(_A);
+    return {Id, _A};\
+  } END_SPECIALIZATION
+
+  BEGIN_SPECIALIZATION(make_left_orthogonal_omm, dense_tuple, const LowRank& A) {
+    Dense Au(A.U);
+    Dense Qu(A.U.dim[0], A.U.dim[1]);
+    Dense Ru(A.U.dim[1], A.U.dim[1]);
+    qr(Au, Qu, Ru);
+    Dense RS(Ru.dim[0], A.S.dim[1]);
+    gemm(Ru, A.S, RS, 1, 1);
+    Dense RSV(RS.dim[0], A.V.dim[1]);
+    gemm(RS, A.V, RSV, 1, 1);
+    return {Qu, RSV};
   } END_SPECIALIZATION;
 
-  BEGIN_SPECIALIZATION(make_left_orthogonal_omm, void, const LowRank& A, Node& L, Node& R) {
-    LowRank _A(A);
-    Dense Qu(_A.U.dim[0], _A.U.dim[1]);
-    Dense Ru(_A.U.dim[1], _A.U.dim[1]);
-    qr(_A.U, Qu, Ru);
-    L = std::move(Qu);
-    Dense RS(Ru.dim[0], _A.S.dim[1]);
-    gemm(Ru, _A.S, RS, 1, 1);
-    Dense RSV(RS.dim[0], _A.V.dim[1]);
-    gemm(RS, _A.V, RSV, 1, 1);
-    R = std::move(RSV);
-  } END_SPECIALIZATION;
-
-  BEGIN_SPECIALIZATION(make_left_orthogonal_omm, void, const Node& A, Node& L, Node& R) {
+  BEGIN_SPECIALIZATION(make_left_orthogonal_omm, dense_tuple, const Node& A) {
     std::cerr << "make_left_orthogonal(";
-    std::cerr << A.type() << "," << L.type() << "," << R.type();
+    std::cerr << A.type();
     std::cerr << ") undefined." << std::endl;
     abort();
   } END_SPECIALIZATION;

@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
+#include <tuple>
 
 #include "yorel/multi_methods.hpp"
 
@@ -273,7 +274,7 @@ namespace hicma {
     Hierarchical Qu(dim[0], 1);
     Hierarchical B(dim[0], 1);
     for(int i=0; i<dim[0]; i++) {
-      make_left_orthogonal((*this)(i, 0), Qu(i, 0), B(i, 0));
+      std::tie(Qu(i, 0), B(i, 0)) = make_left_orthogonal((*this)(i, 0));
     }
     Dense DB(B);
     Dense Qb(DB.dim[0], DB.dim[1]);

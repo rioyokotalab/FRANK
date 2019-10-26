@@ -1,19 +1,23 @@
 #ifndef operations_qr_h
 #define operations_qr_h
 
+#include <tuple>
+
 #include "yorel/multi_methods.hpp"
 using yorel::multi_methods::virtual_;
 
 namespace hicma
 {
-
   class Node;
+  class Dense;
+
+  typedef std::tuple<Dense, Dense> dense_tuple;
 
   void qr(Node&, Node&, Node&);
 
   bool need_split(const Node&);
 
-  void make_left_orthogonal(const Node&, Node&, Node&);
+  std::tuple<Dense, Dense> make_left_orthogonal(const Node&);
 
   void update_splitted_size(const Node&, int&, int&);
 
@@ -30,8 +34,8 @@ namespace hicma
     const virtual_<Node>&
   );
   MULTI_METHOD(
-    make_left_orthogonal_omm, void,
-    const virtual_<Node>&, Node&, Node&
+    make_left_orthogonal_omm, dense_tuple,
+    const virtual_<Node>&
   );
   MULTI_METHOD(
     update_splitted_size_omm, void,
