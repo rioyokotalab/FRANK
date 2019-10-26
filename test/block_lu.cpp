@@ -1,13 +1,16 @@
-#include "hicma/low_rank.h"
+#include "hicma/dense.h"
 #include "hicma/hierarchical.h"
 #include "hicma/functions.h"
-#include "hicma/operations.h"
+#include "hicma/operations/gemm.h"
+#include "hicma/operations/getrf.h"
+#include "hicma/operations/trsm.h"
 #include "hicma/gpu_batch/batch.h"
 #include "hicma/util/print.h"
 #include "hicma/util/timer.h"
 
 #include <algorithm>
 #include <cmath>
+#include <vector>
 
 #include "yorel/multi_methods.hpp"
 

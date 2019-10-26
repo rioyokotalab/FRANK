@@ -1,8 +1,15 @@
-#include "hicma/node_proxy.h"
-#include "hicma/low_rank.h"
 #include "hicma/gpu_batch/batch.h"
 
-#include "hicma/operations.h"
+#include "hicma/node_proxy.h"
+#include "hicma/dense.h"
+#include "hicma/low_rank.h"
+#include "hicma/operations/gemm.h"
+
+#ifdef USE_MKL
+#include <mkl.h>
+#else
+#include <cblas.h>
+#endif
 
 namespace hicma {
 

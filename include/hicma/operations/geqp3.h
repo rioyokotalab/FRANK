@@ -10,16 +10,6 @@ namespace hicma
 {
 
 class Node;
-class NodeProxy;
-class Dense;
-
-std::vector<int> geqp3(NodeProxy&, NodeProxy&, NodeProxy&);
-std::vector<int> geqp3(NodeProxy&, NodeProxy&, Node&);
-std::vector<int> geqp3(NodeProxy&, Node&, NodeProxy&);
-std::vector<int> geqp3(NodeProxy&, Node&, Node&);
-std::vector<int> geqp3(Node&, NodeProxy&, NodeProxy&);
-std::vector<int> geqp3(Node&, NodeProxy&, Node&);
-std::vector<int> geqp3(Node&, Node&, NodeProxy&);
 
 std::vector<int> geqp3(Node&, Node&, Node&);
 

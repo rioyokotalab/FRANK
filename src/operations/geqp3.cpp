@@ -1,7 +1,6 @@
 #include "hicma/operations/geqp3.h"
 
 #include "hicma/node.h"
-#include "hicma/node_proxy.h"
 #include "hicma/dense.h"
 
 #include <algorithm>
@@ -18,34 +17,6 @@
 
 namespace hicma
 {
-
-std::vector<int> geqp3(NodeProxy& A, NodeProxy& Q, NodeProxy& R) {
-  return geqp3(*A.ptr, *Q.ptr, *R.ptr);
-}
-std::vector<int> geqp3(
-  NodeProxy& A, NodeProxy& Q, Node& R
-) {
-  return geqp3(*A.ptr, *Q.ptr, R);
-}
-std::vector<int> geqp3(
-  NodeProxy& A, Node& Q, NodeProxy& R
-) {
-  return geqp3(*A.ptr, Q, *R.ptr);
-}
-std::vector<int> geqp3(
-  NodeProxy& A, Node& Q, Node& R
-) {
-  return geqp3(*A.ptr, Q, R);
-}
-std::vector<int> geqp3(Node& A, NodeProxy& Q, NodeProxy& R) {
-  return geqp3(A, *Q.ptr, *R.ptr);
-}
-std::vector<int> geqp3(Node& A, NodeProxy& Q, Node& R) {
-  return geqp3(A, *Q.ptr, R);
-}
-std::vector<int> geqp3(Node& A, Node& Q, NodeProxy& R) {
-  return geqp3(A, Q, *R.ptr);
-}
 
 std::vector<int> geqp3(Node& A, Node& Q, Node& R) {
   return geqp3_omm(A, Q, R);
