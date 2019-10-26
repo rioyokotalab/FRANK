@@ -249,6 +249,8 @@ namespace hicma {
   }
 
   void Dense::resize(const int dim0, const int dim1) {
+    assert(dim0 <= dim[0]);
+    assert(dim1 <= dim[1]);
     for (int i=0; i<dim0; i++) {
       for (int j=0; j<dim1; j++) {
         data[i*dim1+j] = data[i*dim[1]+j];
