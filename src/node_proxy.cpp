@@ -9,7 +9,7 @@ namespace hicma {
 
   NodeProxy::NodeProxy() = default;
 
-  NodeProxy::NodeProxy(const NodeProxy& A) : ptr(A.ptr->clone()) {}
+  NodeProxy::NodeProxy(const NodeProxy& A) : ptr(A->clone()) {}
 
   NodeProxy::NodeProxy(const Node& A) : ptr(A.clone()) {}
 
