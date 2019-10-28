@@ -1,6 +1,6 @@
 #include "hicma/operations/trmm.h"
 
-#include "hicma/node_proxy.h"
+#include "hicma/node.h"
 #include "hicma/dense.h"
 #include "hicma/low_rank.h"
 #include "hicma/hierarchical.h"
@@ -9,20 +9,15 @@
 #include <cassert>
 #include <iostream>
 
+#ifdef USE_MKL
+#include <mkl.h>
+#else
+#include <lapacke.h>
+#endif
 #include "yorel/multi_methods.hpp"
 
 namespace hicma
 {
-
-  void trmm(const NodeProxy& A, NodeProxy& B, const char& side, const char& uplo, const char& trans, const char& diag, const double& alpha) {
-    trmm(*A.ptr, *B.ptr, side, uplo, trans, diag, alpha);
-  }
-  void trmm(const NodeProxy& A, Node& B, const char& side, const char& uplo, const char& trans, const char& diag, const double& alpha) {
-    trmm(*A.ptr, B, side, uplo, trans, diag, alpha);
-  }
-  void trmm(const Node& A, NodeProxy& B, const char& side, const char& uplo, const char& trans, const char& diag, const double& alpha) {
-    trmm(A, *B.ptr, side, uplo, trans, diag, alpha);
-  }
 
   void trmm(const Node& A, Node& B, const char& side, const char& uplo, const char& trans, const char& diag, const double& alpha) {
     trmm_omm(A, B, side, uplo, trans, diag, alpha);
