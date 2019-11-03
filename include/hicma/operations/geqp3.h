@@ -11,7 +11,7 @@ namespace hicma
 
 class Node;
 
-std::vector<int> geqp3(Node&, Node&);
+std::vector<int> geqp3(Node& A, Node& R);
 
 MULTI_METHOD(
   geqp3_omm, std::vector<int>,
