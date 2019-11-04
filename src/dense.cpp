@@ -16,6 +16,8 @@
 
 #ifndef USE_MKL
 #include <lapacke.h>
+#else
+#include <mkl.h>
 #endif
 
 #include "yorel/multi_methods.hpp"
