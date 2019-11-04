@@ -112,11 +112,7 @@ install(
     DESTINATION include
 )
 install(
-    FILES ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libyomm11.a
-    DESTINATION lib
-)
-install(
-    TARGETS hicma
+    TARGETS hicma yomm11
     EXPORT hicma
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
