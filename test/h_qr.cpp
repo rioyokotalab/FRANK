@@ -89,7 +89,7 @@ int main(int argc, char** argv) {
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
   Dense DQ(Q);
   Dense QtQ(DQ.dim[1], DQ.dim[1]);
-  gemm(DQ, DQ, QtQ, CblasTrans, CblasNoTrans, 1, 1);
+  gemm(DQ, DQ, QtQ, true, false, 1, 1);
   Dense Id(identity, randx, QtQ.dim[0], QtQ.dim[1]);
   diff = (QtQ - Id).norm();
   norm = Id.norm();

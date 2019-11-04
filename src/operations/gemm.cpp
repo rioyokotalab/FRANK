@@ -30,7 +30,7 @@ void gemm(
 }
 void gemm(
   const Dense& A, const Dense& B, Dense& C,
-  const CBLAS_TRANSPOSE TransA, const CBLAS_TRANSPOSE TransB,
+  const bool TransA, const bool TransB,
   const double& alpha, const double& beta
 ) {
   start("-DGEMM");
@@ -47,10 +47,10 @@ void gemm(
     );
   }
   else {
-    int k = TransA == CblasNoTrans ? A.dim[1] : A.dim[0];
+    int k = TransA ? A.dim[0] : A.dim[1];
     cblas_dgemm(
       CblasRowMajor,
-      TransA, TransB,
+      TransA?CblasTrans:CblasNoTrans, TransB?CblasTrans:CblasNoTrans,
       C.dim[0], C.dim[1], k,
       alpha,
       &A[0], A.dim[1],
@@ -190,7 +190,7 @@ BEGIN_SPECIALIZATION(
     gemm_push(A, B, C);
   }
   else {
-    gemm(A, B, C, CblasNoTrans, CblasNoTrans, alpha, beta);
+    gemm(A, B, C, false, false, alpha, beta);
   }
 } END_SPECIALIZATION;
 

@@ -44,10 +44,9 @@ BEGIN_SPECIALIZATION(
   Dense& A, LowRank& B, Dense& T
 ) {
   Dense BV_copy(B.V);
-  gemm(B.S, BV_copy, B.V, CblasNoTrans, CblasNoTrans, 1, 0);
+  gemm(B.S, BV_copy, B.V, 1, 0);
   B.S = 0.0;
-  for(int i=0; i<std::min(B.S.dim[0], B.S.dim[1]); i++)
-    B.S(i, i) = 1.0;
+  for(int i=0; i<std::min(B.S.dim[0], B.S.dim[1]); i++) B.S(i, i) = 1.0;
   tpqrt(A, B.V, T);
 } END_SPECIALIZATION;
 

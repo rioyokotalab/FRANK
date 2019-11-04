@@ -1,11 +1,6 @@
 #ifndef operations_gemm_h
 #define operations_gemm_h
 
-#ifdef USE_MKL
-#include <mkl.h>
-#else
-#include <cblas.h>
-#endif
 #include "yorel/multi_methods.hpp"
 using yorel::multi_methods::virtual_;
 
@@ -19,7 +14,7 @@ void gemm(const Node&, const Node&, Node&, const double, const double);
 
 void gemm(
   const Dense& A, const Dense& B, Dense& C,
-  const CBLAS_TRANSPOSE TransA, const CBLAS_TRANSPOSE TransB,
+  const bool TransA, const bool TransB,
   const double& alpha, const double& beta
 );
 

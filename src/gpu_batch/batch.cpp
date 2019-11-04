@@ -5,12 +5,6 @@
 #include "hicma/low_rank.h"
 #include "hicma/operations/gemm.h"
 
-#ifdef USE_MKL
-#include <mkl.h>
-#else
-#include <cblas.h>
-#endif
-
 namespace hicma {
 
   std::vector<Dense> vecA;
@@ -23,7 +17,7 @@ namespace hicma {
   }
 
   void gemm_push(const Dense& A, const Dense& B, Dense& C) {
-    gemm(A, B, C, CblasNoTrans, CblasNoTrans, 1, 1);
+    gemm(A, B, C, false, false, 1, 1);
   }
 
   void rsvd_batch() {}

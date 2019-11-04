@@ -14,12 +14,6 @@
 #include <cmath>
 #include <memory>
 
-#ifndef USE_MKL
-#include <cblas.h>
-#include <lapacke.h>
-#else
-#include <mkl.h>
-#endif
 #include "yorel/multi_methods.hpp"
 
 
@@ -147,8 +141,8 @@ UniformHierarchical::UniformHierarchical(
         );
         Dense S(rank, rank);
         // Dense UD(col_basis[i]->dim[1], D.dim[1]);
-        // gemm(*col_basis[i], D, UD, CblasTrans, CblasNoTrans, 1, 0);
-        // gemm(UD, *row_basis[j], S, CblasNoTrans, CblasTrans, 1, 0);
+        // gemm(*col_basis[i], D, UD, true, false, 1, 0);
+        // gemm(UD, *row_basis[j], S, false, true, 1, 0);
         for (int ic=0; ic<rank; ++ic) {
           for (int jc=0; jc<rank; ++jc) {
             S(ic, jc) = D(selected_rows[i][ic], selected_cols[j][jc]);

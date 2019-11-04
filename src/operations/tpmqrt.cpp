@@ -65,7 +65,7 @@ BEGIN_SPECIALIZATION(
 ) {
   std::vector<double> x;
   Dense C(A);
-  gemm(V, B, C, CblasTrans, CblasNoTrans, 1, 1); //C = A + Y^t*B
+  gemm(V, B, C, true, false, 1, 1); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(Dense(identity, x, C.dim[0], C.dim[0]), C, A, -1, 1); //A = A - I*C //Recompression
   gemm(V, C, B, -1, 1); //B = B - Y*C
