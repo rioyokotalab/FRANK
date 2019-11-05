@@ -302,14 +302,34 @@ namespace hicma {
       dim[0], dim[1],
       &data[0], dim[1],
       &Sdiag[0],
-      &U[0], U.dim[0],
-      &V[0], V.dim[0],
+      &U[0], U.dim[1],
+      &V[0], V.dim[1],
       &work[0]
     );
     for(int i=0; i<std::min(dim[0], dim[1]); i++){
-      S[i*dim[1]+i] = Sdiag[i];
+      S(i, i) = Sdiag[i];
     }
     stop("-DGESVD",false);
+  }
+
+  void Dense::sdd(Dense& U, Dense& S, Dense& V) {
+    start("-DGESDD");
+    Dense Sdiag(std::min(dim[0], dim[1]), 1);
+    Dense work(std::min(dim[0], dim[1])-1, 1);
+    // dgesdd is faster, but makes little/no difference in randomized SVD
+    LAPACKE_dgesdd(
+      LAPACK_ROW_MAJOR,
+      'A',
+      dim[0], dim[1],
+      &data[0], dim[1],
+      &Sdiag[0],
+      &U[0], U.dim[1],
+      &V[0], V.dim[1]
+    );
+    for(int i=0; i<std::min(dim[0], dim[1]); i++){
+      S(i, i) = Sdiag[i];
+    }
+    stop("-DGESDD",false);
   }
 
   void Dense::svd(Dense& Sdiag) {

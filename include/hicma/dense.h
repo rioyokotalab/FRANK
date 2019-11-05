@@ -122,6 +122,8 @@ namespace hicma {
 
     void svd(Dense& U, Dense& S, Dense& V);
 
+    void sdd(Dense& U, Dense& S, Dense& V);
+
     void svd(Dense& S);
 
   };
