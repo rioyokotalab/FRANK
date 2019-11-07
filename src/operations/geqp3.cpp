@@ -28,7 +28,9 @@ BEGIN_SPECIALIZATION(
   Dense& A, Dense& R
 ) {
   assert(A.dim[1] == R.dim[1]);
-  std::vector<int> jpvt(A.dim[1], 0);
+  // The -1 initial value is important! HUGE PERFORMANCE IMPACT
+  // See netlib dgeqp3 reference
+  std::vector<int> jpvt(A.dim[1], -1);
   std::vector<double> tau(std::min(A.dim[0], A.dim[1]), 0);
   LAPACKE_dgeqp3(
     LAPACK_ROW_MAJOR,
