@@ -6,6 +6,7 @@
 #include "hicma/hierarchical.h"
 
 #include <iostream>
+#include <string>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 namespace pt = boost::property_tree;
@@ -100,8 +101,7 @@ namespace hicma {
     pt::ptree root_el;
     fillXML(A, root_el);
     tree.add_child("root", root_el);
-    pt::xml_writer_settings<std::string> settings(' ', 4);
-    write_xml(filename.c_str(), tree, std::locale(), settings);
+    write_xml(filename.c_str(), tree, std::locale());
   }
 
   void print(std::string s) {
