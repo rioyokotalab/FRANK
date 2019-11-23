@@ -55,6 +55,14 @@ namespace hicma {
     Dense Q(dim[0],rank);
     Dense R(rank,rank);
     qr(Y, Q, R); // [Q, R] = qr(Y)
+    // Dense B(rank, dim[1]);
+    // gemm(Q, A, B, true, false, 1, 0);
+    // Dense Ub(rank, rank);
+    // B.svd(Ub, S, V);
+    // Ub.resize(rank, k);
+    // S.resize(k, k);
+    // V.resize(k, dim[1]);
+    // gemm(Q, Ub, U, 1, 0);
     Dense Bt(dim[1],rank);
     gemm(A, Q, Bt, true, false, 1, 0); // B' = A' * Q
     Dense Qb(dim[1],rank);
