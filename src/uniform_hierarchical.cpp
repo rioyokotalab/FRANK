@@ -115,6 +115,8 @@ UniformHierarchical::UniformHierarchical(
         }
         if (row_basis[j].get() == nullptr) {
           // Create col block without admissible blocks
+          // TODO The number of blocks actually only works for admis=0!!! the
+          // first admis columns have a different number of admissable blocks
           Hierarchical col_block_h(std::pow(ni_level, level+1)-1-2*admis, 1);
           // Note the ins counter!
           for (int i_b=0, ins=0; i_b<std::pow(ni_level, level+1); ++i_b) {
