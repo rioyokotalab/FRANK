@@ -6,6 +6,9 @@ project(HICMA
 )
 set(CMAKE_CXX_STANDARD 11)
 
+find_package(CBLAS REQUIRED)
+find_package(LAPACKE REQUIRED)
+
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
@@ -92,7 +95,7 @@ if(USE_MKL)
     target_compile_definitions(hicma PUBLIC -DUSE_MKL)
     target_link_libraries(hicma mkl_intel_lp64 mkl_intel_thread mkl_core iomp5 pthread)
 else()
-    target_link_libraries(hicma cblas lapacke)
+    target_link_libraries(hicma ${CBLAS_LIBRARIES} ${LAPACKE_LIBRARIES})
 endif(USE_MKL)
 unset(USE_MKL CACHE)
 
@@ -111,12 +114,25 @@ install(
     DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/yomm11-src/include/yorel
     DESTINATION include
 )
-install(
-    TARGETS hicma yomm11
-    EXPORT hicma
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
+if(${CMAKE_VERSION} VERSION_LESS "3.10.0")
+    install(
+        FILES ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libyomm11.a
+        DESTINATION lib
+    )
+    install(
+        TARGETS hicma
+        EXPORT hicma
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
 )
+else()
+    install(
+        TARGETS hicma yomm11
+        EXPORT hicma
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+    )
+endif()
 install(
     EXPORT hicma
     DESTINATION cmake
