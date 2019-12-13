@@ -8,6 +8,7 @@
 #include "hicma/hierarchical.h"
 #include "hicma/operations/gemm.h"
 #include "hicma/operations/id.h"
+#include "hicma/operations/transpose.h"
 
 #include <algorithm>
 #include <cassert>
@@ -108,9 +109,9 @@ UniformHierarchical::UniformHierarchical(
           // col_basis[i] = std::make_shared<Dense>(LowRank(row_block, rank).U);
           // Construct U using the ID and remember the selected rows
           Dense Ut(rank, ni_child);
-          row_block.transpose();
+          transpose(row_block);
           selected_rows[i] = id(row_block, Ut, rank);
-          Ut.transpose();
+          transpose(Ut);
           col_basis[i] = std::make_shared<Dense>(std::move(Ut));
         }
         if (row_basis[j].get() == nullptr) {

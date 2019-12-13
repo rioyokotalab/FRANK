@@ -6,6 +6,7 @@
 #include "hicma/hierarchical.h"
 #include "hicma/functions.h"
 #include "hicma/operations/gemm.h"
+#include "hicma/operations/transpose.h"
 #include "hicma/operations/trmm.h"
 
 #include <iostream>
@@ -92,14 +93,14 @@ BEGIN_SPECIALIZATION(
   const bool trans
 ) {
   Dense Vt(V);
-  Vt.transpose();
+  transpose(Vt);
   Dense T_upper_tri(T);
   for(int i=0; i<T_upper_tri.dim[0]; i++)
     for(int j=0; j<i; j++)
       T_upper_tri(i, j) = 0.0;
   Hierarchical AH(A);
   gemm(Vt, B, AH, 1, 1); // AH = A + Vt*B
-  if(trans) T_upper_tri.transpose();
+  if(trans) transpose(T_upper_tri);
   gemm(T_upper_tri, AH, A, -1, 1); // A = A - (T or Tt)*AH
   Dense VTt(V.dim[0], T_upper_tri.dim[1]);
   gemm(V, T_upper_tri, VTt, 1, 0);
@@ -183,13 +184,13 @@ BEGIN_SPECIALIZATION(
 ) {
   Dense C(A);
   Dense Vt(V);
-  Vt.transpose();
+  transpose(Vt);
   Dense T_upper_tri(T);
   for(int i=0; i<T_upper_tri.dim[0]; i++)
     for(int j=0; j<i; j++)
       T_upper_tri(i, j) = 0.0;
   gemm(Vt, B, C, 1, 1); // C = A + Y^t*B
-  if(trans) T_upper_tri.transpose();
+  if(trans) transpose(T_upper_tri);
   gemm(T_upper_tri, C, A, -1, 1); // A = A - (T or Tt)*C
   Dense VTt(V.dim[0], T_upper_tri.dim[1]);
   gemm(V, T_upper_tri, VTt, 1, 1);

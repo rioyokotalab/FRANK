@@ -254,17 +254,6 @@ namespace hicma {
     return l2;
   }
 
-  void Hierarchical::transpose() {
-    Hierarchical C(dim[1], dim[0]);
-    for(int i=0; i<dim[0]; i++) {
-      for(int j=0; j<dim[1]; j++) {
-        swap((*this)(i, j), C(j, i));
-        C(j, i).transpose();
-      }
-    }
-    swap(*this, C);
-  }
-
   void Hierarchical::blr_col_qr(Hierarchical& Q, Hierarchical& R) {
     assert(dim[1] == 1);
     assert(Q.dim[0] == dim[0]);

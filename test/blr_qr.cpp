@@ -102,7 +102,8 @@ int main(int argc, char** argv) {
       Q(i, j) = Qsj(i, 0);
     }
     //Transpose of Qsj to be used in computing Rjk
-    Hierarchical TrQsj(Qsj); TrQsj.transpose();
+    Hierarchical TrQsj(Qsj);
+    transpose(TrQsj);
     //Process next columns
     for(int k=j+1; k<Nc; k++) {
       //Take k-th column

@@ -34,8 +34,6 @@ namespace hicma {
 
     virtual double norm() const;
 
-    virtual void transpose();
-
   };
 
 }

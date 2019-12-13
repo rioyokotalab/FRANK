@@ -61,6 +61,7 @@ add_library(hicma
     src/operations/qr.cpp
     src/operations/tpmqrt.cpp
     src/operations/tpqrt.cpp
+    src/operations/transpose.cpp
     src/operations/trmm.cpp
     src/operations/trsm.cpp
     $<TARGET_OBJECTS:util>

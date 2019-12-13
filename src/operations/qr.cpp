@@ -7,6 +7,7 @@
 #include "hicma/hierarchical.h"
 #include "hicma/functions.h"
 #include "hicma/operations/gemm.h"
+#include "hicma/operations/transpose.h"
 
 #include <cassert>
 #include <iostream>
@@ -89,7 +90,7 @@ namespace hicma
         Q(i, j) = Qj(i, 0);
       }
       Hierarchical TrQj(Qj);
-      TrQj.transpose();
+      transpose(TrQj);
       for(int k=j+1; k<A.dim[1]; k++) {
         //Take k-th column
         Hierarchical Ak(A.dim[0], 1);

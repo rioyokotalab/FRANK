@@ -259,15 +259,6 @@ namespace hicma {
     return Dense(*this).norm();
   }
 
-  void LowRank::transpose() {
-    using std::swap;
-    U.transpose();
-    S.transpose();
-    V.transpose();
-    swap(dim[0], dim[1]);
-    swap(U, V);
-  }
-
   void LowRank::mergeU(const LowRank& A, const LowRank& B) {
     assert(rank == A.rank + B.rank);
     for (int i=0; i<dim[0]; i++) {
