@@ -257,3 +257,10 @@ class Dense(Node):
             self.data, overwrite_a=False, compute_uv=True, full_matrices=True)
         for i in range(self.dim[1]):
             S[i, i] = Sdiag[i]
+
+    def svd_s_only(self, S):
+        x_gesvd = sl.get_lapack_funcs('gesvd', (self.data,))
+        _, Sdiag, __, ___  = x_gesvd(
+            self.data, overwrite_a=False, compute_uv=False, full_matrices=False)
+        for i in range(self.dim[1]):
+            S[i, i] = Sdiag[i]
