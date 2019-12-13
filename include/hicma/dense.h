@@ -116,8 +116,6 @@ namespace hicma {
 
     Dense transpose() const;
 
-    void print() const override;
-
     void transpose() override;
 
     void svd(Dense& U, Dense& S, Dense& V);

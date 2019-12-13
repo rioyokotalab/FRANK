@@ -80,8 +80,6 @@ namespace hicma {
 
     double norm() const override;
 
-    void print() const override;
-
     void transpose() override;
 
     void blr_col_qr(Hierarchical& Q, Hierarchical& R);

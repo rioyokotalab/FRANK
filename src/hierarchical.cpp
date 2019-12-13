@@ -254,17 +254,6 @@ namespace hicma {
     return l2;
   }
 
-  void Hierarchical::print() const {
-    for (int i=0; i<dim[0]; i++) {
-      for (int j=0; j<dim[1]; j++) {
-        std::cout << (*this)(i, j).type() << " (" << i << "," << j << ")" << std::endl;
-        (*this)(i,j).print();
-      }
-      std::cout << std::endl;
-    }
-    std::cout << "----------------------------------------------------------------------------------" << std::endl;
-  }
-
   void Hierarchical::transpose() {
     Hierarchical C(dim[1], dim[0]);
     for(int i=0; i<dim[0]; i++) {

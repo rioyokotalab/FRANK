@@ -61,10 +61,6 @@ namespace hicma {
     return ptr->norm();
   }
 
-  void NodeProxy::print() const {
-    ptr->print();
-  }
-
   void NodeProxy::transpose() {
     ptr->transpose();
   }

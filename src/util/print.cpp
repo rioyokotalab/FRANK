@@ -1,7 +1,6 @@
-#ifndef print_h
-#define print_h
 #include "hicma/util/print.h"
 #include "hicma/node.h"
+#include "hicma/dense.h"
 #include "hicma/low_rank.h"
 #include "hicma/hierarchical.h"
 
@@ -104,6 +103,62 @@ namespace hicma {
     write_xml(filename.c_str(), tree, std::locale());
   }
 
+  void print(const Node& A) {
+    print_omm(A);
+  }
+
+  void print_separation_line() {
+    for (int i=0; i<82; ++i) std::cout << "-";
+    std::cout << std::endl;
+  }
+
+  BEGIN_SPECIALIZATION(
+    print_omm, void,
+    const Node& A
+  ) {
+    std::cout << "Uninitialized (Node)" << std::endl;
+  } END_SPECIALIZATION;
+
+  BEGIN_SPECIALIZATION(
+    print_omm, void,
+    const Dense& A
+  ) {
+    for (int i=0; i<A.dim[0]; i++) {
+      for (int j=0; j<A.dim[1]; j++) {
+        std::cout << std::setw(20) << std::setprecision(15) << A(i, j) << ' ';
+      }
+      std::cout << std::endl;
+    }
+    print_separation_line();
+  } END_SPECIALIZATION;
+
+  BEGIN_SPECIALIZATION(
+    print_omm, void,
+    const LowRank& A
+  ) {
+    std::cout << "U : --------------------------------------" << std::endl;
+    print(A.U);
+    std::cout << "S : --------------------------------------" << std::endl;
+    print(A.S);
+    std::cout << "V : --------------------------------------" << std::endl;
+    print(A.V);
+    print_separation_line();
+  } END_SPECIALIZATION;
+
+  BEGIN_SPECIALIZATION(
+    print_omm, void,
+    const Hierarchical& A
+  ) {
+    for (int i=0; i<A.dim[0]; i++) {
+      for (int j=0; j<A.dim[1]; j++) {
+        std::cout << A(i, j).type() << " (" << i << "," << j << ")" << std::endl;
+        print(A(i,j));
+      }
+      std::cout << std::endl;
+    }
+    print_separation_line();
+  } END_SPECIALIZATION;
+
   void print(std::string s) {
     if (!VERBOSE) return;
     s += " ";
@@ -129,4 +184,3 @@ namespace hicma {
   template void print<double>(std::string s, double v, bool fixed=true);
 
 }
-#endif

@@ -272,16 +272,6 @@ namespace hicma {
     return A;
   }
 
-  void Dense::print() const {
-    for (int i=0; i<dim[0]; i++) {
-      for (int j=0; j<dim[1]; j++) {
-        std::cout << std::setw(20) << std::setprecision(15) << data[i*dim[1]+j] << ' ';
-      }
-      std::cout << std::endl;
-    }
-    std::cout << "----------------------------------------------------------------------------------" << std::endl;
-  }
-
   void Dense::transpose() {
     std::vector<double> _data(data);
     std::swap(dim[0], dim[1]);

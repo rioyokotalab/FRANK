@@ -46,8 +46,6 @@ namespace hicma {
 
     double norm() const override;
 
-    void print() const override;
-
     void transpose() override;
 
     void mergeU(const LowRank& A, const LowRank& B);
