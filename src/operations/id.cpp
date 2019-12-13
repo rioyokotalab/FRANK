@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
+#include <tuple>
 #include <vector>
 
 #ifdef USE_MKL

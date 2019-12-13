@@ -336,6 +336,7 @@ namespace hicma {
     start("-DGESVD");
     Dense U(dim[0],dim[1]),V(dim[1],dim[0]);
     Dense work(dim[1]-1,1);
+    // Using 'A' is a major waste of time
     LAPACKE_dgesvd(
       LAPACK_ROW_MAJOR,
       'A', 'A',

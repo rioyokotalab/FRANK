@@ -15,7 +15,6 @@
 #include <cassert>
 #include <cmath>
 #include <iostream>
-#include <tuple>
 #include <utility>
 
 #include "yorel/multi_methods.hpp"
