@@ -3,6 +3,7 @@
 #include "hicma/functions.h"
 #include "hicma/operations.h"
 #include "hicma/gpu_batch/batch.h"
+#include "hicma/util/l2_error.h"
 #include "hicma/util/print.h"
 #include "hicma/util/timer.h"
 #include "hicma/util/counter.h"
@@ -77,13 +78,10 @@ int main(int argc, char** argv) {
   Dense x(N); x = 1.0;
   Dense Ax(N);
   gemm(A, x, Ax, 1, 0);
-  //Approximation error
-  double diff, l2;
-  diff = norm(Dense(A) - Dense(D));
-  l2 = norm(D);
+
   print("BLR QR Decomposition");
   print("Compression Accuracy");
-  print("Rel. L2 Error", std::sqrt(diff/l2), false);
+  print("Rel. L2 Error", l2_error(A, D), false);
 
   print("Time");
   resetCounter("LR-addition");
@@ -129,20 +127,16 @@ int main(int argc, char** argv) {
   gemm(A, x, Rx, 1, 0);
   Dense QRx(N);
   gemm(Q, Rx, QRx, 1, 0);
-  diff = norm(Ax - QRx);
-  l2 = norm(Ax);
   print("Residual");
-  print("Rel. Error (operator norm)", std::sqrt(diff/l2), false);
+  print("Rel. Error (operator norm)", l2_error(QRx, Ax), false);
   //Orthogonality
   Dense Qx(N);
   gemm(Q, x, Qx, 1, 0);
   Dense QtQx(N);
   transpose(Q);
   gemm(Q, Qx, QtQx, 1, 0);
-  diff = norm(QtQx - x);
-  l2 = (double)N;
   print("Orthogonality");
-  print("Rel. Error (operator norm)", std::sqrt(diff/l2), false);
+  print("Rel. Error (operator norm)", l2_error(QtQx, x), false);
   return 0;
 }
 

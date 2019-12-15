@@ -6,6 +6,7 @@
 #include "hicma/operations/norm.h"
 #include "hicma/operations/trsm.h"
 #include "hicma/gpu_batch/batch.h"
+#include "hicma/util/l2_error.h"
 #include "hicma/util/print.h"
 #include "hicma/util/timer.h"
 
@@ -88,9 +89,7 @@ int main(int argc, char** argv) {
   stop("Backward substitution");
   printTime("-DTRSM");
   printTime("-DGEMM");
-  double diff = norm(Dense(x) - Dense(b));
-  double l2 = norm(x);
   print("Accuracy");
-  print("Rel. L2 Error", std::sqrt(diff/l2), false);
+  print("Rel. L2 Error", l2_error(x, b), false);
   return 0;
 }

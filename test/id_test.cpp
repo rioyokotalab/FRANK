@@ -5,6 +5,7 @@
 #include "hicma/operations/gemm.h"
 #include "hicma/operations/id.h"
 #include "hicma/operations/norm.h"
+#include "hicma/util/l2_error.h"
 #include "hicma/util/print.h"
 #include "hicma/util/timer.h"
 
@@ -54,9 +55,7 @@ TEST(IDTest, Precision) {
   gemm(Acols, V, Atest, 1, 0);
 
   start("Verification");
-  double l2 = norm(A);
-  double diff = norm(A - Atest);
   stop("Verification");
   print("Compression Accuracy");
-  print("Rel. L2 Error", std::sqrt(diff/l2), false);
+  print("Rel. L2 Error", l2_error(A, Atest), false);
 }

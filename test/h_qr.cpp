@@ -3,6 +3,7 @@
 #include "hicma/functions.h"
 #include "hicma/operations.h"
 #include "hicma/gpu_batch/batch.h"
+#include "hicma/util/l2_error.h"
 #include "hicma/util/print.h"
 #include "hicma/util/timer.h"
 
@@ -71,11 +72,9 @@ int main(int argc, char** argv) {
   Hierarchical D(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   stop("Dense tree");
   start("Verification");
-  double diff = norm(Dense(A) - Dense(D));
-  double l2 = norm(D);
   stop("Verification");
   print("Compression Accuracy");
-  print("Rel. L2 Error", std::sqrt(diff/l2), false);
+  print("Rel. L2 Error", l2_error(A, A), false);
   print("Time");
   start("QR decomposition");
   qr(A, Q, R);
@@ -83,17 +82,13 @@ int main(int argc, char** argv) {
   printTime("-DGEQRF");
   printTime("-DGEMM");
   gemm(Q, R, QR, 1, 1);
-  diff = norm(Dense(QR) - Dense(D));
-  l2 = norm(D);
   print("QR Accuracy");
-  print("Rel. L2 Error", std::sqrt(diff/l2), false);
+  print("Rel. L2 Error", l2_error(QR, D), false);
   Dense DQ(Q);
   Dense QtQ(DQ.dim[1], DQ.dim[1]);
   gemm(DQ, DQ, QtQ, true, false, 1, 1);
   Dense Id(identity, randx, QtQ.dim[0], QtQ.dim[1]);
-  diff = norm(QtQ - Id);
-  l2 = norm(Id);
-  print("Rel. L2 Orthogonality", std::sqrt(diff/l2), false);
+  print("Rel. L2 Orthogonality", l2_error(QtQ, Id), false);
   return 0;
 }
 

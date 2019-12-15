@@ -3,6 +3,7 @@
 #include "hicma/functions.h"
 #include "hicma/operations.h"
 #include "hicma/gpu_batch/batch.h"
+#include "hicma/util/l2_error.h"
 #include "hicma/util/print.h"
 #include "hicma/util/timer.h"
 
@@ -78,10 +79,8 @@ int main(int argc, char** argv) {
   printTime("-DGEMM");
   Dense QR(N, N);
   gemm(Dense(Q), Dense(R), QR, 1, 1);
-  double diff = norm(Dense(_A) - QR);
-  double l2 = norm(_A);
   print("Accuracy");
-  print("Rel. L2 Error", std::sqrt(diff/l2), false);
+  print("Rel. L2 Error", l2_error(_A, QR), false);
   return 0;
 }
 

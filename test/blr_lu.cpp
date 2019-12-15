@@ -3,6 +3,7 @@
 #include "hicma/functions.h"
 #include "hicma/operations.h"
 #include "hicma/gpu_batch/batch.h"
+#include "hicma/util/l2_error.h"
 #include "hicma/util/print.h"
 #include "hicma/util/timer.h"
 
@@ -53,15 +54,8 @@ int main(int argc, char** argv) {
     }
   }
   rsvd_batch();
-  double diff = 0, l2 = 0;
-  for (int ic=0; ic<Nc; ic++) {
-    for (int jc=0; jc<Nc; jc++) {
-      diff += norm(Dense(A(ic,jc)) - Dense(D(ic,jc)));
-      l2 += norm(D(ic,jc));
-    }
-  }
   print("Compression Accuracy");
-  print("Rel. L2 Error", std::sqrt(diff/l2), false);
+  print("Rel. L2 Error", l2_error(A, D), false);
   print("Time");
   gemm(A, x, b, 1, 1);
   gemm_batch();
@@ -103,9 +97,7 @@ int main(int argc, char** argv) {
   stop("Backward substitution");
   printTime("-DTRSM");
   printTime("-DGEMM");
-  diff = norm(Dense(x) - Dense(b));
-  l2 = norm(x);
   print("LU Accuracy");
-  print("Rel. L2 Error", std::sqrt(diff/l2), false);
+  print("Rel. L2 Error", l2_error(x, b), false);
   return 0;
 }

@@ -2,6 +2,7 @@
 #include "functions.h"
 #include "print.h"
 #include "timer.h"
+#include "hicma/util/l2_error.h"
 
 #include <algorithm>
 #include <cublas_v2.h>
@@ -139,10 +140,8 @@ int main(int argc, char** argv)
     vecLR.push_back(LR);
   }
   for (int b=0; b<batchCount; b++) {
-    double diff = norm(vecA[b] - Dense(vecLR[b]));
-    double l2 = norm(vecA[b]);
     print("rank", h_k[b]);
-    print("Rel. L2 Error", std::sqrt(diff/l2), false);
+    print("Rel. L2 Error", l2_error(vecA[b], vecLR[b]), false);
   }
   cudaFree(p_A);
   cudaFree(p_U);

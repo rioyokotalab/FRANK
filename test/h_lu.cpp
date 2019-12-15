@@ -3,6 +3,7 @@
 #include "hicma/functions.h"
 #include "hicma/operations.h"
 #include "hicma/gpu_batch/batch.h"
+#include "hicma/util/l2_error.h"
 #include "hicma/util/print.h"
 #include "hicma/util/timer.h"
 
@@ -66,11 +67,9 @@ int main(int argc, char** argv) {
   Hierarchical x(random_uniform, randx, N, 1, rank, nleaf, admis, nblocks, 1);
   Hierarchical b(zeros, randx, N, 1, rank, nleaf, admis, nblocks, 1);
   //start("Verification");
-  //double diff = norm(Dense(A) - Dense(D));
-  //double l2 = norm(D);
   //stop("Verification");
   //print("Compression Accuracy");
-  //print("Rel. L2 Error", std::sqrt(diff/l2), false);
+  //print("Rel. L2 Error", l2_error(A, D), false);
   print("Time");
   gemm(A, x, b, 1, 1);
   gemm_batch();
@@ -92,9 +91,7 @@ int main(int argc, char** argv) {
   stop("Backward substitution");
   printTime("-DTRSM");
   printTime("-DGEMM");
-  double diff = norm(Dense(x) - Dense(b));
-  double l2 = norm(x);
   print("LU Accuracy");
-  print("Rel. L2 Error", std::sqrt(diff/l2), false);
+  print("Rel. L2 Error", l2_error(x, b), false);
   return 0;
 }

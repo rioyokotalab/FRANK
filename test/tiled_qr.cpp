@@ -3,6 +3,7 @@
 #include "hicma/functions.h"
 #include "hicma/operations.h"
 #include "hicma/gpu_batch/batch.h"
+#include "hicma/util/l2_error.h"
 #include "hicma/util/print.h"
 #include "hicma/util/timer.h"
 
@@ -88,7 +89,6 @@ int main(int argc, char** argv) {
   Dense x(N); x = 1.0;
   Dense Ax(N);
   gemm(A, x, Ax, 1, 0);
-
   print("Time");
   start("QR decomposition");
   for(int k = 0; k < Nc; k++) {
@@ -129,20 +129,16 @@ int main(int argc, char** argv) {
   gemm(A, x, Rx, 1, 0);
   Dense QRx(N);
   gemm(Q, Rx, QRx, 1, 0);
-  diff = norm(Ax - QRx);
-  l2 = norm(Ax);
   print("Accuracy");
-  print("Rel. Error (operator norm)", std::sqrt(diff/l2), false);
+  print("Rel. Error (operator norm)", l2_error(QRx, Ax), false);
   //Orthogonality
   Dense Qx(N);
   gemm(Q, x, Qx, 1, 0);
   Dense QtQx(N);
   transpose(Q);
   gemm(Q, Qx, QtQx, 1, 0);
-  diff = norm(QtQx - x);
-  l2 = (double)N;
   print("Orthogonality");
-  print("Rel. Error (operator norm)", std::sqrt(diff/l2), false);
+  print("Rel. Error (operator norm)", l2_error(QtQx, x), false);
   return 0;
 }
 

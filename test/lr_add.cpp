@@ -2,6 +2,7 @@
 #include "hicma/low_rank.h"
 #include "hicma/functions.h"
 #include "hicma/operations/norm.h"
+#include "hicma/util/l2_error.h"
 #include "hicma/util/print.h"
 #include "hicma/util/timer.h"
 
@@ -31,9 +32,7 @@ int main(int argc, char** argv) {
   LowRank B(D, rank);
   A += B;
   stop("LR Add");
-  double diff = norm(D + D - Dense(A));
-  double l2 = norm(D);
   print("Accuracy");
-  print("Rel. L2 Error", std::sqrt(diff/l2), false);
+  print("Rel. L2 Error", l2_error(D+D, A), false);
   return 0;
 }

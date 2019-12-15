@@ -18,6 +18,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(add_external)
 
 add_library(util OBJECT
+    src/util/l2_error.cpp
     src/util/print.cpp
     src/util/timer.cpp
     src/util/counter.cpp
