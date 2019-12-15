@@ -1,5 +1,5 @@
-#ifndef util_l2_error_h
-#define util_l2_error_h
+#ifndef hicma_util_l2_error_h
+#define hicma_util_l2_error_h
 
 #include "yorel/multi_methods.hpp"
 using yorel::multi_methods::virtual_;
@@ -19,4 +19,4 @@ MULTI_METHOD(
 
 } // namespace hicma
 
-#endif // util_l2_error_h
+#endif // hicma_util_l2_error_h

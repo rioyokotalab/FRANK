@@ -1,5 +1,5 @@
-#ifndef dense_h
-#define dense_h
+#ifndef hicma_classes_dense_h
+#define hicma_classes_dense_h
 
 #include "hicma/classes/node.h"
 
@@ -126,5 +126,6 @@ namespace hicma {
 
   MULTI_METHOD(make_dense, Dense, const virtual_<Node>&);
 
-}
-#endif
+} // namespace hicma
+
+#endif // hicma_classes_dense_h

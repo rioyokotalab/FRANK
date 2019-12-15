@@ -1,5 +1,5 @@
-#ifndef print_h
-#define print_h
+#ifndef hicma_util_print_h
+#define hicma_util_print_h
 
 #include <string>
 
@@ -27,4 +27,5 @@ namespace hicma {
   void print(std::string s, T v, bool fixed=true);
 
 }
-#endif
+
+#endif // hicma_util_print_h

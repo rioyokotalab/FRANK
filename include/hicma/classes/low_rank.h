@@ -1,5 +1,5 @@
-#ifndef low_rank_h
-#define low_rank_h
+#ifndef hicma_classes_low_rank_h
+#define hicma_classes_low_rank_h
 
 #include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
@@ -51,5 +51,7 @@ namespace hicma {
     void mergeV(const LowRank& A, const LowRank& B);
 
   };
-}
-#endif
+
+} // namespace hicma
+
+#endif // hicma_classes_low_rank_h

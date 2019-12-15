@@ -1,5 +1,5 @@
-#ifndef hierarchical_h
-#define hierarchical_h
+#ifndef hicma_classes_hierarchical_h
+#define hicma_classes_hierarchical_h
 
 #include "hicma/classes/node.h"
 #include "hicma/classes/node_proxy.h"
@@ -87,5 +87,7 @@ namespace hicma {
     void col_qr(const int j, Hierarchical& Q, Hierarchical &R);
 
   };
-}
-#endif
+
+} // namespace hicma
+
+#endif // hicma_classes_hierarchical_h

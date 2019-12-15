@@ -183,4 +183,4 @@ namespace hicma {
   template void print<float>(std::string s, float v, bool fixed=true);
   template void print<double>(std::string s, double v, bool fixed=true);
 
-}
+} // namespace hicma

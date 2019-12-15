@@ -33,4 +33,4 @@ namespace hicma {
 
   const char* Node::type() const { return "Node"; }
 
-}
+} // namespace hicma

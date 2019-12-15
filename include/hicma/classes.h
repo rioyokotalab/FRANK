@@ -1,5 +1,5 @@
-#ifndef classes_h
-#define classes_h
+#ifndef hicma_classes_h
+#define hicma_classes_h
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
@@ -9,4 +9,4 @@
 #include "hicma/classes/node.h"
 #include "hicma/classes/uniform_hierarchical.h"
 
-#endif // classes_h
+#endif // hicma_classes_h

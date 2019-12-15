@@ -1,5 +1,5 @@
-#ifndef low_rank_shared_h
-#define low_rank_shared_h
+#ifndef hicma_classes_low_rank_shared_h
+#define hicma_classes_low_rank_shared_h
 
 #include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
@@ -51,4 +51,4 @@ class LowRankShared : public Node {
 
 } // namespace hicma
 
-#endif // low_rank_shared_h
+#endif // hicma_classes_low_rank_shared_h

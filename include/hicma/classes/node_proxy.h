@@ -1,5 +1,5 @@
-#ifndef any_h
-#define any_h
+#ifndef hicma_classes_node_proxy_h
+#define hicma_classes_node_proxy_h
 
 #include <memory>
 
@@ -40,6 +40,7 @@ namespace hicma {
     const char* type() const;
 
   };
-}
 
-#endif
+} // namespace hicma
+
+#endif // hicma_classes_node_proxy_h

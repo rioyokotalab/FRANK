@@ -1,5 +1,5 @@
-#ifndef timer_h
-#define timer_h
+#ifndef hicma_util_timer_h
+#define hicma_util_timer_h
 
 #include <map>
 #include <string>
@@ -15,5 +15,7 @@ namespace hicma {
   void stop(std::string event, bool verbose=true);
 
   void printTime(std::string event);
-}
-#endif
+
+} // namespace hicma
+
+#endif // hicma_util_timer_h

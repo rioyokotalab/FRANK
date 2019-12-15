@@ -301,4 +301,4 @@ namespace hicma {
     }
   }
 
-}
+} // namespace hicma

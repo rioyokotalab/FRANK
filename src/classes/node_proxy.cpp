@@ -57,4 +57,4 @@ namespace hicma {
 
   const char* NodeProxy::type() const { return ptr->type(); }
 
-}
+} // namespace hicma

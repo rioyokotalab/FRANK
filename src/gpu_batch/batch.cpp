@@ -23,4 +23,5 @@ namespace hicma {
   void rsvd_batch() {}
 
   void gemm_batch() {}
-}
+
+} // namespace hicma

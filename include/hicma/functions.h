@@ -1,5 +1,5 @@
-#ifndef functions_h
-#define functions_h
+#ifndef hicma_functions_h
+#define hicma_functions_h
 
 #include <vector>
 
@@ -115,4 +115,4 @@ bool is_admissible_nd_morton(
 
 } // namespace hicma
 
-#endif
+#endif // hicma_functions_h

@@ -28,4 +28,5 @@ namespace hicma {
     print(event, sumTime[event]);
     sumTime[event] = 0;
   }
-}
+
+} // namespace hicma

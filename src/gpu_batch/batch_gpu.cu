@@ -297,4 +297,4 @@ namespace hicma {
     stop("Free memory");
   }
 
-}
+} // namespace hicma

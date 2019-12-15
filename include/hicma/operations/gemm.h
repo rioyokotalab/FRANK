@@ -1,5 +1,5 @@
-#ifndef operations_gemm_h
-#define operations_gemm_h
+#ifndef hicma_operations_gemm_h
+#define hicma_operations_gemm_h
 
 #include "yorel/multi_methods.hpp"
 using yorel::multi_methods::virtual_;
@@ -29,4 +29,4 @@ MULTI_METHOD(
 
 } // namespace hicma
 
-#endif // operations_gemm_h
+#endif // hicma_operations_gemm_h

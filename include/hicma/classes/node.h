@@ -1,5 +1,5 @@
-#ifndef node_h
-#define node_h
+#ifndef hicma_classes_node_h
+#define hicma_classes_node_h
 
 #include "yorel/multi_methods.hpp"
 
@@ -30,5 +30,6 @@ namespace hicma {
 
   };
 
-}
-#endif
+} // namespace hicma
+
+#endif // hicma_classes_node_h

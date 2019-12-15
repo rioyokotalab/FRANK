@@ -347,4 +347,4 @@ namespace hicma {
     abort();
   } END_SPECIALIZATION;
 
-}
+} // namespace hicma

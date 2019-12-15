@@ -1,5 +1,5 @@
-#ifndef batch_h
-#define batch_h
+#ifndef hicma_batch_h
+#define hicma_batch_h
 
 #include <vector>
 
@@ -20,6 +20,7 @@ namespace hicma {
   void rsvd_batch();
 
   void gemm_batch();
-}
 
-#endif
+} // namespace hicma
+
+#endif // hicma_batch_h

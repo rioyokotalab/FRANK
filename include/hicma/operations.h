@@ -1,5 +1,5 @@
-#ifndef operations_h
-#define operations_h
+#ifndef hicma_operations_h
+#define hicma_operations_h
 
 #include "hicma/operations/gemm.h"
 #include "hicma/operations/geqp3.h"
@@ -18,4 +18,4 @@
 #include "hicma/operations/trmm.h"
 #include "hicma/operations/trsm.h"
 
-#endif // operations_h
+#endif // hicma_operations_h

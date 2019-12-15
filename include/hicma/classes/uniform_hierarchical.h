@@ -1,5 +1,5 @@
-#ifndef uniform_hierarchical_h
-#define uniform_hierarchical_h
+#ifndef hicma_classes_uniform_hierarchical_h
+#define hicma_classes_uniform_hierarchical_h
 
 #include "hicma/classes/hierarchical.h"
 
@@ -68,4 +68,4 @@ class UniformHierarchical : public Hierarchical {
 
 } // namespace hicma
 
-#endif // uniform_hierarchical_h
+#endif // hicma_classes_uniform_hierarchical_h
