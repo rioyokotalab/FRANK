@@ -14,10 +14,10 @@
 #include <iomanip>
 #include <utility>
 
-#ifndef USE_MKL
-#include <lapacke.h>
-#else
+#ifdef USE_MKL
 #include <mkl.h>
+#else
+#include <lapacke.h>
 #endif
 
 #include "yorel/multi_methods.hpp"
