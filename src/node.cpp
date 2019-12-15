@@ -9,10 +9,10 @@ namespace hicma {
   Node::Node() : i_abs(0), j_abs(0), level(0) { MM_INIT(); }
 
   Node::Node(
-             const int _i_abs,
-             const int _j_abs,
-             const int _level)
-    : i_abs(_i_abs), j_abs(_j_abs), level(_level) { MM_INIT(); }
+             const int i_abs,
+             const int j_abs,
+             const int level)
+    : i_abs(i_abs), j_abs(j_abs), level(level) { MM_INIT(); }
 
   Node::Node(const Node& A)
     : i_abs(A.i_abs), j_abs(A.j_abs), level(A.level) { MM_INIT(); }

@@ -259,7 +259,7 @@ namespace hicma {
     Dense Qb(DB.dim[0], DB.dim[1]);
     Dense Rb(DB.dim[1], DB.dim[1]);
     qr(DB, Qb, Rb);
-    R(0, 0) = Rb;
+    R(0, 0) = std::move(Rb);
     //Slice Qb based on B
     Hierarchical HQb(B.dim[0], B.dim[1]);
     int rowOffset = 0;

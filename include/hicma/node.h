@@ -5,10 +5,6 @@
 
 namespace hicma {
 
-  class Dense;
-  class LowRank;
-  class Hierarchical;
-
   class Node : public yorel::multi_methods::selector {
   public:
     MM_CLASS(Node);
