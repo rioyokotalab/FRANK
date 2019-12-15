@@ -1,5 +1,3 @@
-#ifndef timer_h
-#define timer_h
 #include "hicma/util/print.h"
 #include "hicma/util/timer.h"
 
@@ -18,7 +16,7 @@ namespace hicma {
     tic[event] = t;
   }
 
-  void stop(std::string event, bool verbose=true) {
+  void stop(std::string event, bool verbose) {
     timeval toc;
     gettimeofday(&toc, NULL);
     sumTime[event] += toc.tv_sec - tic[event].tv_sec +
@@ -31,4 +29,3 @@ namespace hicma {
     sumTime[event] = 0;
   }
 }
-#endif
