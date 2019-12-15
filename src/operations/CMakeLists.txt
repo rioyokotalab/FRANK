@@ -1,0 +1,24 @@
+add_library(operations OBJECT
+    gemm.cpp
+    geqrt.cpp
+    geqp3.cpp
+    getrf.cpp
+    get_dim.cpp
+    id.cpp
+    larfb.cpp
+    latms.cpp
+    misc.cpp
+    norm.cpp
+    qr.cpp
+    tpmqrt.cpp
+    tpqrt.cpp
+    transpose.cpp
+    trmm.cpp
+    trsm.cpp
+)
+target_include_directories(operations
+PUBLIC
+    $<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/yomm11-src/include>
+)
