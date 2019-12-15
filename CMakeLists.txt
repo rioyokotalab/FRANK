@@ -42,13 +42,13 @@ target_include_directories(gpu_batch
 
 add_external_dependency(yomm11)
 add_library(hicma
-    src/node.cpp
-    src/node_proxy.cpp
-    src/dense.cpp
-    src/low_rank.cpp
-    src/low_rank_shared.cpp
-    src/hierarchical.cpp
-    src/uniform_hierarchical.cpp
+    src/classes/node.cpp
+    src/classes/node_proxy.cpp
+    src/classes/dense.cpp
+    src/classes/low_rank.cpp
+    src/classes/low_rank_shared.cpp
+    src/classes/hierarchical.cpp
+    src/classes/uniform_hierarchical.cpp
     src/functions.cpp
     src/operations/gemm.cpp
     src/operations/geqrt.cpp

@@ -1,14 +1,4 @@
-#include "hicma/dense.h"
-#include "hicma/hierarchical.h"
-#include "hicma/functions.h"
-#include "hicma/operations/gemm.h"
-#include "hicma/operations/getrf.h"
-#include "hicma/operations/norm.h"
-#include "hicma/operations/trsm.h"
-#include "hicma/gpu_batch/batch.h"
-#include "hicma/util/l2_error.h"
-#include "hicma/util/print.h"
-#include "hicma/util/timer.h"
+#include "hicma/hicma.h"
 
 #include <algorithm>
 #include <cmath>

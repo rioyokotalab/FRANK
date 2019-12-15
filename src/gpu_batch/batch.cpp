@@ -1,8 +1,8 @@
 #include "hicma/gpu_batch/batch.h"
 
-#include "hicma/node_proxy.h"
-#include "hicma/dense.h"
-#include "hicma/low_rank.h"
+#include "hicma/classes/node_proxy.h"
+#include "hicma/classes/dense.h"
+#include "hicma/classes/low_rank.h"
 #include "hicma/operations/gemm.h"
 
 namespace hicma {

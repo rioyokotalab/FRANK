@@ -1,7 +1,7 @@
 #include "hicma/operations/misc.h"
 
-#include "hicma/node.h"
-#include "hicma/dense.h"
+#include "hicma/classes/node.h"
+#include "hicma/classes/dense.h"
 #include <iostream>
 #include <cmath>
 #include <random>

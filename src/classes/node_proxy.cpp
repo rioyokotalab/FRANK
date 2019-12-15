@@ -1,6 +1,6 @@
-#include "hicma/node_proxy.h"
+#include "hicma/classes/node_proxy.h"
 
-#include "hicma/node.h"
+#include "hicma/classes/node.h"
 
 #include <cassert>
 #include <iostream>

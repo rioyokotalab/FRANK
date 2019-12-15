@@ -1,8 +1,8 @@
 #include "hicma/operations/geqrt.h"
 
-#include "hicma/node.h"
-#include "hicma/dense.h"
-#include "hicma/hierarchical.h"
+#include "hicma/classes/node.h"
+#include "hicma/classes/dense.h"
+#include "hicma/classes/hierarchical.h"
 #include "hicma/operations/tpmqrt.h"
 #include "hicma/operations/tpqrt.h"
 #include "hicma/operations/larfb.h"

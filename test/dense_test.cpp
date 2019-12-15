@@ -1,6 +1,4 @@
-#include "hicma/dense.h"
-#include "hicma/hierarchical.h"
-#include "hicma/functions.h"
+#include "hicma/hicma.h"
 
 #include "gtest/gtest.h"
 

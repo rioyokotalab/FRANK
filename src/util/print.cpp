@@ -1,8 +1,8 @@
 #include "hicma/util/print.h"
-#include "hicma/node.h"
-#include "hicma/dense.h"
-#include "hicma/low_rank.h"
-#include "hicma/hierarchical.h"
+#include "hicma/classes/node.h"
+#include "hicma/classes/dense.h"
+#include "hicma/classes/low_rank.h"
+#include "hicma/classes/hierarchical.h"
 
 #include <iostream>
 #include <string>

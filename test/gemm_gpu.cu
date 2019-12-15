@@ -1,9 +1,4 @@
-#include "node_proxy.h"
-#include "low_rank.h"
-#include "hierarchical.h"
-#include "functions.h"
-#include "print.h"
-#include "timer.h"
+#include "hicma/hicma.h"
 
 #include <cublas_v2.h>
 #include <magma_v2.h>

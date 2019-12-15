@@ -1,8 +1,4 @@
-#include "low_rank.h"
-#include "functions.h"
-#include "print.h"
-#include "timer.h"
-#include "hicma/util/l2_error.h"
+#include "hicma/hicma.h"
 
 #include <algorithm>
 #include <cublas_v2.h>

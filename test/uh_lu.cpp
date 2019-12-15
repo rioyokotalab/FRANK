@@ -1,13 +1,4 @@
-#include "hicma/dense.h"
-#include "hicma/low_rank.h"
-#include "hicma/low_rank_shared.h"
-#include "hicma/hierarchical.h"
-#include "hicma/uniform_hierarchical.h"
-#include "hicma/functions.h"
-#include "hicma/operations/norm.h"
-#include "hicma/util/l2_error.h"
-#include "hicma/util/print.h"
-#include "hicma/util/timer.h"
+#include "hicma/hicma.h"
 
 #include <algorithm>
 #include <cmath>

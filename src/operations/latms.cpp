@@ -1,6 +1,6 @@
 #include "hicma/operations/latms.h"
 
-#include "hicma/dense.h"
+#include "hicma/classes/dense.h"
 #include <vector>
 #include <cassert>
 

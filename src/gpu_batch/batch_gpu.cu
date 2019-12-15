@@ -1,7 +1,7 @@
-#include "hicma/node_proxy.h"
-#include "hicma/low_rank.h"
-#include "hicma/gpu_batch/batch.h"
-#include "hicma/util/timer.h"
+#include "hicma/classes/node_proxy.h"
+#include "hicma/classes/low_rank.h"
+#include "hicma/classes/gpu_batch/batch.h"
+#include "hicma/classes/util/timer.h"
 
 #include <cublas_v2.h>
 #include <magma_v2.h>

@@ -1,7 +1,7 @@
 #ifndef dense_h
 #define dense_h
 
-#include "hicma/node.h"
+#include "hicma/classes/node.h"
 
 #include <vector>
 

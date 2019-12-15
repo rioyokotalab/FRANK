@@ -1,7 +1,7 @@
 #ifndef uniform_hierarchical_h
 #define uniform_hierarchical_h
 
-#include "hicma/hierarchical.h"
+#include "hicma/classes/hierarchical.h"
 
 #include <memory>
 #include <vector>

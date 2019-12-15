@@ -1,4 +1,4 @@
-#include "hicma/node.h"
+#include "hicma/classes/node.h"
 
 #include <iostream>
 
