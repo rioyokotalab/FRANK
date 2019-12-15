@@ -78,10 +78,10 @@ int main(int argc, char** argv) {
   printTime("-DGEMM");
   Dense QR(N, N);
   gemm(Dense(Q), Dense(R), QR, 1, 1);
-  double diff = (Dense(_A) - QR).norm();
-  double norm = _A.norm();
+  double diff = norm(Dense(_A) - QR);
+  double l2 = norm(_A);
   print("Accuracy");
-  print("Rel. L2 Error", std::sqrt(diff/norm), false);
+  print("Rel. L2 Error", std::sqrt(diff/l2), false);
   return 0;
 }
 

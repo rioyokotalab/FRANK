@@ -255,10 +255,6 @@ namespace hicma {
 
   const char* LowRank::type() const { return "LowRank"; }
 
-  double LowRank::norm() const {
-    return Dense(*this).norm();
-  }
-
   void LowRank::mergeU(const LowRank& A, const LowRank& B) {
     assert(rank == A.rank + B.rank);
     for (int i=0; i<dim[0]; i++) {

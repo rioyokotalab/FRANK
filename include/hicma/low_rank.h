@@ -44,8 +44,6 @@ namespace hicma {
 
     const char* type() const override;
 
-    double norm() const override;
-
     void mergeU(const LowRank& A, const LowRank& B);
 
     void mergeS(const LowRank& A, const LowRank& B);

@@ -236,16 +236,6 @@ namespace hicma {
 
   const char* Dense::type() const { return "Dense"; }
 
-  double Dense::norm() const {
-    double l2 = 0;
-    for (int i=0; i<dim[0]; i++) {
-      for (int j=0; j<dim[1]; j++) {
-        l2 += (*this)(i, j) * (*this)(i, j);
-      }
-    }
-    return l2;
-  }
-
   int Dense::size() const {
     return dim[0] * dim[1];
   }

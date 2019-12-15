@@ -84,7 +84,7 @@ int main(int argc, char** argv) {
   print("Cond(A)", cond(Dense(A)), false);
 
   // For residual measurement
-  double diff, norm;
+  double diff, l2;
   Dense x(N); x = 1.0;
   Dense Ax(N);
   gemm(A, x, Ax, 1, 0);
@@ -129,20 +129,20 @@ int main(int argc, char** argv) {
   gemm(A, x, Rx, 1, 0);
   Dense QRx(N);
   gemm(Q, Rx, QRx, 1, 0);
-  diff = (Ax - QRx).norm();
-  norm = Ax.norm();
+  diff = norm(Ax - QRx);
+  l2 = norm(Ax);
   print("Accuracy");
-  print("Rel. Error (operator norm)", std::sqrt(diff/norm), false);
+  print("Rel. Error (operator norm)", std::sqrt(diff/l2), false);
   //Orthogonality
   Dense Qx(N);
   gemm(Q, x, Qx, 1, 0);
   Dense QtQx(N);
-  Q.transpose();
+  transpose(Q);
   gemm(Q, Qx, QtQx, 1, 0);
-  diff = (QtQx - x).norm();
-  norm = (double)N;
+  diff = norm(QtQx - x);
+  l2 = (double)N;
   print("Orthogonality");
-  print("Rel. Error (operator norm)", std::sqrt(diff/norm), false);
+  print("Rel. Error (operator norm)", std::sqrt(diff/l2), false);
   return 0;
 }
 

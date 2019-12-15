@@ -53,15 +53,15 @@ int main(int argc, char** argv) {
     }
   }
   rsvd_batch();
-  double diff = 0, norm = 0;
+  double diff = 0, l2 = 0;
   for (int ic=0; ic<Nc; ic++) {
     for (int jc=0; jc<Nc; jc++) {
-      diff += (Dense(A(ic,jc)) - Dense(D(ic,jc))).norm();
-      norm += D(ic,jc).norm();
+      diff += norm(Dense(A(ic,jc)) - Dense(D(ic,jc)));
+      l2 += norm(D(ic,jc));
     }
   }
   print("Compression Accuracy");
-  print("Rel. L2 Error", std::sqrt(diff/norm), false);
+  print("Rel. L2 Error", std::sqrt(diff/l2), false);
   print("Time");
   gemm(A, x, b, 1, 1);
   gemm_batch();
@@ -103,9 +103,9 @@ int main(int argc, char** argv) {
   stop("Backward substitution");
   printTime("-DTRSM");
   printTime("-DGEMM");
-  diff = (Dense(x) - Dense(b)).norm();
-  norm = x.norm();
+  diff = norm(Dense(x) - Dense(b));
+  l2 = norm(x);
   print("LU Accuracy");
-  print("Rel. L2 Error", std::sqrt(diff/norm), false);
+  print("Rel. L2 Error", std::sqrt(diff/l2), false);
   return 0;
 }

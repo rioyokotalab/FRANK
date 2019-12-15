@@ -108,8 +108,6 @@ namespace hicma {
 
     const char* type() const override;
 
-    double norm() const override;
-
     int size() const;
 
     void resize(const int dim0, const int dim1);

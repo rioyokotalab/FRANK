@@ -106,9 +106,9 @@ int main(int argc, char** argv) {
     }
     Dense D = vecC[b];
     gemm(vecA[b], vecB[b], D, alpha, beta);
-    double diff = (C - D).norm();
-    double norm = D.norm();
-    print("Rel. L2 Error", std::sqrt(diff/norm), false);
+    double diff = norm(C - D);
+    double l2 = norm(D);
+    print("Rel. L2 Error", std::sqrt(diff/l2), false);
   }
   cudaFree(d_A);
   cudaFree(d_B);

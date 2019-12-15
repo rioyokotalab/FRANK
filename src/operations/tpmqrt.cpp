@@ -52,7 +52,8 @@ BEGIN_SPECIALIZATION(
 ) {
   std::vector<double> x;
   Dense C(A);
-  LowRank Vt(V); Vt.transpose();
+  LowRank Vt(V);
+  transpose(Vt);
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(Dense(identity, x, C.dim[0], C.dim[0]), C, A, -1, 1); //A = A - I*C
@@ -80,7 +81,7 @@ BEGIN_SPECIALIZATION(
   std::vector<double> x;
   LowRank C(A);
   LowRank Vt(V);
-  Vt.transpose();
+  transpose(Vt);
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(Dense(identity, x, C.dim[0], C.dim[0]), C, A, -1, 1); //A = A - I*C
@@ -125,7 +126,7 @@ BEGIN_SPECIALIZATION(
   std::vector<double> x;
   Dense C(A);
   Dense Vt(V);
-  Vt.transpose();
+  transpose(Vt);
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(Dense(identity, x, C.dim[0], C.dim[0]), C, A, -1, 1); //A = A - I*C
@@ -140,7 +141,7 @@ BEGIN_SPECIALIZATION(
   std::vector<double> x;
   Dense C(A);
   LowRank Vt(V);
-  Vt.transpose();
+  transpose(Vt);
   gemm(Vt, B, C, 1, 1); //C = A + Y^t * B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(Dense(identity, x, C.dim[0], C.dim[0]), C, A, -1, 1); //A = A - I*C
@@ -155,7 +156,7 @@ BEGIN_SPECIALIZATION(
   std::vector<double> x;
   LowRank C(A);
   Dense Vt(V);
-  Vt.transpose();
+  transpose(Vt);
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(Dense(identity, x, C.dim[0], C.dim[0]), C, A, -1, 1); //A = A - I*C
@@ -170,7 +171,7 @@ BEGIN_SPECIALIZATION(
   std::vector<double> x;
   LowRank C(A);
   LowRank Vt(V);
-  Vt.transpose();
+  transpose(Vt);
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(Dense(identity, x, C.dim[0], C.dim[0]), C, A, -1, 1); //A = A - I*C

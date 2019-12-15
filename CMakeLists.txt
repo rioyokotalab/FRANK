@@ -58,6 +58,7 @@ add_library(hicma
     src/operations/larfb.cpp
     src/operations/latms.cpp
     src/operations/misc.cpp
+    src/operations/norm.cpp
     src/operations/qr.cpp
     src/operations/tpmqrt.cpp
     src/operations/tpqrt.cpp

@@ -139,10 +139,10 @@ int main(int argc, char** argv)
     vecLR.push_back(LR);
   }
   for (int b=0; b<batchCount; b++) {
-    double diff = (vecA[b] - Dense(vecLR[b])).norm();
-    double norm = vecA[b].norm();
+    double diff = norm(vecA[b] - Dense(vecLR[b]));
+    double l2 = norm(vecA[b]);
     print("rank", h_k[b]);
-    print("Rel. L2 Error", std::sqrt(diff/norm), false);
+    print("Rel. L2 Error", std::sqrt(diff/l2), false);
   }
   cudaFree(p_A);
   cudaFree(p_U);

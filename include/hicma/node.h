@@ -32,8 +32,6 @@ namespace hicma {
 
     virtual const char* type() const;
 
-    virtual double norm() const;
-
   };
 
 }

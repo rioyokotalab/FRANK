@@ -78,8 +78,6 @@ namespace hicma {
 
     const char* type() const override;
 
-    double norm() const override;
-
     void blr_col_qr(Hierarchical& Q, Hierarchical& R);
 
     void split_col(Hierarchical& QL);

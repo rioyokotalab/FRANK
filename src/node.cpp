@@ -33,9 +33,4 @@ namespace hicma {
 
   const char* Node::type() const { return "Node"; }
 
-  double Node::norm() const {
-    std::cerr << "No norm for Node type." << std::endl; abort();
-    return 0.0;
-  };
-
 }

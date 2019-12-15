@@ -71,11 +71,11 @@ int main(int argc, char** argv) {
   Hierarchical D(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   stop("Dense tree");
   start("Verification");
-  double diff = (Dense(A) - Dense(D)).norm();
-  double norm = D.norm();
+  double diff = norm(Dense(A) - Dense(D));
+  double l2 = norm(D);
   stop("Verification");
   print("Compression Accuracy");
-  print("Rel. L2 Error", std::sqrt(diff/norm), false);
+  print("Rel. L2 Error", std::sqrt(diff/l2), false);
   print("Time");
   start("QR decomposition");
   qr(A, Q, R);
@@ -83,17 +83,17 @@ int main(int argc, char** argv) {
   printTime("-DGEQRF");
   printTime("-DGEMM");
   gemm(Q, R, QR, 1, 1);
-  diff = (Dense(QR) - Dense(D)).norm();
-  norm = D.norm();
+  diff = norm(Dense(QR) - Dense(D));
+  l2 = norm(D);
   print("QR Accuracy");
-  print("Rel. L2 Error", std::sqrt(diff/norm), false);
+  print("Rel. L2 Error", std::sqrt(diff/l2), false);
   Dense DQ(Q);
   Dense QtQ(DQ.dim[1], DQ.dim[1]);
   gemm(DQ, DQ, QtQ, true, false, 1, 1);
   Dense Id(identity, randx, QtQ.dim[0], QtQ.dim[1]);
-  diff = (QtQ - Id).norm();
-  norm = Id.norm();
-  print("Rel. L2 Orthogonality", std::sqrt(diff/norm), false);
+  diff = norm(QtQ - Id);
+  l2 = norm(Id);
+  print("Rel. L2 Orthogonality", std::sqrt(diff/l2), false);
   return 0;
 }
 

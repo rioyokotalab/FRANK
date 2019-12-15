@@ -77,12 +77,12 @@ int main(int argc, char** argv) {
   Dense Ax(N);
   gemm(A, x, Ax, 1, 0);
   //Approximation error
-  double diff, norm;
-  diff = (Dense(A) - Dense(D)).norm();
-  norm = D.norm();
+  double diff, l2;
+  diff = norm(Dense(A) - Dense(D));
+  l2 = norm(D);
   print("Ida BLR QR Decomposition");
   print("Compression Accuracy");
-  print("Rel. L2 Error", std::sqrt(diff/norm), false);
+  print("Rel. L2 Error", std::sqrt(diff/l2), false);
 
   print("Time");
   start("BLR QR decomposition");
@@ -126,20 +126,20 @@ int main(int argc, char** argv) {
   gemm(R, x, Rx, 1, 0);
   Dense QRx(N);
   gemm(Q, Rx, QRx, 1, 0);
-  diff = (Ax - QRx).norm();
-  norm = Ax.norm();
+  diff = norm(Ax - QRx);
+  l2 = norm(Ax);
   print("Residual");
-  print("Rel. Error (operator norm)", std::sqrt(diff/norm), false);
+  print("Rel. Error (operator norm)", std::sqrt(diff/l2), false);
   //Orthogonality
   Dense Qx(N);
   gemm(Q, x, Qx, 1, 0);
   Dense QtQx(N);
-  Q.transpose();
+  transpose(Q);
   gemm(Q, Qx, QtQx, 1, 0);
-  diff = (QtQx - x).norm();
-  norm = (double)N;
+  diff = norm(QtQx - x);
+  l2 = (double)N;
   print("Orthogonality");
-  print("Rel. Error (operator norm)", std::sqrt(diff/norm), false);
+  print("Rel. Error (operator norm)", std::sqrt(diff/l2), false);
   return 0;
 }
 

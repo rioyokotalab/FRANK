@@ -66,11 +66,11 @@ int main(int argc, char** argv) {
   Hierarchical x(random_uniform, randx, N, 1, rank, nleaf, admis, nblocks, 1);
   Hierarchical b(zeros, randx, N, 1, rank, nleaf, admis, nblocks, 1);
   //start("Verification");
-  //double diff = (Dense(A) - Dense(D)).norm();
-  //double norm = D.norm();
+  //double diff = norm(Dense(A) - Dense(D));
+  //double l2 = norm(D);
   //stop("Verification");
   //print("Compression Accuracy");
-  //print("Rel. L2 Error", std::sqrt(diff/norm), false);
+  //print("Rel. L2 Error", std::sqrt(diff/l2), false);
   print("Time");
   gemm(A, x, b, 1, 1);
   gemm_batch();
@@ -92,9 +92,9 @@ int main(int argc, char** argv) {
   stop("Backward substitution");
   printTime("-DTRSM");
   printTime("-DGEMM");
-  double diff = (Dense(x) - Dense(b)).norm();
-  double norm = x.norm();
+  double diff = norm(Dense(x) - Dense(b));
+  double l2 = norm(x);
   print("LU Accuracy");
-  print("Rel. L2 Error", std::sqrt(diff/norm), false);
+  print("Rel. L2 Error", std::sqrt(diff/l2), false);
   return 0;
 }

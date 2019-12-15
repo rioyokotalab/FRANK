@@ -4,6 +4,7 @@
 #include "hicma/hierarchical.h"
 #include "hicma/uniform_hierarchical.h"
 #include "hicma/functions.h"
+#include "hicma/operations/norm.h"
 #include "hicma/util/print.h"
 #include "hicma/util/timer.h"
 
@@ -40,12 +41,12 @@ int main(int argc, char const *argv[])
   LowRank& LR = static_cast<LowRank&>(*H(0, 1));
 
   start("Verification");
-  double norm = D.norm();
-  double diff1 = (D - Dense(H)).norm();
-  double diff2 = (Dense(A) - Dense(H)).norm();
+  double l2 = norm(D);
+  double diff1 = norm(D - Dense(H));
+  double diff2 = norm(Dense(A) - Dense(H));
   stop("Verification");
   print("Compression Accuracy");
-  print("H Rel. L2 Error", std::sqrt(diff1/norm), false);
-  print("UH Rel. L2 Error", std::sqrt(diff2/norm), false);
+  print("H Rel. L2 Error", std::sqrt(diff1/l2), false);
+  print("UH Rel. L2 Error", std::sqrt(diff2/l2), false);
   return 0;
 }

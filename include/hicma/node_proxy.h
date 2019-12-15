@@ -39,8 +39,6 @@ namespace hicma {
 
     const char* type() const;
 
-    double norm() const;
-
   };
 }
 

@@ -10,6 +10,7 @@
 #include "hicma/operations/larfb.h"
 #include "hicma/operations/latms.h"
 #include "hicma/operations/misc.h"
+#include "hicma/operations/norm.h"
 #include "hicma/operations/qr.h"
 #include "hicma/operations/tpmqrt.h"
 #include "hicma/operations/tpqrt.h"
