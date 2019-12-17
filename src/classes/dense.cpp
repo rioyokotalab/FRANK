@@ -157,11 +157,9 @@ namespace hicma {
 
   void swap(Dense& A, Dense& B) {
     using std::swap;
+    swap(static_cast<Node&>(A), static_cast<Node&>(B));
     swap(A.data, B.data);
     swap(A.dim, B.dim);
-    swap(A.i_abs, B.i_abs);
-    swap(A.j_abs, B.j_abs);
-    swap(A.level, B.level);
   }
 
   const Dense& Dense::operator=(const double a) {

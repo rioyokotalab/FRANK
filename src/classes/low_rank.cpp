@@ -99,13 +99,11 @@ namespace hicma {
 
   void swap(LowRank& A, LowRank& B) {
     using std::swap;
+    swap(static_cast<Node&>(A), static_cast<Node&>(B));
     swap(A.U, B.U);
     swap(A.S, B.S);
     swap(A.V, B.V);
     swap(A.dim, B.dim);
-    swap(A.i_abs, B.i_abs);
-    swap(A.j_abs, B.j_abs);
-    swap(A.level, B.level);
     swap(A.rank, B.rank);
   }
 
