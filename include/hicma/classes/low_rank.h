@@ -19,12 +19,11 @@ namespace hicma {
     LowRank();
 
     LowRank(
-            const int m,
-            const int n,
-            const int k,
-            const int i_abs=0,
-            const int j_abs=0,
-            const int level=0);
+      const int m, const int n,
+      const int k,
+      const int i_abs=0, const int j_abs=0,
+      const int level=0
+    );
 
     LowRank(const Dense& A, const int k);
 

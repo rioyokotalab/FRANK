@@ -37,7 +37,8 @@ namespace hicma {
     dim[0]=ni_level; dim[1]=nj_level; data.resize(dim[0]*dim[1]);
   }
 
-  Hierarchical::Hierarchical(const Dense& A, const int m, const int n) : Node(A.i_abs,A.j_abs,A.level) {
+  Hierarchical::Hierarchical(const Dense& A, const int m, const int n)
+  : Node(A.i_abs, A.j_abs, A.level) {
     MM_INIT();
     dim[0]=m; dim[1]=n;
     data.resize(dim[0]*dim[1]);
@@ -64,7 +65,8 @@ namespace hicma {
     }
   }
 
-  Hierarchical::Hierarchical(const LowRank& A, const int m, const int n) : Node(A.i_abs,A.j_abs,A.level) {
+  Hierarchical::Hierarchical(const LowRank& A, const int m, const int n)
+  : Node(A.i_abs, A.j_abs, A.level) {
     MM_INIT();
     dim[0]=m; dim[1]=n;
     data.resize(dim[0]*dim[1]);
@@ -99,42 +101,36 @@ namespace hicma {
   }
 
   Hierarchical::Hierarchical(
-                             void (*func)(
-                                          std::vector<double>& data,
-                                          std::vector<double>& x,
-                                          const int& ni,
-                                          const int& nj,
-                                          const int& i_begin,
-                                          const int& j_begin
-                                          ),
-                             std::vector<double>& x,
-                             const int ni,
-                             const int nj,
-                             const int rank,
-                             const int nleaf,
-                             const int admis,
-                             const int ni_level,
-                             const int nj_level,
-                             const int i_begin,
-                             const int j_begin,
-                             const int _i_abs,
-                             const int _j_abs,
-                             const int _level
-                             ) : Node(_i_abs,_j_abs,_level) {
+    void (*func)(
+      std::vector<double>& data,
+      std::vector<double>& x,
+      const int& ni, const int& nj,
+      const int& i_begin, const int& j_begin
+    ),
+    std::vector<double>& x,
+    const int ni, const int nj,
+    const int rank,
+    const int nleaf,
+    const int admis,
+    const int ni_level, const int nj_level,
+    const int i_begin, const int j_begin,
+    const int i_abs, const int j_abs,
+    const int level
+  ) : Node(i_abs, j_abs, level) {
     MM_INIT();
     if ( !level ) {
-      assert(int(x.size()) == std::max(ni,nj));
-      std::sort(x.begin(),x.end());
+      assert(int(x.size()) == std::max(ni, nj));
+      std::sort(x.begin(), x.end());
     }
-    dim[0] = std::min(ni_level,ni);
-    dim[1] = std::min(nj_level,nj);
+    dim[0] = std::min(ni_level, ni);
+    dim[1] = std::min(nj_level, nj);
     data.resize(dim[0]*dim[1]);
     for (int i=0; i<dim[0]; i++) {
       for (int j=0; j<dim[1]; j++) {
         int ni_child = ni/dim[0];
-        if ( i == dim[0]-1 ) ni_child = ni - (ni/dim[0]) * (dim[0]-1);
+        if (i == dim[0]-1) ni_child = ni - (ni/dim[0]) * (dim[0]-1);
         int nj_child = nj/dim[1];
-        if ( j == dim[1]-1 ) nj_child = nj - (nj/dim[1]) * (dim[1]-1);
+        if (j == dim[1]-1) nj_child = nj - (nj/dim[1]) * (dim[1]-1);
         int i_begin_child = i_begin + ni/dim[0] * i;
         int j_begin_child = j_begin + nj/dim[1] * j;
         int i_abs_child = i_abs * dim[0] + i;
@@ -144,48 +140,38 @@ namespace hicma {
             || (nj == 1 || ni == 1) ) { // Check if vector, and if so do not use LowRank
           if ( ni_child/ni_level < nleaf && nj_child/nj_level < nleaf ) {
             (*this)(i,j) = Dense(
-                                 func,
-                                 x,
-                                 ni_child,
-                                 nj_child,
-                                 i_begin_child,
-                                 j_begin_child,
-                                 i_abs_child,
-                                 j_abs_child,
-                                 level+1
-                                 );
+              func,
+              x,
+              ni_child, nj_child,
+              i_begin_child, j_begin_child,
+              i_abs_child, j_abs_child,
+              level+1
+            );
           }
           else {
             (*this)(i,j) = Hierarchical(
-                                        func,
-                                        x,
-                                        ni_child,
-                                        nj_child,
-                                        rank,
-                                        nleaf,
-                                        admis,
-                                        ni_level,
-                                        nj_level,
-                                        i_begin_child,
-                                        j_begin_child,
-                                        i_abs_child,
-                                        j_abs_child,
-                                        level+1
-                                        );
+              func,
+              x,
+              ni_child, nj_child,
+              rank,
+              nleaf,
+              admis,
+              ni_level, nj_level,
+              i_begin_child, j_begin_child,
+              i_abs_child, j_abs_child,
+              level+1
+            );
           }
         }
         else {
           Dense A = Dense(
-                          func,
-                          x,
-                          ni_child,
-                          nj_child,
-                          i_begin_child,
-                          j_begin_child,
-                          i_abs_child,
-                          j_abs_child,
-                          level+1
-                          );
+            func,
+            x,
+            ni_child, nj_child,
+            i_begin_child, j_begin_child,
+            i_abs_child, j_abs_child,
+            level+1
+          );
           rsvd_push((*this)(i,j), A, rank);
         }
       }
@@ -193,7 +179,7 @@ namespace hicma {
   }
 
   Hierarchical::Hierarchical(const Hierarchical& A)
-    : Node(A.i_abs,A.j_abs,A.level), data(A.data) {
+  : Node(A.i_abs, A.j_abs, A.level), data(A.data) {
     MM_INIT();
     dim[0]=A.dim[0]; dim[1]=A.dim[1];
   }

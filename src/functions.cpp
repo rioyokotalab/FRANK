@@ -11,10 +11,8 @@ namespace hicma {
 void zeros(
   std::vector<double>& data,
   std::vector<double>& x,
-  const int& ni,
-  const int& nj,
-  const int& i_begin,
-  const int& j_begin
+  const int& ni, const int& nj,
+  const int& i_begin, const int& j_begin
 ) {
   for (int i=0; i<ni; i++) {
     for (int j=0; j<nj; j++) {
@@ -26,10 +24,8 @@ void zeros(
 void identity(
   std::vector<double>& data,
   std::vector<double>& x,
-  const int& ni,
-  const int& nj,
-  const int& i_begin,
-  const int& j_begin
+  const int& ni, const int& nj,
+  const int& i_begin, const int& j_begin
 ) {
   for (int i=0; i<ni; i++) {
     for (int j=0; j<nj; j++) {
@@ -41,10 +37,8 @@ void identity(
 void random_normal(
   std::vector<double>& data,
   std::vector<double>& x,
-  const int& ni,
-  const int& nj,
-  const int& i_begin,
-  const int& j_begin
+  const int& ni, const int& nj,
+  const int& i_begin, const int& j_begin
 ) {
   std::random_device rd;
   std::mt19937 mt(rd());
@@ -59,10 +53,8 @@ void random_normal(
 void random_uniform(
   std::vector<double>& data,
   std::vector<double>& x,
-  const int& ni,
-  const int& nj,
-  const int& i_begin,
-  const int& j_begin
+  const int& ni, const int& nj,
+  const int& i_begin, const int& j_begin
 ) {
   std::random_device rd;
   std::mt19937 mt(rd());
@@ -77,10 +69,8 @@ void random_uniform(
 void arange(
   std::vector<double>& data,
   std::vector<double>& x,
-  const int& ni,
-  const int& nj,
-  const int& i_begin,
-  const int& j_begin
+  const int& ni, const int& nj,
+  const int& i_begin, const int& j_begin
 ) {
   for (int i=0; i<ni; i++) {
     for (int j=0; j<nj; j++) {
@@ -92,10 +82,8 @@ void arange(
 void laplace1d(
   std::vector<double>& data,
   std::vector<double>& x,
-  const int& ni,
-  const int& nj,
-  const int& i_begin,
-  const int& j_begin
+  const int& ni, const int& nj,
+  const int& i_begin, const int& j_begin
 ) {
   for (int i=0; i<ni; i++) {
     for (int j=0; j<nj; j++) {

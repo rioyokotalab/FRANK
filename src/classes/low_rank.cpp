@@ -22,20 +22,20 @@ namespace hicma {
   }
 
   LowRank::LowRank(
-                   const int m,
-                   const int n,
-                   const int k,
-                   const int i_abs,
-                   const int j_abs,
-                   const int level) {
+    const int m, const int n,
+    const int k,
+    const int i_abs, const int j_abs,
+    const int level
+  ) : Node(i_abs, j_abs, level) {
     MM_INIT();
-    dim[0]=m; dim[1]=n; rank=k;
+    dim[0] = m; dim[1] = n; rank = k;
     U = Dense(m, k, i_abs, j_abs, level);
     S = Dense(k, k, i_abs, j_abs, level);
     V = Dense(k, n, i_abs, j_abs, level);
   }
 
-  LowRank::LowRank(const Dense& A, const int k) : Node(A.i_abs,A.j_abs,A.level) {
+  LowRank::LowRank(const Dense& A, const int k)
+  : Node(A.i_abs, A.j_abs, A.level) {
     MM_INIT();
     dim[0] = A.dim[0];
     dim[1] = A.dim[1];
@@ -79,7 +79,8 @@ namespace hicma {
     rank = k;
   }
 
-  LowRank::LowRank(const LowRank& A) : Node(A.i_abs,A.j_abs,A.level), U(A.U), S(A.S), V(A.V) {
+  LowRank::LowRank(const LowRank& A)
+  : Node(A.i_abs, A.j_abs, A.level), U(A.U), S(A.S), V(A.V) {
     MM_INIT();
     dim[0]=A.dim[0]; dim[1]=A.dim[1]; rank=A.rank;
   }
