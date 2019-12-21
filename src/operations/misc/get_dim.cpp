@@ -37,7 +37,6 @@ BEGIN_SPECIALIZATION(get_n_rows_omm, int, const Node& A) {
   abort();
 } END_SPECIALIZATION;
 
-
 int get_n_cols(const Node& A) {
   return get_n_cols_omm(A);
 }

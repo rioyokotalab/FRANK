@@ -4,6 +4,7 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/operations/BLAS/gemm.h"
+#include "hicma/operations/misc/get_dim.h"
 #include "hicma/gpu_batch/batch.h"
 #include "hicma/util/print.h"
 #include "hicma/util/timer.h"
@@ -103,20 +104,11 @@ namespace hicma {
 
   Dense::Dense(const Hierarchical& A) : Node(A.i_abs, A.j_abs, A.level) {
     MM_INIT();
-    dim[0] = 0;
-    for (int i=0; i<A.dim[0]; i++) {
-      Dense AD = Dense(A(i,0));
-      dim[0] += AD.dim[0];
-    }
-    dim[1] = 0;
-    for (int j=0; j<A.dim[1]; j++) {
-      Dense AD = Dense(A(0,j));
-      dim[1] += AD.dim[1];
-    }
+    dim[0] = get_n_rows(A);
+    dim[1] = get_n_cols(A);
     data.resize(dim[0]*dim[1]);
     int i_begin = 0;
     for (int i=0; i<A.dim[0]; i++) {
-      Dense AA = Dense(A(i,0));
       int j_begin = 0;
       for (int j=0; j<A.dim[1]; j++) {
         Dense AD = Dense(A(i,j));
@@ -127,7 +119,7 @@ namespace hicma {
         }
         j_begin += AD.dim[1];
       }
-      i_begin += AA.dim[0];
+      i_begin += get_n_rows(A(i, 0));
     }
   }
 
