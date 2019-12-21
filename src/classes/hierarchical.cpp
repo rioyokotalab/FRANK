@@ -38,8 +38,7 @@ namespace hicma {
     dim[0]=ni_level; dim[1]=nj_level; data.resize(dim[0]*dim[1]);
   }
 
-  Hierarchical::Hierarchical(const Dense& A, const int m, const int n)
-  : Node(A.i_abs, A.j_abs, A.level) {
+  Hierarchical::Hierarchical(const Dense& A, const int m, const int n) : Node(A) {
     MM_INIT();
     dim[0]=m; dim[1]=n;
     data.resize(dim[0]*dim[1]);
@@ -66,8 +65,7 @@ namespace hicma {
     }
   }
 
-  Hierarchical::Hierarchical(const LowRank& A, const int m, const int n)
-  : Node(A.i_abs, A.j_abs, A.level) {
+  Hierarchical::Hierarchical(const LowRank& A, const int m, const int n) : Node(A) {
     MM_INIT();
     dim[0]=m; dim[1]=n;
     data.resize(dim[0]*dim[1]);
@@ -179,8 +177,7 @@ namespace hicma {
     }
   }
 
-  Hierarchical::Hierarchical(const Hierarchical& A)
-  : Node(A.i_abs, A.j_abs, A.level), data(A.data) {
+  Hierarchical::Hierarchical(const Hierarchical& A) : Node(A), data(A.data) {
     MM_INIT();
     dim[0]=A.dim[0]; dim[1]=A.dim[1];
   }

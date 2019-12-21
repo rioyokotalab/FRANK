@@ -83,7 +83,7 @@ namespace hicma {
     func(data, x, ni, nj, i_begin, j_begin);
   }
 
-  Dense::Dense(const Dense& A) : Node(A.i_abs, A.j_abs, A.level), data(A.data) {
+  Dense::Dense(const Dense& A) : Node(A), data(A.data) {
     MM_INIT();
     dim[0] = A.dim[0]; dim[1] = A.dim[1];
   }
@@ -93,7 +93,7 @@ namespace hicma {
     swap(*this, A);
   }
 
-  Dense::Dense(const LowRank& A) : Node(A.i_abs, A.j_abs, A.level) {
+  Dense::Dense(const LowRank& A) : Node(A) {
     MM_INIT();
     dim[0] = A.dim[0]; dim[1] = A.dim[1];
     data.resize(dim[0]*dim[1], 0);
@@ -102,7 +102,7 @@ namespace hicma {
     gemm(UxS, A.V, *this, 1, 0);
   }
 
-  Dense::Dense(const Hierarchical& A) : Node(A.i_abs, A.j_abs, A.level) {
+  Dense::Dense(const Hierarchical& A) : Node(A) {
     MM_INIT();
     dim[0] = get_n_rows(A);
     dim[1] = get_n_cols(A);

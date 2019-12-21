@@ -19,15 +19,14 @@ LowRankShared::LowRankShared() {
 LowRankShared::LowRankShared(
   const Dense& S,
   std::shared_ptr<Dense> U, std::shared_ptr<Dense> V
-) : Node(S.i_abs, S.j_abs, S.level), U(U), S(S), V(V)
+) : Node(S), U(U), S(S), V(V)
 {
   MM_INIT();
   dim[0]=U->dim[0]; dim[1]=V->dim[1]; rank=S.dim[0];
 }
 
 LowRankShared::LowRankShared(const LowRankShared& A)
-  : Node(A.i_abs,A.j_abs,A.level), U(A.U), S(A.S), V(A.V)
-{
+: Node(A), U(A.U), S(A.S), V(A.V) {
   MM_INIT();
   dim[0]=A.dim[0]; dim[1]=A.dim[1]; rank=A.rank;
 }
