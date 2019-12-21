@@ -15,7 +15,9 @@ namespace hicma {
   Node::Node(const Node& A)
   : i_abs(A.i_abs), j_abs(A.j_abs), level(A.level) { MM_INIT(); }
 
-  Node::~Node() {};
+  Node::Node(Node&& A) { MM_INIT(); }
+
+  Node::~Node() = default;
 
   std::unique_ptr<Node> Node::clone() const {
     return std::make_unique<Node>(*this);

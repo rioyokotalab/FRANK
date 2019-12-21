@@ -47,11 +47,12 @@ namespace hicma {
   }
 
   void swap(NodeProxy& A, NodeProxy& B){
-    A.ptr.swap(B.ptr);
+    using std::swap;
+    swap(A.ptr, B.ptr);
   }
 
   const NodeProxy& NodeProxy::operator=(NodeProxy A) {
-    this->ptr = std::move(A.ptr);
+    swap(*this, A);
     return *this;
   }
 

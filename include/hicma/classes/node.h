@@ -20,6 +20,8 @@ namespace hicma {
 
     Node(const Node& A);
 
+    Node(Node&& A);
+
     virtual ~Node();
 
     virtual std::unique_ptr<Node> clone() const;
