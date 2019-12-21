@@ -33,7 +33,7 @@ BEGIN_SPECIALIZATION(norm_omm, double, const Hierarchical& A) {
   double l2 = 0;
   for (int i=0; i<A.dim[0]; i++) {
     for (int j=0; j<A.dim[1]; j++) {
-      l2 += norm(A(i,j));
+      l2 += norm(A(i, j));
     }
   }
   return l2;
