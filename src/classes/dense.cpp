@@ -123,8 +123,10 @@ namespace hicma {
     }
   }
 
-  Dense::Dense(const NodeProxy& A) : Node(A->i_abs, A->j_abs, A->level) {
+  Dense::Dense(const Node& A) : Node(A) {
     MM_INIT();
+    // Test performance of make_dense in this case!!
+    // Unnecessary copies possible
     *this = make_dense(A);
   }
 

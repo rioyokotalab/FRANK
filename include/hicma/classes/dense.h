@@ -72,7 +72,7 @@ namespace hicma {
 
     explicit Dense(const Hierarchical& A);
 
-    explicit Dense(const NodeProxy& A);
+    explicit Dense(const Node& A);
 
     std::unique_ptr<Node> clone() const override;
 
