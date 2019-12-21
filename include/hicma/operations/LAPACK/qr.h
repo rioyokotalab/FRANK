@@ -1,5 +1,5 @@
-#ifndef hicma_operations_qr_h
-#define hicma_operations_qr_h
+#ifndef hicma_operations_LAPACK_qr_h
+#define hicma_operations_LAPACK_qr_h
 
 #include <tuple>
 
@@ -66,4 +66,4 @@ namespace hicma
   );
 } // namespace hicma
 
-#endif // hicma_operations_qr_h
+#endif // hicma_operations_LAPACK_qr_h

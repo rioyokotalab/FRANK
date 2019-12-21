@@ -1,11 +1,11 @@
-#include "hicma/operations/geqrt.h"
+#include "hicma/operations/LAPACK/geqrt.h"
 
 #include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
-#include "hicma/operations/tpmqrt.h"
-#include "hicma/operations/tpqrt.h"
-#include "hicma/operations/larfb.h"
+#include "hicma/operations/LAPACK/tpmqrt.h"
+#include "hicma/operations/LAPACK/tpqrt.h"
+#include "hicma/operations/LAPACK/larfb.h"
 
 #include <cassert>
 

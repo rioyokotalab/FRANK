@@ -1,4 +1,4 @@
-#include "hicma/operations/transpose.h"
+#include "hicma/operations/misc/transpose.h"
 
 #include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"

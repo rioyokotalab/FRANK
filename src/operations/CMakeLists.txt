@@ -1,20 +1,20 @@
 add_library(operations OBJECT
-    gemm.cpp
-    geqrt.cpp
-    geqp3.cpp
-    getrf.cpp
-    get_dim.cpp
-    id.cpp
-    larfb.cpp
-    latms.cpp
-    misc.cpp
-    norm.cpp
-    qr.cpp
-    tpmqrt.cpp
-    tpqrt.cpp
-    transpose.cpp
-    trmm.cpp
-    trsm.cpp
+    BLAS/gemm.cpp
+    BLAS/trmm.cpp
+    BLAS/trsm.cpp
+    LAPACK/geqrt.cpp
+    LAPACK/geqp3.cpp
+    LAPACK/getrf.cpp
+    LAPACK/id.cpp
+    LAPACK/larfb.cpp
+    LAPACK/latms.cpp
+    LAPACK/qr.cpp
+    LAPACK/tpmqrt.cpp
+    LAPACK/tpqrt.cpp
+    misc/get_dim.cpp
+    misc/misc.cpp
+    misc/norm.cpp
+    misc/transpose.cpp
 )
 target_include_directories(operations
 PUBLIC

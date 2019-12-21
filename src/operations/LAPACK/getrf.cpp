@@ -1,10 +1,10 @@
-#include "hicma/operations/getrf.h"
+#include "hicma/operations/LAPACK/getrf.h"
 
 #include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
-#include "hicma/operations/trsm.h"
-#include "hicma/operations/gemm.h"
+#include "hicma/operations/BLAS/gemm.h"
+#include "hicma/operations/BLAS/trsm.h"
 #include "hicma/util/timer.h"
 
 #include <iostream>

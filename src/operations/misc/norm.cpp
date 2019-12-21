@@ -1,4 +1,4 @@
-#include "hicma/operations/norm.h"
+#include "hicma/operations/misc/norm.h"
 
 #include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"

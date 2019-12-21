@@ -3,7 +3,7 @@
 #include "hicma/classes/node.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/hierarchical.h"
-#include "hicma/operations.h"
+#include "hicma/operations/BLAS/gemm.h"
 #include "hicma/gpu_batch/batch.h"
 #include "hicma/util/print.h"
 #include "hicma/util/timer.h"

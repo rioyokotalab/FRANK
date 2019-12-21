@@ -1,5 +1,5 @@
-#ifndef hicma_operations_trsm_h
-#define hicma_operations_trsm_h
+#ifndef hicma_operations_LAPACK_trsm_h
+#define hicma_operations_LAPACK_trsm_h
 
 #include "yorel/multi_methods.hpp"
 using yorel::multi_methods::virtual_;
@@ -20,4 +20,4 @@ MULTI_METHOD(
 
 } // namespace hicma
 
-#endif // hicma_operations_trsm_h
+#endif // hicma_operations_LAPACK_trsm_h

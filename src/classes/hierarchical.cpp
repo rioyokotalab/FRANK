@@ -5,9 +5,9 @@
 #include "hicma/classes/dense.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/functions.h"
-#include "hicma/operations/gemm.h"
-#include "hicma/operations/get_dim.h"
-#include "hicma/operations/qr.h"
+#include "hicma/operations/BLAS/gemm.h"
+#include "hicma/operations/LAPACK/qr.h"
+#include "hicma/operations/misc/get_dim.h"
 #include "hicma/gpu_batch/batch.h"
 #include "hicma/util/print.h"
 

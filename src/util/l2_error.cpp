@@ -4,7 +4,7 @@
 #include "hicma/classes/dense.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/hierarchical.h"
-#include "hicma/operations/norm.h"
+#include "hicma/operations/misc/norm.h"
 #include "hicma/util/print.h"
 
 #include <cmath>

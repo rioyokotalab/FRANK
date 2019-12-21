@@ -2,8 +2,8 @@
 
 #include "hicma/classes/node.h"
 #include "hicma/classes/hierarchical.h"
-#include "hicma/operations/gemm.h"
-#include "hicma/operations/qr.h"
+#include "hicma/operations/BLAS/gemm.h"
+#include "hicma/operations/LAPACK/qr.h"
 #include "hicma/util/print.h"
 #include "hicma/util/counter.h"
 

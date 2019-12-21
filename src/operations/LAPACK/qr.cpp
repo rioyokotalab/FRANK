@@ -1,4 +1,4 @@
-#include "hicma/operations/qr.h"
+#include "hicma/operations/LAPACK/qr.h"
 
 #include "hicma/classes/node.h"
 #include "hicma/classes/node_proxy.h"
@@ -6,8 +6,8 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/functions.h"
-#include "hicma/operations/gemm.h"
-#include "hicma/operations/transpose.h"
+#include "hicma/operations/BLAS/gemm.h"
+#include "hicma/operations/misc/transpose.h"
 
 #include <cassert>
 #include <iostream>

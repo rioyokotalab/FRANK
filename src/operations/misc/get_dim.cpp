@@ -1,4 +1,4 @@
-#include "hicma/operations/get_dim.h"
+#include "hicma/operations/misc/get_dim.h"
 
 #include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"

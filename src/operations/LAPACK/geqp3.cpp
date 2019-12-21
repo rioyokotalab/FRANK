@@ -1,4 +1,4 @@
-#include "hicma/operations/geqp3.h"
+#include "hicma/operations/LAPACK/geqp3.h"
 
 #include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"

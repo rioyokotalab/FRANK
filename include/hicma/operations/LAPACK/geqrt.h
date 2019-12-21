@@ -1,5 +1,5 @@
-#ifndef hicma_operations_geqrt_h
-#define hicma_operations_geqrt_h
+#ifndef hicma_operations_LAPACK_geqrt_h
+#define hicma_operations_LAPACK_geqrt_h
 
 #include "yorel/multi_methods.hpp"
 using yorel::multi_methods::virtual_;
@@ -21,4 +21,4 @@ MULTI_METHOD(
 
 } // namespace hicma
 
-#endif // hicma_operations_geqrt_h
+#endif // hicma_operations_LAPACK_geqrt_h

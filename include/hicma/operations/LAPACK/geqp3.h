@@ -1,5 +1,5 @@
-#ifndef hicma_operations_geqp3_h
-#define hicma_operations_geqp3_h
+#ifndef hicma_operations_LAPACK_geqp3_h
+#define hicma_operations_LAPACK_geqp3_h
 
 #include <vector>
 
@@ -21,4 +21,4 @@ MULTI_METHOD(
 
 } // namespace hicma
 
-#endif // hicma_operations_geqp3_h
+#endif // hicma_operations_LAPACK_geqp3_h

@@ -1,11 +1,11 @@
-#include "hicma/operations/tpqrt.h"
+#include "hicma/operations/LAPACK/tpqrt.h"
 
 #include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/hierarchical.h"
-#include "hicma/operations/gemm.h"
-#include "hicma/operations/tpmqrt.h"
+#include "hicma/operations/BLAS/gemm.h"
+#include "hicma/operations/LAPACK/tpmqrt.h"
 
 #include <algorithm>
 #include <iostream>

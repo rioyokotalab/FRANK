@@ -1,21 +1,23 @@
 #ifndef hicma_operations_h
 #define hicma_operations_h
 
-#include "hicma/operations/gemm.h"
-#include "hicma/operations/geqp3.h"
-#include "hicma/operations/geqrt.h"
-#include "hicma/operations/getrf.h"
-#include "hicma/operations/get_dim.h"
-#include "hicma/operations/id.h"
-#include "hicma/operations/larfb.h"
-#include "hicma/operations/latms.h"
-#include "hicma/operations/misc.h"
-#include "hicma/operations/norm.h"
-#include "hicma/operations/qr.h"
-#include "hicma/operations/tpmqrt.h"
-#include "hicma/operations/tpqrt.h"
-#include "hicma/operations/transpose.h"
-#include "hicma/operations/trmm.h"
-#include "hicma/operations/trsm.h"
+#include "hicma/operations/BLAS/gemm.h"
+#include "hicma/operations/BLAS/trmm.h"
+#include "hicma/operations/BLAS/trsm.h"
+
+#include "hicma/operations/LAPACK/geqp3.h"
+#include "hicma/operations/LAPACK/geqrt.h"
+#include "hicma/operations/LAPACK/getrf.h"
+#include "hicma/operations/LAPACK/id.h"
+#include "hicma/operations/LAPACK/larfb.h"
+#include "hicma/operations/LAPACK/latms.h"
+#include "hicma/operations/LAPACK/qr.h"
+#include "hicma/operations/LAPACK/tpmqrt.h"
+#include "hicma/operations/LAPACK/tpqrt.h"
+
+#include "hicma/operations/misc/get_dim.h"
+#include "hicma/operations/misc/misc.h"
+#include "hicma/operations/misc/norm.h"
+#include "hicma/operations/misc/transpose.h"
 
 #endif // hicma_operations_h

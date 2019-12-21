@@ -1,4 +1,4 @@
-#include "hicma/operations/gemm.h"
+#include "hicma/operations/BLAS/gemm.h"
 
 #include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
@@ -7,7 +7,7 @@
 #include "hicma/util/timer.h"
 #include "hicma/util/counter.h"
 #include "hicma/gpu_batch/batch.h"
-#include "hicma/operations/get_dim.h"
+#include "hicma/operations/misc/get_dim.h"
 
 #include <cassert>
 #include <iostream>

@@ -1,14 +1,14 @@
-#include "hicma/operations/id.h"
+#include "hicma/operations/LAPACK/id.h"
 
 #include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/functions.h"
-#include "hicma/operations/gemm.h"
-#include "hicma/operations/geqp3.h"
-#include "hicma/operations/qr.h"
-#include "hicma/operations/trsm.h"
+#include "hicma/operations/BLAS/gemm.h"
+#include "hicma/operations/BLAS/trsm.h"
+#include "hicma/operations/LAPACK/geqp3.h"
+#include "hicma/operations/LAPACK/qr.h"
 
 #include <algorithm>
 #include <cassert>

@@ -6,9 +6,9 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/low_rank_shared.h"
 #include "hicma/classes/hierarchical.h"
-#include "hicma/operations/gemm.h"
-#include "hicma/operations/id.h"
-#include "hicma/operations/transpose.h"
+#include "hicma/operations/BLAS/gemm.h"
+#include "hicma/operations/LAPACK/id.h"
+#include "hicma/operations/misc/transpose.h"
 
 #include <algorithm>
 #include <cassert>

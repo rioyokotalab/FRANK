@@ -1,5 +1,5 @@
-#ifndef hicma_operations_id_h
-#define hicma_operations_id_h
+#ifndef hicma_operations_LAPACK_id_h
+#define hicma_operations_LAPACK_id_h
 
 #include "yorel/multi_methods.hpp"
 using yorel::multi_methods::virtual_;
@@ -19,4 +19,4 @@ MULTI_METHOD(
 
 } // namespace hicma
 
-#endif // hicma_operations_id_h
+#endif // hicma_operations_LAPACK_id_h

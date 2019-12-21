@@ -3,7 +3,7 @@
 #include "hicma/classes/node_proxy.h"
 #include "hicma/classes/dense.h"
 #include "hicma/classes/low_rank.h"
-#include "hicma/operations/gemm.h"
+#include "hicma/operations/BLAS/gemm.h"
 
 namespace hicma {
 

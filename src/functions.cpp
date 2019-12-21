@@ -1,5 +1,6 @@
 #include "hicma/functions.h"
-#include "hicma/operations/misc.h"
+
+#include "hicma/operations/misc/misc.h"
 
 #include <cmath>
 #include <random>
