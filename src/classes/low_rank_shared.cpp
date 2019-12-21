@@ -37,12 +37,12 @@ LowRankShared::LowRankShared(LowRankShared&& A) {
   swap(*this, A);
 }
 
-LowRankShared* LowRankShared::clone() const {
-  return new LowRankShared(*this);
+std::unique_ptr<Node> LowRankShared::clone() const {
+  return std::make_unique<LowRankShared>(*this);
 }
 
-LowRankShared* LowRankShared::move_clone() {
-  return new LowRankShared(std::move(*this));
+std::unique_ptr<Node> LowRankShared::move_clone() {
+  return std::make_unique<LowRankShared>(std::move(*this));
 }
 
 

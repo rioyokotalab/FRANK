@@ -6,6 +6,8 @@
 
 #include "yorel/multi_methods.hpp"
 
+#include <memory>
+
 namespace hicma {
 
   class LowRank : public Node {
@@ -31,9 +33,9 @@ namespace hicma {
 
     LowRank(LowRank&& A);
 
-    LowRank* clone() const override;
+    std::unique_ptr<Node> clone() const override;
 
-    LowRank* move_clone() override;
+    std::unique_ptr<Node> move_clone() override;
 
     friend void swap(LowRank& A, LowRank& B);
 

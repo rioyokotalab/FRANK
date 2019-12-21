@@ -1,6 +1,7 @@
 #include "hicma/classes/node.h"
 
 #include <iostream>
+#include <memory>
 
 #include "yorel/multi_methods.hpp"
 
@@ -16,9 +17,13 @@ namespace hicma {
 
   Node::~Node() {};
 
-  Node* Node::clone() const { return new Node(*this); }
+  std::unique_ptr<Node> Node::clone() const {
+    return std::make_unique<Node>(*this);
+  }
 
-  Node* Node::move_clone() { return new Node(std::move(*this)); }
+  std::unique_ptr<Node> Node::move_clone() {
+    return std::make_unique<Node>(std::move(*this));
+  }
 
   const Node& Node::operator=(Node&& A) { return *this; }
 

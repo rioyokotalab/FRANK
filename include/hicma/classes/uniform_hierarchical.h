@@ -43,9 +43,9 @@ class UniformHierarchical : public Hierarchical {
 
   UniformHierarchical(UniformHierarchical&& A);
 
-  UniformHierarchical* clone() const override;
+  std::unique_ptr<Node> clone() const override;
 
-  UniformHierarchical* move_clone() override;
+  std::unique_ptr<Node> move_clone() override;
 
   friend void swap(UniformHierarchical& A, UniformHierarchical& B);
 

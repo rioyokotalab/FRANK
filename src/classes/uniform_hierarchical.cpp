@@ -170,12 +170,12 @@ UniformHierarchical::UniformHierarchical(UniformHierarchical&& A) {
   swap(*this, A);
 }
 
-UniformHierarchical* UniformHierarchical::clone() const {
-  return new UniformHierarchical(*this);
+std::unique_ptr<Node> UniformHierarchical::clone() const {
+  return std::make_unique<UniformHierarchical>(*this);
 }
 
-UniformHierarchical* UniformHierarchical::move_clone() {
-  return new UniformHierarchical(std::move(*this));
+std::unique_ptr<Node> UniformHierarchical::move_clone() {
+  return std::make_unique<UniformHierarchical>(std::move(*this));
 }
 
 void swap(UniformHierarchical& A, UniformHierarchical& B) {

@@ -4,7 +4,7 @@ project(HICMA
     LANGUAGES CXX
     VERSION 1.0
 )
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 
 # Check for OpenMP
 find_package(OpenMP)

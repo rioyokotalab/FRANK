@@ -9,6 +9,7 @@
 
 #include <cassert>
 #include <iostream>
+#include <memory>
 #include <random>
 #include <algorithm>
 
@@ -90,12 +91,12 @@ namespace hicma {
     swap(*this, A);
   }
 
-  LowRank* LowRank::clone() const {
-    return new LowRank(*this);
+  std::unique_ptr<Node> LowRank::clone() const {
+    return std::make_unique<LowRank>(*this);
   }
 
-  LowRank* LowRank::move_clone() {
-    return new LowRank(std::move(*this));
+  std::unique_ptr<Node> LowRank::move_clone() {
+    return std::make_unique<LowRank>(std::move(*this));
   }
 
   void swap(LowRank& A, LowRank& B) {

@@ -5,6 +5,7 @@
 #include "hicma/classes/node_proxy.h"
 
 #include <vector>
+#include <memory>
 
 #include "yorel/multi_methods.hpp"
 
@@ -54,9 +55,9 @@ namespace hicma {
 
     Hierarchical(Hierarchical&& A);
 
-    Hierarchical* clone() const override;
+    std::unique_ptr<Node> clone() const override;
 
-    Hierarchical* move_clone() override;
+    std::unique_ptr<Node> move_clone() override;
 
     friend void swap(Hierarchical& A, Hierarchical& B);
 

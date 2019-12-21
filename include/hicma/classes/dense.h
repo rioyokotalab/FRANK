@@ -4,6 +4,7 @@
 #include "hicma/classes/node.h"
 
 #include <vector>
+#include <memory>
 
 #include "yorel/multi_methods.hpp"
 using yorel::multi_methods::virtual_;
@@ -73,9 +74,9 @@ namespace hicma {
 
     explicit Dense(const NodeProxy& A);
 
-    Dense* clone() const override;
+    std::unique_ptr<Node> clone() const override;
 
-    Dense* move_clone() override;
+    std::unique_ptr<Node> move_clone() override;
 
     friend void swap(Dense& A, Dense& B);
 

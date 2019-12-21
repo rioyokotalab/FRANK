@@ -15,6 +15,7 @@
 #include <cassert>
 #include <cmath>
 #include <iostream>
+#include <memory>
 #include <utility>
 
 #include "yorel/multi_methods.hpp"
@@ -189,12 +190,12 @@ namespace hicma {
     swap(*this, A);
   }
 
-  Hierarchical* Hierarchical::clone() const {
-    return new Hierarchical(*this);
+  std::unique_ptr<Node> Hierarchical::clone() const {
+    return std::make_unique<Hierarchical>(*this);
   }
 
-  Hierarchical* Hierarchical::move_clone() {
-    return new Hierarchical(std::move(*this));
+  std::unique_ptr<Node> Hierarchical::move_clone() {
+    return std::make_unique<Hierarchical>(std::move(*this));
   }
 
   void swap(Hierarchical& A, Hierarchical& B) {

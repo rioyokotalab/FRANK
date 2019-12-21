@@ -38,9 +38,9 @@ class LowRankShared : public Node {
 
   LowRankShared(LowRankShared&& A);
 
-  LowRankShared* clone() const override;
+  std::unique_ptr<Node> clone() const override;
 
-  LowRankShared* move_clone() override;
+  std::unique_ptr<Node> move_clone() override;
 
   friend void swap(LowRankShared& A, LowRankShared& B);
 

@@ -3,6 +3,8 @@
 
 #include "yorel/multi_methods.hpp"
 
+#include <memory>
+
 namespace hicma {
 
   class Node : public yorel::multi_methods::selector {
@@ -20,9 +22,9 @@ namespace hicma {
 
     virtual ~Node();
 
-    virtual Node* clone() const;
+    virtual std::unique_ptr<Node> clone() const;
 
-    virtual Node* move_clone();
+    virtual std::unique_ptr<Node> move_clone();
 
     const Node& operator=(Node&& A);
 

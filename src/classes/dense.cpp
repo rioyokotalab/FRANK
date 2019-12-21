@@ -12,6 +12,7 @@
 #include <cassert>
 #include <iostream>
 #include <iomanip>
+#include <memory>
 #include <utility>
 
 #ifdef USE_MKL
@@ -135,12 +136,12 @@ namespace hicma {
     *this = make_dense(A);
   }
 
-  Dense* Dense::clone() const {
-    return new Dense(*this);
+  std::unique_ptr<Node> Dense::clone() const {
+    return std::make_unique<Dense>(*this);
   }
 
-  Dense* Dense::move_clone() {
-    return new Dense(std::move(*this));
+  std::unique_ptr<Node> Dense::move_clone() {
+    return std::make_unique<Dense>(std::move(*this));
   }
 
   void swap(Dense& A, Dense& B) {
