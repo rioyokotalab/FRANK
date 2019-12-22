@@ -67,7 +67,7 @@ int main(int argc, char** argv) {
   start("Verification");
   stop("Verification");
   print("Compression Accuracy");
-  print("Rel. L2 Error", l2_error(A, A), false);
+  print("Rel. L2 Error", l2_error(A, D), false);
   print("Time");
   start("QR decomposition");
   qr(A, Q, R);

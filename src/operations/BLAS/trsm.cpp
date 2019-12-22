@@ -96,7 +96,7 @@ BEGIN_SPECIALIZATION(
         B.dim[0], B.dim[1],
         1,
         &A[0], A.dim[1],
-        &B.data[0], B.dim[1]
+        &B[0], B.dim[1]
       );
       break;
     case 'u' :
@@ -107,7 +107,7 @@ BEGIN_SPECIALIZATION(
         B.dim[0], B.dim[1],
         1,
         &A[0], A.dim[1],
-        &B.data[0], B.dim[1]
+        &B[0], B.dim[1]
       );
       break;
     default :
@@ -125,7 +125,7 @@ BEGIN_SPECIALIZATION(
         B.dim[0], B.dim[1],
         1,
         &A[0], A.dim[1],
-        &B.data[0], B.dim[1]
+        &B[0], B.dim[1]
       );
       break;
     case 'u' :
@@ -136,7 +136,7 @@ BEGIN_SPECIALIZATION(
         B.dim[0], B.dim[1],
         1,
         &A[0], A.dim[1],
-        &B.data[0], B.dim[1]
+        &B[0], B.dim[1]
       );
       break;
     default :

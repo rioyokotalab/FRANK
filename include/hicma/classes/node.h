@@ -14,21 +14,26 @@ namespace hicma {
     int j_abs; //! Column number of the node on the current recursion level
     int level; //! Recursion level of the node
 
+    // Special member functions
     Node();
-
-    Node(const int i_abs, const int j_abs, const int level);
-
-    Node(const Node& A);
-
-    Node(Node&& A);
 
     virtual ~Node();
 
+    Node(const Node& A);
+
+    Node& operator=(const Node& A);
+
+    Node(Node&& A);
+
+    Node& operator=(Node&& A);
+
+    // Additional constructor
+    Node(const int i_abs, const int j_abs, const int level);
+
+    // Virtual functions for inheritance
     virtual std::unique_ptr<Node> clone() const;
 
     virtual std::unique_ptr<Node> move_clone();
-
-    const Node& operator=(Node&& A);
 
     virtual const char* type() const;
 

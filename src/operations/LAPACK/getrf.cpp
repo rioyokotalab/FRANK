@@ -47,7 +47,7 @@ BEGIN_SPECIALIZATION(getrf_omm, void, Dense& A) {
   LAPACKE_dgetrf(
     LAPACK_ROW_MAJOR,
     A.dim[0], A.dim[1],
-    &A.data[0], A.dim[1],
+    &A[0], A.dim[1],
     &ipiv[0]
   );
   stop("-DGETRF",false);

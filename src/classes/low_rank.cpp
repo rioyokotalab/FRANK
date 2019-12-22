@@ -128,9 +128,9 @@ namespace hicma {
         B.mergeS(*this, A);
         B.mergeV(*this, A);
         rank += A.rank;
-        swap(U, B.U);
-        swap(S, B.S);
-        swap(V, B.V);
+        std::swap(U, B.U);
+        std::swap(S, B.S);
+        std::swap(V, B.V);
       }
     }
     else if(getCounter("LRA") == 1) {
@@ -162,7 +162,7 @@ namespace hicma {
       RuRvT.svd(RRU, RRS, RRV);
 
       RRS.resize(rank, rank);
-      swap(S, RRS);
+      std::swap(S, RRS);
       RRU.resize(RRU.dim[0], rank);
       gemm(Qu, RRU, U, 1, 0);
       RRV.resize(rank, RRV.dim[1]);
@@ -245,7 +245,7 @@ namespace hicma {
       }
 
       gemm(MERGE_U, Uhat, U, 1, 0);
-      swap(S, Shat);
+      std::swap(S, Shat);
       gemm(Vhat, MERGE_V, V, false, true, 1, 0);
     }
     return *this;

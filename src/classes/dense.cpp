@@ -28,21 +28,37 @@ namespace hicma {
 
   Dense::Dense() {
     MM_INIT();
-    dim[0]=0; dim[1]=0;
+    dim[0] = 0; dim[1] = 0;
   }
 
-  Dense::Dense(const int m) {
+  Dense::~Dense() = default;
+
+  Dense::Dense(const Dense& A) {
     MM_INIT();
-    dim[0]=m; dim[1]=1; data.resize(dim[0],0);
+    *this = A;
+  }
+
+  Dense& Dense::operator=(const Dense& A) = default;
+
+  Dense::Dense(Dense&& A) {
+    MM_INIT();
+    *this = std::move(A);
+  }
+
+  Dense& Dense::operator=(Dense&& A) = default;
+
+  Dense::Dense(const int m) : dim{m, 1} {
+    MM_INIT();
+    data.resize(dim[0], 0);
   }
 
   Dense::Dense(
     const int m, const int n,
     const int i_abs, const int j_abs,
     const int level
-  ) : Node(i_abs, j_abs, level) {
+  ) : Node(i_abs, j_abs, level), dim{m, n} {
     MM_INIT();
-    dim[0]=m; dim[1]=n; data.resize(dim[0]*dim[1],0);
+    data.resize(dim[0]*dim[1], 0);
   }
 
   Dense::Dense(
@@ -57,9 +73,8 @@ namespace hicma {
     const int i_begin, const int j_begin,
     const int i_abs, const int j_abs,
     const int level
-  ) : Node(i_abs, j_abs, level) {
+  ) : Node(i_abs, j_abs, level), dim{ni, nj}{
     MM_INIT();
-    dim[0] = ni; dim[1] = nj;
     data.resize(dim[0]*dim[1]);
     func(data, x, ni, nj, i_begin, j_begin);
   }
@@ -76,51 +91,10 @@ namespace hicma {
     const int i_begin, const int j_begin,
     const int i_abs, const int j_abs,
     const int level
-  ) : Node(i_abs,j_abs,level) {
+  ) : Node(i_abs,j_abs,level), dim{ni, nj} {
     MM_INIT();
-    dim[0] = ni; dim[1] = nj;
     data.resize(dim[0]*dim[1]);
     func(data, x, ni, nj, i_begin, j_begin);
-  }
-
-  Dense::Dense(const Dense& A) : Node(A), data(A.data) {
-    MM_INIT();
-    dim[0] = A.dim[0]; dim[1] = A.dim[1];
-  }
-
-  Dense::Dense(Dense&& A) {
-    MM_INIT();
-    swap(*this, A);
-  }
-
-  Dense::Dense(const LowRank& A) : Node(A) {
-    MM_INIT();
-    dim[0] = A.dim[0]; dim[1] = A.dim[1];
-    data.resize(dim[0]*dim[1], 0);
-    Dense UxS(A.dim[0], A.rank);
-    gemm(A.U, A.S, UxS, 1, 0);
-    gemm(UxS, A.V, *this, 1, 0);
-  }
-
-  Dense::Dense(const Hierarchical& A) : Node(A) {
-    MM_INIT();
-    dim[0] = get_n_rows(A);
-    dim[1] = get_n_cols(A);
-    data.resize(dim[0]*dim[1]);
-    int i_begin = 0;
-    for (int i=0; i<A.dim[0]; i++) {
-      int j_begin = 0;
-      for (int j=0; j<A.dim[1]; j++) {
-        Dense AD = Dense(A(i,j));
-        for (int ic=0; ic<AD.dim[0]; ic++) {
-          for (int jc=0; jc<AD.dim[1]; jc++) {
-            (*this)(ic+i_begin, jc+j_begin) = AD(ic,jc);
-          }
-        }
-        j_begin += AD.dim[1];
-      }
-      i_begin += get_n_rows(A(i, 0));
-    }
   }
 
   Dense::Dense(const Node& A) : Node(A) {
@@ -138,21 +112,11 @@ namespace hicma {
     return std::make_unique<Dense>(std::move(*this));
   }
 
-  void swap(Dense& A, Dense& B) {
-    using std::swap;
-    swap(static_cast<Node&>(A), static_cast<Node&>(B));
-    swap(A.data, B.data);
-    swap(A.dim, B.dim);
-  }
+  const char* Dense::type() const { return "Dense"; }
 
   const Dense& Dense::operator=(const double a) {
     for (int i=0; i<dim[0]*dim[1]; i++)
       data[i] = a;
-    return *this;
-  }
-
-  const Dense& Dense::operator=(Dense A) {
-    swap(*this, A);
     return *this;
   }
 
@@ -214,8 +178,6 @@ namespace hicma {
     assert(j < dim[1]);
     return data[i*dim[1]+j];
   }
-
-  const char* Dense::type() const { return "Dense"; }
 
   int Dense::size() const {
     return dim[0] * dim[1];
@@ -297,7 +259,7 @@ namespace hicma {
     start("-DGESVD");
     Dense U(dim[0],dim[1]),V(dim[1],dim[0]);
     Dense work(dim[1]-1,1);
-    // Using 'A' is a major waste of time
+    // TODO Using 'A' is a major waste of time
     LAPACKE_dgesvd(
       LAPACK_ROW_MAJOR,
       'A', 'A',
@@ -312,14 +274,37 @@ namespace hicma {
   }
 
   BEGIN_SPECIALIZATION(make_dense, Dense, const Hierarchical& A){
-    return Dense(A);
+    Dense B(get_n_rows(A), get_n_cols(A));
+    // TODO This loop copies the data multiple times
+    int i_begin = 0;
+    for (int i=0; i<A.dim[0]; i++) {
+      int j_begin = 0;
+      for (int j=0; j<A.dim[1]; j++) {
+        Dense AD = Dense(A(i,j));
+        for (int ic=0; ic<AD.dim[0]; ic++) {
+          for (int jc=0; jc<AD.dim[1]; jc++) {
+            B(ic+i_begin, jc+j_begin) = AD(ic,jc);
+          }
+        }
+        j_begin += AD.dim[1];
+      }
+      i_begin += get_n_rows(A(i, 0));
+    }
+    // TODO Consider return with std::move. Test if the copy is elided!!
+    return B;
   } END_SPECIALIZATION;
 
   BEGIN_SPECIALIZATION(make_dense, Dense, const LowRank& A){
-    return Dense(A);
+    Dense B(A.dim[0], A.dim[1]);
+    Dense UxS(A.dim[0], A.rank);
+    gemm(A.U, A.S, UxS, 1, 0);
+    gemm(UxS, A.V, B, 1, 0);
+    // TODO Consider return with std::move. Test if the copy is elided!!
+    return B;
   } END_SPECIALIZATION;
 
   BEGIN_SPECIALIZATION(make_dense, Dense, const Dense& A){
+    // TODO Consider return with std::move. Test if the copy is elided!!
     return Dense(A);
   } END_SPECIALIZATION;
 

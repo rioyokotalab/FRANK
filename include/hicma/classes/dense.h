@@ -16,14 +16,27 @@ namespace hicma {
   class Hierarchical;
 
   class Dense : public Node {
+  private:
+    std::vector<double> data;
   public:
     MM_CLASS(Dense, Node);
     // NOTE: Take care to add members new members to swap
-    std::vector<double> data;
     int dim[2];
 
+    // Special member functions
     Dense();
 
+    ~Dense();
+
+    Dense(const Dense& A);
+
+    Dense& operator=(const Dense& A);
+
+    Dense(Dense&& A);
+
+    Dense& operator=(Dense&& A);
+
+    // Additional constructors
     Dense(const int m);
 
     Dense(
@@ -47,41 +60,30 @@ namespace hicma {
     );
 
     Dense(
-          void (*func)(
-                       std::vector<double>& data,
-                       std::vector<std::vector<double>>& x,
-                       const int& ni,
-                       const int& nj,
-                       const int& i_begin,
-                       const int& j_begin
-                       ),
-          std::vector<std::vector<double>>& x,
-          const int ni,
-          const int nj,
-          const int i_begin=0,
-          const int j_begin=0,
-          const int i_abs=0,
-          const int j_abs=0,
-          const int level=0);
+      void (*func)(
+        std::vector<double>& data,
+        std::vector<std::vector<double>>& x,
+        const int& ni, const int& nj,
+        const int& i_begin, const int& j_begin
+      ),
+      std::vector<std::vector<double>>& x,
+      const int ni, const int nj,
+      const int i_begin=0, const int j_begin=0,
+      const int i_abs=0, const int j_abs=0,
+      const int level=0
+    );
 
-    Dense(const Dense& A);
-
-    Dense(Dense&& A);
-
-    explicit Dense(const LowRank& A);
-
-    explicit Dense(const Hierarchical& A);
-
+    // Explicit conversions using multiple-dispatch function.
     explicit Dense(const Node& A);
 
+    // Overridden functions from Node
     std::unique_ptr<Node> clone() const override;
 
     std::unique_ptr<Node> move_clone() override;
 
-    friend void swap(Dense& A, Dense& B);
+    const char* type() const override;
 
-    const Dense& operator=(Dense A);
-
+    // Additional operators
     const Dense& operator=(const double a);
 
     Dense operator+(const Dense& A) const;
@@ -102,8 +104,7 @@ namespace hicma {
 
     const double& operator()(const int i, const int j) const;
 
-    const char* type() const override;
-
+    // Utility methods
     int size() const;
 
     void resize(const int dim0, const int dim1);
