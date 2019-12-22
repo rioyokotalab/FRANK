@@ -10,50 +10,32 @@ namespace hicma {
 
   NodeProxy::NodeProxy() = default;
 
-  NodeProxy::NodeProxy(const NodeProxy& A) : ptr(A->clone()) {}
+  NodeProxy::~NodeProxy() = default;
+
+  // Reconsider these constructors. Performance testing needed!!
+  NodeProxy::NodeProxy(const NodeProxy& A) : ptr(A.ptr->clone()) {}
+
+  NodeProxy& NodeProxy::operator=(const NodeProxy& A) {
+    ptr = A.ptr->clone();
+    return *this;
+  }
+
+  NodeProxy::NodeProxy(NodeProxy&& A) = default;
+
+  NodeProxy& NodeProxy::operator=(NodeProxy&& A) = default;
 
   NodeProxy::NodeProxy(const Node& A) : ptr(A.clone()) {}
 
   NodeProxy::NodeProxy(Node&& A) : ptr(A.move_clone()) {}
 
-  NodeProxy::~NodeProxy() = default;
-
-  const Node& NodeProxy::operator*() const {
-    assert(ptr.get() != nullptr);
-    return *ptr.get();
-  }
-
-  Node& NodeProxy::operator*() {
-    assert(ptr.get() != nullptr);
-    return *ptr.get();
-  }
-
-  const Node* NodeProxy::operator->() const {
-    return ptr.get();
-  }
-
-  Node* NodeProxy::operator->() {
-    return ptr.get();
-  }
-
-  NodeProxy::operator const Node& () const {
+  NodeProxy::operator const Node&() const {
     assert(ptr.get() != nullptr);
     return *ptr;
   }
 
-  NodeProxy::operator Node& () {
+  NodeProxy::operator Node&() {
     assert(ptr.get() != nullptr);
     return *ptr;
-  }
-
-  void swap(NodeProxy& A, NodeProxy& B){
-    using std::swap;
-    swap(A.ptr, B.ptr);
-  }
-
-  const NodeProxy& NodeProxy::operator=(NodeProxy A) {
-    swap(*this, A);
-    return *this;
   }
 
   const char* NodeProxy::type() const { return ptr->type(); }

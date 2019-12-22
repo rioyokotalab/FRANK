@@ -33,6 +33,7 @@ BEGIN_SPECIALIZATION(transpose_omm, void, LowRank& A) {
 
 
 BEGIN_SPECIALIZATION(transpose_omm, void, Hierarchical& A) {
+  using std::swap;
   Hierarchical A_trans(A.dim[1], A.dim[0]);
   for(int i=0; i<A.dim[0]; i++) {
     for(int j=0; j<A.dim[1]; j++) {
