@@ -13,13 +13,31 @@ namespace hicma {
   class LowRank : public Node {
   public:
     MM_CLASS(LowRank, Node);
-    // NOTE: Take care to add members new members to swap
     Dense U, S, V;
     int dim[2];
     int rank;
 
+    // Special member functions
     LowRank();
 
+    ~LowRank();
+
+    LowRank(const LowRank& A);
+
+    LowRank& operator=(const LowRank& A);
+
+    LowRank(LowRank&& A);
+
+    LowRank& operator=(LowRank&& A);
+
+    // Overridden functions from Node
+    std::unique_ptr<Node> clone() const override;
+
+    std::unique_ptr<Node> move_clone() override;
+
+    const char* type() const override;
+
+    // Additional constructors
     LowRank(
       const int m, const int n,
       const int k,
@@ -29,22 +47,10 @@ namespace hicma {
 
     LowRank(const Dense& A, const int k);
 
-    LowRank(const LowRank& A);
-
-    LowRank(LowRank&& A);
-
-    std::unique_ptr<Node> clone() const override;
-
-    std::unique_ptr<Node> move_clone() override;
-
-    friend void swap(LowRank& A, LowRank& B);
-
-    const LowRank& operator=(LowRank A);
-
+    // Additional operators
     const LowRank& operator+=(const LowRank& A);
 
-    const char* type() const override;
-
+    // Utility methods
     void mergeU(const LowRank& A, const LowRank& B);
 
     void mergeS(const LowRank& A, const LowRank& B);

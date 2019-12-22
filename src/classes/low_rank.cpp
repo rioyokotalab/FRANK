@@ -7,38 +7,63 @@
 #include "hicma/util/print.h"
 #include "hicma/util/counter.h"
 
+#include <algorithm>
 #include <cassert>
 #include <iostream>
 #include <memory>
 #include <random>
-#include <algorithm>
+#include <utility>
+
 
 #include "yorel/multi_methods.hpp"
 
 namespace hicma {
 
-  LowRank::LowRank() {
+  LowRank::LowRank() : dim{0, 0}, rank(0) {
     MM_INIT();
-    dim[0]=0; dim[1]=0; rank=0;
   }
+
+  LowRank::~LowRank() = default;
+
+  LowRank::LowRank(const LowRank& A) {
+    MM_INIT();
+    *this = A;
+  }
+
+  LowRank& LowRank::operator=(const LowRank& A) = default;
+
+  LowRank::LowRank(LowRank&& A) {
+    MM_INIT();
+    *this = std::move(A);
+  }
+
+  LowRank& LowRank::operator=(LowRank&& A) = default;
+
+  std::unique_ptr<Node> LowRank::clone() const {
+    return std::make_unique<LowRank>(*this);
+  }
+
+  std::unique_ptr<Node> LowRank::move_clone() {
+    return std::make_unique<LowRank>(std::move(*this));
+  }
+
+  const char* LowRank::type() const { return "LowRank"; }
 
   LowRank::LowRank(
     const int m, const int n,
     const int k,
     const int i_abs, const int j_abs,
     const int level
-  ) : Node(i_abs, j_abs, level) {
+  ) : Node(i_abs, j_abs, level), dim{m, n}, rank(k) {
     MM_INIT();
-    dim[0] = m; dim[1] = n; rank = k;
     U = Dense(m, k, i_abs, j_abs, level);
     S = Dense(k, k, i_abs, j_abs, level);
     V = Dense(k, n, i_abs, j_abs, level);
   }
 
-  LowRank::LowRank(const Dense& A, const int k) : Node(A) {
+  LowRank::LowRank(const Dense& A, const int k)
+  : Node(A), dim{A.dim[0], A.dim[1]} {
     MM_INIT();
-    dim[0] = A.dim[0];
-    dim[1] = A.dim[1];
     // Rank with oversampling limited by dimensions
     rank = std::min(std::min(k+5, dim[0]), dim[1]);
     U = Dense(dim[0], k, i_abs, j_abs, level);
@@ -79,39 +104,6 @@ namespace hicma {
     rank = k;
   }
 
-  LowRank::LowRank(const LowRank& A) : Node(A), U(A.U), S(A.S), V(A.V) {
-    MM_INIT();
-    dim[0]=A.dim[0]; dim[1]=A.dim[1]; rank=A.rank;
-  }
-
-  LowRank::LowRank(LowRank&& A) {
-    MM_INIT();
-    swap(*this, A);
-  }
-
-  std::unique_ptr<Node> LowRank::clone() const {
-    return std::make_unique<LowRank>(*this);
-  }
-
-  std::unique_ptr<Node> LowRank::move_clone() {
-    return std::make_unique<LowRank>(std::move(*this));
-  }
-
-  void swap(LowRank& A, LowRank& B) {
-    using std::swap;
-    swap(static_cast<Node&>(A), static_cast<Node&>(B));
-    swap(A.U, B.U);
-    swap(A.S, B.S);
-    swap(A.V, B.V);
-    swap(A.dim, B.dim);
-    swap(A.rank, B.rank);
-  }
-
-  const LowRank& LowRank::operator=(LowRank A) {
-    swap(*this, A);
-    return *this;
-  }
-
   const LowRank& LowRank::operator+=(const LowRank& A) {
     assert(dim[0] == A.dim[0]);
     assert(dim[1] == A.dim[1]);
@@ -128,12 +120,11 @@ namespace hicma {
         B.mergeS(*this, A);
         B.mergeV(*this, A);
         rank += A.rank;
-        std::swap(U, B.U);
-        std::swap(S, B.S);
-        std::swap(V, B.V);
+        U = std::move(B.U);
+        S = std::move(B.S);
+        V = std::move(B.V);
       }
-    }
-    else if(getCounter("LRA") == 1) {
+    } else if(getCounter("LRA") == 1) {
       //Bebendorf HMatrix Book p16
       //Rounded Addition
       LowRank B(dim[0], dim[1], rank+A.rank, i_abs, j_abs, level);
@@ -162,7 +153,7 @@ namespace hicma {
       RuRvT.svd(RRU, RRS, RRV);
 
       RRS.resize(rank, rank);
-      std::swap(S, RRS);
+      S = std::move(RRS);
       RRU.resize(RRU.dim[0], rank);
       gemm(Qu, RRU, U, 1, 0);
       RRV.resize(rank, RRV.dim[1]);
@@ -245,13 +236,11 @@ namespace hicma {
       }
 
       gemm(MERGE_U, Uhat, U, 1, 0);
-      std::swap(S, Shat);
+      S = std::move(Shat);
       gemm(Vhat, MERGE_V, V, false, true, 1, 0);
     }
     return *this;
   }
-
-  const char* LowRank::type() const { return "LowRank"; }
 
   void LowRank::mergeU(const LowRank& A, const LowRank& B) {
     assert(rank == A.rank + B.rank);
