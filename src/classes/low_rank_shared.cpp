@@ -3,6 +3,7 @@
 #include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
 #include "hicma/classes/low_rank.h"
+#include "hicma/operations/BLAS/gemm.h"
 
 #include <memory>
 #include <utility>
@@ -11,30 +12,26 @@
 
 namespace hicma
 {
-LowRankShared::LowRankShared() {
+
+LowRankShared::LowRankShared() : dim{0, 0}, rank(0) {
   MM_INIT();
-  dim[0]=0; dim[1]=0; rank=0;
 }
 
-LowRankShared::LowRankShared(
-  const Dense& S,
-  std::shared_ptr<Dense> U, std::shared_ptr<Dense> V
-) : Node(S), U(U), S(S), V(V)
-{
+LowRankShared::~LowRankShared() = default;
+
+LowRankShared::LowRankShared(const LowRankShared& A) {
   MM_INIT();
-  dim[0]=U->dim[0]; dim[1]=V->dim[1]; rank=S.dim[0];
+  *this = A;
 }
 
-LowRankShared::LowRankShared(const LowRankShared& A)
-: Node(A), U(A.U), S(A.S), V(A.V) {
-  MM_INIT();
-  dim[0]=A.dim[0]; dim[1]=A.dim[1]; rank=A.rank;
-}
+LowRankShared& LowRankShared::operator=(const LowRankShared& A) = default;
 
 LowRankShared::LowRankShared(LowRankShared&& A) {
   MM_INIT();
-  swap(*this, A);
+  *this = std::move(A);
 }
+
+LowRankShared& LowRankShared::operator=(LowRankShared&& A) = default;
 
 std::unique_ptr<Node> LowRankShared::clone() const {
   return std::make_unique<LowRankShared>(*this);
@@ -44,30 +41,22 @@ std::unique_ptr<Node> LowRankShared::move_clone() {
   return std::make_unique<LowRankShared>(std::move(*this));
 }
 
-
-void swap(LowRankShared& A, LowRankShared& B) {
-  using std::swap;
-  swap(static_cast<Node&>(A), static_cast<Node&>(B));
-  swap(A.dim, B.dim);
-  swap(A.rank, B.rank);
-  swap(A.U, B.U);
-  swap(A.S, B.S);
-  swap(A.V, B.V);
-}
-
-const LowRankShared& LowRankShared::operator=(LowRankShared A) {
-  swap(*this, A);
-  return *this;
-}
-
 const char* LowRankShared::type() const { return "LowRankShared"; }
 
+LowRankShared::LowRankShared(
+  const Dense& S,
+  std::shared_ptr<Dense> U, std::shared_ptr<Dense> V
+) : Node(S), U(U), S(S), V(V), dim{U->dim[0], V->dim[1]}, rank(S.dim[0])
+{
+  MM_INIT();
+}
+
 BEGIN_SPECIALIZATION(make_dense, Dense, const LowRankShared& A){
-  LowRank ALR(A.dim[0], A.dim[1], A.rank);
-  ALR.U = A.U;
-  ALR.S = A.S;
-  ALR.V = A.V;
-  return Dense(ALR);
+  Dense B(A.dim[0], A.dim[1]);
+  Dense UxS(A.dim[0], A.rank);
+  gemm(A.U, A.S, UxS, 1, 0);
+  gemm(UxS, A.V, B, 1, 0);
+  return B;
 } END_SPECIALIZATION;
 
 } // namespace hicma
