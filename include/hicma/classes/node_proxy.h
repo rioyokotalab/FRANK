@@ -40,7 +40,7 @@ namespace hicma {
 
     operator Node&();
 
-    // Forward to `type` function of Node
+    // Utility methods
     const char* type() const;
 
   };

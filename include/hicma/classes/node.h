@@ -27,15 +27,15 @@ namespace hicma {
 
     Node& operator=(Node&& A);
 
-    // Additional constructor
-    Node(const int i_abs, const int j_abs, const int level);
-
     // Virtual functions for inheritance
     virtual std::unique_ptr<Node> clone() const;
 
     virtual std::unique_ptr<Node> move_clone();
 
     virtual const char* type() const;
+
+    // Additional constructor
+    Node(const int i_abs, const int j_abs, const int level);
 
   };
 

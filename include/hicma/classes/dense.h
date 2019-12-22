@@ -20,7 +20,6 @@ namespace hicma {
     std::vector<double> data;
   public:
     MM_CLASS(Dense, Node);
-    // NOTE: Take care to add members new members to swap
     int dim[2];
 
     // Special member functions
@@ -35,6 +34,16 @@ namespace hicma {
     Dense(Dense&& A);
 
     Dense& operator=(Dense&& A);
+
+    // Overridden functions from Node
+    std::unique_ptr<Node> clone() const override;
+
+    std::unique_ptr<Node> move_clone() override;
+
+    const char* type() const override;
+
+    // Explicit conversions using multiple-dispatch function.
+    explicit Dense(const Node& A);
 
     // Additional constructors
     Dense(const int m);
@@ -72,16 +81,6 @@ namespace hicma {
       const int i_abs=0, const int j_abs=0,
       const int level=0
     );
-
-    // Explicit conversions using multiple-dispatch function.
-    explicit Dense(const Node& A);
-
-    // Overridden functions from Node
-    std::unique_ptr<Node> clone() const override;
-
-    std::unique_ptr<Node> move_clone() override;
-
-    const char* type() const override;
 
     // Additional operators
     const Dense& operator=(const double a);

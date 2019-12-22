@@ -52,6 +52,23 @@ namespace hicma {
     data.resize(dim[0], 0);
   }
 
+  std::unique_ptr<Node> Dense::clone() const {
+    return std::make_unique<Dense>(*this);
+  }
+
+  std::unique_ptr<Node> Dense::move_clone() {
+    return std::make_unique<Dense>(std::move(*this));
+  }
+
+  const char* Dense::type() const { return "Dense"; }
+
+  Dense::Dense(const Node& A) : Node(A) {
+    MM_INIT();
+    // Test performance of make_dense in this case!!
+    // Unnecessary copies possible
+    *this = make_dense(A);
+  }
+
   Dense::Dense(
     const int m, const int n,
     const int i_abs, const int j_abs,
@@ -96,23 +113,6 @@ namespace hicma {
     data.resize(dim[0]*dim[1]);
     func(data, x, ni, nj, i_begin, j_begin);
   }
-
-  Dense::Dense(const Node& A) : Node(A) {
-    MM_INIT();
-    // Test performance of make_dense in this case!!
-    // Unnecessary copies possible
-    *this = make_dense(A);
-  }
-
-  std::unique_ptr<Node> Dense::clone() const {
-    return std::make_unique<Dense>(*this);
-  }
-
-  std::unique_ptr<Node> Dense::move_clone() {
-    return std::make_unique<Dense>(std::move(*this));
-  }
-
-  const char* Dense::type() const { return "Dense"; }
 
   const Dense& Dense::operator=(const double a) {
     for (int i=0; i<dim[0]*dim[1]; i++)
