@@ -28,9 +28,6 @@ int main(int argc, char const *argv[])
   Hierarchical H(
     laplace1d, randx, N, N, rank, nleaf, admis, ni_level, nj_level);
   Dense D(laplace1d, randx, N, N);
-  Hierarchical DH(D, ni_level, nj_level);
-  LowRankShared& LRS = static_cast<LowRankShared&>(*A(0, 1));
-  LowRank& LR = static_cast<LowRank&>(*H(0, 1));
 
   start("Verification");
   print("Compression Accuracy");
