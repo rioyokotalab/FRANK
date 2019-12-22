@@ -3,6 +3,7 @@
 #include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
 #include "hicma/classes/low_rank.h"
+#include "hicma/classes/low_rank_shared.h"
 #include "hicma/classes/hierarchical.h"
 
 #include "yorel/multi_methods.hpp"
@@ -22,6 +23,10 @@ BEGIN_SPECIALIZATION(get_n_rows_omm, int, const LowRank& A) {
   return A.dim[0];
 } END_SPECIALIZATION;
 
+BEGIN_SPECIALIZATION(get_n_rows_omm, int, const LowRankShared& A) {
+  return A.dim[0];
+} END_SPECIALIZATION;
+
 BEGIN_SPECIALIZATION(get_n_rows_omm, int, const Hierarchical& A) {
   int n_rows = 0;
   for (int i=0; i<A.dim[0]; i++) {
@@ -37,6 +42,7 @@ BEGIN_SPECIALIZATION(get_n_rows_omm, int, const Node& A) {
   abort();
 } END_SPECIALIZATION;
 
+
 int get_n_cols(const Node& A) {
   return get_n_cols_omm(A);
 }
@@ -46,6 +52,10 @@ BEGIN_SPECIALIZATION(get_n_cols_omm, int, const Dense& A) {
 } END_SPECIALIZATION;
 
 BEGIN_SPECIALIZATION(get_n_cols_omm, int, const LowRank& A) {
+  return A.dim[1];
+} END_SPECIALIZATION;
+
+BEGIN_SPECIALIZATION(get_n_cols_omm, int, const LowRankShared& A) {
   return A.dim[1];
 } END_SPECIALIZATION;
 
