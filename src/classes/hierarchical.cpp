@@ -22,10 +22,35 @@
 
 namespace hicma {
 
-  Hierarchical::Hierarchical() {
+  Hierarchical::Hierarchical() : dim{0, 0} {
     MM_INIT();
-    dim[0]=0; dim[1]=0;
   }
+
+  Hierarchical::~Hierarchical() = default;
+
+  Hierarchical::Hierarchical(const Hierarchical& A) {
+    MM_INIT();
+    *this = A;
+  }
+
+  Hierarchical& Hierarchical::operator=(const Hierarchical& A) = default;
+
+  Hierarchical::Hierarchical(Hierarchical&& A) {
+    MM_INIT();
+    *this = std::move(A);
+  }
+
+  Hierarchical& Hierarchical::operator=(Hierarchical&& A) = default;
+
+  std::unique_ptr<Node> Hierarchical::clone() const {
+    return std::make_unique<Hierarchical>(*this);
+  }
+
+  std::unique_ptr<Node> Hierarchical::move_clone() {
+    return std::make_unique<Hierarchical>(std::move(*this));
+  }
+
+  const char* Hierarchical::type() const { return "Hierarchical"; }
 
   Hierarchical::Hierarchical(
     const int ni_level,
@@ -33,70 +58,9 @@ namespace hicma {
     const int i_abs,
     const int j_abs,
     const int level
-  ) : Node(i_abs, j_abs, level) {
+  ) : Node(i_abs, j_abs, level), dim{ni_level, nj_level} {
     MM_INIT();
-    dim[0]=ni_level; dim[1]=nj_level; data.resize(dim[0]*dim[1]);
-  }
-
-  Hierarchical::Hierarchical(const Dense& A, const int m, const int n) : Node(A) {
-    MM_INIT();
-    dim[0]=m; dim[1]=n;
     data.resize(dim[0]*dim[1]);
-    int ni = A.dim[0];
-    int nj = A.dim[1];
-    for (int i=0; i<dim[0]; i++) {
-      for (int j=0; j<dim[1]; j++) {
-        int ni_child = ni/dim[0];
-        if ( i == dim[0]-1 ) ni_child = ni - (ni/dim[0]) * (dim[0]-1);
-        int nj_child = nj/dim[1];
-        if ( j == dim[1]-1 ) nj_child = nj - (nj/dim[1]) * (dim[1]-1);
-        int i_begin = ni/dim[0] * i;
-        int j_begin = nj/dim[1] * j;
-        int i_abs_child = A.i_abs * dim[0] + i;
-        int j_abs_child = A.j_abs * dim[1] + j;
-        Dense D(ni_child, nj_child, A.level+1, i_abs_child, j_abs_child);
-        for (int ic=0; ic<ni_child; ic++) {
-          for (int jc=0; jc<nj_child; jc++) {
-            D(ic,jc) = A(ic+i_begin,jc+j_begin);
-          }
-        }
-        (*this)(i,j) = std::move(D);
-      }
-    }
-  }
-
-  Hierarchical::Hierarchical(const LowRank& A, const int m, const int n) : Node(A) {
-    MM_INIT();
-    dim[0]=m; dim[1]=n;
-    data.resize(dim[0]*dim[1]);
-    int ni = A.dim[0];
-    int nj = A.dim[1];
-    int rank = A.rank;
-    for (int i=0; i<dim[0]; i++) {
-      for (int j=0; j<dim[1]; j++) {
-        int ni_child = ni/dim[0];
-        if ( i == dim[0]-1 ) ni_child = ni - (ni/dim[0]) * (dim[0]-1);
-        int nj_child = nj/dim[1];
-        if ( j == dim[1]-1 ) nj_child = nj - (nj/dim[1]) * (dim[1]-1);
-        int i_begin = ni/dim[0] * i;
-        int j_begin = nj/dim[1] * j;
-        int i_abs_child = A.i_abs * dim[0] + i;
-        int j_abs_child = A.j_abs * dim[1] + j;
-        LowRank LR(ni_child, nj_child, rank, A.level+1, i_abs_child, j_abs_child);
-        for (int ic=0; ic<ni_child; ic++) {
-          for (int kc=0; kc<rank; kc++) {
-            LR.U(ic,kc) = A.U(ic+i_begin,kc);
-          }
-        }
-        LR.S = A.S;
-        for (int kc=0; kc<rank; kc++) {
-          for (int jc=0; jc<nj_child; jc++) {
-            LR.V(kc,jc) = A.V(kc,jc+j_begin);
-          }
-        }
-        (*this)(i,j) = std::move(LR);
-      }
-    }
   }
 
   Hierarchical::Hierarchical(
@@ -117,10 +81,6 @@ namespace hicma {
     const int level
   ) : Node(i_abs, j_abs, level) {
     MM_INIT();
-    if ( !level ) {
-      assert(int(x.size()) == std::max(ni, nj));
-      std::sort(x.begin(), x.end());
-    }
     dim[0] = std::min(ni_level, ni);
     dim[1] = std::min(nj_level, nj);
     data.resize(dim[0]*dim[1]);
@@ -177,29 +137,65 @@ namespace hicma {
     }
   }
 
-  Hierarchical::Hierarchical(const Hierarchical& A) : Node(A), data(A.data) {
+  Hierarchical::Hierarchical(const Dense& A, const int m, const int n)
+  : Node(A), dim{m, n} {
     MM_INIT();
-    dim[0]=A.dim[0]; dim[1]=A.dim[1];
+    data.resize(dim[0]*dim[1]);
+    int ni = A.dim[0];
+    int nj = A.dim[1];
+    for (int i=0; i<dim[0]; i++) {
+      for (int j=0; j<dim[1]; j++) {
+        int ni_child = ni/dim[0];
+        if ( i == dim[0]-1 ) ni_child = ni - (ni/dim[0]) * (dim[0]-1);
+        int nj_child = nj/dim[1];
+        if ( j == dim[1]-1 ) nj_child = nj - (nj/dim[1]) * (dim[1]-1);
+        int i_begin = ni/dim[0] * i;
+        int j_begin = nj/dim[1] * j;
+        int i_abs_child = A.i_abs * dim[0] + i;
+        int j_abs_child = A.j_abs * dim[1] + j;
+        Dense D(ni_child, nj_child, A.level+1, i_abs_child, j_abs_child);
+        for (int ic=0; ic<ni_child; ic++) {
+          for (int jc=0; jc<nj_child; jc++) {
+            D(ic,jc) = A(ic+i_begin,jc+j_begin);
+          }
+        }
+        (*this)(i,j) = std::move(D);
+      }
+    }
   }
 
-  Hierarchical::Hierarchical(Hierarchical&& A) {
+  Hierarchical::Hierarchical(const LowRank& A, const int m, const int n)
+  : Node(A), dim{m, n} {
     MM_INIT();
-    swap(*this, A);
-  }
-
-  std::unique_ptr<Node> Hierarchical::clone() const {
-    return std::make_unique<Hierarchical>(*this);
-  }
-
-  std::unique_ptr<Node> Hierarchical::move_clone() {
-    return std::make_unique<Hierarchical>(std::move(*this));
-  }
-
-  void swap(Hierarchical& A, Hierarchical& B) {
-    using std::swap;
-    swap(static_cast<Node&>(A), static_cast<Node&>(B));
-    swap(A.data, B.data);
-    swap(A.dim, B.dim);
+    data.resize(dim[0]*dim[1]);
+    int ni = A.dim[0];
+    int nj = A.dim[1];
+    int rank = A.rank;
+    for (int i=0; i<dim[0]; i++) {
+      for (int j=0; j<dim[1]; j++) {
+        int ni_child = ni/dim[0];
+        if ( i == dim[0]-1 ) ni_child = ni - (ni/dim[0]) * (dim[0]-1);
+        int nj_child = nj/dim[1];
+        if ( j == dim[1]-1 ) nj_child = nj - (nj/dim[1]) * (dim[1]-1);
+        int i_begin = ni/dim[0] * i;
+        int j_begin = nj/dim[1] * j;
+        int i_abs_child = A.i_abs * dim[0] + i;
+        int j_abs_child = A.j_abs * dim[1] + j;
+        LowRank LR(ni_child, nj_child, rank, A.level+1, i_abs_child, j_abs_child);
+        for (int ic=0; ic<ni_child; ic++) {
+          for (int kc=0; kc<rank; kc++) {
+            LR.U(ic,kc) = A.U(ic+i_begin,kc);
+          }
+        }
+        LR.S = A.S;
+        for (int kc=0; kc<rank; kc++) {
+          for (int jc=0; jc<nj_child; jc++) {
+            LR.V(kc,jc) = A.V(kc,jc+j_begin);
+          }
+        }
+        (*this)(i,j) = std::move(LR);
+      }
+    }
   }
 
   const NodeProxy& Hierarchical::operator[](const int i) const {
@@ -223,8 +219,6 @@ namespace hicma {
     assert(j < dim[1]);
     return data[i*dim[1]+j];
   }
-
-  const char* Hierarchical::type() const { return "Hierarchical"; }
 
   void Hierarchical::blr_col_qr(Hierarchical& Q, Hierarchical& R) {
     assert(dim[1] == 1);
@@ -277,7 +271,7 @@ namespace hicma {
     for(int i=0; i<dim[0]; i++) {
       QL(i, 0) = split_by_column((*this)(i, 0), spA, curRow);
     }
-    swap(*this, spA);
+    *this = std::move(spA);
   }
 
   void Hierarchical::restore_col(const Hierarchical& Sp, const Hierarchical& QL) {
@@ -289,7 +283,7 @@ namespace hicma {
     for(int i=0; i<dim[0]; i++) {
       restoredA(i, 0) = concat_columns((*this)(i, 0), Sp, curSpRow, QL(i, 0));
     }
-    swap(*this, restoredA);
+    *this = std::move(restoredA);
   }
 
   void Hierarchical::col_qr(const int j, Hierarchical& Q, Hierarchical &R) {

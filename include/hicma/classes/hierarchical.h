@@ -15,23 +15,38 @@ namespace hicma {
   class LowRank;
 
   class Hierarchical : public Node {
+  private:
+    std::vector<NodeProxy> data;
   public:
     MM_CLASS(Hierarchical, Node);
-    // NOTE: Take care to add members new members to swap
     int dim[2];
-    std::vector<NodeProxy> data;
 
+    // Special member functions
     Hierarchical();
 
+    ~Hierarchical();
+
+    Hierarchical(const Hierarchical& A);
+
+    Hierarchical& operator=(const Hierarchical& A);
+
+    Hierarchical(Hierarchical&& A);
+
+    Hierarchical& operator=(Hierarchical&& A);
+
+    // Overridden functions from Node
+    std::unique_ptr<Node> clone() const override;
+
+    std::unique_ptr<Node> move_clone() override;
+
+    const char* type() const override;
+
+    // Additional constructors
     Hierarchical(
       const int ni_level, const int nj_level=1,
       const int i_abs=0, const int j_abs=0,
       const int level=0
     );
-
-    Hierarchical(const Dense& A, const int m, const int n);
-
-    Hierarchical(const LowRank& A, const int m, const int n);
 
     Hierarchical(
       void (*func)(
@@ -51,16 +66,12 @@ namespace hicma {
       const int level=0
     );
 
-    Hierarchical(const Hierarchical& A);
+    // Conversion constructors
+    Hierarchical(const Dense& A, const int m, const int n);
 
-    Hierarchical(Hierarchical&& A);
+    Hierarchical(const LowRank& A, const int m, const int n);
 
-    std::unique_ptr<Node> clone() const override;
-
-    std::unique_ptr<Node> move_clone() override;
-
-    friend void swap(Hierarchical& A, Hierarchical& B);
-
+    // Additional operators
     const NodeProxy& operator[](const int i) const;
 
     NodeProxy& operator[](const int i);
@@ -69,8 +80,7 @@ namespace hicma {
 
     NodeProxy& operator()(const int i, const int j);
 
-    const char* type() const override;
-
+    // Utility methods
     void blr_col_qr(Hierarchical& Q, Hierarchical& R);
 
     void split_col(Hierarchical& QL);

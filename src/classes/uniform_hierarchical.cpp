@@ -14,11 +14,9 @@
 #include <cassert>
 #include <cmath>
 #include <memory>
+#include <utility>
 
 #include "yorel/multi_methods.hpp"
-
-
-#include <cstdio>
 
 namespace hicma
 {
@@ -26,6 +24,34 @@ namespace hicma
 UniformHierarchical::UniformHierarchical() : Hierarchical() {
   MM_INIT();
 }
+
+UniformHierarchical::~UniformHierarchical() = default;
+
+UniformHierarchical::UniformHierarchical(const UniformHierarchical& A){
+  MM_INIT();
+  *this = A;
+}
+
+UniformHierarchical&
+UniformHierarchical::operator=(const UniformHierarchical& A) = default;
+
+UniformHierarchical::UniformHierarchical(UniformHierarchical&& A) {
+  MM_INIT();
+  *this = std::move(A);
+}
+
+UniformHierarchical&
+UniformHierarchical::operator=(UniformHierarchical&& A) = default;
+
+std::unique_ptr<Node> UniformHierarchical::clone() const {
+  return std::make_unique<UniformHierarchical>(*this);
+}
+
+std::unique_ptr<Node> UniformHierarchical::move_clone() {
+  return std::make_unique<UniformHierarchical>(std::move(*this));
+}
+
+const char* UniformHierarchical::type() const { return "UniformHierarchical"; }
 
 UniformHierarchical::UniformHierarchical(
   void (*func)(
@@ -158,53 +184,6 @@ UniformHierarchical::UniformHierarchical(
       }
     }
   }
-}
-
-UniformHierarchical::UniformHierarchical(const UniformHierarchical& A)
-  : Hierarchical(A) {
-  MM_INIT();
-}
-
-UniformHierarchical::UniformHierarchical(UniformHierarchical&& A) {
-  MM_INIT();
-  swap(*this, A);
-}
-
-std::unique_ptr<Node> UniformHierarchical::clone() const {
-  return std::make_unique<UniformHierarchical>(*this);
-}
-
-std::unique_ptr<Node> UniformHierarchical::move_clone() {
-  return std::make_unique<UniformHierarchical>(std::move(*this));
-}
-
-void swap(UniformHierarchical& A, UniformHierarchical& B) {
-  using std::swap;
-  swap(static_cast<Node&>(A), static_cast<Node&>(B));
-  swap(A.data, B.data);
-  swap(A.dim, B.dim);
-}
-
-const char* UniformHierarchical::type() const { return "UniformHierarchical"; }
-
-const NodeProxy& UniformHierarchical::operator[](const int i) const {
-  assert(i<dim[0]*dim[1]);
-  return data[i];
-}
-
-NodeProxy& UniformHierarchical::operator[](const int i) {
-  assert(i<dim[0]*dim[1]);
-  return data[i];
-}
-
-const NodeProxy& UniformHierarchical::operator()(const int i, const int j) const {
-  assert(i<dim[0] && j<dim[1]);
-  return data[i*dim[1]+j];
-}
-
-NodeProxy& UniformHierarchical::operator()(const int i, const int j) {
-  assert(i<dim[0] && j<dim[1]);
-  return data[i*dim[1]+j];
 }
 
 } // namespace hicma

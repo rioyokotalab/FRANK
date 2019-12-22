@@ -15,12 +15,32 @@ class NodeProxy;
 class Dense;
 
 class UniformHierarchical : public Hierarchical {
- public:
-  MM_CLASS(UniformHierarchical, Hierarchical);
+private:
   std::vector<std::shared_ptr<Dense>> row_basis, col_basis;
+public:
+  MM_CLASS(UniformHierarchical, Hierarchical);
 
+  // Special member functions
   UniformHierarchical();
 
+  ~UniformHierarchical();
+
+  UniformHierarchical(const UniformHierarchical& A);
+
+  UniformHierarchical& operator=(const UniformHierarchical& A);
+
+  UniformHierarchical(UniformHierarchical&& A);
+
+  UniformHierarchical& operator=(UniformHierarchical&& A);
+
+  // Overridden functions from Hierarchical
+  std::unique_ptr<Node> clone() const override;
+
+  std::unique_ptr<Node> move_clone() override;
+
+  const char* type() const override;
+
+  // Additional constructors
   UniformHierarchical(
     void (*func)(
       std::vector<double>& data,
@@ -38,26 +58,6 @@ class UniformHierarchical : public Hierarchical {
     const int i_abs=0, const int j_abs=0,
     const int level=0
   );
-
-  UniformHierarchical(const UniformHierarchical& A);
-
-  UniformHierarchical(UniformHierarchical&& A);
-
-  std::unique_ptr<Node> clone() const override;
-
-  std::unique_ptr<Node> move_clone() override;
-
-  friend void swap(UniformHierarchical& A, UniformHierarchical& B);
-
-  const char* type() const override;
-
-  const NodeProxy& operator[](const int i) const;
-
-  NodeProxy& operator[](const int i);
-
-  const NodeProxy& operator()(const int i, const int j) const;
-
-  NodeProxy& operator()(const int i, const int j);
 };
 
 } // namespace hicma
