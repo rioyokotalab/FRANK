@@ -45,6 +45,7 @@ int main(int argc, char** argv) {
     }
   }
   rsvd_batch();
+  Hierarchical A_copy(A);
   double diff, norm;
   diff = (Dense(A) - Dense(D)).norm();
   norm = D.norm();
@@ -80,10 +81,12 @@ int main(int argc, char** argv) {
         Ak(i, 0) = A(i, k);
       }
       Hierarchical Rjk(1, 1);
-      Rjk(0, 0) = R(j, k);
-      gemm(TrQsj, Ak, Rjk, 1, 1); //Rjk = Q*j^T x A*k
-      R(j, k) = Rjk(0, 0);
-      gemm(Qsj, Rjk, Ak, -1, 1); //A*k = A*k - Q*j x Rjk
+      // Rjk(0, 0) = R(j, k);
+      // gemm(TrQsj, Ak, Rjk, 1, 1); //Rjk = Q*j^T x A*k
+      // R(j, k) = Rjk(0, 0);
+      // gemm(Qsj, Rjk, Ak, -1, 1); //A*k = A*k - Q*j x Rjk
+      gemm(TrQsj, Ak, R(j, k), 1, 1); //Rjk = Q*j^T x A*k
+      gemm(Qsj, R(j, k), Ak, -1, 1); //A*k = A*k - Q*j x Rjk
       for(int i=0; i<Nc; i++) {
         A(i, k) = Ak(i, 0);
       }
@@ -91,13 +94,13 @@ int main(int argc, char** argv) {
   }
   stop("BLR QR decomposition");
   gemm(Q, R, QR, 1, 1);
-  diff = (Dense(QR) - Dense(D)).norm();
-  norm = D.norm();
+  diff = (Dense(A_copy) - Dense(QR)).norm();
+  norm = A_copy.norm();
   print("Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
   Dense DQ(Q);
   Dense QtQ(DQ.dim[1], DQ.dim[1]);
-  gemm(DQ, DQ, QtQ, CblasTrans, CblasNoTrans, 1, 1);
+  gemm(DQ, DQ, QtQ, CblasTrans, CblasNoTrans, 1, 0);
   Dense Id(identity, randx, QtQ.dim[0], QtQ.dim[1]);
   diff = (QtQ - Id).norm();
   norm = Id.norm();
