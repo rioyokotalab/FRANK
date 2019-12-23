@@ -26,6 +26,10 @@ namespace hicma
 
   NodeProxy concat_columns(const Node&, const Node&, int&, const Node&);
 
+  void zero_lowtri(Node&);
+
+  void zero_whole(Node&);
+
   MULTI_METHOD(
     qr_omm, void,
     virtual_<Node>&, virtual_<Node>&, virtual_<Node>&
@@ -52,7 +56,14 @@ namespace hicma
     const virtual_<Node>&, const virtual_<Node>&,
     int&, const virtual_<Node>&
   );
-
+  MULTI_METHOD(
+    zero_lowtri_omm, void,
+    virtual_<Node>&
+  );
+  MULTI_METHOD(
+    zero_whole_omm, void,
+    virtual_<Node>&
+  );
 } // namespace hicma
 
 #endif // operations_geqrt_h

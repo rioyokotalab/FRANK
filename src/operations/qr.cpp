@@ -47,6 +47,14 @@ namespace hicma
     return concat_columns_omm(A, splitted, currentRow, Q);
   }
 
+  void zero_lowtri(Node& A) {
+    zero_lowtri_omm(A);
+  }
+
+  void zero_whole(Node& A) {
+    zero_whole_omm(A);
+  }
+
   BEGIN_SPECIALIZATION(qr_omm, void, Dense& A, Dense& Q, Dense& R) {
     std::vector<double> tau(A.dim[1]);
     for (int i=0; i<A.dim[1]; i++) Q[i*(A.dim[1])+i] = 1.0;
@@ -247,6 +255,38 @@ namespace hicma
   BEGIN_SPECIALIZATION(concat_columns_omm, NodeProxy, const Node& A, const Node& splitted, int& currentRow, const Node& Q) {
     std::cerr << "concat_columns(";
     std::cerr << A.type() << "," << splitted.type() << ",int," << Q.type();
+    std::cerr << ") undefined." << std::endl;
+    abort();
+  } END_SPECIALIZATION;
+
+
+  BEGIN_SPECIALIZATION(zero_lowtri_omm, void, Dense& A) {
+    for(int i=0; i<A.dim[0]; i++)
+      for(int j=0; j<i; j++)
+        A(i,j) = 0.0;
+  } END_SPECIALIZATION;
+
+  BEGIN_SPECIALIZATION(zero_lowtri_omm, void, Node& A) {
+    std::cerr << "zero_lowtri_omm(";
+    std::cerr << A.type();
+    std::cerr << ") undefined." << std::endl;
+    abort();
+  } END_SPECIALIZATION;
+
+
+  BEGIN_SPECIALIZATION(zero_whole_omm, void, Dense& A) {
+    A = 0.0;
+  } END_SPECIALIZATION;
+
+  BEGIN_SPECIALIZATION(zero_whole_omm, void, LowRank& A) {
+    A.U = 0.0;
+    A.S = 0.0;
+    A.V = 0.0;
+  } END_SPECIALIZATION;
+
+  BEGIN_SPECIALIZATION(zero_whole_omm, void, Node& A) {
+    std::cerr << "zero_whole_omm(";
+    std::cerr << A.type();
     std::cerr << ") undefined." << std::endl;
     abort();
   } END_SPECIALIZATION;

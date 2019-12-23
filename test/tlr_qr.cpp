@@ -28,22 +28,29 @@ int main(int argc, char** argv) {
   Hierarchical A(Nc, Nc);
   Hierarchical D(Nc, Nc);
   Hierarchical Q(Nc, Nc);
+  Hierarchical T(Nc, Nc);
+  Hierarchical QR(Nc, Nc);
   for (int ic=0; ic<Nc; ic++) {
     for (int jc=0; jc<Nc; jc++) {
       Dense Aij(laplace1d, randx, Nb, Nb, Nb*ic, Nb*jc);
       Dense Qij(identity, randx, Nb, Nb, Nb*ic, Nb*jc);
+      Dense Tij(zeros, randx, Nb, Nb, Nb*ic, Nb*jc);
       D(ic,jc) = Aij;
+      T(ic,jc) = Tij;
       if (std::abs(ic - jc) <= 0) {
         A(ic,jc) = Aij;
         Q(ic,jc) = Qij;
+        QR(ic,jc) = Tij;
       }
       else {
         rsvd_push(A(ic,jc), Aij, rank);
         rsvd_push(Q(ic,jc), Qij, rank);
+        rsvd_push(QR(ic,jc), Tij, rank);
       }
     }
   }
   rsvd_batch();
+  Hierarchical A_copy(A);
   double diff, norm;
   diff = (Dense(A) - Dense(D)).norm();
   norm = D.norm();
@@ -51,9 +58,6 @@ int main(int argc, char** argv) {
   print("Compression Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
 
-  Dense Id(identity, randx, N, N);
-  Dense Z(zeros, randx, N, N);
-  Hierarchical T(Z, Nc, Nc);
   print("Time");
   start("BLR QR decomposition");
   for(int k = 0; k < Nc; k++) {
@@ -69,13 +73,6 @@ int main(int argc, char** argv) {
     }
   }
   stop("BLR QR decomposition");
-  //Build R: Take upper triangular part of A
-  Dense DR(A);
-  for(int i = 0; i < N; i++) {
-    for(int j = 0; j < i; j++) {
-      DR(i, j) = 0.0;
-    }
-  }
   //Build Q: Apply Q to Id
   for(int k = Nc-1; k >= 0; k--) {
     for(int i = Nc-1; i > k; i--) {
@@ -87,15 +84,25 @@ int main(int argc, char** argv) {
       larfb(A(k, k), T(k, k), Q(k, j), false);
     }
   }
-  Dense DQ(Q);
-  Dense QR(N, N);
-  gemm(DQ, DR, QR, 1, 0);
-  diff = (Dense(D) - QR).norm();
-  norm = D.norm();
+  //Build R: Take upper triangular part of modified A
+  for(int i=0; i<A.dim[0]; i++) {
+    for(int j=0; j<=i; j++) {
+      if(i == j) //Must be dense, zero lower-triangular part
+        zero_lowtri(A(i, j));
+      else
+        zero_whole(A(i, j));
+    }
+  }
+
+  gemm(Q, A, QR, 1, 1);
+  diff = (Dense(A_copy) - Dense(QR)).norm();
+  norm = A_copy.norm();
   print("Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
-  Dense QtQ(N, N);
+  Dense DQ(Q);
+  Dense QtQ(DQ.dim[0], DQ.dim[1]);
   gemm(DQ, DQ, QtQ, CblasTrans, CblasNoTrans, 1, 0);
+  Dense Id(identity, randx, QtQ.dim[0], QtQ.dim[1]);
   diff = (QtQ - Id).norm();
   norm = Id.norm();
   print("Orthogonality");
