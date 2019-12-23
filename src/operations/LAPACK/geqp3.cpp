@@ -28,8 +28,9 @@ BEGIN_SPECIALIZATION(
   Dense& A, Dense& R
 ) {
   assert(A.dim[1] == R.dim[1]);
-  // The -1 initial value is important! Otherwise axes are fixed and results
+  // The 0 initial value is important! Otherwise axes are fixed and results
   // can be wrong. See netlib dgeqp3 reference.
+  // However, much faster with -1... maybe better starting values exist?
   std::vector<int> jpvt(A.dim[1], 0);
   std::vector<double> tau(std::min(A.dim[0], A.dim[1]), 0);
   LAPACKE_dgeqp3(
