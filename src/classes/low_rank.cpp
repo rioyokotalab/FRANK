@@ -19,9 +19,7 @@
 
 namespace hicma {
 
-  LowRank::LowRank() : dim{0, 0}, rank(0) {
-    MM_INIT();
-  }
+  LowRank::LowRank() : dim{0, 0}, rank(0) { MM_INIT(); }
 
   LowRank::~LowRank() = default;
 

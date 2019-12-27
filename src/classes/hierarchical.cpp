@@ -22,9 +22,7 @@
 
 namespace hicma {
 
-  Hierarchical::Hierarchical() : dim{0, 0} {
-    MM_INIT();
-  }
+  Hierarchical::Hierarchical() : dim{0, 0} { MM_INIT(); }
 
   Hierarchical::~Hierarchical() = default;
 

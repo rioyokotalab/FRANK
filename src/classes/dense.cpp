@@ -26,10 +26,7 @@
 
 namespace hicma {
 
-  Dense::Dense() {
-    MM_INIT();
-    dim[0] = 0; dim[1] = 0;
-  }
+  Dense::Dense() : dim{0, 0} { MM_INIT(); }
 
   Dense::~Dense() = default;
 

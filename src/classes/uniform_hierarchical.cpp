@@ -21,9 +21,7 @@
 namespace hicma
 {
 
-UniformHierarchical::UniformHierarchical() : Hierarchical() {
-  MM_INIT();
-}
+UniformHierarchical::UniformHierarchical() : Hierarchical() { MM_INIT(); }
 
 UniformHierarchical::~UniformHierarchical() = default;
 
