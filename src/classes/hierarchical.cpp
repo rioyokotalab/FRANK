@@ -91,9 +91,10 @@ namespace hicma {
         int i_abs_child = i_abs * dim[0] + i;
         int j_abs_child = j_abs * dim[1] + j;
         if (
-            std::abs(i_abs_child - j_abs_child) <= admis // Check regular admissibility
-            || (nj == 1 || ni == 1) ) { // Check if vector, and if so do not use LowRank
-          if ( ni_child/ni_level < nleaf && nj_child/nj_level < nleaf ) {
+          std::abs(i_abs_child - j_abs_child) <= admis // Check regular admissibility
+          || (nj == 1 || ni == 1) // Check if vector, and if so do not use LowRank
+        ) {
+          if (ni_child/ni_level < nleaf && nj_child/nj_level < nleaf) {
             (*this)(i,j) = Dense(
               func,
               x,
@@ -102,8 +103,7 @@ namespace hicma {
               i_abs_child, j_abs_child,
               level+1
             );
-          }
-          else {
+          } else {
             (*this)(i,j) = Hierarchical(
               func,
               x,
@@ -117,8 +117,7 @@ namespace hicma {
               level+1
             );
           }
-        }
-        else {
+        } else {
           Dense A = Dense(
             func,
             x,
