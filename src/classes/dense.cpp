@@ -44,7 +44,7 @@ namespace hicma {
 
   Dense& Dense::operator=(Dense&& A) = default;
 
-  Dense::Dense(const int m) : dim{m, 1} {
+  Dense::Dense(int m) : dim{m, 1} {
     MM_INIT();
     data.resize(dim[0], 0);
   }
@@ -67,9 +67,9 @@ namespace hicma {
   }
 
   Dense::Dense(
-    const int m, const int n,
-    const int i_abs, const int j_abs,
-    const int level
+    int m, int n,
+    int i_abs, int j_abs,
+    int level
   ) : Node(i_abs, j_abs, level), dim{m, n} {
     MM_INIT();
     data.resize(dim[0]*dim[1], 0);
@@ -79,14 +79,14 @@ namespace hicma {
     void (*func)(
       std::vector<double>& data,
       std::vector<double>& x,
-      const int& ni, const int& nj,
-      const int& i_begin, const int& j_begin
+      int ni, int nj,
+      int i_begin, int j_begin
     ),
     std::vector<double>& x,
-    const int ni, const int nj,
-    const int i_begin, const int j_begin,
-    const int i_abs, const int j_abs,
-    const int level
+    int ni, int nj,
+    int i_begin, int j_begin,
+    int i_abs, int j_abs,
+    int level
   ) : Node(i_abs, j_abs, level), dim{ni, nj}{
     MM_INIT();
     data.resize(dim[0]*dim[1]);
@@ -154,23 +154,23 @@ namespace hicma {
     return *this;
   }
 
-  double& Dense::operator[](const int i) {
+  double& Dense::operator[](int i) {
     assert(i < dim[0]*dim[1]);
     return data[i];
   }
 
-  const double& Dense::operator[](const int i) const {
+  const double& Dense::operator[](int i) const {
     assert(i < dim[0]*dim[1]);
     return data[i];
   }
 
-  double& Dense::operator()(const int i, const int j) {
+  double& Dense::operator()(int i, int j) {
     assert(i < dim[0]);
     assert(j < dim[1]);
     return data[i*dim[1]+j];
   }
 
-  const double& Dense::operator()(const int i, const int j) const {
+  const double& Dense::operator()(int i, int j) const {
     assert(i < dim[0]);
     assert(j < dim[1]);
     return data[i*dim[1]+j];
@@ -180,7 +180,7 @@ namespace hicma {
     return dim[0] * dim[1];
   }
 
-  void Dense::resize(const int dim0, const int dim1) {
+  void Dense::resize(int dim0, int dim1) {
     assert(dim0 <= dim[0]);
     assert(dim1 <= dim[1]);
     for (int i=0; i<dim0; i++) {

@@ -35,7 +35,7 @@ namespace hicma {
     virtual const char* type() const;
 
     // Additional constructor
-    Node(const int i_abs, const int j_abs, const int level);
+    Node(int i_abs, int j_abs, int level);
 
   };
 

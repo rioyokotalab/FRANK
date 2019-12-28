@@ -43,42 +43,42 @@ namespace hicma {
 
     // Additional constructors
     Hierarchical(
-      const int ni_level, const int nj_level=1,
-      const int i_abs=0, const int j_abs=0,
-      const int level=0
+      int ni_level, int nj_level=1,
+      int i_abs=0, int j_abs=0,
+      int level=0
     );
 
     Hierarchical(
       void (*func)(
         std::vector<double>& data,
         std::vector<double>& x,
-        const int& ni, const int& nj,
-        const int& i_begin, const int& j_begin
+        int ni, int nj,
+        int i_begin, int j_begin
       ),
       std::vector<double>& x,
-      const int ni, const int nj,
-      const int rank,
-      const int nleaf,
-      const int admis=1,
-      const int ni_level=2, const int nj_level=2,
-      const int i_begin=0, const int j_begin=0,
-      const int i_abs=0, const int j_abs=0,
-      const int level=0
+      int ni, int nj,
+      int rank,
+      int nleaf,
+      int admis=1,
+      int ni_level=2, int nj_level=2,
+      int i_begin=0, int j_begin=0,
+      int i_abs=0, int j_abs=0,
+      int level=0
     );
 
     // Conversion constructors
-    Hierarchical(const Dense& A, const int m, const int n);
+    Hierarchical(const Dense& A, int m, int n);
 
-    Hierarchical(const LowRank& A, const int m, const int n);
+    Hierarchical(const LowRank& A, int m, int n);
 
     // Additional operators
-    const NodeProxy& operator[](const int i) const;
+    const NodeProxy& operator[](int i) const;
 
-    NodeProxy& operator[](const int i);
+    NodeProxy& operator[](int i);
 
-    const NodeProxy& operator()(const int i, const int j) const;
+    const NodeProxy& operator()(int i, int j) const;
 
-    NodeProxy& operator()(const int i, const int j);
+    NodeProxy& operator()(int i, int j);
 
     // Utility methods
     void blr_col_qr(Hierarchical& Q, Hierarchical& R);
@@ -87,7 +87,7 @@ namespace hicma {
 
     void restore_col(const Hierarchical& Sp, const Hierarchical& QL);
 
-    void col_qr(const int j, Hierarchical& Q, Hierarchical &R);
+    void col_qr(int j, Hierarchical& Q, Hierarchical &R);
 
   };
 

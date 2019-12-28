@@ -39,13 +39,13 @@ namespace hicma {
 
     // Additional constructors
     LowRank(
-      const int m, const int n,
-      const int k,
-      const int i_abs=0, const int j_abs=0,
-      const int level=0
+      int m, int n,
+      int k,
+      int i_abs=0, int j_abs=0,
+      int level=0
     );
 
-    LowRank(const Dense& A, const int k);
+    LowRank(const Dense& A, int k);
 
     // Additional operators
     const LowRank& operator+=(const LowRank& A);

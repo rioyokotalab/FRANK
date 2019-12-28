@@ -26,7 +26,7 @@ namespace hicma {
 
   Node& Node::operator=(Node&& A) = default;
 
-  Node::Node(const int i_abs, const int j_abs, const int level)
+  Node::Node(int i_abs, int j_abs, int level)
   : i_abs(i_abs), j_abs(j_abs), level(level) { MM_INIT(); }
 
   std::unique_ptr<Node> Node::clone() const {

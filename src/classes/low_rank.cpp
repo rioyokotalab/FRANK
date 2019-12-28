@@ -48,10 +48,10 @@ namespace hicma {
   const char* LowRank::type() const { return "LowRank"; }
 
   LowRank::LowRank(
-    const int m, const int n,
-    const int k,
-    const int i_abs, const int j_abs,
-    const int level
+    int m, int n,
+    int k,
+    int i_abs, int j_abs,
+    int level
   ) : Node(i_abs, j_abs, level), dim{m, n}, rank(k) {
     MM_INIT();
     U = Dense(m, k, i_abs, j_abs, level);
@@ -59,7 +59,7 @@ namespace hicma {
     V = Dense(k, n, i_abs, j_abs, level);
   }
 
-  LowRank::LowRank(const Dense& A, const int k)
+  LowRank::LowRank(const Dense& A, int k)
   : Node(A), dim{A.dim[0], A.dim[1]} {
     MM_INIT();
     // Rank with oversampling limited by dimensions

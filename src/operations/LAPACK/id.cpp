@@ -55,14 +55,14 @@ Dense interleave_id(const Dense& A, std::vector<int>& P) {
   return Anew;
 }
 
-std::vector<int> id(Node& A, Node& B, const int k) {
+std::vector<int> id(Node& A, Node& B, int k) {
   return id_omm(A, B, k);
 }
 
 BEGIN_SPECIALIZATION(
   id_omm, std::vector<int>,
   Dense& A, Dense& B,
-  const int k
+  int k
 ) {
   assert(k <= std::min(A.dim[0], A.dim[1]));
   Dense R(A.dim[0], A.dim[1]);
@@ -94,7 +94,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   id_omm, std::vector<int>,
   Node& A, Node& B,
-  const int k
+  int k
 ) {
   std::cerr << "id(";
   std::cerr << A.type() << "," << B.type();

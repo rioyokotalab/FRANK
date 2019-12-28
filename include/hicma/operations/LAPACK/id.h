@@ -9,12 +9,12 @@ namespace hicma
 
 class Node;
 
-std::vector<int> id(Node& A, Node& B, const int k);
+std::vector<int> id(Node& A, Node& B, int k);
 
 MULTI_METHOD(
   id_omm, std::vector<int>,
   virtual_<Node>&, virtual_<Node>&,
-  const int k
+  int k
 );
 
 } // namespace hicma

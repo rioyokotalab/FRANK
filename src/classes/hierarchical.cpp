@@ -51,11 +51,9 @@ namespace hicma {
   const char* Hierarchical::type() const { return "Hierarchical"; }
 
   Hierarchical::Hierarchical(
-    const int ni_level,
-    const int nj_level,
-    const int i_abs,
-    const int j_abs,
-    const int level
+    int ni_level, int nj_level,
+    int i_abs, int j_abs,
+    int level
   ) : Node(i_abs, j_abs, level), dim{ni_level, nj_level} {
     MM_INIT();
     data.resize(dim[0]*dim[1]);
@@ -65,18 +63,18 @@ namespace hicma {
     void (*func)(
       std::vector<double>& data,
       std::vector<double>& x,
-      const int& ni, const int& nj,
-      const int& i_begin, const int& j_begin
+      int ni, int nj,
+      int i_begin, int j_begin
     ),
     std::vector<double>& x,
-    const int ni, const int nj,
-    const int rank,
-    const int nleaf,
-    const int admis,
-    const int ni_level, const int nj_level,
-    const int i_begin, const int j_begin,
-    const int i_abs, const int j_abs,
-    const int level
+    int ni, int nj,
+    int rank,
+    int nleaf,
+    int admis,
+    int ni_level, int nj_level,
+    int i_begin, int j_begin,
+    int i_abs, int j_abs,
+    int level
   ) : Node(i_abs, j_abs, level) {
     MM_INIT();
     dim[0] = std::min(ni_level, ni);
@@ -135,7 +133,7 @@ namespace hicma {
     }
   }
 
-  Hierarchical::Hierarchical(const Dense& A, const int m, const int n)
+  Hierarchical::Hierarchical(const Dense& A, int m, int n)
   : Node(A), dim{m, n} {
     MM_INIT();
     data.resize(dim[0]*dim[1]);
@@ -162,7 +160,7 @@ namespace hicma {
     }
   }
 
-  Hierarchical::Hierarchical(const LowRank& A, const int m, const int n)
+  Hierarchical::Hierarchical(const LowRank& A, int m, int n)
   : Node(A), dim{m, n} {
     MM_INIT();
     data.resize(dim[0]*dim[1]);
@@ -196,23 +194,23 @@ namespace hicma {
     }
   }
 
-  const NodeProxy& Hierarchical::operator[](const int i) const {
+  const NodeProxy& Hierarchical::operator[](int i) const {
     assert(i < dim[0]*dim[1]);
     return data[i];
   }
 
-  NodeProxy& Hierarchical::operator[](const int i) {
+  NodeProxy& Hierarchical::operator[](int i) {
     assert(i < dim[0]*dim[1]);
     return data[i];
   }
 
-  const NodeProxy& Hierarchical::operator()(const int i, const int j) const {
+  const NodeProxy& Hierarchical::operator()(int i, int j) const {
     assert(i < dim[0]);
     assert(j < dim[1]);
     return data[i*dim[1]+j];
   }
 
-  NodeProxy& Hierarchical::operator()(const int i, const int j) {
+  NodeProxy& Hierarchical::operator()(int i, int j) {
     assert(i < dim[0]);
     assert(j < dim[1]);
     return data[i*dim[1]+j];
@@ -284,7 +282,7 @@ namespace hicma {
     *this = std::move(restoredA);
   }
 
-  void Hierarchical::col_qr(const int j, Hierarchical& Q, Hierarchical &R) {
+  void Hierarchical::col_qr(int j, Hierarchical& Q, Hierarchical &R) {
     assert(Q.dim[0] == dim[0]);
     assert(Q.dim[1] == 1);
     assert(R.dim[0] == 1);
