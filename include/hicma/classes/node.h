@@ -1,9 +1,11 @@
 #ifndef hicma_classes_node_h
 #define hicma_classes_node_h
+#include "hicma/classes/index_range.h"
 
 #include "yorel/multi_methods.hpp"
 
 #include <memory>
+#include <vector>
 
 namespace hicma {
 
@@ -13,6 +15,7 @@ namespace hicma {
     int i_abs; //! Row number of the node on the current recursion level
     int j_abs; //! Column number of the node on the current recursion level
     int level; //! Recursion level of the node
+    IndexRange row_range, col_range;
 
     // Special member functions
     Node();
@@ -34,9 +37,13 @@ namespace hicma {
 
     virtual const char* type() const;
 
-    // Additional constructor
+    // Additional constructors
     Node(int i_abs, int j_abs, int level);
 
+    Node(
+      int i_abs, int j_abs, int level,
+      IndexRange row_range, IndexRange col_range
+    );
   };
 
 } // namespace hicma

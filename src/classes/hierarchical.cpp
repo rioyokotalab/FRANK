@@ -60,6 +60,39 @@ namespace hicma {
   }
 
   Hierarchical::Hierarchical(
+    const Node& node,
+    void (*func)(
+      std::vector<double>& data,
+      std::vector<double>& x,
+      int ni, int nj,
+      int i_begin, int j_begin
+    ),
+    std::vector<double>& x,
+    int rank,
+    int nleaf,
+    int admis,
+    int ni_level, int nj_level
+  ) : Node(node) {
+    MM_INIT();
+    dim[0] = std::min(ni_level, row_range.length);
+    dim[1] = std::min(nj_level, col_range.length);
+    data.resize(dim[0]*dim[1]);
+    create_children(dim[0], dim[1]);
+    for (NodeProxy& child : data) {
+      if (is_addmissible(child, admis)) {
+        if (is_leaf(child, nleaf)) {
+          child = Dense(child, func, x);
+        } else {
+          child = Hierarchical(
+            child, func, x, rank, nleaf, admis, ni_level, nj_level);
+        }
+      } else {
+        child = LowRank(Dense(child, func, x), rank);
+      }
+    }
+  }
+
+  Hierarchical::Hierarchical(
     void (*func)(
       std::vector<double>& data,
       std::vector<double>& x,
@@ -75,62 +108,13 @@ namespace hicma {
     int i_begin, int j_begin,
     int i_abs, int j_abs,
     int level
-  ) : Node(i_abs, j_abs, level) {
-    MM_INIT();
-    dim[0] = std::min(ni_level, ni);
-    dim[1] = std::min(nj_level, nj);
-    data.resize(dim[0]*dim[1]);
-    for (int i=0; i<dim[0]; i++) {
-      for (int j=0; j<dim[1]; j++) {
-        int ni_child = ni/dim[0];
-        if (i == dim[0]-1) ni_child = ni - (ni/dim[0]) * (dim[0]-1);
-        int nj_child = nj/dim[1];
-        if (j == dim[1]-1) nj_child = nj - (nj/dim[1]) * (dim[1]-1);
-        int i_begin_child = i_begin + ni/dim[0] * i;
-        int j_begin_child = j_begin + nj/dim[1] * j;
-        int i_abs_child = i_abs * dim[0] + i;
-        int j_abs_child = j_abs * dim[1] + j;
-        if (
-          std::abs(i_abs_child - j_abs_child) <= admis // Check regular admissibility
-          || (nj == 1 || ni == 1) // Check if vector, and if so do not use LowRank
-        ) {
-          if (ni_child/ni_level < nleaf && nj_child/nj_level < nleaf) {
-            (*this)(i,j) = Dense(
-              func,
-              x,
-              ni_child, nj_child,
-              i_begin_child, j_begin_child,
-              i_abs_child, j_abs_child,
-              level+1
-            );
-          } else {
-            (*this)(i,j) = Hierarchical(
-              func,
-              x,
-              ni_child, nj_child,
-              rank,
-              nleaf,
-              admis,
-              ni_level, nj_level,
-              i_begin_child, j_begin_child,
-              i_abs_child, j_abs_child,
-              level+1
-            );
-          }
-        } else {
-          Dense A = Dense(
-            func,
-            x,
-            ni_child, nj_child,
-            i_begin_child, j_begin_child,
-            i_abs_child, j_abs_child,
-            level+1
-          );
-          rsvd_push((*this)(i,j), A, rank);
-        }
-      }
-    }
-  }
+  ) : Hierarchical(
+    Node(
+      i_abs, j_abs, level,
+      IndexRange(i_begin, ni), IndexRange(j_begin, nj)
+    ),
+    func, x, rank, nleaf, admis, ni_level, nj_level
+  ) {}
 
   Hierarchical::Hierarchical(const Dense& A, int m, int n)
   : Node(A), dim{m, n} {
@@ -302,6 +286,35 @@ namespace hicma {
       qr(Aj, SpQj, R(0, 0));
       Q.restore_col(SpQj, QL);
     }
+  }
+
+  void Hierarchical::create_children(int n_row_splits, int n_col_splits) {
+    std::vector<IndexRange> child_row_ranges = row_range.split(n_row_splits);
+    std::vector<IndexRange> child_col_ranges = col_range.split(n_col_splits);
+    for (int i=0; i<n_row_splits; i++) for (int j=0; j<n_col_splits; j++) {
+      int i_abs_child = i_abs * n_row_splits + i;
+      int j_abs_child = j_abs * n_col_splits + j;
+      (*this)(i, j) = Node(
+        i_abs_child, j_abs_child, level+1,
+        child_row_ranges[i], child_col_ranges[j]
+      );
+    }
+  }
+
+  bool Hierarchical::is_addmissible(const Node& node, int dist_to_diag) {
+    bool admissible = false;
+    // Main admissibility condition
+    admissible |= (std::abs(node.i_abs - node.j_abs) <= dist_to_diag);
+    // Vectors are never admissible
+    admissible |= (node.row_range.length == 1 || node.col_range.length == 1);
+    return admissible;
+  }
+
+  bool Hierarchical::is_leaf(const Node& node, int nleaf) {
+    bool leaf = true;
+    leaf &= (node.row_range.length/dim[0] < nleaf);
+    leaf &= (node.col_range.length/dim[1] < nleaf);
+    return leaf;
   }
 
 } // namespace hicma

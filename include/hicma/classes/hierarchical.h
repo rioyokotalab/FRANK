@@ -49,6 +49,21 @@ namespace hicma {
     );
 
     Hierarchical(
+      const Node& node,
+      void (*func)(
+        std::vector<double>& data,
+        std::vector<double>& x,
+        int ni, int nj,
+        int i_begin, int j_begin
+      ),
+      std::vector<double>& x,
+      int rank,
+      int nleaf,
+      int admis=1,
+      int ni_level=2, int nj_level=2
+    );
+
+    Hierarchical(
       void (*func)(
         std::vector<double>& data,
         std::vector<double>& x,
@@ -89,6 +104,12 @@ namespace hicma {
 
     void col_qr(int j, Hierarchical& Q, Hierarchical &R);
 
+  private:
+    void create_children(int n_row_splits, int n_col_splits);
+
+    bool is_addmissible(const Node& node, int dist_to_diag);
+
+    bool is_leaf(const Node& node, int nleaf);
   };
 
 } // namespace hicma

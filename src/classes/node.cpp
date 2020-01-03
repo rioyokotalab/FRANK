@@ -1,5 +1,7 @@
 #include "hicma/classes/node.h"
 
+#include "hicma/classes/index_range.h"
+
 #include <iostream>
 #include <memory>
 #include <utility>
@@ -28,6 +30,13 @@ namespace hicma {
 
   Node::Node(int i_abs, int j_abs, int level)
   : i_abs(i_abs), j_abs(j_abs), level(level) { MM_INIT(); }
+
+  Node::Node(
+    int i_abs, int j_abs, int level, IndexRange row_range, IndexRange col_range
+  ) : i_abs(i_abs), j_abs(j_abs), level(level),
+      row_range(row_range), col_range(col_range) {
+    MM_INIT();
+  }
 
   std::unique_ptr<Node> Node::clone() const {
     return std::make_unique<Node>(*this);
