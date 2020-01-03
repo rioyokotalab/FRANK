@@ -52,17 +52,17 @@ int main(int argc, char** argv) {
   Hierarchical A(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   stop("CPU compression");
   rsvd_batch();
-  //printXML(A);
+  // printXML(A);
   admis = N / nleaf; // Full rank
-  start("Dense tree");
-  //Hierarchical D(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
-  stop("Dense tree");
   Hierarchical x(random_uniform, randx, N, 1, rank, nleaf, admis, nblocks, 1);
   Hierarchical b(zeros, randx, N, 1, rank, nleaf, admis, nblocks, 1);
-  //start("Verification");
-  //stop("Verification");
-  //print("Compression Accuracy");
-  //print("Rel. L2 Error", l2_error(A, D), false);
+  // start("Dense tree");
+  // Hierarchical D(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
+  // stop("Dense tree");
+  // start("Verification time");
+  // print("Compression Accuracy");
+  // print("Rel. L2 Error", l2_error(A, D), false);
+  // stop("Verification time");
   print("Time");
   gemm(A, x, b, 1, 1);
   gemm_batch();
