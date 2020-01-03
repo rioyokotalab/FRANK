@@ -15,6 +15,7 @@ add_library(operations OBJECT
     misc/misc.cpp
     misc/norm.cpp
     misc/transpose.cpp
+    randomized/rsvd.cpp
 )
 target_include_directories(operations
 PUBLIC

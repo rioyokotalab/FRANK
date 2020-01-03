@@ -4,6 +4,7 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/operations/BLAS/gemm.h"
 #include "hicma/operations/LAPACK/qr.h"
+#include "hicma/operations/randomized/rsvd.h"
 #include "hicma/util/print.h"
 #include "hicma/util/counter.h"
 
@@ -64,41 +65,10 @@ namespace hicma {
     MM_INIT();
     // Rank with oversampling limited by dimensions
     rank = std::min(std::min(k+5, dim[0]), dim[1]);
-    U = Dense(dim[0], k, i_abs, j_abs, level);
-    S = Dense(rank, rank, i_abs, j_abs, level);
-    V = Dense(k, dim[1], i_abs, j_abs, level);
-    Dense RN(dim[1],rank);
-    std::mt19937 generator;
-    std::normal_distribution<double> distribution(0.0, 1.0);
-    for (int i=0; i<dim[1]*rank; i++) {
-      RN[i] = distribution(generator); // RN = randn(n,k+p)
-    }
-    Dense Y(dim[0],rank);
-    gemm(A, RN, Y, 1, 0); // Y = A * RN
-    Dense Q(dim[0],rank);
-    Dense R(rank,rank);
-    qr(Y, Q, R); // [Q, R] = qr(Y)
-    // Dense B(rank, dim[1]);
-    // gemm(Q, A, B, true, false, 1, 0);
-    // Dense Ub(rank, rank);
-    // B.svd(Ub, S, V);
-    // Ub.resize(rank, k);
-    // S.resize(k, k);
-    // V.resize(k, dim[1]);
-    // gemm(Q, Ub, U, 1, 0);
-    Dense Bt(dim[1],rank);
-    gemm(A, Q, Bt, true, false, 1, 0); // B' = A' * Q
-    Dense Qb(dim[1],rank);
-    Dense Rb(rank,rank);
-    qr(Bt, Qb, Rb); // [Qb, Rb] = qr(B')
-    Dense Ur(rank,rank);
-    Dense Vr(rank,rank);
-    Rb.svd(Vr,S,Ur); // [Vr, S, Ur] = svd(Rb);
-    Ur.resize(k,rank);
-    gemm(Q, Ur, U, false, true, 1, 0); // U = Q * Ur'
-    Vr.resize(rank,k);
-    gemm(Vr, Qb, V, true, true, 1, 0); // V = Vr' * Qb'
-    S.resize(k,k);
+    std::tie(U, S, V) = rsvd(A, rank);
+    U.resize(dim[0], k);
+    S.resize(k, k);
+    V.resize(k, dim[1]);
     rank = k;
   }
 
