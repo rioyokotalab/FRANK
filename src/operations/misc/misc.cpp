@@ -2,6 +2,7 @@
 
 #include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
+#include "hicma/operations/LAPACK/svd.h"
 #include <iostream>
 #include <cmath>
 #include <random>
@@ -16,9 +17,8 @@ namespace hicma
 
   double cond(Dense A) {
     int k = std::min(A.dim[0], A.dim[1]);
-    Dense S(k);
-    A.svd(S);
-    return (S(0, 0) / S(k-1, 0));
+    Dense S = get_singular_values(A);
+    return (S[0] / S[k-1]);
   }
 
   double diam(std::vector<double>& x, const int& n, const int& offset) {

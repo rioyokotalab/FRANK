@@ -12,15 +12,9 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
-#include <iomanip>
 #include <memory>
 #include <utility>
-
-#ifdef USE_MKL
-#include <mkl.h>
-#else
-#include <lapacke.h>
-#endif
+#include <vector>
 
 #include "yorel/multi_methods.hpp"
 
@@ -210,63 +204,6 @@ namespace hicma {
         data[i*dim[1]+j] = _data[j*dim[0]+i];
       }
     }
-  }
-
-  void Dense::svd(Dense& U, Dense& S, Dense& V) {
-    start("-DGESVD");
-    Dense Sdiag(std::min(dim[0], dim[1]), 1);
-    Dense work(std::min(dim[0], dim[1])-1, 1);
-    LAPACKE_dgesvd(
-      LAPACK_ROW_MAJOR,
-      'S', 'S',
-      dim[0], dim[1],
-      &data[0], dim[1],
-      &Sdiag[0],
-      &U[0], U.dim[1],
-      &V[0], V.dim[1],
-      &work[0]
-    );
-    for(int i=0; i<std::min(dim[0], dim[1]); i++){
-      S(i, i) = Sdiag[i];
-    }
-    stop("-DGESVD",false);
-  }
-
-  void Dense::sdd(Dense& U, Dense& S, Dense& V) {
-    start("-DGESDD");
-    Dense Sdiag(std::min(dim[0], dim[1]), 1);
-    Dense work(std::min(dim[0], dim[1])-1, 1);
-    // dgesdd is faster, but makes little/no difference in randomized SVD
-    LAPACKE_dgesdd(
-      LAPACK_ROW_MAJOR,
-      'S',
-      dim[0], dim[1],
-      &data[0], dim[1],
-      &Sdiag[0],
-      &U[0], U.dim[1],
-      &V[0], V.dim[1]
-    );
-    for(int i=0; i<std::min(dim[0], dim[1]); i++){
-      S(i, i) = Sdiag[i];
-    }
-    stop("-DGESDD",false);
-  }
-
-  void Dense::svd(Dense& Sdiag) {
-    start("-DGESVD");
-    Dense work(dim[1]-1,1);
-    // Since we use 'N' we can avoid allocating memory for U and V
-    LAPACKE_dgesvd(
-      LAPACK_ROW_MAJOR,
-      'N', 'N',
-      dim[0], dim[1],
-      &data[0], dim[1],
-      &Sdiag[0],
-      &work[0], dim[0],
-      &work[0], dim[1],
-      &work[0]
-    );
-    stop("-DGESVD",false);
   }
 
   BEGIN_SPECIALIZATION(make_dense, Dense, const Hierarchical& A){

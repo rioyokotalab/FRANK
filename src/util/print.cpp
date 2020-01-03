@@ -3,6 +3,7 @@
 #include "hicma/classes/dense.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/hierarchical.h"
+#include "hicma/operations/LAPACK/svd.h"
 
 #include <iostream>
 #include <string>
@@ -52,8 +53,8 @@ namespace hicma {
     fillXML_omm, void,
     const LowRank& A, boost::property_tree::ptree& tree
   ) {
-    Dense S(A.dim[0],1);
-    Dense(A).svd(S);
+    Dense AD(A);
+    Dense S = get_singular_values(AD);
     std::string singular_values = std::to_string(S[0]);
     for (int i=1; i<A.dim[0]; ++i)
       singular_values += std::string(",") + std::to_string(S[i]);
@@ -71,8 +72,8 @@ namespace hicma {
     fillXML_omm, void,
     const Dense& A, boost::property_tree::ptree& tree
   ) {
-    Dense S(A.dim[0],1);
-    Dense(A).svd(S);
+    Dense A_(A);
+    Dense S = get_singular_values(A_);
     std::string singular_values = std::to_string(S[0]);
     for (int i=1; i<A.dim[0]; ++i)
       singular_values += std::string(",") + std::to_string(S[i]);

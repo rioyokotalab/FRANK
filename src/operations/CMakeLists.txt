@@ -9,6 +9,7 @@ add_library(operations OBJECT
     LAPACK/larfb.cpp
     LAPACK/latms.cpp
     LAPACK/qr.cpp
+    LAPACK/svd.cpp
     LAPACK/tpmqrt.cpp
     LAPACK/tpqrt.cpp
     misc/get_dim.cpp

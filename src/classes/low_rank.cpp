@@ -4,17 +4,16 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/operations/BLAS/gemm.h"
 #include "hicma/operations/LAPACK/qr.h"
+#include "hicma/operations/LAPACK/svd.h"
 #include "hicma/operations/randomized/rsvd.h"
 #include "hicma/util/print.h"
 #include "hicma/util/counter.h"
 
 #include <algorithm>
 #include <cassert>
-#include <iostream>
 #include <memory>
-#include <random>
+#include <tuple>
 #include <utility>
-
 
 #include "yorel/multi_methods.hpp"
 
@@ -115,10 +114,8 @@ namespace hicma {
       Dense RuRvT(Ru.dim[0], Rv.dim[0]);
       gemm(Ru, Rv, RuRvT, false, true, 1, 0);
 
-      Dense RRU(RuRvT.dim[0], RuRvT.dim[0]);
-      Dense RRS(RuRvT.dim[0], RuRvT.dim[1]);
-      Dense RRV(RuRvT.dim[1], RuRvT.dim[1]);
-      RuRvT.svd(RRU, RRS, RRV);
+      Dense RRU, RRS, RRV;
+      std::tie(RRU, RRS, RRV) = svd(RuRvT);
 
       RRS.resize(rank, rank);
       S = std::move(RRS);
@@ -173,17 +170,16 @@ namespace hicma {
       gemm(Ru_BS, Rv, S, false, true, 1, 0);
       M(1, 1) = S;
 
-      Dense Uhat(rank2, rank2);
-      Dense Shat(rank2, rank2);
-      Dense Vhat(rank2, rank2);
-      Dense(M).svd(Uhat, Shat, Vhat);
+      Dense Uhat, Shat, Vhat;
+      Dense MD(M);
+      std::tie(Uhat, Shat, Vhat) = svd(MD);
 
-      Uhat.resize(rank2, rank);
+      Uhat.resize(Uhat.dim[0], rank);
       Shat.resize(rank, rank);
-      Vhat.resize(rank, rank2);
+      Vhat.resize(rank, Vhat.dim[1]);
 
-      Dense MERGE_U(dim[0], rank2);
-      Dense MERGE_V(dim[1], rank2);
+      Dense MERGE_U(dim[0], Uhat.dim[0]);
+      Dense MERGE_V(dim[1], Vhat.dim[1]);
 
       for (int i = 0; i < dim[0]; ++i) {
         for (int j = 0; j < rank; ++j) {

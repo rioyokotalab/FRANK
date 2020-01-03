@@ -112,12 +112,6 @@ namespace hicma {
 
     void transpose();
 
-    void svd(Dense& U, Dense& S, Dense& V);
-
-    void sdd(Dense& U, Dense& S, Dense& V);
-
-    void svd(Dense& S);
-
   };
 
   MULTI_METHOD(make_dense, Dense, const virtual_<Node>&);
