@@ -53,21 +53,24 @@ namespace hicma {
 
   const char* Dense::type() const { return "Dense"; }
 
-  Dense::Dense(const Node& A) : Node(A) {
+  Dense::Dense(const Node& A, bool only_node)
+  : Node(A), dim{A.row_range.length, A.col_range.length} {
     MM_INIT();
-    // Test performance of make_dense in this case!!
-    // Unnecessary copies possible
-    *this = make_dense(A);
+    if (only_node) {
+      data.resize(dim[0]*dim[1], 0);
+    } else {
+      *this = make_dense(A);
+    }
   }
 
   Dense::Dense(
     int m, int n,
     int i_abs, int j_abs,
     int level
-  ) : Node(i_abs, j_abs, level), dim{m, n} {
-    MM_INIT();
-    data.resize(dim[0]*dim[1], 0);
-  }
+  ) : Dense(
+    Node(i_abs, j_abs, level, IndexRange(0, m), IndexRange(0, n)),
+    true
+  ) {}
 
   Dense::Dense(
     const Node& node,
@@ -220,6 +223,20 @@ namespace hicma {
         data[i*dim[1]+j] = _data[j*dim[0]+i];
       }
     }
+  }
+
+  Dense Dense::get_part(const Node& node) const {
+    Dense A(node, true);
+    assert(A.row_range.start >= row_range.start);
+    assert(A.col_range.start >= col_range.start);
+    int rel_row_begin = A.row_range.start - row_range.start;
+    int rel_col_begin = A.col_range.start - col_range.start;
+    for (int i=0; i<A.dim[0]; i++) {
+      for (int j=0; j<A.dim[1]; j++) {
+        A(i, j) = (*this)(i+rel_row_begin, j+rel_col_begin);
+      }
+    }
+    return A;
   }
 
   BEGIN_SPECIALIZATION(make_dense, Dense, const Hierarchical& A){

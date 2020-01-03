@@ -120,26 +120,9 @@ namespace hicma {
   : Node(A), dim{m, n} {
     MM_INIT();
     data.resize(dim[0]*dim[1]);
-    int ni = A.dim[0];
-    int nj = A.dim[1];
-    for (int i=0; i<dim[0]; i++) {
-      for (int j=0; j<dim[1]; j++) {
-        int ni_child = ni/dim[0];
-        if ( i == dim[0]-1 ) ni_child = ni - (ni/dim[0]) * (dim[0]-1);
-        int nj_child = nj/dim[1];
-        if ( j == dim[1]-1 ) nj_child = nj - (nj/dim[1]) * (dim[1]-1);
-        int i_begin = ni/dim[0] * i;
-        int j_begin = nj/dim[1] * j;
-        int i_abs_child = A.i_abs * dim[0] + i;
-        int j_abs_child = A.j_abs * dim[1] + j;
-        Dense D(ni_child, nj_child, A.level+1, i_abs_child, j_abs_child);
-        for (int ic=0; ic<ni_child; ic++) {
-          for (int jc=0; jc<nj_child; jc++) {
-            D(ic,jc) = A(ic+i_begin,jc+j_begin);
-          }
-        }
-        (*this)(i,j) = std::move(D);
-      }
+    create_children(dim[0], dim[1]);
+    for (NodeProxy& child : data) {
+      child = A.get_part(child);
     }
   }
 
@@ -147,33 +130,9 @@ namespace hicma {
   : Node(A), dim{m, n} {
     MM_INIT();
     data.resize(dim[0]*dim[1]);
-    int ni = A.dim[0];
-    int nj = A.dim[1];
-    int rank = A.rank;
-    for (int i=0; i<dim[0]; i++) {
-      for (int j=0; j<dim[1]; j++) {
-        int ni_child = ni/dim[0];
-        if ( i == dim[0]-1 ) ni_child = ni - (ni/dim[0]) * (dim[0]-1);
-        int nj_child = nj/dim[1];
-        if ( j == dim[1]-1 ) nj_child = nj - (nj/dim[1]) * (dim[1]-1);
-        int i_begin = ni/dim[0] * i;
-        int j_begin = nj/dim[1] * j;
-        int i_abs_child = A.i_abs * dim[0] + i;
-        int j_abs_child = A.j_abs * dim[1] + j;
-        LowRank LR(ni_child, nj_child, rank, A.level+1, i_abs_child, j_abs_child);
-        for (int ic=0; ic<ni_child; ic++) {
-          for (int kc=0; kc<rank; kc++) {
-            LR.U(ic,kc) = A.U(ic+i_begin,kc);
-          }
-        }
-        LR.S = A.S;
-        for (int kc=0; kc<rank; kc++) {
-          for (int jc=0; jc<nj_child; jc++) {
-            LR.V(kc,jc) = A.V(kc,jc+j_begin);
-          }
-        }
-        (*this)(i,j) = std::move(LR);
-      }
+    create_children(dim[0], dim[1]);
+    for (NodeProxy& child : data) {
+      child = A.get_part(child);
     }
   }
 

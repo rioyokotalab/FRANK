@@ -47,17 +47,23 @@ namespace hicma {
 
   const char* LowRank::type() const { return "LowRank"; }
 
+  LowRank::LowRank(const Node& node, int k)
+  : Node(node), dim{row_range.length, col_range.length}, rank(k) {
+    MM_INIT();
+    U = Dense(dim[0], k, i_abs, j_abs, level);
+    S = Dense(k, k, i_abs, j_abs, level);
+    V = Dense(k, dim[1], i_abs, j_abs, level);
+  }
+
   LowRank::LowRank(
     int m, int n,
     int k,
     int i_abs, int j_abs,
     int level
-  ) : Node(i_abs, j_abs, level), dim{m, n}, rank(k) {
-    MM_INIT();
-    U = Dense(m, k, i_abs, j_abs, level);
-    S = Dense(k, k, i_abs, j_abs, level);
-    V = Dense(k, n, i_abs, j_abs, level);
-  }
+  ) : LowRank(
+    Node(i_abs, j_abs, level, IndexRange(0, m), IndexRange(0, n)),
+    k
+  ) {}
 
   LowRank::LowRank(const Dense& A, int k)
   : Node(A), dim{A.dim[0], A.dim[1]} {
@@ -250,6 +256,26 @@ namespace hicma {
         V(i+A.rank,j) = B.V(i,j);
       }
     }
+  }
+
+  LowRank LowRank::get_part(const Node& node) const {
+    LowRank A(node, rank);
+    assert(A.row_range.start >= row_range.start);
+    assert(A.col_range.start >= col_range.start);
+    int rel_row_begin = A.row_range.start - row_range.start;
+    int rel_col_begin = A.col_range.start - col_range.start;
+    for (int i=0; i<A.U.dim[0]; i++) {
+      for (int k=0; k<A.U.dim[1]; k++) {
+        A.U(i, k) = U(i+rel_row_begin, k);
+      }
+    }
+    A.S = S;
+    for (int k=0; k<A.V.dim[0]; k++) {
+      for (int j=0; j<A.V.dim[1]; j++) {
+        A.V(k, j) = V(k, j+rel_col_begin);
+      }
+    }
+    return A;
   }
 
 } // namespace hicma

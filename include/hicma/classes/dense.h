@@ -43,7 +43,7 @@ namespace hicma {
     const char* type() const override;
 
     // Explicit conversions using multiple-dispatch function.
-    explicit Dense(const Node& A);
+    explicit Dense(const Node& A, bool only_node=false);
 
     // Additional constructors
     Dense(int m);
@@ -122,6 +122,9 @@ namespace hicma {
     Dense transpose() const;
 
     void transpose();
+
+    // Get part of other Dense
+    Dense get_part(const Node& node) const;
 
   };
 

@@ -38,6 +38,8 @@ namespace hicma {
     const char* type() const override;
 
     // Additional constructors
+    LowRank(const Node& node, int k);
+
     LowRank(
       int m, int n,
       int k,
@@ -57,6 +59,7 @@ namespace hicma {
 
     void mergeV(const LowRank& A, const LowRank& B);
 
+    LowRank get_part(const Node& node) const;
   };
 
 } // namespace hicma
