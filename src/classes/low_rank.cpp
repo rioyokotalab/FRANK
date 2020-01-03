@@ -165,13 +165,13 @@ namespace hicma {
       gemm(Ru, A.S, Ru_BS, 1, 0);
 
       gemm(Xu_BS, Xv, S, false, true, 1, 1);
-      M(0,0) = S;
+      M(0, 0) = S;
       gemm(Xu_BS, Rv, S, false, true, 1, 0);
-      M(0,1) = S;
+      M(0, 1) = S;
       gemm(Ru_BS, Xv, S, false, true, 1, 0);
-      M(1,0) = S;
+      M(1, 0) = S;
       gemm(Ru_BS, Rv, S, false, true, 1, 0);
-      M(1,1) = S;
+      M(1, 1) = S;
 
       Dense Uhat(rank2, rank2);
       Dense Shat(rank2, rank2);
@@ -187,19 +187,19 @@ namespace hicma {
 
       for (int i = 0; i < dim[0]; ++i) {
         for (int j = 0; j < rank; ++j) {
-          MERGE_U(i,j) = U(i,j);
+          MERGE_U(i, j) = U(i, j);
         }
         for (int j = 0; j < rank; ++j) {
-          MERGE_U(i, rank + j) = Qu(i,j);
+          MERGE_U(i, rank + j) = Qu(i, j);
         }
       }
 
       for (int i = 0; i < dim[1]; ++i) {
         for (int j = 0; j < rank; ++j) {
-          MERGE_V(i, j) = V(j,i);
+          MERGE_V(i, j) = V(j, i);
         }
         for (int j = 0; j < rank; ++j) {
-          MERGE_V(i, j + rank) = Qv(i,j);
+          MERGE_V(i, j + rank) = Qv(i, j);
         }
       }
 
