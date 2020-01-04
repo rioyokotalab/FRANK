@@ -58,6 +58,15 @@ public:
     int i_abs=0, int j_abs=0,
     int level=0
   );
+
+  // Additional indexing methods
+  Dense& get_row_basis(int i);
+
+  const Dense& get_row_basis(int i) const;
+
+  Dense& get_col_basis(int j);
+
+  const Dense& get_col_basis(int j) const;
 };
 
 } // namespace hicma

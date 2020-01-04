@@ -1,5 +1,6 @@
 add_library(util OBJECT
     counter.cpp
+    get_memory_usage.cpp
     l2_error.cpp
     print.cpp
     timer.cpp

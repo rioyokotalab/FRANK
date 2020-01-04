@@ -184,4 +184,24 @@ UniformHierarchical::UniformHierarchical(
   }
 }
 
+Dense& UniformHierarchical::get_row_basis(int i) {
+  assert(i < dim[0]);
+  return *row_basis[i];
+}
+
+const Dense& UniformHierarchical::get_row_basis(int i) const {
+  assert(i < dim[0]);
+  return *row_basis[i];
+}
+
+Dense& UniformHierarchical::get_col_basis(int j) {
+  assert(j < dim[1]);
+  return *col_basis[j];
+}
+
+const Dense& UniformHierarchical::get_col_basis(int j) const {
+  assert(j < dim[0]);
+  return *col_basis[j];
+}
+
 } // namespace hicma
