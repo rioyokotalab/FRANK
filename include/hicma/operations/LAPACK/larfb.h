@@ -9,14 +9,14 @@ namespace hicma
 
 class Node;
 
-void larfb(const Node&, const Node&, Node&, const bool);
+void larfb(const Node&, const Node&, Node&, bool);
 
 MULTI_METHOD(
   larfb_omm, void,
   const virtual_<Node>&,
   const virtual_<Node>&,
   virtual_<Node>&,
-  const bool
+  bool
 );
 
 } // namespace hicma

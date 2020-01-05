@@ -20,7 +20,7 @@ namespace hicma
 
 void larfb(
   const Node& V, const Node& T, Node& C,
-  const bool trans
+  bool trans
 ) {
   larfb_omm(V, T, C, trans);
 }
@@ -28,7 +28,7 @@ void larfb(
 BEGIN_SPECIALIZATION(
   larfb_omm, void,
   const Dense& V, const Dense& T, Dense& C,
-  const bool trans
+  bool trans
 ) {
   LAPACKE_dlarfb(
     LAPACK_ROW_MAJOR,
@@ -43,7 +43,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   larfb_omm, void,
   const Hierarchical& V, const Hierarchical& T, Dense& C,
-  const bool trans
+  bool trans
 ) {
   Hierarchical CH(C, V.dim[0], V.dim[1]);
   larfb(V, T, CH, trans);
@@ -53,7 +53,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   larfb_omm, void,
   const Dense& V, const Dense& T, LowRank& C,
-  const bool trans
+  bool trans
 ) {
   larfb(V, T, C.U, trans);
 } END_SPECIALIZATION;
@@ -61,7 +61,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   larfb_omm, void,
   const Dense& V, const Dense& T, Hierarchical& C,
-  const bool trans
+  bool trans
 ) {
   Dense V_lower_tri(V);
   for(int i = 0; i < V_lower_tri.dim[0]; i++) {
@@ -81,7 +81,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   larfb_omm, void,
   const Hierarchical& V, const Hierarchical& T, Hierarchical& C,
-  const bool trans
+  bool trans
 ) {
   if(trans) {
     for(int k = 0; k < C.dim[1]; k++) {
@@ -113,7 +113,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   larfb_omm, void,
   const Node& V, const Node& T, Node& C,
-  const bool trans
+  bool trans
 ) {
   std::cerr << "larfb(";
   std::cerr << V.type() << "," << T.type() << "," << C.type();

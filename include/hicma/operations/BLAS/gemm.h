@@ -10,12 +10,12 @@ namespace hicma
 class Node;
 class Dense;
 
-void gemm(const Node&, const Node&, Node&, const double, const double);
+void gemm(const Node&, const Node&, Node&, double, double);
 
 void gemm(
   const Dense& A, const Dense& B, Dense& C,
   const bool TransA, const bool TransB,
-  const double& alpha, const double& beta
+  double alpha, double beta
 );
 
 MULTI_METHOD(
@@ -23,8 +23,7 @@ MULTI_METHOD(
   const virtual_<Node>&,
   const virtual_<Node>&,
   virtual_<Node>&,
-  const double,
-  const double
+  double, double
 );
 
 } // namespace hicma

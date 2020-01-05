@@ -11,14 +11,14 @@ class Node;
 
 void tpmqrt(
   const Node&, const Node&, Node&, Node&,
-  const bool
+  bool
 );
 
 MULTI_METHOD(
   tpmqrt_omm, void,
   const virtual_<Node>&, const virtual_<Node>&,
   virtual_<Node>&, virtual_<Node>&,
-  const bool
+  bool
 );
 
 } // namespace hicma

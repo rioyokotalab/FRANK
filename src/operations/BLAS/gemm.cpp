@@ -24,14 +24,14 @@ namespace hicma
 
 void gemm(
   const Node& A, const Node& B, Node& C,
-  const double alpha, const double beta
+  double alpha, double beta
 ) {
   gemm_omm(A, B, C, alpha, beta);
 }
 void gemm(
   const Dense& A, const Dense& B, Dense& C,
   const bool TransA, const bool TransB,
-  const double& alpha, const double& beta
+  double alpha, double beta
 ) {
   start("-DGEMM");
   if (B.dim[1] == 1) {
@@ -65,7 +65,7 @@ void gemm(
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
   const Dense& A, const LowRank& B, LowRank& C,
-  const double& alpha, const double& beta
+  double alpha, double beta
 ) {
   assert(C.dim[0] == A.dim[0]);
   assert(C.dim[1] == B.dim[1]);
@@ -81,7 +81,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
   const LowRank& A, const Dense& B, LowRank& C,
-  const double& alpha, const double& beta
+  double alpha, double beta
 ) {
   assert(C.dim[0] == A.dim[0]);
   assert(C.dim[1] == B.dim[1]);
@@ -97,7 +97,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
   const LowRank& A, const LowRank& B, LowRank& C,
-  const double& alpha, const double& beta
+  double alpha, double beta
 ) {
   assert(C.dim[0] == A.dim[0]);
   assert(C.dim[1] == B.dim[1]);
@@ -118,7 +118,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
   const Dense& A, const Dense& B, LowRank& C,
-  const double& alpha, const double& beta
+  double alpha, double beta
 ) {
   assert(C.dim[0] == A.dim[0]);
   assert(A.dim[1] == B.dim[0]);
@@ -132,7 +132,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
   const Hierarchical& A, const LowRank& B, LowRank& C,
-  const double& alpha, const double& beta
+  double alpha, double beta
 ) {
   assert(C.dim[0] == get_n_rows(A));
   assert(C.dim[1] == B.dim[1]);
@@ -148,7 +148,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
   const LowRank& A, const Hierarchical& B, LowRank& C,
-  const double& alpha, const double& beta
+  double alpha, double beta
 ) {
   assert(C.dim[0] == A.dim[0]);
   assert(C.dim[1] == get_n_cols(B));
@@ -164,7 +164,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
   const Hierarchical& A, const Hierarchical& B, LowRank& C,
-  const double& alpha, const double& beta
+  double alpha, double beta
 ) {
   /*
     Making a Hierarchical out of this might be better
@@ -181,7 +181,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
   const Dense& A, const Dense& B, Dense& C,
-  const double& alpha, const double& beta
+  double alpha, double beta
 ) {
   assert(C.dim[0] == A.dim[0]);
   assert(A.dim[1] == B.dim[0]);
@@ -197,7 +197,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
   const Dense& A, const LowRank& B, Dense& C,
-  const double& alpha, const double& beta
+  double alpha, double beta
 ) {
   Dense AxU(A.dim[0], B.rank);
   gemm(A, B.U, AxU, 1, 0);
@@ -209,7 +209,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
   const Dense& A, const Hierarchical& B, Dense& C,
-  const double& alpha, const double& beta
+  double alpha, double beta
 ) {
   const Hierarchical& AH = Hierarchical(A, 1, B.dim[0]);
   Hierarchical CH(C, 1, B.dim[1]);
@@ -220,7 +220,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
   const LowRank& A, const Dense& B, Dense& C,
-  const double& alpha, const double& beta
+  double alpha, double beta
 ) {
   Dense VxB(A.rank, B.dim[1]);
   gemm(A.V, B, VxB, 1, 0);
@@ -232,7 +232,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
   const LowRank& A, const LowRank& B, Dense& C,
-  const double& alpha, const double& beta
+  double alpha, double beta
 ) {
   Dense VxU(A.rank, B.rank);
   gemm(A.V, B.U, VxU, 1, 0);
@@ -248,7 +248,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
   const LowRank& A, const Hierarchical& B, Dense& C,
-  const double& alpha, const double& beta
+  double alpha, double beta
 ) {
   const Hierarchical& AH = Hierarchical(A, 1, B.dim[0]);
   Hierarchical CH(C, 1, B.dim[1]);
@@ -259,7 +259,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
   const Hierarchical& A, const Dense& B, Dense& C,
-  const double& alpha, const double& beta
+  double alpha, double beta
 ) {
   const Hierarchical& BH = Hierarchical(B, A.dim[1], 1);
   Hierarchical CH(C, A.dim[0], 1);
@@ -270,7 +270,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
   const Hierarchical& A, const LowRank& B, Dense& C,
-  const double& alpha, const double& beta
+  double alpha, double beta
 ) {
   Hierarchical CH(C, A.dim[0], 1);
   gemm(A, B, CH, alpha, beta);
@@ -280,7 +280,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
   const Hierarchical& A, const Hierarchical& B, Dense& C,
-  const double& alpha, const double& beta
+  double alpha, double beta
 ) {
   assert(A.dim[1] == B.dim[0]);
   Hierarchical CH(C, A.dim[0], B.dim[1]);
@@ -291,7 +291,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
   const Dense& A, const Dense& B, Hierarchical& C,
-  const double& alpha, const double& beta
+  double alpha, double beta
 ) {
   assert(A.dim[1] == B.dim[0]);
   const Hierarchical& AH = Hierarchical(A, C.dim[0], 1);
@@ -302,7 +302,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
   const Dense& A, const Hierarchical& B, Hierarchical& C,
-  const double& alpha, const double& beta
+  double alpha, double beta
 ) {
   assert(B.dim[1] == C.dim[1]);
   const Hierarchical& AH = Hierarchical(A, C.dim[0], B.dim[0]);
@@ -312,7 +312,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
   const LowRank& A, const LowRank& B, Hierarchical& C,
-  const double& alpha, const double& beta
+  double alpha, double beta
 ) {
   const Hierarchical& AH = Hierarchical(A, C.dim[0], 1);
   const Hierarchical& BH = Hierarchical(B, 1, C.dim[1]);
@@ -322,7 +322,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
   const LowRank& A, const Hierarchical& B, Hierarchical& C,
-  const double& alpha, const double& beta
+  double alpha, double beta
 ) {
   assert(B.dim[1] == C.dim[1]);
   const Hierarchical& AH = Hierarchical(A, C.dim[0], B.dim[0]);
@@ -332,7 +332,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
   const Hierarchical& A, const Dense& B, Hierarchical& C,
-  const double& alpha, const double& beta
+  double alpha, double beta
 ) {
   assert(A.dim[0] == C.dim[0]);
   const Hierarchical& BH = Hierarchical(B, A.dim[1], C.dim[1]);
@@ -342,7 +342,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
   const Hierarchical& A, const LowRank& B, Hierarchical& C,
-  const double& alpha, const double& beta
+  double alpha, double beta
 ) {
   assert(A.dim[0] == C.dim[0]);
   const Hierarchical& BH = Hierarchical(B, A.dim[1], C.dim[1]);
@@ -352,7 +352,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
   const Hierarchical& A, const Hierarchical& B, Hierarchical& C,
-  const double& alpha, const double& beta
+  double alpha, double beta
 ) {
   assert(C.dim[0] == A.dim[0]);
   assert(C.dim[1] == B.dim[1]);
@@ -371,7 +371,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
   const Node& A, const Node& B, Node& C,
-  const double& alpha, const double& beta
+  double alpha, double beta
 ) {
   std::cerr << "gemm(";
   std::cerr << A.type() << "," << B.type() << "," << C.type();

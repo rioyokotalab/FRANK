@@ -24,7 +24,7 @@ namespace hicma
 
 void tpmqrt(
   const Node& V, const Node& T, Node& A, Node& B,
-  const bool trans
+  bool trans
 ) {
   tpmqrt_omm(V, T, A, B, trans);
 }
@@ -32,7 +32,7 @@ void tpmqrt(
 BEGIN_SPECIALIZATION(
   tpmqrt_omm, void,
   const Dense& V, const Dense& T, Dense& A, Dense& B,
-  const bool trans
+  bool trans
 ) {
   LAPACKE_dtprfb(
     LAPACK_ROW_MAJOR,
@@ -48,7 +48,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   tpmqrt_omm, void,
   const LowRank& V, const Dense& T, Dense& A, Dense& B,
-  const bool trans
+  bool trans
 ) {
   std::vector<double> x;
   Dense C(A);
@@ -63,7 +63,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   tpmqrt_omm, void,
   const Dense& V, const Dense& T, LowRank& A, Dense& B,
-  const bool trans
+  bool trans
 ) {
   std::vector<double> x;
   Dense C(A);
@@ -76,7 +76,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   tpmqrt_omm, void,
   const LowRank& V, const Dense& T, LowRank& A, Dense& B,
-  const bool trans
+  bool trans
 ) {
   std::vector<double> x;
   LowRank C(A);
@@ -91,7 +91,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   tpmqrt_omm, void,
   const Dense& V, const Dense& T, Hierarchical& A, Dense& B,
-  const bool trans
+  bool trans
 ) {
   Dense Vt(V);
   transpose(Vt);
@@ -111,7 +111,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   tpmqrt_omm, void,
   const Hierarchical& V, const Hierarchical& T, Hierarchical& A, Dense& B,
-  const bool trans
+  bool trans
 ) {
   Hierarchical BH(B, A.dim[0], A.dim[1]);
   tpmqrt(V, T, A, BH, trans);
@@ -121,7 +121,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   tpmqrt_omm, void,
   const Dense& V, const Dense& T, Dense& A, LowRank& B,
-  const bool trans
+  bool trans
 ) {
   std::vector<double> x;
   Dense C(A);
@@ -136,7 +136,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   tpmqrt_omm, void,
   const LowRank& V, const Dense& T, Dense& A, LowRank& B,
-  const bool trans
+  bool trans
 ) {
   std::vector<double> x;
   Dense C(A);
@@ -151,7 +151,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   tpmqrt_omm, void,
   const Dense& V, const Dense& T, LowRank& A, LowRank& B,
-  const bool trans
+  bool trans
 ) {
   std::vector<double> x;
   LowRank C(A);
@@ -166,7 +166,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   tpmqrt_omm, void,
   const LowRank& V, const Dense& T, LowRank& A, LowRank& B,
-  const bool trans
+  bool trans
 ) {
   std::vector<double> x;
   LowRank C(A);
@@ -181,7 +181,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   tpmqrt_omm, void,
   const Dense& V, const Dense& T, Dense& A, Hierarchical& B,
-  const bool trans
+  bool trans
 ) {
   Dense C(A);
   Dense Vt(V);
@@ -201,7 +201,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   tpmqrt_omm, void,
   const Hierarchical& V, const Hierarchical& T, Dense& A, Hierarchical& B,
-  const bool trans
+  bool trans
 ) {
   Hierarchical HA(A, B.dim[0], B.dim[1]);
   tpmqrt(V, T, HA, B, trans);
@@ -211,7 +211,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   tpmqrt_omm, void,
   const Hierarchical& V, const Hierarchical& T, Hierarchical& A, Hierarchical& B,
-  const bool trans
+  bool trans
 ) {
   if(trans) {
     for(int i = 0; i < B.dim[0]; i++) {
@@ -237,7 +237,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   tpmqrt_omm, void,
   const Node& V, const Node& T, Node& A, Node& B,
-  const bool trans
+  bool trans
 ) {
   std::cerr << "tpmqrt(";
   std::cerr << V.type() << "," << T.type() << "," << A.type() << "," << B.type();
