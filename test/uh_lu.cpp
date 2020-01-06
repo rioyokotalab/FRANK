@@ -27,12 +27,25 @@ int main(int argc, char const *argv[])
     laplace1d, randx, N, N, rank, nleaf, admis, ni_level, nj_level);
   Hierarchical H(
     laplace1d, randx, N, N, rank, nleaf, admis, ni_level, nj_level);
-  Dense D(laplace1d, randx, N, N);
+  Hierarchical D(laplace1d, randx, N, N, rank, nleaf, N/ni_level, ni_level, nj_level);
+  Dense rand(random_normal, randx, N, N);
 
   start("Verification");
   print("Compression Accuracy");
   print("H Rel. L2 Error", l2_error(D, H), false);
   print("UH Rel. L2 Error", l2_error(A, H), false);
   stop("Verification");
+
+  Dense test1(N, N);
+  gemm(A, rand, test1, 1, 0);
+  Dense test2(N, N);
+  gemm(H, rand, test2, 1, 0);
+  Dense test3(N, N);
+  gemm(D, rand, test3, 1, 0);
+
+  print("UH-H diff", l2_error(test1, test2), false);
+  print("UH-D diff", l2_error(test1, test3), false);
+  print("H-D diff", l2_error(test2, test3), false);
+
   return 0;
 }

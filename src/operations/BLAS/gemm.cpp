@@ -3,7 +3,10 @@
 #include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
 #include "hicma/classes/low_rank.h"
+#include "hicma/classes/low_rank_shared.h"
 #include "hicma/classes/hierarchical.h"
+#include "hicma/classes/uniform_hierarchical.h"
+#include "hicma/operations/misc/get_dim.h"
 #include "hicma/util/timer.h"
 #include "hicma/util/counter.h"
 #include "hicma/gpu_batch/batch.h"
@@ -365,6 +368,162 @@ BEGIN_SPECIALIZATION(
       }
     }
   }
+} END_SPECIALIZATION;
+
+MULTI_METHOD(
+  gemm_regular_only_omm, void,
+  const virtual_<Node>&, const virtual_<Node>&, virtual_<Node>&,
+  double alpha, double beta
+);
+
+void gemm_regular_only(
+  const Node& A, const Node& B, Node& C, double alpha, double beta
+) {
+  gemm_regular_only_omm(A, B, C, alpha, beta);
+}
+
+BEGIN_SPECIALIZATION(
+  gemm_regular_only_omm, void,
+  const UniformHierarchical& A, const Dense& B, Dense& C,
+  double alpha, double beta
+) {
+  gemm(A, B, C, alpha, beta);
+} END_SPECIALIZATION;
+
+BEGIN_SPECIALIZATION(
+  gemm_regular_only_omm, void,
+  const UniformHierarchical& A, const Hierarchical& B, Hierarchical& C,
+  double alpha, double beta
+) {
+  for (int i=0; i<C.dim[0]; i++) {
+    for (int j=0; j<C.dim[1]; j++) {
+      gemm_regular_only(A(i,0), B(0, j), C(i, j), alpha, beta);
+      for (int k=1; k<A.dim[1]; k++) {
+        gemm_regular_only(A(i, k), B(k, j), C(i, j), alpha, 1);
+      }
+    }
+  }
+} END_SPECIALIZATION;
+
+BEGIN_SPECIALIZATION(
+  gemm_regular_only_omm, void,
+  const LowRankShared& A, const Dense& B, Dense& C,
+  double alpha, double beta
+) {
+  // Only apply beta
+  C *= beta;
+} END_SPECIALIZATION;
+
+BEGIN_SPECIALIZATION(
+  gemm_regular_only_omm, void,
+  const Dense& A, const Dense& B, Dense& C,
+  double alpha, double beta
+) {
+  gemm(A, B, C, alpha, beta);
+} END_SPECIALIZATION;
+
+BEGIN_SPECIALIZATION(
+  gemm_regular_only_omm, void,
+  const Node& A, const Node& B, Node& C,
+  double alpha, double beta
+) {
+  std::cerr << "gemm_regular_only(";
+  std::cerr << A.type() << "," << B.type() << "," << C.type();
+  std::cerr << ") undefined." << std::endl;
+  abort();
+} END_SPECIALIZATION;
+
+MULTI_METHOD(
+  gemm_shared_only_omm, bool,
+  const virtual_<Node>&, const virtual_<Node>&, virtual_<Node>&,
+  double alpha, double beta
+);
+
+bool gemm_shared_only(
+  const Node& A, const Node& B, Node& C, double alpha, double beta
+) {
+  return gemm_shared_only_omm(A, B, C, alpha, beta);
+}
+
+BEGIN_SPECIALIZATION(
+  gemm_shared_only_omm, bool,
+  const LowRankShared& A, const Dense& B, Dense& C,
+  double alpha, double beta
+) {
+  gemm(A.S, B, C, alpha, beta);
+  return true;
+} END_SPECIALIZATION;
+
+BEGIN_SPECIALIZATION(
+  gemm_shared_only_omm, bool,
+  const Dense& A, const Node& B, Node& C,
+  double alpha, double beta
+) {
+  // Do nothing
+  return false;
+} END_SPECIALIZATION;
+
+BEGIN_SPECIALIZATION(
+  gemm_shared_only_omm, bool,
+  const UniformHierarchical& A, const Node& B, Node& C,
+  double alpha, double beta
+) {
+  // Do nothing
+  return false;
+} END_SPECIALIZATION;
+
+BEGIN_SPECIALIZATION(
+  gemm_shared_only_omm, bool,
+  const Node& A, const Node& B, Node& C,
+  double alpha, double beta
+) {
+  std::cerr << "gemm_shared_only(";
+  std::cerr << A.type() << "," << B.type() << "," << C.type();
+  std::cerr << ") undefined." << std::endl;
+  abort();
+} END_SPECIALIZATION;
+
+BEGIN_SPECIALIZATION(
+  gemm_omm, void,
+  const UniformHierarchical& A, const Dense& B, Dense& C,
+  double alpha, double beta
+) {
+  C *= beta;
+  // TODO This still copies! Consider making "SplitDenseReference" class
+  Hierarchical CH(C, A.dim[0], A.dim[1]);
+  Hierarchical BH(B, A.dim[1], A.dim[1]);
+  // This function causes the recursion
+  gemm_regular_only(A, BH, CH, alpha, 1);
+  Hierarchical RowBasisB(1, A.dim[1]);
+  for (int k=0; k<A.dim[1]; k++) {
+    // TODO Need max rank here? Case for differing ranks not dealt with!
+    // Find more elegant way to initialize (SplitDenseReference class?)
+    RowBasisB[k] = Dense(get_n_rows(A.get_row_basis(0)), get_n_cols(BH(0, k)));
+  }
+  // Loop over columns of output
+  // Put together shared RowBasis and column of B once
+  // Use result multiple times (faster) to get column of C
+  for (int j=0; j<CH.dim[1]; j++) {
+    // TODO Create RowColBasis class and define interactions for it.
+    // The following loop really should be handled in those interactions.
+    // This loop is main reason for speed-up: multiplication with BH only here,
+    // rest is smaller stuff with rank as one of dimensios
+    for (int k=0; k<A.dim[1]; k++) {
+      gemm(A.get_row_basis(k), BH(k, j), RowBasisB[k], 1, 0);
+    }
+    for (int i=0; i<CH.dim[0]; i++) {
+      Hierarchical SRowBasisB(1, RowBasisB.dim[1]);
+      for (int k=0; k<A.dim[1]; k++) {
+        SRowBasisB[k] = Dense(get_n_cols(A.get_col_basis(i)), get_n_cols(RowBasisB[k]));
+        // Returns whether an operations took place (false when Dense/UH)
+        bool shared = gemm_shared_only(A(i, k), RowBasisB[k], SRowBasisB[k], 1, 0);
+        if (shared) {
+          gemm(A.get_col_basis(i), SRowBasisB[k], CH(i, j), alpha, 1);
+        }
+      }
+    }
+  }
+  C = Dense(CH);
 } END_SPECIALIZATION;
 
 // Fallback default, abort with error message
