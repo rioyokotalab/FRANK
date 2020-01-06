@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <tuple>
 
 #include "yorel/multi_methods.hpp"
 
@@ -69,18 +70,19 @@ int main(int argc, char** argv) {
   stop("Init matrix");
   printTime("-DGEMM");
   start("LU decomposition");
-  getrf(A);
+  Hierarchical L, U;
+  std::tie(L, U) = getrf(A);
   stop("LU decomposition");
   printTime("-DGETRF");
   printTime("-DTRSM");
   printTime("-DGEMM");
   start("Forward substitution");
-  trsm(A, b,'l');
+  trsm(L, b,'l');
   stop("Forward substitution");
   printTime("-DTRSM");
   printTime("-DGEMM");
   start("Backward substitution");
-  trsm(A, b,'u');
+  trsm(U, b,'u');
   stop("Backward substitution");
   printTime("-DTRSM");
   printTime("-DGEMM");

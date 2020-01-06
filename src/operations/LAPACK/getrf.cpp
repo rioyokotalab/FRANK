@@ -8,6 +8,7 @@
 #include "hicma/util/timer.h"
 
 #include <iostream>
+#include <tuple>
 
 #ifdef USE_MKL
 #include <mkl.h>
@@ -19,29 +20,39 @@
 namespace hicma
 {
 
-void getrf(Node& A) {
-  getrf_omm(A);
+std::tuple<NodeProxy, NodeProxy> getrf(Node& A) {
+  return getrf_omm(A);
 }
 
-BEGIN_SPECIALIZATION(
-  getrf_omm, void,
-  Hierarchical& A
-) {
+BEGIN_SPECIALIZATION(getrf_omm, NodePair, Hierarchical& A) {
+  Hierarchical L(A.dim[0], A.dim[1]);
   for (int i=0; i<A.dim[0]; i++) {
-    getrf(A(i,i));
-    for (int j=i+1; j<A.dim[0]; j++) {
-      trsm(A(i,i), A(i,j), 'l');
-      trsm(A(i,i), A(j,i), 'u');
+    std::tie(L(i, i), A(i, i)) = getrf(A(i,i));
+    for (int i_c=i+1; i_c<L.dim[0]; i_c++) {
+      L(i_c, i) = std::move(A(i_c, i));
+      trsm(A(i,i), L(i_c,i), 'u');
     }
-    for (int j=i+1; j<A.dim[0]; j++) {
-      for (int k=i+1; k<A.dim[0]; k++) {
-        gemm(A(j,i), A(i,k), A(j,k), -1, 1);
+    for (int j=i+1; j<A.dim[1]; j++) {
+      trsm(L(i,i), A(i,j), 'l');
+    }
+    for (int i_c=i+1; i_c<L.dim[0]; i_c++) {
+      gemm(L(i_c,i), A(i,i_c), A(i_c,i_c), -1, 1);
+      L(i_c, i_c) = A(i_c, i_c);
+      for (int k=i+1; k<i_c; k++) {
+        L(i_c, k) = std::move(A(i_c, k));
+        gemm(L(i_c,i), A(i,k), L(i_c,k), -1, 1);
+      }
+    }
+    for (int i_c=i+1; i_c<A.dim[0]; i_c++) {
+      for (int k=i_c+1; k<A.dim[1]; k++) {
+        gemm(L(i_c, i), A(i,k), A(i_c, k), -1, 1);
       }
     }
   }
+  return {std::move(L), std::move(A)};
 } END_SPECIALIZATION;
 
-BEGIN_SPECIALIZATION(getrf_omm, void, Dense& A) {
+BEGIN_SPECIALIZATION(getrf_omm, NodePair, Dense& A) {
   start("-DGETRF");
   std::vector<int> ipiv(std::min(A.dim[0], A.dim[1]));
   LAPACKE_dgetrf(
@@ -50,10 +61,19 @@ BEGIN_SPECIALIZATION(getrf_omm, void, Dense& A) {
     &A[0], A.dim[1],
     &ipiv[0]
   );
+  Dense L(A.dim[0], A.dim[1]);
+  for (int i=0; i<A.dim[0]; i++) {
+    for (int j=0; j<i; j++) {
+      L(i, j) = A(i, j);
+      A(i, j) = 0;
+    }
+    L(i, i) = 1;
+  }
   stop("-DGETRF",false);
+  return {std::move(L), std::move(A)};
 } END_SPECIALIZATION;
 
-BEGIN_SPECIALIZATION(getrf_omm, void, Node& A) {
+BEGIN_SPECIALIZATION(getrf_omm, NodePair, Node& A) {
   std::cerr << "getrf(" << A.type() << ") undefined!" << std::endl;
   abort();
 } END_SPECIALIZATION;

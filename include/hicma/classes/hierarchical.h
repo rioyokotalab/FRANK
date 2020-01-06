@@ -44,6 +44,8 @@ namespace hicma {
     const char* type() const override;
 
     // Conversion constructors
+    Hierarchical(NodeProxy&&);
+
     Hierarchical(
       const Node& node, int ni_level, int nj_level, bool node_only=false);
 
@@ -122,6 +124,10 @@ namespace hicma {
 
     std::tuple<int, int> get_rel_pos_child(const Node& node);
   };
+
+  Hierarchical move_from_hierarchical(Node& A);
+
+  MULTI_METHOD(move_from_hierarchical_omm, Hierarchical, virtual_<Node>&);
 
   Hierarchical make_hierarchical(
     const Node& A, int ni_level, int nj_level);
