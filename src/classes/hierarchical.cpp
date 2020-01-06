@@ -160,6 +160,22 @@ namespace hicma {
     return data[i*dim[1]+j];
   }
 
+  std::vector<NodeProxy>::iterator Hierarchical::begin() {
+    return data.begin();
+  }
+
+  std::vector<NodeProxy>::const_iterator Hierarchical::begin() const {
+    return data.begin();
+  }
+
+  std::vector<NodeProxy>::iterator Hierarchical::end() {
+    return data.end();
+  }
+
+  std::vector<NodeProxy>::const_iterator Hierarchical::end() const {
+    return data.end();
+  }
+
   void Hierarchical::blr_col_qr(Hierarchical& Q, Hierarchical& R) {
     assert(dim[1] == 1);
     assert(Q.dim[0] == dim[0]);

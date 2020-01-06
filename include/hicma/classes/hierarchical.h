@@ -95,6 +95,15 @@ namespace hicma {
 
     NodeProxy& operator()(int i, int j);
 
+    // Make class usable as range
+    std::vector<NodeProxy>::iterator begin();
+
+    std::vector<NodeProxy>::const_iterator begin() const;
+
+    std::vector<NodeProxy>::iterator end();
+
+    std::vector<NodeProxy>::const_iterator end() const;
+
     // Utility methods
     void blr_col_qr(Hierarchical& Q, Hierarchical& R);
 
