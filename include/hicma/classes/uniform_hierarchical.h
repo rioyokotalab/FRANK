@@ -42,6 +42,22 @@ public:
 
   // Additional constructors
   UniformHierarchical(
+    const Node& node,
+    void (*func)(
+      std::vector<double>& data,
+      std::vector<double>& x,
+      int ni, int nj,
+      int i_begin, int j_begin
+    ),
+    std::vector<double>& x,
+    int rank,
+    int nleaf,
+    int admis=1,
+    int ni_level=2, int nj_level=2,
+    bool use_svd=false
+  );
+
+  UniformHierarchical(
     void (*func)(
       std::vector<double>& data,
       std::vector<double>& x,
@@ -54,6 +70,7 @@ public:
     int nleaf,
     int admis=1,
     int ni_level=2, int nj_level=2,
+    bool use_svd=false,
     int i_begin=0, int j_begin=0,
     int i_abs=0, int j_abs=0,
     int level=0

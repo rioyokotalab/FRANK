@@ -16,6 +16,7 @@
 #include <cmath>
 #include <iostream>
 #include <memory>
+#include <tuple>
 #include <utility>
 
 #include "yorel/multi_methods.hpp"
@@ -280,6 +281,13 @@ namespace hicma {
     leaf &= (node.row_range.length/dim[0] < nleaf);
     leaf &= (node.col_range.length/dim[1] < nleaf);
     return leaf;
+  }
+
+  std::tuple<int, int> Hierarchical::get_rel_pos_child(const Node& node) {
+    return {
+      node.i_abs - i_abs*dim[0],
+      node.j_abs - j_abs*dim[1]
+    };
   }
 
   Hierarchical make_hierarchical(

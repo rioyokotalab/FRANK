@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <memory>
+#include <tuple>
 
 #include "yorel/multi_methods.hpp"
 using yorel::multi_methods::virtual_;
@@ -118,6 +119,8 @@ namespace hicma {
     bool is_admissible(const Node& node, int dist_to_diag);
 
     bool is_leaf(const Node& node, int nleaf);
+
+    std::tuple<int, int> get_rel_pos_child(const Node& node);
   };
 
   Hierarchical make_hierarchical(
