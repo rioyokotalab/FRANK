@@ -79,7 +79,7 @@ namespace hicma {
     data.resize(dim[0]*dim[1]);
     create_children(dim[0], dim[1]);
     for (NodeProxy& child : data) {
-      if (is_addmissible(child, admis)) {
+      if (is_admissible(child, admis)) {
         if (is_leaf(child, nleaf)) {
           child = Dense(child, func, x);
         } else {
@@ -278,7 +278,7 @@ namespace hicma {
     }
   }
 
-  bool Hierarchical::is_addmissible(const Node& node, int dist_to_diag) {
+  bool Hierarchical::is_admissible(const Node& node, int dist_to_diag) {
     bool admissible = false;
     // Main admissibility condition
     admissible |= (std::abs(node.i_abs - node.j_abs) <= dist_to_diag);

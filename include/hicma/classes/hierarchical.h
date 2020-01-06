@@ -116,7 +116,7 @@ namespace hicma {
   private:
     void create_children(int n_row_splits, int n_col_splits);
 
-    bool is_addmissible(const Node& node, int dist_to_diag);
+    bool is_admissible(const Node& node, int dist_to_diag);
 
     bool is_leaf(const Node& node, int nleaf);
   };
