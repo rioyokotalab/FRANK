@@ -137,12 +137,14 @@ namespace hicma {
   }
 
   const NodeProxy& Hierarchical::operator[](int i) const {
-    assert(i < dim[0]*dim[1]);
+    assert(dim[0] == 1 || dim[1] == 1);
+    assert(i < dim[0] != 1 ? dim[0] : dim[1]);
     return data[i];
   }
 
   NodeProxy& Hierarchical::operator[](int i) {
-    assert(i < dim[0]*dim[1]);
+    assert(dim[0] == 1 || dim[1] == 1);
+    assert(i < dim[0] != 1 ? dim[0] : dim[1]);
     return data[i];
   }
 
