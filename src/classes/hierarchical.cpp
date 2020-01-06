@@ -51,13 +51,21 @@ namespace hicma {
   const char* Hierarchical::type() const { return "Hierarchical"; }
 
   Hierarchical::Hierarchical(
+    const Node& node, int ni_level, int nj_level, bool node_only
+  ) : Node(node), dim{ni_level, nj_level} {
+    MM_INIT();
+    if (node_only) {
+      data.resize(dim[0]*dim[1]);
+    } else {
+      *this = make_hierarchical(node, ni_level, nj_level);
+    }
+  }
+
+  Hierarchical::Hierarchical(
     int ni_level, int nj_level,
     int i_abs, int j_abs,
     int level
-  ) : Node(i_abs, j_abs, level), dim{ni_level, nj_level} {
-    MM_INIT();
-    data.resize(dim[0]*dim[1]);
-  }
+  ) : Hierarchical(Node(i_abs, j_abs, level), ni_level, nj_level, true) {}
 
   Hierarchical::Hierarchical(
     const Node& node,
@@ -76,8 +84,7 @@ namespace hicma {
     MM_INIT();
     dim[0] = std::min(ni_level, row_range.length);
     dim[1] = std::min(nj_level, col_range.length);
-    data.resize(dim[0]*dim[1]);
-    create_children(dim[0], dim[1]);
+    create_children();
     for (NodeProxy& child : data) {
       if (is_admissible(child, admis)) {
         if (is_leaf(child, nleaf)) {
@@ -115,26 +122,6 @@ namespace hicma {
     ),
     func, x, rank, nleaf, admis, ni_level, nj_level
   ) {}
-
-  Hierarchical::Hierarchical(const Dense& A, int m, int n)
-  : Node(A), dim{m, n} {
-    MM_INIT();
-    data.resize(dim[0]*dim[1]);
-    create_children(dim[0], dim[1]);
-    for (NodeProxy& child : data) {
-      child = A.get_part(child);
-    }
-  }
-
-  Hierarchical::Hierarchical(const LowRank& A, int m, int n)
-  : Node(A), dim{m, n} {
-    MM_INIT();
-    data.resize(dim[0]*dim[1]);
-    create_children(dim[0], dim[1]);
-    for (NodeProxy& child : data) {
-      child = A.get_part(child);
-    }
-  }
 
   const NodeProxy& Hierarchical::operator[](int i) const {
     assert(dim[0] == 1 || dim[1] == 1);
@@ -265,12 +252,13 @@ namespace hicma {
     }
   }
 
-  void Hierarchical::create_children(int n_row_splits, int n_col_splits) {
-    std::vector<IndexRange> child_row_ranges = row_range.split(n_row_splits);
-    std::vector<IndexRange> child_col_ranges = col_range.split(n_col_splits);
-    for (int i=0; i<n_row_splits; i++) for (int j=0; j<n_col_splits; j++) {
-      int i_abs_child = i_abs * n_row_splits + i;
-      int j_abs_child = j_abs * n_col_splits + j;
+  void Hierarchical::create_children() {
+    std::vector<IndexRange> child_row_ranges = row_range.split(dim[0]);
+    std::vector<IndexRange> child_col_ranges = col_range.split(dim[1]);
+    data.resize(dim[0]*dim[1]);
+    for (int i=0; i<dim[0]; i++) for (int j=0; j<dim[1]; j++) {
+      int i_abs_child = i_abs * dim[0] + i;
+      int j_abs_child = j_abs * dim[1] + j;
       (*this)(i, j) = Node(
         i_abs_child, j_abs_child, level+1,
         child_row_ranges[i], child_col_ranges[j]
@@ -293,5 +281,43 @@ namespace hicma {
     leaf &= (node.col_range.length/dim[1] < nleaf);
     return leaf;
   }
+
+  Hierarchical make_hierarchical(
+    const Node& A, int ni_level, int nj_level
+  ) {
+    return make_hierarchical_omm(A, ni_level, nj_level);
+  }
+
+  BEGIN_SPECIALIZATION(
+    make_hierarchical_omm, Hierarchical,
+    const Dense& A, int ni_level, int nj_level
+  ) {
+    Hierarchical out(A, ni_level, nj_level, true);
+    out.create_children();
+    for (NodeProxy& child : out) {
+      child = A.get_part(child);
+    }
+    return out;
+  } END_SPECIALIZATION;
+
+  BEGIN_SPECIALIZATION(
+    make_hierarchical_omm, Hierarchical,
+    const LowRank& A, int ni_level, int nj_level
+  ) {
+    Hierarchical out(A, ni_level, nj_level, true);
+    out.create_children();
+    for (NodeProxy& child : out) {
+      child = A.get_part(child);
+    }
+    return out;
+  } END_SPECIALIZATION;
+
+  BEGIN_SPECIALIZATION(
+    make_hierarchical_omm, Hierarchical,
+    const Node& A, int ni_level, int nj_level
+  ) {
+    std::cout << "Cannot create Hierarchical from " << A.type() << "!" << std::endl;
+    abort();
+  } END_SPECIALIZATION;
 
 } // namespace hicma

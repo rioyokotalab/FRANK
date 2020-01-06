@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "yorel/multi_methods.hpp"
+using yorel::multi_methods::virtual_;
 
 namespace hicma {
 
@@ -40,6 +41,10 @@ namespace hicma {
     std::unique_ptr<Node> move_clone() override;
 
     const char* type() const override;
+
+    // Conversion constructors
+    Hierarchical(
+      const Node& node, int ni_level, int nj_level, bool node_only=false);
 
     // Additional constructors
     Hierarchical(
@@ -81,11 +86,6 @@ namespace hicma {
       int level=0
     );
 
-    // Conversion constructors
-    Hierarchical(const Dense& A, int m, int n);
-
-    Hierarchical(const LowRank& A, int m, int n);
-
     // Additional operators
     const NodeProxy& operator[](int i) const;
 
@@ -113,13 +113,20 @@ namespace hicma {
 
     void col_qr(int j, Hierarchical& Q, Hierarchical &R);
 
-  private:
-    void create_children(int n_row_splits, int n_col_splits);
+    void create_children();
 
     bool is_admissible(const Node& node, int dist_to_diag);
 
     bool is_leaf(const Node& node, int nleaf);
   };
+
+  Hierarchical make_hierarchical(
+    const Node& A, int ni_level, int nj_level);
+
+  MULTI_METHOD(
+    make_hierarchical_omm, Hierarchical,
+    const virtual_<Node>&, int ni_level, int nj_level
+  );
 
 } // namespace hicma
 
