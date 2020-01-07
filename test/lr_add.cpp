@@ -10,8 +10,8 @@ using namespace hicma;
 
 int main(int argc, char** argv) {
   yorel::multi_methods::initialize();
-  int N = 32;
-  int rank = 16;
+  int N = 2048;
+  int rank = 128;
   std::vector<double> randx(2*N);
   for (int i=0; i<2*N; i++) {
     randx[i] = drand48();

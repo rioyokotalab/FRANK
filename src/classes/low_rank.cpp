@@ -76,6 +76,63 @@ namespace hicma {
     V.resize(k, dim[1]);
     rank = k;
   }
+  std::tuple<Dense, Dense> merge_basis(
+    const Dense& A, const Dense& B, bool trans
+  ) {
+    // For U trans=false
+    // For V trans=true
+    assert(A.dim[trans?1:0] == B.dim[trans?1:0]);
+    int N = A.dim[trans?1:0];
+    int Arank = A.dim[trans?0:1];
+    int Brank = B.dim[trans?0:1];
+    Dense AB(Arank, Brank);
+    gemm(A, B, AB, !trans, trans, 1, 0);
+
+    Dense AAB(N, Brank);
+    gemm(A, AB, AAB, trans, false, 1, 0);
+
+    Dense B_AAB(N, Brank);
+    B_AAB = (trans ? B.transpose(): B) - AAB;
+
+    Dense Q(N, Brank);
+    Dense R(Brank, Brank);
+    qr(B_AAB, Q, R);
+
+    // Some copies can be avoided here once H(D) w/o copies exists
+    Hierarchical InnerH(2, 1);
+    InnerH[0] = std::move(AB);
+    InnerH[1] = std::move(R);
+    Dense Inner(InnerH);
+
+    if (trans) Q.transpose();
+    return {std::move(Q), std::move(Inner)};
+  }
+
+  std::tuple<Dense, Dense, Dense> merge_S(
+    const Dense& S, const Dense& AS,
+    const Dense& InnerU, const Dense& InnerVt
+  ) {
+    Dense InnerUAS(InnerU.dim[0], AS.dim[1]);
+    gemm(InnerU, AS, InnerUAS, 1, 0);
+
+    // TODO consider copies here, especially once H(D) no longer copies!
+    // Also consider move!
+    Hierarchical M(2, 2);
+    M(0, 0) = S;
+    M(0, 1) = Dense(S.dim[0], S.dim[1]);
+    M(1, 0) = Dense(S.dim[0], S.dim[1]);
+    M(1, 1) = Dense(S.dim[0], S.dim[1]);
+    Dense MD(M);
+    gemm(InnerUAS, InnerVt, MD, false, true, 1, 1);
+
+    Dense Uhat, Shat, Vhat;
+    std::tie(Uhat, Shat, Vhat) = svd(MD);
+    Shat.resize(S.dim[0], S.dim[1]);
+    Uhat.resize(Uhat.dim[0], S.dim[0]);
+    Vhat.resize(S.dim[1], Vhat.dim[1]);
+
+    return {std::move(Uhat), std::move(Shat), std::move(Vhat)};
+  }
 
   const LowRank& LowRank::operator+=(const LowRank& A) {
     assert(dim[0] == A.dim[0]);
@@ -132,82 +189,26 @@ namespace hicma {
     } else {
       //Bebendorf HMatrix Book p17
       //Rounded addition by exploiting orthogonality
-      int rank2 = 2 * rank;
 
-      Dense Xu(rank, rank);
-      gemm(U, A.U, Xu, true, false, 1, 0);
+      // TODO consider copies here, especially once H(D) no longer copies!
+      Hierarchical OuterU(1, 2);
+      Dense InnerU;
+      std::tie(OuterU[1], InnerU) = merge_basis(U, A.U, false);
+      OuterU[0] = std::move(U);
 
-      Dense Ua(A.dim[0], rank);
-      Dense Yu(A.dim[0], rank);
-      gemm(U, Xu, Ua, 1, 0);
+      Hierarchical OuterV(2, 1);
+      Dense InnerVt;
+      std::tie(OuterV[1], InnerVt) = merge_basis(V, A.V, true);
+      OuterV[0] = std::move(V);
 
-      Yu = A.U - Ua;
+      Dense Uhat, Vhat;
+      std::tie(Uhat, S, Vhat) = merge_S(S, A.S, InnerU, InnerVt);
 
-      Dense Qu(dim[0], rank);
-      Dense Ru(rank, rank);
-      qr(Yu, Qu, Ru);
-
-      Dense Xv(rank, rank);
-      gemm(V, A.V, Xv, false, true, 1, 0);
-
-      Dense Va_Xv(dim[1], rank);
-      gemm(V, Xv, Va_Xv, true, false, 1, 0);
-
-      Dense Yv(dim[1], rank);
-      Dense VB = A.V.transpose();
-      Yv = VB - Va_Xv;
-
-      Dense Qv(dim[1], rank);
-      Dense Rv(rank, rank);
-      qr(Yv, Qv, Rv);
-
-      Hierarchical M(2, 2);
-      Dense Xu_BS(rank, rank);
-      gemm(Xu, A.S, Xu_BS, 1, 0);
-      Dense Ru_BS(rank, rank);
-      gemm(Ru, A.S, Ru_BS, 1, 0);
-
-      gemm(Xu_BS, Xv, S, false, true, 1, 1);
-      M(0, 0) = S;
-      gemm(Xu_BS, Rv, S, false, true, 1, 0);
-      M(0, 1) = S;
-      gemm(Ru_BS, Xv, S, false, true, 1, 0);
-      M(1, 0) = S;
-      gemm(Ru_BS, Rv, S, false, true, 1, 0);
-      M(1, 1) = S;
-
-      Dense Uhat, Shat, Vhat;
-      Dense MD(M);
-      std::tie(Uhat, Shat, Vhat) = svd(MD);
-
-      Uhat.resize(Uhat.dim[0], rank);
-      Shat.resize(rank, rank);
-      Vhat.resize(rank, Vhat.dim[1]);
-
-      Dense MERGE_U(dim[0], Uhat.dim[0]);
-      Dense MERGE_V(dim[1], Vhat.dim[1]);
-
-      for (int i = 0; i < dim[0]; ++i) {
-        for (int j = 0; j < rank; ++j) {
-          MERGE_U(i, j) = U(i, j);
-        }
-        for (int j = 0; j < rank; ++j) {
-          MERGE_U(i, rank + j) = Qu(i, j);
-        }
-      }
-
-      for (int i = 0; i < dim[1]; ++i) {
-        for (int j = 0; j < rank; ++j) {
-          MERGE_V(i, j) = V(j, i);
-        }
-        for (int j = 0; j < rank; ++j) {
-          MERGE_V(i, j + rank) = Qv(i, j);
-        }
-      }
-
-      gemm(MERGE_U, Uhat, U, 1, 0);
-      S = std::move(Shat);
-      gemm(Vhat, MERGE_V, V, false, true, 1, 0);
+      // Restore moved-from U and V and finalize basis
+      U = Dense(dim[0], rank);
+      V = Dense(rank, dim[1]);
+      gemm(OuterU, Uhat, U, 1, 0);
+      gemm(Vhat, OuterV, V, 1, 0);
     }
     return *this;
   }
