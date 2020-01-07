@@ -11,44 +11,17 @@ using namespace hicma;
 
 int main(int argc, char** argv) {
   yorel::multi_methods::initialize();
-  int N = atoi(argv[2]);
-  int nleaf = atoi(argv[3]);
-  int rank = atoi(argv[4]);
+  int N = argc > 1 ? atoi(argv[1]) : 256;
+  int nleaf = argc > 2 ? atoi(argv[2]) : 16;
+  int rank = argc > 3 ? atoi(argv[3]) : 8;
+  int nblocks = argc > 4 ? atoi(argv[4]) : 2;
+  int admis = argc > 5 ? atoi(argv[5]) : 0;
   std::vector<double> randx(N);
   for (int i=0; i<N; i++) {
     randx[i] = drand48();
   }
   std::sort(randx.begin(), randx.end());
   start("Init matrix");
-  int nblocks=0, admis=0;
-  if (atoi(argv[1]) == 0) {
-    nblocks = N / nleaf; // 1 level
-    admis = N / nleaf; // Full rank
-  }
-  else if (atoi(argv[1]) == 1) {
-    nblocks = 2; // Hierarchical (log_2(N/nleaf) levels)
-    admis = N / nleaf; // Full rank
-  }
-  else if (atoi(argv[1]) == 2) {
-    nblocks = 4; // Hierarchical (log_4(N/nleaf) levels)
-    admis = N / nleaf; // Full rank
-  }
-  else if (atoi(argv[1]) == 3) {
-    nblocks = N / nleaf; // 1 level
-    admis = 0; // Weak admissibility
-  }
-  else if (atoi(argv[1]) == 4) {
-    nblocks = N / nleaf; // 1 level
-    admis = 1; // Strong admissibility
-  }
-  else if (atoi(argv[1]) == 5) {
-    nblocks = 2; // Hierarchical (log_2(N/nleaf) levels)
-    admis = 0; // Weak admissibility
-  }
-  else if (atoi(argv[1]) == 6) {
-    nblocks = 2; // Hierarchical (log_2(N/nleaf) levels)
-    admis = 1; // Strong admissibility
-  }
   start("CPU compression");
   Hierarchical A(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   stop("CPU compression");
