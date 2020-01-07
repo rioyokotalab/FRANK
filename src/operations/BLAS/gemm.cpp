@@ -25,15 +25,27 @@
 namespace hicma
 {
 
+MULTI_METHOD(
+  gemm_trans_omm, void,
+  const virtual_<Node>&,
+  const virtual_<Node>&,
+  virtual_<Node>&,
+  bool, bool,
+  double, double
+);
+
 void gemm(
   const Node& A, const Node& B, Node& C,
+  bool TransA, bool TransB,
   double alpha, double beta
 ) {
-  gemm_omm(A, B, C, alpha, beta);
+  gemm_trans_omm(A, B, C, TransA, TransB, alpha, beta);
 }
-void gemm(
+
+BEGIN_SPECIALIZATION(
+  gemm_trans_omm, void,
   const Dense& A, const Dense& B, Dense& C,
-  const bool TransA, const bool TransB,
+  bool TransA, bool TransB,
   double alpha, double beta
 ) {
   start("-DGEMM");
@@ -63,6 +75,26 @@ void gemm(
     );
   }
   stop("-DGEMM",false);
+} END_SPECIALIZATION;
+
+// Fallback default, abort with error message
+BEGIN_SPECIALIZATION(
+  gemm_trans_omm, void,
+  const Node& A, const Node& B, Node& C,
+  bool TransA, bool TransB,
+  double alpha, double beta
+) {
+  std::cerr << "gemm_trans(";
+  std::cerr << A.type() << "," << B.type() << "," << C.type();
+  std::cerr << ") undefined." << std::endl;
+  abort();
+} END_SPECIALIZATION;
+
+void gemm(
+  const Node& A, const Node& B, Node& C,
+  double alpha, double beta
+) {
+  gemm_omm(A, B, C, alpha, beta);
 }
 
 BEGIN_SPECIALIZATION(

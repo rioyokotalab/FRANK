@@ -13,8 +13,8 @@ class Dense;
 void gemm(const Node&, const Node&, Node&, double, double);
 
 void gemm(
-  const Dense& A, const Dense& B, Dense& C,
-  const bool TransA, const bool TransB,
+  const Node& A, const Node& B, Node& C,
+  bool TransA, bool TransB,
   double alpha, double beta
 );
 
