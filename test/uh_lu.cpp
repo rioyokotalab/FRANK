@@ -13,21 +13,21 @@ using namespace hicma;
 int main(int argc, char const *argv[])
 {
   yorel::multi_methods::initialize();
-  int ni_level = atoi(argv[1]), nj_level = atoi(argv[1]);
-  int N = atoi(argv[2]);
-  int nleaf = atoi(argv[3]);
-  int rank = atoi(argv[4]);
-  int admis = 0;
+  int N = argc > 1 ? atoi(argv[1]) : 256;
+  int nleaf = argc > 2 ? atoi(argv[2]) : 16;
+  int rank = argc > 3 ? atoi(argv[3]) : 8;
+  int nblocks = argc > 4 ? atoi(argv[4]) : 2;
+  int admis = argc > 5 ? atoi(argv[5]) : 0;
   std::vector<double> randx(N);
   for (int i=0; i<N; i++) {
     randx[i] = drand48();
   }
   std::sort(randx.begin(), randx.end());
   UniformHierarchical A(
-    laplace1d, randx, N, N, rank, nleaf, admis, ni_level, nj_level);
+    laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   Hierarchical H(
-    laplace1d, randx, N, N, rank, nleaf, admis, ni_level, nj_level);
-  Hierarchical D(laplace1d, randx, N, N, rank, nleaf, N/ni_level, ni_level, nj_level);
+    laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
+  Hierarchical D(laplace1d, randx, N, N, rank, nleaf, N/nblocks, nblocks, nblocks);
   Dense rand(random_normal, randx, N, N);
 
   start("Verification");
