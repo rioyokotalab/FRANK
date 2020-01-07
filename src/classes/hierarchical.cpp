@@ -51,6 +51,23 @@ namespace hicma {
 
   const char* Hierarchical::type() const { return "Hierarchical"; }
 
+  MULTI_METHOD(move_from_hierarchical, Hierarchical, virtual_<Node>&);
+
+  BEGIN_SPECIALIZATION(
+    move_from_hierarchical, Hierarchical,
+    Hierarchical& A
+  ) {
+    return std::move(A);
+  } END_SPECIALIZATION;
+
+  BEGIN_SPECIALIZATION(
+    move_from_hierarchical, Hierarchical,
+    Node& A
+  ) {
+    std::cout << "Cannot move to Hierarchical from " << A.type() << "!" << std::endl;
+    abort();
+  } END_SPECIALIZATION;
+
   Hierarchical::Hierarchical(NodeProxy&& A) {
     *this = move_from_hierarchical(A);
   }
@@ -299,25 +316,6 @@ namespace hicma {
   ) {
     return make_hierarchical_omm(A, ni_level, nj_level);
   }
-
-  Hierarchical move_from_hierarchical(Node& A) {
-    return move_from_hierarchical_omm(A);
-  }
-
-  BEGIN_SPECIALIZATION(
-    move_from_hierarchical_omm, Hierarchical,
-    Hierarchical& A
-  ) {
-    return std::move(A);
-  } END_SPECIALIZATION;
-
-  BEGIN_SPECIALIZATION(
-    move_from_hierarchical_omm, Hierarchical,
-    Node& A
-  ) {
-    std::cout << "Cannot move to Hierarchical from " << A.type() << "!" << std::endl;
-    abort();
-  } END_SPECIALIZATION;
 
   BEGIN_SPECIALIZATION(
     make_hierarchical_omm, Hierarchical,

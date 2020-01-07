@@ -125,10 +125,6 @@ namespace hicma {
     std::tuple<int, int> get_rel_pos_child(const Node& node);
   };
 
-  Hierarchical move_from_hierarchical(Node& A);
-
-  MULTI_METHOD(move_from_hierarchical_omm, Hierarchical, virtual_<Node>&);
-
   Hierarchical make_hierarchical(
     const Node& A, int ni_level, int nj_level);
 
