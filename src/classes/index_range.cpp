@@ -30,4 +30,11 @@ std::vector<IndexRange> IndexRange::split(int n_splits) {
   return children;
 }
 
+bool IndexRange::is_subrange(const IndexRange& range) const {
+  bool out = range.start >= start;
+  out &= range.start < start + length;
+  out &= range.start + range.length <= start + length;
+  return out;
+}
+
 } // namespace hicma

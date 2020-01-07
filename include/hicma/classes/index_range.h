@@ -29,6 +29,8 @@ public:
 
   // Additional methods
   std::vector<IndexRange> split(int n_splits);
+
+  bool is_subrange(const IndexRange& range) const;
 };
 
 } // namespace hicma

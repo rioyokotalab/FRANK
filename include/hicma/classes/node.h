@@ -44,6 +44,9 @@ namespace hicma {
       int i_abs, int j_abs, int level,
       IndexRange row_range, IndexRange col_range
     );
+
+    // Utility methods
+    bool is_child(const Node& node) const;
   };
 
 } // namespace hicma
