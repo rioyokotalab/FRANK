@@ -218,6 +218,7 @@ namespace hicma {
   void Dense::transpose() {
     std::vector<double> _data(data);
     std::swap(dim[0], dim[1]);
+    std::swap(row_range, col_range);
     for(int i=0; i<dim[0]; i++) {
       for(int j=0; j<dim[1]; j++) {
         data[i*dim[1]+j] = _data[j*dim[0]+i];
