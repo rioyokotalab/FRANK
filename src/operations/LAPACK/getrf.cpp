@@ -25,7 +25,7 @@ std::tuple<NodeProxy, NodeProxy> getrf(Node& A) {
 }
 
 BEGIN_SPECIALIZATION(getrf_omm, NodePair, Hierarchical& A) {
-  Hierarchical L(A.dim[0], A.dim[1]);
+  Hierarchical L(A, A.dim[0], A.dim[1], true);
   for (int i=0; i<A.dim[0]; i++) {
     std::tie(L(i, i), A(i, i)) = getrf(A(i,i));
     for (int i_c=i+1; i_c<L.dim[0]; i_c++) {
@@ -36,17 +36,10 @@ BEGIN_SPECIALIZATION(getrf_omm, NodePair, Hierarchical& A) {
       trsm(L(i,i), A(i,j), 'l');
     }
     for (int i_c=i+1; i_c<L.dim[0]; i_c++) {
-      gemm(L(i_c,i), A(i,i_c), A(i_c,i_c), -1, 1);
+      for (int k=i+1; k<A.dim[1]; k++) {
+        gemm(L(i_c,i), A(i,k), A(i_c,k), -1, 1);
+      }
       L(i_c, i_c) = A(i_c, i_c);
-      for (int k=i+1; k<i_c; k++) {
-        L(i_c, k) = std::move(A(i_c, k));
-        gemm(L(i_c,i), A(i,k), L(i_c,k), -1, 1);
-      }
-    }
-    for (int i_c=i+1; i_c<A.dim[0]; i_c++) {
-      for (int k=i_c+1; k<A.dim[1]; k++) {
-        gemm(L(i_c, i), A(i,k), A(i_c, k), -1, 1);
-      }
     }
   }
   return {std::move(L), std::move(A)};
@@ -61,7 +54,7 @@ BEGIN_SPECIALIZATION(getrf_omm, NodePair, Dense& A) {
     &A[0], A.dim[1],
     &ipiv[0]
   );
-  Dense L(A.dim[0], A.dim[1]);
+  Dense L(A, true);
   for (int i=0; i<A.dim[0]; i++) {
     for (int j=0; j<i; j++) {
       L(i, j) = A(i, j);
