@@ -25,6 +25,7 @@ namespace hicma
 {
 
   void qr(Node& A, Node& Q, Node& R) {
+    // TODO consider moving assertions here (same in other files)!
     qr_omm(A, Q, R);
   }
 
@@ -57,18 +58,24 @@ namespace hicma
   }
 
   BEGIN_SPECIALIZATION(qr_omm, void, Dense& A, Dense& Q, Dense& R) {
+    assert(Q.dim[0] == A.dim[0]);
+    assert(Q.dim[1] == A.dim[1]);
+    assert(R.dim[0] == A.dim[1]);
+    assert(R.dim[1] == A.dim[1]);
     int k = std::min(A.dim[0], A.dim[1]);
     std::vector<double> tau(k);
-    LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, A.dim[0], A.dim[1], &A[0], A.dim[1], &tau[0]);
     for(int i=0; i<std::min(Q.dim[0], Q.dim[1]); i++) Q(i, i) = 1.0;
+    LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, A.dim[0], A.dim[1], &A[0], A.dim[1], &tau[0]);
     for(int i=0; i<A.dim[0]; i++) {
       for(int j=0; j<A.dim[1]; j++) {
         if(j>=i)
-          R[i*(A.dim[1])+j] = A[i*(A.dim[1])+j];
+          R(i, j) = A(i, j);
         else
           Q(i,j) = A(i,j);
       }
     }
+    // TODO Consider making special function for this. Performance heavy
+    // and not always needed. If Q should be applied to something, use directly!
     LAPACKE_dorgqr(LAPACK_ROW_MAJOR, Q.dim[0], Q.dim[1], k, &Q[0], Q.dim[1], &tau[0]);
   } END_SPECIALIZATION;
 
@@ -77,24 +84,24 @@ namespace hicma
     assert(Q.dim[1] == A.dim[1]);
     assert(R.dim[0] == A.dim[1]);
     assert(R.dim[1] == A.dim[1]);
-    for(int j=0; j<A.dim[1]; j++) {
+    for (int j=0; j<A.dim[1]; j++) {
       Hierarchical Qj(A.dim[0], 1);
-      for(int i = 0; i < A.dim[0]; i++) {
+      for (int i = 0; i < A.dim[0]; i++) {
         Qj(i, 0) = Q(i, j);
       }
       Hierarchical Rjj(1, 1);
       Rjj(0, 0) = R(j, j);
       A.col_qr(j, Qj, Rjj);
       R(j, j) = Rjj(0, 0);
-      for(int i=0; i<A.dim[0]; i++) {
+      for (int i=0; i<A.dim[0]; i++) {
         Q(i, j) = Qj(i, 0);
       }
       Hierarchical TrQj(Qj);
       transpose(TrQj);
-      for(int k=j+1; k<A.dim[1]; k++) {
+      for (int k=j+1; k<A.dim[1]; k++) {
         //Take k-th column
         Hierarchical Ak(A.dim[0], 1);
-        for(int i=0; i<A.dim[0]; i++) {
+        for (int i=0; i<A.dim[0]; i++) {
           Ak(i, 0) = A(i, k);
         }
         Hierarchical Rjk(1, 1);
@@ -102,7 +109,7 @@ namespace hicma
         gemm(TrQj, Ak, Rjk, 1, 1); //Rjk = Q*j^T x A*k
         R(j, k) = Rjk(0, 0);
         gemm(Qj, Rjk, Ak, -1, 1); //A*k = A*k - Q*j x Rjk
-        for(int i=0; i<A.dim[0]; i++) {
+        for (int i=0; i<A.dim[0]; i++) {
           A(i, k) = Ak(i, 0);
         }
       }
