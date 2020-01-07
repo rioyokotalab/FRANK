@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "yorel/multi_methods.hpp"
+using yorel::multi_methods::virtual_;
 
 namespace hicma
 {
@@ -40,7 +41,12 @@ public:
 
   const char* type() const override;
 
+  // Conversion constructors
+  UniformHierarchical(NodeProxy&&);
+
   // Additional constructors
+  UniformHierarchical(const Node& node, int ni_level, int nj_level);
+
   UniformHierarchical(
     const Node& node,
     void (*func)(
@@ -84,6 +90,15 @@ public:
   Dense& get_col_basis(int j);
 
   const Dense& get_col_basis(int j) const;
+
+  // Utiliry methods
+  void copy_col_basis(const UniformHierarchical& A);
+
+  void copy_row_basis(const UniformHierarchical& A);
+
+  void set_col_basis(int i, int j);
+
+  void set_row_basis(int i, int j);
 };
 
 } // namespace hicma

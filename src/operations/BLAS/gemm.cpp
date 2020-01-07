@@ -295,6 +295,37 @@ BEGIN_SPECIALIZATION(
   C = Dense(CH);
 } END_SPECIALIZATION;
 
+BEGIN_SPECIALIZATION(
+  gemm_omm, void,
+  const LowRankShared& A, const LowRankShared& B, Dense& C,
+  double alpha, double beta
+) {
+  // TODO Exactly the same as gemm(LR, LR, D)! Consider making LRS a child of LR
+  Dense VxU(A.rank, B.rank);
+  gemm(A.V, B.U, VxU, 1, 0);
+  Dense SxVxU(A.rank, B.rank);
+  gemm(A.S, VxU, SxVxU, 1, 0);
+  Dense SxVxUxS(A.rank, B.rank);
+  gemm(SxVxU, B.S, SxVxUxS, 1, 0);
+  Dense UxSxVxUxS(A.dim[0], B.rank);
+  gemm(A.U, SxVxUxS, UxSxVxUxS, 1, 0);
+  gemm(UxSxVxUxS, B.V, C, alpha, beta);
+} END_SPECIALIZATION;
+
+BEGIN_SPECIALIZATION(
+  gemm_omm, void,
+  const LowRankShared& A, const LowRankShared& B, LowRankShared& C,
+  double alpha, double beta
+) {
+  assert(C.U == A.U);
+  assert(C.V == B.V);
+  Dense VxU(A.rank, B.rank);
+  gemm(A.V, B.U, VxU, 1, 0);
+  Dense SxVxU(A.rank, B.rank);
+  gemm(A.S, VxU, SxVxU, 1, 0);
+  gemm(SxVxU, B.S, C.S, alpha, beta);
+} END_SPECIALIZATION;
+
 MULTI_METHOD(
   gemm_regular_only_omm, void,
   const virtual_<Node>&, const virtual_<Node>&, virtual_<Node>&,

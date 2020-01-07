@@ -41,6 +41,11 @@ class LowRankShared : public Node {
     // Implicit conversion operators
     operator Dense& () { return *basis; }
     operator const Dense&() const { return *basis; }
+
+    // Comparison operator
+    bool operator==(const SharedBasis& B) const {
+      return basis == B.basis;
+    }
   } U, V;
   Dense S;
 

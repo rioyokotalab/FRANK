@@ -52,6 +52,36 @@ std::unique_ptr<Node> UniformHierarchical::move_clone() {
 
 const char* UniformHierarchical::type() const { return "UniformHierarchical"; }
 
+MULTI_METHOD(
+  move_from_uniform_hierarchical, UniformHierarchical, virtual_<Node>&);
+
+BEGIN_SPECIALIZATION(
+  move_from_uniform_hierarchical, UniformHierarchical,
+  UniformHierarchical& A
+) {
+  return std::move(A);
+} END_SPECIALIZATION;
+
+BEGIN_SPECIALIZATION(
+  move_from_uniform_hierarchical, UniformHierarchical,
+  Node& A
+) {
+  std::cout << "Cannot move to UniformHierarchical from " << A.type() << "!" << std::endl;
+  abort();
+} END_SPECIALIZATION;
+
+UniformHierarchical::UniformHierarchical(NodeProxy&& A) {
+  *this = move_from_uniform_hierarchical(A);
+}
+
+UniformHierarchical::UniformHierarchical(
+  const Node& node, int ni_level, int nj_level
+) : Hierarchical(node, ni_level, nj_level, true) {
+  MM_INIT();
+  col_basis.resize(ni_level);
+  row_basis.resize(nj_level);
+}
+
 UniformHierarchical::UniformHierarchical(
   const Node& node,
   void (*func)(
@@ -66,7 +96,7 @@ UniformHierarchical::UniformHierarchical(
   int admis,
   int ni_level, int nj_level,
   bool use_svd
-) : Hierarchical(node, nj_level, nj_level, true) {
+) : Hierarchical(node, ni_level, nj_level, true) {
   MM_INIT();
   if (!level) {
     assert(x.size() == std::max(node.row_range.length, node.col_range.length));
@@ -199,6 +229,97 @@ Dense& UniformHierarchical::get_col_basis(int j) {
 const Dense& UniformHierarchical::get_col_basis(int j) const {
   assert(j < dim[0]);
   return *col_basis[j];
+}
+
+void UniformHierarchical::copy_col_basis(const UniformHierarchical& A) {
+  assert(dim[0] == A.dim[0]);
+  for (int i=0; i<dim[1]; i++) {
+    col_basis[i] = std::make_shared<Dense>(A.get_col_basis(i));
+  }
+}
+
+void UniformHierarchical::copy_row_basis(const UniformHierarchical& A) {
+  assert(dim[1] == A.dim[1]);
+  for (int j=0; j<dim[1]; j++) {
+    row_basis[j] = std::make_shared<Dense>(A.get_row_basis(j));
+  }
+}
+
+
+MULTI_METHOD(
+  set_col_basis_omm, void,
+  virtual_<Node>& A, std::shared_ptr<Dense> basis
+);
+
+BEGIN_SPECIALIZATION(
+  set_col_basis_omm, void,
+  LowRankShared& A, std::shared_ptr<Dense> basis
+) {
+  A.U = basis;
+} END_SPECIALIZATION;
+
+BEGIN_SPECIALIZATION(
+  set_col_basis_omm, void,
+  Dense& A, std::shared_ptr<Dense> basis
+) {
+  // Do nothing
+} END_SPECIALIZATION;
+
+BEGIN_SPECIALIZATION(
+  set_col_basis_omm, void,
+  UniformHierarchical& A, std::shared_ptr<Dense> basis
+) {
+  // Do nothing
+} END_SPECIALIZATION;
+
+BEGIN_SPECIALIZATION(
+  set_col_basis_omm, void,
+  Node& A, std::shared_ptr<Dense> basis
+) {
+  std::cout << "Cannot set column basis on " << A.type() << "!" << std::endl;
+  abort();
+} END_SPECIALIZATION;
+
+MULTI_METHOD(
+  set_row_basis_omm, void,
+  virtual_<Node>& A, std::shared_ptr<Dense> basis
+);
+
+BEGIN_SPECIALIZATION(
+  set_row_basis_omm, void,
+  LowRankShared& A, std::shared_ptr<Dense> basis
+) {
+  A.V = basis;
+} END_SPECIALIZATION;
+
+BEGIN_SPECIALIZATION(
+  set_row_basis_omm, void,
+  Dense& A, std::shared_ptr<Dense> basis
+) {
+  // Do nothing
+} END_SPECIALIZATION;
+
+BEGIN_SPECIALIZATION(
+  set_row_basis_omm, void,
+  UniformHierarchical& A, std::shared_ptr<Dense> basis
+) {
+  // Do nothing
+} END_SPECIALIZATION;
+
+BEGIN_SPECIALIZATION(
+  set_row_basis_omm, void,
+  Node& A, std::shared_ptr<Dense> basis
+) {
+  std::cout << "Cannot set row basis on " << A.type() << "!" << std::endl;
+  abort();
+} END_SPECIALIZATION;
+
+void UniformHierarchical::set_col_basis(int i, int j) {
+  hicma::set_col_basis_omm((*this)(i, j), col_basis[i]);
+}
+
+void UniformHierarchical::set_row_basis(int i, int j) {
+  hicma::set_row_basis_omm((*this)(i, j), row_basis[j]);
 }
 
 } // namespace hicma

@@ -47,5 +47,15 @@ int main(int argc, char const *argv[])
   print("UH-D diff", l2_error(test1, test3), false);
   print("H-D diff", l2_error(test2, test3), false);
 
+  UniformHierarchical L, U;
+  std::tie(L, U) = getrf(A);
+
+  Hierarchical LH, UH;
+  std::tie(LH, UH) = getrf(H);
+
+  print("L UH-H diff", l2_error(L(1, 0), LH(1, 0)), false);
+  print("U UH-H diff", l2_error(U(0, 1), UH(0, 1)), false);
+
+
   return 0;
 }

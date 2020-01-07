@@ -50,6 +50,7 @@ LowRankShared::LowRankShared(
 }
 
 BEGIN_SPECIALIZATION(make_dense, Dense, const LowRankShared& A){
+  // TODO exactly the same as the LowRank method. Consider inheritance!
   Dense B(A.dim[0], A.dim[1]);
   Dense UxS(A.dim[0], A.rank);
   gemm(A.U, A.S, UxS, 1, 0);
