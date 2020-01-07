@@ -40,7 +40,6 @@ BEGIN_SPECIALIZATION(getrf_omm, NodePair, Hierarchical& A) {
       for (int k=i+1; k<A.dim[1]; k++) {
         gemm(L(i_c,i), A(i,k), A(i_c,k), -1, 1);
       }
-      L(i_c, i_c) = A(i_c, i_c);
     }
   }
   return {std::move(L), std::move(A)};
@@ -89,7 +88,6 @@ BEGIN_SPECIALIZATION(getrf_omm, NodePair, UniformHierarchical& A) {
       for (int k=i+1; k<A.dim[1]; k++) {
         gemm(L(i_c,i), A(i,k), A(i_c,k), -1, 1);
       }
-      L(i_c, i_c) = A(i_c, i_c);
       L.set_col_basis(i_c, i);
     }
   }
