@@ -275,6 +275,7 @@ namespace hicma {
   }
 
   void Hierarchical::create_children() {
+    // TODO Consider deleting IndexRange class and handle more directly
     std::vector<IndexRange> child_row_ranges = row_range.split(dim[0]);
     std::vector<IndexRange> child_col_ranges = col_range.split(dim[1]);
     data.resize(dim[0]*dim[1]);
