@@ -1,6 +1,7 @@
 #include "hicma/classes/dense.h"
 
 #include "hicma/classes/node.h"
+#include "hicma/classes/node_proxy.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/operations/BLAS/gemm.h"
@@ -17,6 +18,7 @@
 #include <vector>
 
 #include "yorel/multi_methods.hpp"
+using yorel::multi_methods::virtual_;
 
 namespace hicma {
 
@@ -61,6 +63,27 @@ namespace hicma {
     } else {
       *this = make_dense(A);
     }
+  }
+
+  MULTI_METHOD(move_from_dense, Dense, virtual_<Node>&);
+
+  BEGIN_SPECIALIZATION(
+    move_from_dense, Dense,
+    Dense& A
+  ) {
+    return std::move(A);
+  } END_SPECIALIZATION;
+
+  BEGIN_SPECIALIZATION(
+    move_from_dense, Dense,
+    Node& A
+  ) {
+    std::cout << "Cannot move to Dense from " << A.type() << "!" << std::endl;
+    abort();
+  } END_SPECIALIZATION;
+
+  Dense::Dense(NodeProxy&& A) {
+    *this = move_from_dense(A);
   }
 
   Dense::Dense(

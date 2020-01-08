@@ -45,6 +45,9 @@ namespace hicma {
     // Explicit conversions using multiple-dispatch function.
     explicit Dense(const Node& A, bool only_node=false);
 
+    // Conversion constructors
+    Dense(NodeProxy&&);
+
     // Additional constructors
     Dense(int m);
 
