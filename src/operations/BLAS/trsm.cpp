@@ -200,6 +200,7 @@ BEGIN_SPECIALIZATION(
     }
   case 'u' :
     {
+      // TODO This split causes issues when using TRSM with vector!
       Hierarchical BH(B, 1, A.dim[1]);
       trsm(A, BH, uplo);
       B = Dense(BH);
