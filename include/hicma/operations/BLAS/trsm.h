@@ -9,13 +9,16 @@ namespace hicma
 
 class Node;
 
-void trsm(const Node&, Node&, const char& uplo);
+// TODO consider splitting left and right trsm into separate functions! That
+// would allow nicer syntax: ltrsm(Tri, A, 'u/l') and rtrsm(A, Tri, 'u/l').
+void trsm(const Node&, Node&, const char& uplo, bool left=true);
 
 MULTI_METHOD(
   trsm_omm, void,
   const virtual_<Node>&,
   virtual_<Node>&,
-  const char& uplo
+  const char& uplo,
+  bool left
 );
 
 } // namespace hicma

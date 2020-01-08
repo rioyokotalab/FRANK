@@ -69,17 +69,9 @@ BEGIN_SPECIALIZATION(
   std::vector<int> P = geqp3(A, R);
   // First case applies also when A.dim[1] > A.dim[0] end k == A.dim[0]
   if (k < std::min(A.dim[0], A.dim[1]) || A.dim[1] > A.dim[0]) {
-    Dense R11, T;\
+    Dense R11, T;
     std::tie(R11, T) = get_R11_R12(R, k);
-    cblas_dtrsm(
-      CblasRowMajor,
-      CblasLeft, CblasUpper,
-      CblasNoTrans, CblasNonUnit,
-      T.dim[0], T.dim[1],
-      1,
-      &R11[0], R11.dim[1],
-      &T[0], T.dim[1]
-    );
+    trsm(R11, T, 'u');
     B = interleave_id(T, P);
   } else {
     std::vector<double> x;

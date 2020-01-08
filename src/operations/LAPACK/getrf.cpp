@@ -31,7 +31,7 @@ BEGIN_SPECIALIZATION(getrf_omm, NodePair, Hierarchical& A) {
     std::tie(L(i, i), A(i, i)) = getrf(A(i,i));
     for (int i_c=i+1; i_c<L.dim[0]; i_c++) {
       L(i_c, i) = std::move(A(i_c, i));
-      trsm(A(i,i), L(i_c,i), 'u');
+      trsm(A(i,i), L(i_c,i), 'u', false);
     }
     for (int j=i+1; j<A.dim[1]; j++) {
       trsm(L(i,i), A(i,j), 'l');
@@ -78,7 +78,7 @@ BEGIN_SPECIALIZATION(getrf_omm, NodePair, UniformHierarchical& A) {
   // set_basis necessary.
   for (int i=0; i<A.dim[0]; i++) {
     std::tie(L(i, i), A(i, i)) = getrf(A(i,i));
-    trsm(A(i, i), L.get_row_basis(i), 'u');
+    trsm(A(i, i), L.get_row_basis(i), 'u', false);
     trsm(L(i, i), A.get_col_basis(i), 'l');
     for (int i_c=i+1; i_c<L.dim[0]; i_c++) {
       L(i_c, i) = std::move(A(i_c, i));
