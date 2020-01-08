@@ -40,7 +40,7 @@ std::tuple<Dense, Dense> get_R11_R12(const Dense& R, int k) {
       R22(i, j) = R(i, k+j);
     }
   }
-  return {R11, R22};
+  return {std::move(R11), std::move(R22)};
 }
 
 Dense interleave_id(const Dense& A, std::vector<int>& P) {
@@ -69,7 +69,7 @@ BEGIN_SPECIALIZATION(
   std::vector<int> P = geqp3(A, R);
   // First case applies also when A.dim[1] > A.dim[0] end k == A.dim[0]
   if (k < std::min(A.dim[0], A.dim[1]) || A.dim[1] > A.dim[0]) {
-    Dense R11, T;
+    Dense R11, T;\
     std::tie(R11, T) = get_R11_R12(R, k);
     cblas_dtrsm(
       CblasRowMajor,

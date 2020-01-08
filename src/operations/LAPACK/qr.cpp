@@ -136,8 +136,7 @@ namespace hicma
   BEGIN_SPECIALIZATION(make_left_orthogonal_omm, dense_tuple, const Dense& A) {
     std::vector<double> x;
     Dense Id(identity, x, A.dim[0], A.dim[0]);
-    Dense _A(A);
-    return {Id, _A};\
+    return {std::move(Id), A};
   } END_SPECIALIZATION
 
   BEGIN_SPECIALIZATION(make_left_orthogonal_omm, dense_tuple, const LowRank& A) {
@@ -149,7 +148,7 @@ namespace hicma
     gemm(Ru, A.S, RS, 1, 1);
     Dense RSV(RS.dim[0], A.V.dim[1]);
     gemm(RS, A.V, RSV, 1, 1);
-    return {Qu, RSV};
+    return {std::move(Qu), std::move(RSV)};
   } END_SPECIALIZATION;
 
   BEGIN_SPECIALIZATION(make_left_orthogonal_omm, dense_tuple, const Node& A) {
