@@ -10,11 +10,11 @@ namespace hicma
 
 class Node;
 
-unsigned long get_memory_usage(const Node&);
+unsigned long get_memory_usage(const Node&, bool include_structure=true);
 
 MULTI_METHOD(
   get_memory_usage_omm, unsigned long,
-  const virtual_<Node>&
+  const virtual_<Node>&, bool
 );
 
 } // namespace hicma
