@@ -18,6 +18,7 @@
 #include <utility>
 
 #include "yorel/multi_methods.hpp"
+using yorel::multi_methods::virtual_;
 
 namespace hicma
 {
@@ -210,6 +211,53 @@ UniformHierarchical::UniformHierarchical(
   Node(i_abs, j_abs, level, IndexRange(i_begin, ni), IndexRange(j_begin, nj)),
   func, x, rank, nleaf, admis, ni_level, nj_level, use_svd
 ) {}
+
+// MULTI_METHOD(is_LowRankShared, bool, const virtual_<Node>&);
+
+// BEGIN_SPECIALIZATION(is_LowRankShared, bool, const LowRankShared&) {
+//   return true;
+// } END_SPECIALIZATION;
+
+// BEGIN_SPECIALIZATION(is_LowRankShared, bool, const Node&) {
+//   return false;
+// } END_SPECIALIZATION;
+
+// const UniformHierarchical& UniformHierarchical::operator+=(const UniformHierarchical& A) {
+//   // Model after LR+=LR!
+//   assert(dim[0] == A.dim[0]);
+//   assert(dim[1] == A.dim[1]);
+
+//   std::vector<std::shared_ptr<Dense>> new_col_basis(dim[0]), new_row_basis(dim[1]);
+
+//   for (int i=0; i<dim[0]; i++) {
+//     for (int j=0; j<dim[1]; j++) {
+//       // Use LR merge on row and column basis to get Inner and Outers.
+//       // Create stack of InnerUxSxInnerV for block column of *this.
+//       // Compute SVD on the stack and use the row basis as shared InnerV.
+//       // Do equivalent for block row and get shared InnerU.
+//       // Use shared InnerU and InnerV to get S for all blocks.
+//       // Use shared InnerU, InnerV, OuterU and OuterV to compute new shared row
+//       // and column bases.
+
+//       // if (is_LowRankShared((*this)(i, j))) {
+//       //   int n_non_admissible_blocks = 0;
+//       //   for (int i_b=0; i_b<dim[0]; ++i_b) {
+//       //     if (is_LowRankShared((*this)(i_b, j))) n_non_admissible_blocks++;
+//       //   }
+//       //   Hierarchical col_block_h(n_non_admissible_blocks, 1);
+//       //   // Note the ins counter!
+//       //   for (int i_b=0, ins=0; i_b<dim[0]; ++i_b) {
+//       //     if (is_LowRankShared((*this)(i_b, j)))
+//       //       col_block_h[ins++] = Dense();
+//       //   }
+//       //   Dense col_block(col_block_h);
+//       // } else {
+
+//       // }
+//     }
+//   }
+//   return *this;
+// }
 
 Dense& UniformHierarchical::get_row_basis(int i) {
   assert(i < dim[0]);
