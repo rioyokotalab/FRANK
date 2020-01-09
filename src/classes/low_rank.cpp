@@ -260,9 +260,8 @@ namespace hicma {
   }
 
   LowRank LowRank::get_part(const Node& node) const {
+    assert(is_child(node));
     LowRank A(node, rank);
-    assert(A.row_range.start >= row_range.start);
-    assert(A.col_range.start >= col_range.start);
     int rel_row_begin = A.row_range.start - row_range.start;
     int rel_col_begin = A.col_range.start - col_range.start;
     for (int i=0; i<A.U.dim[0]; i++) {
