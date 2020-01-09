@@ -374,6 +374,7 @@ namespace hicma {
   NoCopySplit::NoCopySplit(
     Node& A, int ni_level, int nj_level, bool node_only
   ) : Hierarchical(A, ni_level, nj_level, true) {
+    MM_INIT();
     if (!node_only) {
       *this = make_no_copy_split(A, ni_level, nj_level);
     }
@@ -408,6 +409,7 @@ namespace hicma {
   NoCopySplit::NoCopySplit(
     const Node& A, int ni_level, int nj_level, bool node_only
   ) : Hierarchical(A, ni_level, nj_level, true) {
+    MM_INIT();
     if (!node_only) {
       *this = make_no_copy_split(A, ni_level, nj_level);
     }

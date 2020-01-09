@@ -23,12 +23,17 @@ int main(int argc, char const *argv[])
     randx[i] = drand48();
   }
   std::sort(randx.begin(), randx.end());
+  start("Init matrix");
   UniformHierarchical A(
     laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
+  start("Init matrix");
   Hierarchical H(
     laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   Hierarchical D(laplace1d, randx, N, N, rank, nleaf, N/nblocks, nblocks, nblocks);
   Dense rand(random_normal, randx, N, N);
+  Dense x(random_uniform, randx, N, 1);
+  Dense b(N, 1);
+  gemm(A, x, b, 1, 1);
 
   start("Verification");
   print("Compression Accuracy");
@@ -36,6 +41,7 @@ int main(int argc, char const *argv[])
   print("UH Rel. L2 Error", l2_error(A, H), false);
   stop("Verification");
 
+  print("GEMM");
   Dense test1(N, N);
   gemm(A, rand, test1, 1, 0);
   Dense test2(N, N);
@@ -47,14 +53,17 @@ int main(int argc, char const *argv[])
   print("UH-D diff", l2_error(test1, test3), false);
   print("H-D diff", l2_error(test2, test3), false);
 
+  print("LU");
+  start("UBLR LU");
   UniformHierarchical L, U;
   std::tie(L, U) = getrf(A);
+  stop("UBLR LU");
 
-  Hierarchical LH, UH;
-  std::tie(LH, UH) = getrf(H);
-
-  print("L UH-H diff", l2_error(L(1, 0), LH(1, 0)), false);
-  print("U UH-H diff", l2_error(U(0, 1), UH(0, 1)), false);
+  start("Verification");
+  trsm(L, b,'l');
+  trsm(U, b,'u');
+  print("UH Rel. L2 Error", l2_error(x, b), false);
+  stop("Verification");
 
 
   return 0;

@@ -94,6 +94,12 @@ UniformHierarchical::UniformHierarchical(
   bool use_svd
 ) : Hierarchical(node, ni_level, nj_level, true) {
   MM_INIT();
+  // TODO All dense UH not allowed for now!
+  assert(dim[0] > admis + 1 && dim[1] > admis+1);
+  // TODO Only single leve allowed for now. Constructions and some operations
+  // work for more levels, but LU does not yet (LR+=LR issue).
+  assert(row_range.length/ni_level <= nleaf);
+  assert(col_range.length/nj_level <= nleaf);
   if (!level) {
     assert(x.size() == std::max(node.row_range.length, node.col_range.length));
     std::sort(x.begin(),x.end());

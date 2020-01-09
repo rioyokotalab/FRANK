@@ -356,6 +356,18 @@ BEGIN_SPECIALIZATION(
 
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
+  const LowRankShared& A, const Dense& B, Dense& C,
+  double alpha, double beta
+) {
+  Dense VxB(A.rank, B.dim[1]);
+  gemm(A.V, B, VxB, 1, 0);
+  Dense SxVxB(A.rank, B.dim[1]);
+  gemm(A.S, VxB, SxVxB, 1, 0);
+  gemm(A.U, SxVxB, C, alpha, beta);
+} END_SPECIALIZATION;
+
+BEGIN_SPECIALIZATION(
+  gemm_omm, void,
   const LowRankShared& A, const LowRankShared& B, Dense& C,
   double alpha, double beta
 ) {
@@ -504,15 +516,15 @@ BEGIN_SPECIALIZATION(
   double alpha, double beta
 ) {
   C *= beta;
-  NoCopySplit CH(C, A.dim[0], A.dim[1]);
-  NoCopySplit BH(B, A.dim[1], A.dim[1]);
+  NoCopySplit BH(B, A.dim[1], 1);
+  NoCopySplit CH(C, A.dim[0], 1);
   // This function causes the recursion
   gemm_regular_only(A, BH, CH, alpha, 1);
   Hierarchical RowBasisB(1, A.dim[1]);
   for (int k=0; k<A.dim[1]; k++) {
     // TODO Need max rank here? Case for differing ranks not dealt with!
     // Find more elegant way to initialize (SplitDenseReference class?)
-    RowBasisB[k] = Dense(get_n_rows(A.get_row_basis(0)), get_n_cols(BH(0, k)));
+    RowBasisB[k] = Dense(get_n_rows(A.get_row_basis(0)), B.dim[1]);
   }
   // Loop over columns of output
   // Put together shared RowBasis and column of B once
