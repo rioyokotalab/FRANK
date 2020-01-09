@@ -1,5 +1,5 @@
-#ifndef hicma_operations_randomized_rsvh_h
-#define hicma_operations_randomized_rsvh_h
+#ifndef hicma_operations_randomized_rid_h
+#define hicma_operations_randomized_rid_h
 
 #include "yorel/multi_methods.hpp"
 using yorel::multi_methods::virtual_;
@@ -15,4 +15,4 @@ std::tuple<Dense, Dense, Dense> rid(const Dense&, int sample_size, int rank);
 
 } // namespace hicma
 
-#endif // hicma_operations_randomized_rsvh_h
+#endif // hicma_operations_randomized_rid_h
