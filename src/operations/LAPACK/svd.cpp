@@ -27,10 +27,10 @@ std::tuple<Dense, Dense, Dense> svd(Dense& A) {
     LAPACK_ROW_MAJOR,
     'S', 'S',
     A.dim[0], A.dim[1],
-    &A, A.dim[1],
+    &A, A.stride,
     &Sdiag,
-    &U, U.dim[1],
-    &V, V.dim[1],
+    &U, U.stride,
+    &V, V.stride,
     &work
   );
   Dense S(dim_min, dim_min);
@@ -53,10 +53,10 @@ std::tuple<Dense, Dense, Dense> sdd(Dense& A) {
     LAPACK_ROW_MAJOR,
     'S',
     A.dim[0], A.dim[1],
-    &A, A.dim[1],
+    &A, A.stride,
     &Sdiag,
-    &U, U.dim[1],
-    &V, V.dim[1]
+    &U, U.stride,
+    &V, V.stride
   );
   Dense S(dim_min, dim_min);
   for(int i=0; i<dim_min; i++){
@@ -74,10 +74,10 @@ Dense get_singular_values(Dense& A) {
     LAPACK_ROW_MAJOR,
     'N', 'N',
     A.dim[0], A.dim[1],
-    &A, A.dim[1],
+    &A, A.stride,
     &Sdiag,
-    &work, A.dim[0],
-    &work, A.dim[1],
+    &work, A.stride,
+    &work, A.stride,
     &work
   );
   return Sdiag;

@@ -34,9 +34,9 @@ BEGIN_SPECIALIZATION(
     LAPACK_ROW_MAJOR,
     'L', (trans ? 'T' : 'N'), 'F', 'C',
     C.dim[0], C.dim[1], T.dim[1],
-    &V, V.dim[1],
-    &T, T.dim[1],
-    &C, C.dim[1]
+    &V, V.stride,
+    &T, T.stride,
+    &C, C.stride
   );
 } END_SPECIALIZATION;
 

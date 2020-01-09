@@ -36,7 +36,7 @@ BEGIN_SPECIALIZATION(
   LAPACKE_dgeqp3(
     LAPACK_ROW_MAJOR,
     A.dim[0], A.dim[1],
-    &A, A.dim[1],
+    &A, A.stride,
     &jpvt[0], &tau[0]
   );
   // jpvt is 1-based, bad for indexing!
