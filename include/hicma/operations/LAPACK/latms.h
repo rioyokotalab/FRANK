@@ -13,20 +13,17 @@ namespace hicma
   class Dense;
 
   void latms(
-             const int& m,
-             const int& n,
-             const char& dist,
-             std::vector<int>& iseed,
-             const char& sym,
-             std::vector<double>& d,
-             const int& mode,
-             const double& cond,
-             const double& dmax,
-             const int& kl,
-             const int& ku,
-             const char& pack,
-             Dense& A
-             );
+    const char& dist,
+    std::vector<int>& iseed,
+    const char& sym,
+    std::vector<double>& d,
+    int mode,
+    double cond,
+    double dmax,
+    int kl, int ku,
+    const char& pack,
+    Dense& A
+  );
 
 } // namespace hicma
 

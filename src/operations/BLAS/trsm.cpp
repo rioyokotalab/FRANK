@@ -88,8 +88,8 @@ BEGIN_SPECIALIZATION(
       CblasNoTrans, CblasUnit,
       B.dim[0], B.dim[1],
       1,
-      &A[0], A.dim[1],
-      &B[0], B.dim[1]
+      &A, A.dim[1],
+      &B, B.dim[1]
     );
     break;
   case 'u' :
@@ -99,8 +99,8 @@ BEGIN_SPECIALIZATION(
       CblasNoTrans, CblasNonUnit,
       B.dim[0], B.dim[1],
       1,
-      &A[0], A.dim[1],
-      &B[0], B.dim[1]
+      &A, A.dim[1],
+      &B, B.dim[1]
     );
     break;
   default :

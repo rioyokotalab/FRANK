@@ -55,10 +55,10 @@ BEGIN_SPECIALIZATION(
       CblasNoTrans,
       A.dim[0], A.dim[1],
       alpha,
-      &A[0], A.dim[1],
-      &B[0], 1,
+      &A, A.dim[1],
+      &B, 1,
       beta,
-      &C[0], 1
+      &C, 1
     );
   }
   else {
@@ -68,10 +68,10 @@ BEGIN_SPECIALIZATION(
       TransA?CblasTrans:CblasNoTrans, TransB?CblasTrans:CblasNoTrans,
       C.dim[0], C.dim[1], k,
       alpha,
-      &A[0], A.dim[1],
-      &B[0], B.dim[1],
+      &A, A.dim[1],
+      &B, B.dim[1],
       beta,
-      &C[0], C.dim[1]
+      &C, C.dim[1]
     );
   }
   stop("-DGEMM",false);

@@ -38,10 +38,10 @@ BEGIN_SPECIALIZATION(
     LAPACK_ROW_MAJOR,
     'L', (trans ? 'T': 'N'), 'F', 'C',
     B.dim[0], B.dim[1], T.dim[1], 0,
-    &V[0], V.dim[1],
-    &T[0], T.dim[1],
-    &A[0], A.dim[1],
-    &B[0], B.dim[1]
+    &V, V.dim[1],
+    &T, T.dim[1],
+    &A, A.dim[1],
+    &B, B.dim[1]
   );
 } END_SPECIALIZATION;
 

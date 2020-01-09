@@ -65,7 +65,7 @@ namespace hicma
     int k = std::min(A.dim[0], A.dim[1]);
     std::vector<double> tau(k);
     for(int i=0; i<std::min(Q.dim[0], Q.dim[1]); i++) Q(i, i) = 1.0;
-    LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, A.dim[0], A.dim[1], &A[0], A.dim[1], &tau[0]);
+    LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, A.dim[0], A.dim[1], &A, A.dim[1], &tau[0]);
     for(int i=0; i<A.dim[0]; i++) {
       for(int j=0; j<A.dim[1]; j++) {
         if(j>=i)
@@ -79,7 +79,7 @@ namespace hicma
     // Alternatively, create Dense deriative that remains in elementary
     // reflector form, uses dormqr instead of gemm and can be transformed to
     // Dense via dorgqr!
-    LAPACKE_dorgqr(LAPACK_ROW_MAJOR, Q.dim[0], Q.dim[1], k, &Q[0], Q.dim[1], &tau[0]);
+    LAPACKE_dorgqr(LAPACK_ROW_MAJOR, Q.dim[0], Q.dim[1], k, &Q, Q.dim[1], &tau[0]);
   } END_SPECIALIZATION;
 
   BEGIN_SPECIALIZATION(qr_omm, void, Hierarchical& A, Hierarchical& Q, Hierarchical& R) {

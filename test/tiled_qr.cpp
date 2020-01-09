@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
     std::vector<double> d(N, 0.0); //Singular values to be used
     int mode = 1; //See docs
     Dense _DA(N, N);
-    latms(N, N, dist, iseed, sym, d, mode, conditionNumber, dmax, kl, ku, pack, _DA);
+    latms(dist, iseed, sym, d, mode, conditionNumber, dmax, kl, ku, pack, _DA);
     DA = std::move(_DA);
 
     randpts.push_back(equallySpacedVector(N, 0.0, 1.0));

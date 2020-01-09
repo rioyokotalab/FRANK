@@ -29,8 +29,8 @@ BEGIN_SPECIALIZATION(geqrt_omm, void, Dense& A, Dense& T) {
   LAPACKE_dgeqrt3(
     LAPACK_ROW_MAJOR,
     A.dim[0], A.dim[1],
-    &A[0], A.dim[1],
-    &T[0], T.dim[1]
+    &A, A.dim[1],
+    &T, T.dim[1]
   );
 } END_SPECIALIZATION;
 
@@ -66,8 +66,8 @@ void geqrt2(Dense& A, Dense& T) {
   LAPACKE_dgeqrt2(
     LAPACK_ROW_MAJOR,
     A.dim[0], A.dim[1],
-    &A[0], A.dim[1],
-    &T[0], T.dim[1]
+    &A, A.dim[1],
+    &T, T.dim[1]
   );
 }
 

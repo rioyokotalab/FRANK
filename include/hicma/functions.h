@@ -33,13 +33,6 @@ void random_uniform(
   int i_begin, int j_begin
 );
 
-void latms(
-  std::vector<double>& data,
-  std::vector<double>& x,
-  int ni, int nj,
-  int i_begin, int j_begin
-);
-
 void arange(
   std::vector<double>& data,
   std::vector<double>& x,

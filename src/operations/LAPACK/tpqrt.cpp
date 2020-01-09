@@ -33,9 +33,9 @@ BEGIN_SPECIALIZATION(
   LAPACKE_dtpqrt2(
     LAPACK_ROW_MAJOR,
     B.dim[0], B.dim[1], 0,
-    &A[0], A.dim[1],
-    &B[0], B.dim[1],
-    &T[0], T.dim[1]
+    &A, A.dim[1],
+    &B, B.dim[1],
+    &T, T.dim[1]
   );
 } END_SPECIALIZATION;
 

@@ -117,6 +117,10 @@ namespace hicma {
 
     const double& operator()(int i, int j) const;
 
+    double* operator&();
+
+    const double* operator&() const;
+
     // Utility methods
     int size() const;
 

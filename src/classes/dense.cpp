@@ -210,6 +210,14 @@ namespace hicma {
     return data[i*dim[1]+j];
   }
 
+  double* Dense::operator&() {
+    return &data[0];
+  }
+
+  const double* Dense::operator&() const {
+    return &data[0];
+  }
+
   int Dense::size() const {
     return dim[0] * dim[1];
   }
