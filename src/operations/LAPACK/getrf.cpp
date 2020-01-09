@@ -54,7 +54,7 @@ BEGIN_SPECIALIZATION(getrf_omm, NodePair, Dense& A) {
     &A, A.stride,
     &ipiv[0]
   );
-  Dense L(A, true);
+  Dense L(A.dim[0], A.dim[1]);
   for (int i=0; i<A.dim[0]; i++) {
     for (int j=0; j<i; j++) {
       L(i, j) = A(i, j);

@@ -133,8 +133,7 @@ BEGIN_SPECIALIZATION(
   const Hierarchical& A, Dense& B,
   const char& uplo, bool left
 ) {
-  // TODO This split causes issues when using TRSM with vector!
-  Hierarchical BH(B, left?A.dim[0]:1, left?1:A.dim[1]);
+  NoCopySplit BH(B, left?A.dim[0]:1, left?1:A.dim[1]);
   switch (uplo) {
   case 'l' :
     trsm(A, BH, uplo, left);
@@ -146,7 +145,6 @@ BEGIN_SPECIALIZATION(
     std::cerr << "Second argument must be 'l' for lower, 'u' for upper." << std::endl;
     abort();
   }
-  B = Dense(BH);
 } END_SPECIALIZATION;
 
 // Fallback default, abort with error message

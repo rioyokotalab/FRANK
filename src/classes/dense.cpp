@@ -58,9 +58,7 @@ namespace hicma {
   Dense::Dense(const Node& A, bool only_node)
   : Node(A), dim{A.row_range.length, A.col_range.length}, stride(dim[1]) {
     MM_INIT();
-    if (only_node) {
-      data.resize(dim[0]*dim[1], 0);
-    } else {
+    if (!only_node) {
       *this = make_dense(A);
     }
   }
@@ -93,7 +91,9 @@ namespace hicma {
   ) : Dense(
     Node(i_abs, j_abs, level, IndexRange(0, m), IndexRange(0, n)),
     true
-  ) {}
+  ) {
+    data.resize(dim[0]*dim[1], 0);
+  }
 
   Dense::Dense(
     const Node& node,
@@ -279,6 +279,7 @@ namespace hicma {
   Dense Dense::get_part(const Node& node) const {
     assert(is_child(node));
     Dense A(node, true);
+    A.data.resize(A.dim[0]*A.dim[1]);
     int rel_row_begin = A.row_range.start - row_range.start;
     int rel_col_begin = A.col_range.start - col_range.start;
     for (int i=0; i<A.dim[0]; i++) {
@@ -328,5 +329,103 @@ namespace hicma {
     std::cout << "Cannot create Dense from " << A.type() << "!" << std::endl;
     abort();
   } END_SPECIALIZATION;
+
+
+  DenseView::DenseView() : Dense() { MM_INIT(); }
+
+  DenseView::~DenseView() = default;
+
+  DenseView::DenseView(const DenseView& A) {
+    MM_INIT();
+    *this = A;
+  }
+  DenseView& DenseView::operator=(const DenseView& A) = default;
+
+  DenseView::DenseView(DenseView&& A) {
+    MM_INIT();
+    *this = std::move(A);
+  }
+
+  DenseView& DenseView::operator=(DenseView&& A) = default;
+
+  std::unique_ptr<Node> DenseView::clone() const {
+    return std::make_unique<DenseView>(*this);
+  }
+
+  std::unique_ptr<Node> DenseView::move_clone() {
+    return std::make_unique<DenseView>(std::move(*this));
+  }
+
+  const char* DenseView::type() const {
+    return "DenseView";
+  }
+
+  double& DenseView::operator[](int i) {
+    assert(dim[0] == 1 || dim[1] == 1);
+    assert(data != nullptr);
+    if (dim[0] == 1) {
+      assert(i < dim[1]);
+      return data[i];
+    } else {
+      assert(i < dim[0]);
+      return data[i*stride];
+    }
+  }
+
+  const double& DenseView::operator[](int i) const {
+    assert(dim[0] == 1 || dim[1] == 1);
+    assert(data != nullptr || const_data != nullptr);
+    if (dim[0] == 1) {
+      assert(i < dim[1]);
+      return data!=nullptr ? data[i] : const_data[i];
+    } else {
+      assert(i < dim[0]);
+      return data!=nullptr ? data[i*stride] : const_data[i*stride];
+    }
+  }
+
+  double& DenseView::operator()(int i, int j) {
+    assert(i < dim[0]);
+    assert(j < dim[1]);
+    assert(data != nullptr);
+    return data[i*stride+j];
+  }
+
+  const double& DenseView::operator()(int i, int j) const {
+    assert(i < dim[0]);
+    assert(j < dim[1]);
+    assert(data != nullptr || const_data != nullptr);
+    return data!=nullptr ? data[i*stride+j] : const_data[i*stride+j];
+  }
+
+  double* DenseView::operator&() {
+    assert(data != nullptr);
+    return data;
+  }
+
+  const double* DenseView::operator&() const {
+    assert(data != nullptr || const_data != nullptr);
+    return data!=nullptr ? data : const_data;
+  }
+
+  DenseView::DenseView(const Node& node, Dense& A)
+  : Dense(node, true) {
+    assert(A.is_child(node));
+    stride = A.stride;
+    int rel_row_begin = node.row_range.start - A.row_range.start;
+    int rel_col_begin = node.col_range.start - A.col_range.start;
+    data = &A(rel_row_begin, rel_col_begin);
+    const_data = &A(rel_row_begin, rel_col_begin);
+  }
+
+  DenseView::DenseView(const Node& node, const Dense& A)
+  : Dense(node, true) {
+    assert(A.is_child(node));
+    stride = A.stride;
+    int rel_row_begin = node.row_range.start - A.row_range.start;
+    int rel_col_begin = node.col_range.start - A.col_range.start;
+    data = nullptr;
+    const_data = &A(rel_row_begin, rel_col_begin);
+  }
 
 } // namespace hicma

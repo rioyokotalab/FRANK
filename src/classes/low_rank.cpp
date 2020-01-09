@@ -85,24 +85,18 @@ namespace hicma {
     int N = A.dim[trans?1:0];
     int Arank = A.dim[trans?0:1];
     int Brank = B.dim[trans?0:1];
-    Dense AB(Arank, Brank);
-    gemm(A, B, AB, !trans, trans, 1, 0);
+    assert(Arank == Brank);
 
-    Dense AAB(N, Brank);
-    gemm(A, AB, AAB, trans, false, 1, 0);
+    Dense Inner(Arank+Brank, Brank);
+    NoCopySplit InnerH(Inner, 2, 1);
 
-    Dense B_AAB(N, Brank);
-    B_AAB = (trans ? B.transpose(): B) - AAB;
+    gemm(A, B, InnerH[0], !trans, trans, 1, 0);
+
+    Dense B_AAB(trans ? B.transpose(): B);
+    gemm(A, InnerH[0], B_AAB, trans, false, -1, 1);
 
     Dense Q(N, Brank);
-    Dense R(Brank, Brank);
-    qr(B_AAB, Q, R);
-
-    // Some copies can be avoided here once H(D) w/o copies exists
-    Hierarchical InnerH(2, 1);
-    InnerH[0] = std::move(AB);
-    InnerH[1] = std::move(R);
-    Dense Inner(InnerH);
+    qr(B_AAB, Q, InnerH[1]);
 
     if (trans) Q.transpose();
     return {std::move(Q), std::move(Inner)};

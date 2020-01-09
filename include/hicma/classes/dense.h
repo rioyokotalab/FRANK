@@ -26,7 +26,7 @@ namespace hicma {
     // Special member functions
     Dense();
 
-    ~Dense();
+    virtual ~Dense();
 
     Dense(const Dense& A);
 
@@ -37,11 +37,11 @@ namespace hicma {
     Dense& operator=(Dense&& A);
 
     // Overridden functions from Node
-    std::unique_ptr<Node> clone() const override;
+    virtual std::unique_ptr<Node> clone() const override;
 
-    std::unique_ptr<Node> move_clone() override;
+    virtual std::unique_ptr<Node> move_clone() override;
 
-    const char* type() const override;
+    virtual const char* type() const override;
 
     // Explicit conversions using multiple-dispatch function.
     explicit Dense(const Node& A, bool only_node=false);
@@ -100,17 +100,17 @@ namespace hicma {
 
     const Dense& operator*=(const double);
 
-    double& operator[](int i);
+    virtual double& operator[](int i);
 
-    const double& operator[](int i) const;
+    virtual const double& operator[](int i) const;
 
-    double& operator()(int i, int j);
+    virtual double& operator()(int i, int j);
 
-    const double& operator()(int i, int j) const;
+    virtual const double& operator()(int i, int j) const;
 
-    double* operator&();
+    virtual double* operator&();
 
-    const double* operator&() const;
+    virtual const double* operator&() const;
 
     // Utility methods
     int size() const;
@@ -127,6 +127,57 @@ namespace hicma {
   };
 
   MULTI_METHOD(make_dense, Dense, const virtual_<Node>&);
+
+  class DenseView : public Dense {
+  private:
+    double* data;
+    const double* const_data;
+  public:
+    MM_CLASS(DenseView, Dense);
+
+    // Special member functions
+    DenseView();
+
+    ~DenseView();
+
+    DenseView(const DenseView& A);
+
+    DenseView& operator=(const DenseView& A);
+
+    DenseView(DenseView&& A);
+
+    DenseView& operator=(DenseView&& A);
+
+    // Overridden functions from Node
+    std::unique_ptr<Node> clone() const override;
+
+    std::unique_ptr<Node> move_clone() override;
+
+    const char* type() const override;
+
+    // Additional constructors
+    DenseView(const Node& node, Dense& A);
+
+    DenseView(const Node& node, const Dense& A);
+
+    // Overridden operators
+    double& operator[](int i) override;
+
+    const double& operator[](int i) const override;
+
+    double& operator()(int i, int j) override;
+
+    const double& operator()(int i, int j) const override;
+
+    double* operator&() override;
+
+    const double* operator&() const override;
+
+    // Delete methods that cannot be used from Dense
+    void tranpose() = delete;
+
+    void resize(int dim0, int dim1) = delete;
+  };
 
 } // namespace hicma
 

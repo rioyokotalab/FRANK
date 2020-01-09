@@ -227,6 +227,16 @@ BEGIN_SPECIALIZATION(
 
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
+  const Dense& A, const Dense& B, Hierarchical& C,
+  double alpha, double beta
+) {
+  NoCopySplit AH(A, C.dim[0], 1);
+  NoCopySplit BH(B, 1, C.dim[1]);
+  gemm(AH, BH, C, alpha, beta);
+} END_SPECIALIZATION;
+
+BEGIN_SPECIALIZATION(
+  gemm_omm, void,
   const Node& A, const Node& B, Hierarchical& C,
   double alpha, double beta
 ) {
@@ -237,12 +247,32 @@ BEGIN_SPECIALIZATION(
 
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
+  const Hierarchical& A, const Dense& B, Hierarchical& C,
+  double alpha, double beta
+) {
+  assert(A.dim[0] == C.dim[0]);
+  NoCopySplit BH(B, A.dim[1], C.dim[1]);
+  gemm(A, BH, C, alpha, beta);
+} END_SPECIALIZATION;
+
+BEGIN_SPECIALIZATION(
+  gemm_omm, void,
   const Hierarchical& A, const Node& B, Hierarchical& C,
   double alpha, double beta
 ) {
   assert(A.dim[0] == C.dim[0]);
   Hierarchical BH(B, A.dim[1], C.dim[1]);
   gemm(A, BH, C, alpha, beta);
+} END_SPECIALIZATION;
+
+BEGIN_SPECIALIZATION(
+  gemm_omm, void,
+  const Dense& A, const Hierarchical& B, Hierarchical& C,
+  double alpha, double beta
+) {
+  assert(B.dim[1] == C.dim[1]);
+  NoCopySplit AH(A, C.dim[0], B.dim[0]);
+  gemm(AH, B, C, alpha, beta);
 } END_SPECIALIZATION;
 
 BEGIN_SPECIALIZATION(
@@ -298,12 +328,21 @@ BEGIN_SPECIALIZATION(
 
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
+  const Hierarchical& A, const Hierarchical& B, Dense& C,
+  double alpha, double beta
+) {
+  assert(A.dim[1] == B.dim[0]);
+  NoCopySplit CH(C, A.dim[0], B.dim[1]);
+  gemm(A, B, CH, alpha, beta);
+} END_SPECIALIZATION;
+
+BEGIN_SPECIALIZATION(
+  gemm_omm, void,
   const Node& A, const Hierarchical& B, Dense& C,
   double alpha, double beta
 ) {
-  Hierarchical CH(C, 1, B.dim[1]);
+  NoCopySplit CH(C, 1, B.dim[1]);
   gemm(A, B, CH, alpha, beta);
-  C = Dense(CH);
 } END_SPECIALIZATION;
 
 BEGIN_SPECIALIZATION(
@@ -311,20 +350,8 @@ BEGIN_SPECIALIZATION(
   const Hierarchical& A, const Node& B, Dense& C,
   double alpha, double beta
 ) {
-  Hierarchical CH(C, A.dim[0], 1);
+  NoCopySplit CH(C, A.dim[0], 1);
   gemm(A, B, CH, alpha, beta);
-  C = Dense(CH);
-} END_SPECIALIZATION;
-
-BEGIN_SPECIALIZATION(
-  gemm_omm, void,
-  const Hierarchical& A, const Hierarchical& B, Dense& C,
-  double alpha, double beta
-) {
-  assert(A.dim[1] == B.dim[0]);
-  Hierarchical CH(C, A.dim[0], B.dim[1]);
-  gemm(A, B, CH, alpha, beta);
-  C = Dense(CH);
 } END_SPECIALIZATION;
 
 BEGIN_SPECIALIZATION(
@@ -477,9 +504,8 @@ BEGIN_SPECIALIZATION(
   double alpha, double beta
 ) {
   C *= beta;
-  // TODO This still copies! Consider making "SplitDenseReference" class
-  Hierarchical CH(C, A.dim[0], A.dim[1]);
-  Hierarchical BH(B, A.dim[1], A.dim[1]);
+  NoCopySplit CH(C, A.dim[0], A.dim[1]);
+  NoCopySplit BH(B, A.dim[1], A.dim[1]);
   // This function causes the recursion
   gemm_regular_only(A, BH, CH, alpha, 1);
   Hierarchical RowBasisB(1, A.dim[1]);
@@ -511,7 +537,6 @@ BEGIN_SPECIALIZATION(
       }
     }
   }
-  C = Dense(CH);
 } END_SPECIALIZATION;
 
 // Fallback default, abort with error message

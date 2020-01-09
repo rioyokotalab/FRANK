@@ -64,6 +64,7 @@ BEGIN_SPECIALIZATION(
   // First case applies also when A.dim[1] > A.dim[0] end k == A.dim[0]
   if (k < std::min(A.dim[0], A.dim[1]) || A.dim[1] > A.dim[0]) {
     Dense R11, T;
+    // TODO Find more abstract way for this. NoCopySplit with designed subnodes?
     std::tie(R11, T) = get_R11_R12(R, k);
     trsm(R11, T, 'u');
     B = interleave_id(T, P);

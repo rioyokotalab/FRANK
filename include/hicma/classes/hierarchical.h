@@ -26,7 +26,7 @@ namespace hicma {
     // Special member functions
     Hierarchical();
 
-    ~Hierarchical();
+    virtual ~Hierarchical();
 
     Hierarchical(const Hierarchical& A);
 
@@ -37,11 +37,11 @@ namespace hicma {
     Hierarchical& operator=(Hierarchical&& A);
 
     // Overridden functions from Node
-    std::unique_ptr<Node> clone() const override;
+    virtual std::unique_ptr<Node> clone() const override;
 
-    std::unique_ptr<Node> move_clone() override;
+    virtual std::unique_ptr<Node> move_clone() override;
 
-    const char* type() const override;
+    virtual const char* type() const override;
 
     // Conversion constructors
     Hierarchical(NodeProxy&&);
@@ -115,11 +115,53 @@ namespace hicma {
     std::tuple<int, int> get_rel_pos_child(const Node& node);
   };
 
-  Hierarchical make_hierarchical(
-    const Node& A, int ni_level, int nj_level);
+  Hierarchical make_hierarchical(const Node& A, int ni_level, int nj_level);
 
   MULTI_METHOD(
     make_hierarchical_omm, Hierarchical,
+    const virtual_<Node>&, int ni_level, int nj_level
+  );
+
+  class NoCopySplit : public Hierarchical {
+  public:
+    MM_CLASS(NoCopySplit, Hierarchical);
+    // Special member functions
+    NoCopySplit();
+
+    ~NoCopySplit();
+
+    NoCopySplit(const NoCopySplit& A);
+
+    NoCopySplit& operator=(const NoCopySplit& A);
+
+    NoCopySplit(NoCopySplit&& A);
+
+    NoCopySplit& operator=(NoCopySplit&& A);
+
+    // Overridden functions from Node
+    std::unique_ptr<Node> clone() const override;
+
+    std::unique_ptr<Node> move_clone() override;
+
+    const char* type() const override;
+
+    // Additional constructors
+    NoCopySplit(Node&, int ni_level, int nj_level, bool node_only=false);
+
+    NoCopySplit(const Node&, int ni_level, int nj_level, bool node_only=false);
+  };
+
+  NoCopySplit make_no_copy_split(Node& A, int ni_level, int nj_level);
+
+  NoCopySplit make_no_copy_split(const Node& A, int ni_level, int nj_level);
+
+  MULTI_METHOD(
+    make_no_copy_split_omm, NoCopySplit,
+    virtual_<Node>&, int ni_level, int nj_level
+  );
+
+  MULTI_METHOD(
+    make_no_copy_split_const_omm, NoCopySplit,
     const virtual_<Node>&, int ni_level, int nj_level
   );
 
