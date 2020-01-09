@@ -65,7 +65,7 @@ BEGIN_SPECIALIZATION(
   int k
 ) {
   assert(k <= std::min(A.dim[0], A.dim[1]));
-  Dense R(A.dim[0], A.dim[1]);
+  Dense R(A.dim[1], A.dim[1]);
   std::vector<int> P = geqp3(A, R);
   // First case applies also when A.dim[1] > A.dim[0] end k == A.dim[0]
   if (k < std::min(A.dim[0], A.dim[1]) || A.dim[1] > A.dim[0]) {
@@ -90,6 +90,51 @@ BEGIN_SPECIALIZATION(
 ) {
   std::cerr << "id(";
   std::cerr << A.type() << "," << B.type();
+  std::cerr << ") undefined." << std::endl;
+  abort();
+} END_SPECIALIZATION;
+
+
+std::tuple<Dense, Dense, Dense> two_sided_id(Node& A, int k) {
+  return two_sided_id_omm(A, k);
+}
+
+Dense get_cols(const Dense& A, std::vector<int> Pr) {
+  Dense B(A.dim[0], Pr.size());
+  for (int j=0; j<Pr.size(); ++j) {
+    for (int i=0; i<A.dim[0]; ++i) {
+      B(i, j) = A(i, Pr[j]);
+    }
+  }
+  return B;
+}
+
+// Fallback default, abort with error message
+BEGIN_SPECIALIZATION(
+  two_sided_id_omm, dense_triplet,
+  Dense& A, int k
+) {
+  Dense V(k, A.dim[1]);
+  Dense Awork(A);
+  std::vector<int> selected_cols = id(Awork, V, k);
+  Dense AC = get_cols(A, selected_cols);
+  Dense U(k, A.dim[0]);
+  AC.transpose();
+  Dense ACwork(AC);
+  selected_cols = id(ACwork, U, k);
+  A = get_cols(AC, selected_cols);
+  U.transpose();
+  A.transpose();
+  return {std::move(U), std::move(A), std::move(V)};
+} END_SPECIALIZATION;
+
+// Fallback default, abort with error message
+BEGIN_SPECIALIZATION(
+  two_sided_id_omm, dense_triplet,
+  Node& A, int k
+) {
+  std::cerr << "id(";
+  std::cerr << A.type();
   std::cerr << ") undefined." << std::endl;
   abort();
 } END_SPECIALIZATION;

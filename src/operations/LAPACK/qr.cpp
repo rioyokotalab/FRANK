@@ -76,6 +76,9 @@ namespace hicma
     }
     // TODO Consider making special function for this. Performance heavy
     // and not always needed. If Q should be applied to something, use directly!
+    // Alternatively, create Dense deriative that remains in elementary
+    // reflector form, uses dormqr instead of gemm and can be transformed to
+    // Dense via dorgqr!
     LAPACKE_dorgqr(LAPACK_ROW_MAJOR, Q.dim[0], Q.dim[1], k, &Q[0], Q.dim[1], &tau[0]);
   } END_SPECIALIZATION;
 
