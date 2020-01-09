@@ -338,20 +338,32 @@ BEGIN_SPECIALIZATION(
 
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
-  const Node& A, const Hierarchical& B, Dense& C,
+  const Dense& A, const Hierarchical& B, Dense& C,
   double alpha, double beta
 ) {
+  NoCopySplit AH(A, 1, B.dim[0]);
   NoCopySplit CH(C, 1, B.dim[1]);
-  gemm(A, B, CH, alpha, beta);
+  gemm(AH, B, CH, alpha, beta);
 } END_SPECIALIZATION;
 
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
-  const Hierarchical& A, const Node& B, Dense& C,
+  const Node& A, const Hierarchical& B, Node& C,
   double alpha, double beta
 ) {
+  Hierarchical AH(A, 1, B.dim[0]);
+  Hierarchical CH(C, 1, B.dim[1]);
+  gemm(AH, B, CH, alpha, beta);
+} END_SPECIALIZATION;
+
+BEGIN_SPECIALIZATION(
+  gemm_omm, void,
+  const Hierarchical& A, const Dense& B, Dense& C,
+  double alpha, double beta
+) {
+  NoCopySplit BH(B, A.dim[1], 1);
   NoCopySplit CH(C, A.dim[0], 1);
-  gemm(A, B, CH, alpha, beta);
+  gemm(A, BH, CH, alpha, beta);
 } END_SPECIALIZATION;
 
 BEGIN_SPECIALIZATION(
