@@ -31,6 +31,8 @@ namespace hicma {
     Node& operator=(Node&& A);
 
     // Virtual functions for inheritance
+    // TODO Consider moving these three into multi-methods.
+    // That would make inheritance a pure formality (which is good)
     virtual std::unique_ptr<Node> clone() const;
 
     virtual std::unique_ptr<Node> move_clone();
