@@ -22,7 +22,7 @@ using yorel::multi_methods::virtual_;
 
 namespace hicma {
 
-  Dense::Dense() : dim{0, 0} { MM_INIT(); }
+  Dense::Dense() : dim{0, 0}, stride(dim[1]) { MM_INIT(); }
 
   Dense::~Dense() = default;
 
@@ -40,7 +40,7 @@ namespace hicma {
 
   Dense& Dense::operator=(Dense&& A) = default;
 
-  Dense::Dense(int m) : dim{m, 1} {
+  Dense::Dense(int m) : dim{m, 1}, stride(dim[1]) {
     MM_INIT();
     data.resize(dim[0], 0);
   }
@@ -56,7 +56,7 @@ namespace hicma {
   const char* Dense::type() const { return "Dense"; }
 
   Dense::Dense(const Node& A, bool only_node)
-  : Node(A), dim{A.row_range.length, A.col_range.length} {
+  : Node(A), dim{A.row_range.length, A.col_range.length}, stride(dim[1]) {
     MM_INIT();
     if (only_node) {
       data.resize(dim[0]*dim[1], 0);
@@ -104,7 +104,7 @@ namespace hicma {
       int i_begin, int j_begin
     ),
     std::vector<double>& x
-  ) : Node(node), dim{node.row_range.length, node.col_range.length} {
+  ) : Node(node), dim{node.row_range.length, node.col_range.length}, stride(dim[1]) {
     MM_INIT();
     data.resize(dim[0]*dim[1]);
     func(data, x, dim[0], dim[1], row_range.start, col_range.start);
@@ -146,8 +146,11 @@ namespace hicma {
   }
 
   const Dense& Dense::operator=(const double a) {
-    for (int i=0; i<dim[0]*dim[1]; i++)
-      data[i] = a;
+    for (int i=0; i<dim[0]; i++) {
+      for (int j=0; j<dim[1]; j++) {
+        (*this)(i, j) = a;
+      }
+    }
     return *this;
   }
 
@@ -166,8 +169,10 @@ namespace hicma {
   const Dense& Dense::operator+=(const Dense& A) {
     assert(dim[0] == A.dim[0]);
     assert(dim[1] == A.dim[1]);
-    for (int i=0; i<dim[0]*dim[1]; i++) {
-      (*this)[i] += A[i];
+    for (int i=0; i<dim[0]; i++) {
+      for (int j=0; j<dim[1]; j++) {
+        (*this)(i, j) += A(i, j);
+      }
     }
     return *this;
   }
@@ -175,39 +180,55 @@ namespace hicma {
   const Dense& Dense::operator-=(const Dense& A) {
     assert(dim[0] == A.dim[0]);
     assert(dim[1] == A.dim[1]);
-    for (int i=0; i<dim[0]*dim[1]; i++) {
-      (*this)[i] -= A[i];
+    for (int i=0; i<dim[0]; i++) {
+      for (int j=0; j<dim[1]; j++) {
+        (*this)(i, j) -= A(i, j);
+      }
     }
     return *this;
   }
 
   const Dense& Dense::operator*=(const double a) {
-    for (int i=0; i<dim[0]*dim[1]; i++) {
-      (*this)[i] *= a;
+    for (int i=0; i<dim[0]; i++) {
+      for (int j=0; j<dim[1]; j++) {
+        (*this)(i, j) *= a;
+      }
     }
     return *this;
   }
 
   double& Dense::operator[](int i) {
-    assert(i < dim[0]*dim[1]);
-    return data[i];
+    assert(dim[0] == 1 || dim[1] == 1);
+    if (dim[0] == 1) {
+      assert(i < dim[1]);
+      return data[i];
+    } else {
+      assert(i < dim[0]);
+      return data[i*stride];
+    }
   }
 
   const double& Dense::operator[](int i) const {
-    assert(i < dim[0]*dim[1]);
-    return data[i];
+    assert(dim[0] == 1 || dim[1] == 1);
+    if (dim[0] == 1) {
+      assert(i < dim[1]);
+      return data[i];
+    } else {
+      assert(i < dim[0]);
+      return data[i*stride];
+    }
   }
 
   double& Dense::operator()(int i, int j) {
     assert(i < dim[0]);
     assert(j < dim[1]);
-    return data[i*dim[1]+j];
+    return data[i*stride+j];
   }
 
   const double& Dense::operator()(int i, int j) const {
     assert(i < dim[0]);
     assert(j < dim[1]);
-    return data[i*dim[1]+j];
+    return data[i*stride+j];
   }
 
   double* Dense::operator&() {
@@ -228,13 +249,18 @@ namespace hicma {
     if (dim0 == dim[0] && dim1 == dim[1]) return;
     for (int i=0; i<dim0; i++) {
       for (int j=0; j<dim1; j++) {
-        data[i*dim1+j] = data[i*dim[1]+j];
+        // TODO this is the only place where data is used directly now. Would be
+        // better not to use it and somehow use the regular index operator
+        // efficiently.
+        data[i*dim1+j] = (*this)(i, j);
       }
     }
     row_range.length = dim0;
     col_range.length = dim1;
     dim[0] = dim0;
     dim[1] = dim1;
+    stride = dim[1];
+    data.resize(dim[0]*dim[1]);
   }
 
   Dense Dense::transpose() const {
@@ -248,12 +274,14 @@ namespace hicma {
   }
 
   void Dense::transpose() {
-    std::vector<double> _data(data);
+    assert(stride = dim[1]);
+    Dense Copy(*this);
     std::swap(dim[0], dim[1]);
+    stride = dim[1];
     std::swap(row_range, col_range);
     for(int i=0; i<dim[0]; i++) {
       for(int j=0; j<dim[1]; j++) {
-        data[i*dim[1]+j] = _data[j*dim[0]+i];
+        (*this)(i, j) = Copy(j, i);
       }
     }
   }

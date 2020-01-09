@@ -21,6 +21,7 @@ namespace hicma {
   public:
     MM_CLASS(Dense, Node);
     int dim[2];
+    int stride;
 
     // Special member functions
     Dense();
