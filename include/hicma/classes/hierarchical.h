@@ -58,12 +58,7 @@ namespace hicma {
 
     Hierarchical(
       const Node& node,
-      void (*func)(
-        std::vector<double>& data,
-        std::vector<double>& x,
-        int ni, int nj,
-        int i_begin, int j_begin
-      ),
+      void (*func)(Dense& A, std::vector<double>& x),
       std::vector<double>& x,
       int rank,
       int nleaf,
@@ -72,12 +67,7 @@ namespace hicma {
     );
 
     Hierarchical(
-      void (*func)(
-        std::vector<double>& data,
-        std::vector<double>& x,
-        int ni, int nj,
-        int i_begin, int j_begin
-      ),
+      void (*func)(Dense& A, std::vector<double>& x),
       std::vector<double>& x,
       int ni, int nj,
       int rank,

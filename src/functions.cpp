@@ -1,5 +1,6 @@
 #include "hicma/functions.h"
 
+#include "hicma/classes/dense.h"
 #include "hicma/operations/misc/misc.h"
 
 #include <cmath>
@@ -10,85 +11,73 @@
 namespace hicma {
 
 void zeros(
-  std::vector<double>& data,
-  std::vector<double>& x,
-  int ni, int nj,
-  int i_begin, int j_begin
+  Dense& A,
+  std::vector<double>& x
 ) {
-  for (int i=0; i<ni; i++) {
-    for (int j=0; j<nj; j++) {
-      data[i*nj+j] = 0;
+  for (int i=0; i<A.dim[0]; i++) {
+    for (int j=0; j<A.dim[1]; j++) {
+      A(i, j) = 0;
     }
   }
 }
 
 void identity(
-  std::vector<double>& data,
-  std::vector<double>& x,
-  int ni, int nj,
-  int i_begin, int j_begin
+  Dense& A,
+  std::vector<double>& x
 ) {
-  for (int i=0; i<ni; i++) {
-    for (int j=0; j<nj; j++) {
-      data[i*nj+j] = i_begin+i == j_begin+j ? 1 : 0;
+  for (int i=0; i<A.dim[0]; i++) {
+    for (int j=0; j<A.dim[1]; j++) {
+      A(i, j) = A.row_range.start+i == A.col_range.start+j ? 1 : 0;
     }
   }
 }
 
 void random_normal(
-  std::vector<double>& data,
-  std::vector<double>& x,
-  int ni, int nj,
-  int i_begin, int j_begin
+  Dense& A,
+  std::vector<double>& x
 ) {
   std::random_device rd;
   std::mt19937 mt(rd());
   std::normal_distribution<double> dist(0.0, 1.0);
-  for (int i=0; i<ni; i++) {
-    for (int j=0; j<nj; j++) {
-      data[i*nj+j] = dist(mt);
+  for (int i=0; i<A.dim[0]; i++) {
+    for (int j=0; j<A.dim[1]; j++) {
+      A(i, j) = dist(mt);
     }
   }
 }
 
 void random_uniform(
-  std::vector<double>& data,
-  std::vector<double>& x,
-  int ni, int nj,
-  int i_begin, int j_begin
+  Dense& A,
+  std::vector<double>& x
 ) {
   std::random_device rd;
   std::mt19937 mt(rd());
   std::uniform_real_distribution<double> dist(0.0, 1.0);
-  for (int i=0; i<ni; i++) {
-    for (int j=0; j<nj; j++) {
-      data[i*nj+j] = dist(mt);
+  for (int i=0; i<A.dim[0]; i++) {
+    for (int j=0; j<A.dim[1]; j++) {
+      A(i, j) = dist(mt);
     }
   }
 }
 
 void arange(
-  std::vector<double>& data,
-  std::vector<double>& x,
-  int ni, int nj,
-  int i_begin, int j_begin
+  Dense& A,
+  std::vector<double>& x
 ) {
-  for (int i=0; i<ni; i++) {
-    for (int j=0; j<nj; j++) {
-      data[i*nj+j] = (double)(i*nj+j);
+  for (int i=0; i<A.dim[0]; i++) {
+    for (int j=0; j<A.dim[1]; j++) {
+      A(i, j) = (double)(i*A.dim[1]+j);
     }
   }
 }
 
 void laplace1d(
-  std::vector<double>& data,
-  std::vector<double>& x,
-  int ni, int nj,
-  int i_begin, int j_begin
+  Dense& A,
+  std::vector<double>& x
 ) {
-  for (int i=0; i<ni; i++) {
-    for (int j=0; j<nj; j++) {
-      data[i*nj+j] = 1 / (std::abs(x[i+i_begin] - x[j+j_begin]) + 1e-3);
+  for (int i=0; i<A.dim[0]; i++) {
+    for (int j=0; j<A.dim[1]; j++) {
+      A(i, j) = 1 / (std::abs(x[i+A.row_range.start] - x[j+A.col_range.start]) + 1e-3);
     }
   }
 }

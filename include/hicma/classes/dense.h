@@ -60,22 +60,12 @@ namespace hicma {
 
     Dense(
       const Node& node,
-      void (*func)(
-        std::vector<double>& data,
-        std::vector<double>& x,
-        int ni, int nj,
-        int i_begin, int j_begin
-      ),
+      void (*func)(Dense& A, std::vector<double>& x),
       std::vector<double>& x
     );
 
     Dense(
-      void (*func)(
-        std::vector<double>& data,
-        std::vector<double>& x,
-        int ni, int nj,
-        int i_begin, int j_begin
-      ),
+      void (*func)(Dense& A, std::vector<double>& x),
       std::vector<double>& x,
       int ni, int nj,
       int i_begin=0, int j_begin=0,

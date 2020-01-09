@@ -97,26 +97,16 @@ namespace hicma {
 
   Dense::Dense(
     const Node& node,
-    void (*func)(
-      std::vector<double>& data,
-      std::vector<double>& x,
-      int ni, int nj,
-      int i_begin, int j_begin
-    ),
+    void (*func)(Dense& A, std::vector<double>& x),
     std::vector<double>& x
   ) : Node(node), dim{node.row_range.length, node.col_range.length}, stride(dim[1]) {
     MM_INIT();
     data.resize(dim[0]*dim[1]);
-    func(data, x, dim[0], dim[1], row_range.start, col_range.start);
+    func(*this, x);
   }
 
   Dense::Dense(
-    void (*func)(
-      std::vector<double>& data,
-      std::vector<double>& x,
-      int ni, int nj,
-      int i_begin, int j_begin
-    ),
+    void (*func)(Dense& A, std::vector<double>& x),
     std::vector<double>& x,
     int ni, int nj,
     int i_begin, int j_begin,
@@ -139,7 +129,7 @@ namespace hicma {
     const int i_begin, const int j_begin,
     const int i_abs, const int j_abs,
     const int level
-  ) : Node(i_abs,j_abs,level), dim{ni, nj} {
+  ) : Node(i_abs,j_abs,level), dim{ni, nj}, stride(nj) {
     MM_INIT();
     data.resize(dim[0]*dim[1]);
     func(data, x, ni, nj, i_begin, j_begin);
