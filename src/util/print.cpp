@@ -2,6 +2,7 @@
 #include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
 #include "hicma/classes/low_rank.h"
+#include "hicma/classes/low_rank_shared.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/operations/LAPACK/svd.h"
 
@@ -52,6 +53,25 @@ namespace hicma {
   BEGIN_SPECIALIZATION(
     fillXML_omm, void,
     const LowRank& A, boost::property_tree::ptree& tree
+  ) {
+    Dense AD(A);
+    Dense S = get_singular_values(AD);
+    std::string singular_values = std::to_string(S[0]);
+    for (int i=1; i<A.dim[0]; ++i)
+      singular_values += std::string(",") + std::to_string(S[i]);
+    tree.put("<xmlattr>.type", A.type());
+    tree.put("<xmlattr>.dim0", A.dim[0]);
+    tree.put("<xmlattr>.dim1", A.dim[1]);
+    tree.put("<xmlattr>.i_abs", A.i_abs);
+    tree.put("<xmlattr>.j_abs", A.j_abs);
+    tree.put("<xmlattr>.level", A.level);
+    tree.put("<xmlattr>.rank", A.rank);
+    tree.put("<xmlattr>.svalues", singular_values);
+  } END_SPECIALIZATION;
+
+  BEGIN_SPECIALIZATION(
+    fillXML_omm, void,
+    const LowRankShared& A, boost::property_tree::ptree& tree
   ) {
     Dense AD(A);
     Dense S = get_singular_values(AD);

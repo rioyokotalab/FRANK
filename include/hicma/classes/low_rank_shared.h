@@ -71,6 +71,7 @@ class LowRankShared : public Node {
 
   // Additional construcors
   LowRankShared(
+    const Node& node,
     const Dense& S,
     std::shared_ptr<Dense> U, std::shared_ptr<Dense> V
   );

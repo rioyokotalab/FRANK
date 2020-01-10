@@ -31,6 +31,7 @@ int main(int argc, char const *argv[])
   UniformHierarchical A_svd(
     laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks, true);
   stop("Init matrix SVD");
+  // printXML(A);
   Hierarchical H(
     laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   Hierarchical D(laplace1d, randx, N, N, rank, nleaf, N/nblocks, nblocks, nblocks);

@@ -42,9 +42,10 @@ std::unique_ptr<Node> LowRankShared::move_clone() {
 const char* LowRankShared::type() const { return "LowRankShared"; }
 
 LowRankShared::LowRankShared(
+  const Node& node,
   const Dense& S,
   std::shared_ptr<Dense> U, std::shared_ptr<Dense> V
-) : Node(S), U(U), S(S), V(V), dim{U->dim[0], V->dim[1]}, rank(S.dim[0])
+) : Node(node), U(U), S(S), V(V), dim{U->dim[0], V->dim[1]}, rank(S.dim[0])
 {
   MM_INIT();
 }

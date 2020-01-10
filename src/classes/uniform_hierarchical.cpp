@@ -188,6 +188,7 @@ UniformHierarchical::UniformHierarchical(
         }
       }
       (*this)(i, j) = LowRankShared(
+        child,
         S,
         col_basis[i], row_basis[j]
       );
