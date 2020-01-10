@@ -32,4 +32,19 @@ std::tuple<Dense, Dense, Dense> rid(const Dense& A, int sample_size, int rank) {
   return {std::move(U), std::move(S), std::move(V)};
 }
 
+std::tuple<Dense, std::vector<int>> one_sided_rid(const Dense& A, int sample_size, int rank) {
+  std::vector<double> x;
+  Dense RN(random_uniform, x, A.dim[1], sample_size);
+  Dense Y(A.dim[0], sample_size);
+  gemm(A, RN, Y, 1, 0);
+  Dense Q(Y.dim[0], Y.dim[1]);
+  Dense R(Y.dim[1], Y.dim[1]);
+  qr(Y, Q, R);
+  Dense QtA(Q.dim[1], A.dim[1]);
+  gemm(Q, A, QtA, true, false, 1, 0);
+  Dense V(rank, A.dim[1]);
+  std::vector<int> selected_cols = id(QtA, V, rank);
+  return {std::move(V), std::move(selected_cols)};
+}
+
 } // namespace hicma

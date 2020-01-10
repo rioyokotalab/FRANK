@@ -7,7 +7,7 @@
 #include "hicma/classes/low_rank_shared.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/operations/BLAS/gemm.h"
-#include "hicma/operations/LAPACK/id.h"
+#include "hicma/operations/randomized/rid.h"
 #include "hicma/operations/misc/get_dim.h"
 #include "hicma/operations/misc/transpose.h"
 
@@ -100,6 +100,10 @@ UniformHierarchical::UniformHierarchical(
   // work for more levels, but LU does not yet (LR+=LR issue).
   assert(row_range.length/ni_level <= nleaf);
   assert(col_range.length/nj_level <= nleaf);
+  assert(rank <= nleaf);
+  // TODO For now only admis 0! gemm(D, LR, LR) and gemm(LR, D, LR) needed for
+  // more.
+  assert(admis == 0);
   if (!level) {
     assert(x.size() == std::max(node.row_range.length, node.col_range.length));
     std::sort(x.begin(),x.end());
@@ -141,9 +145,9 @@ UniformHierarchical::UniformHierarchical(
           col_basis[i] = std::make_shared<Dense>(LowRank(row_block, rank).U);
         } else {
           // Construct U using the ID and remember the selected rows
-          Dense Ut(rank, get_n_cols(row_block));
+          Dense Ut;
           transpose(row_block);
-          selected_rows[i] = id(row_block, Ut, rank);
+          std::tie(Ut, selected_rows[i]) = one_sided_rid(row_block, rank+5, rank);
           transpose(Ut);
           col_basis[i] = std::make_shared<Dense>(std::move(Ut));
         }
@@ -165,8 +169,8 @@ UniformHierarchical::UniformHierarchical(
           row_basis[j] = std::make_shared<Dense>(LowRank(col_block, rank).V);
         } else {
           // Construct V using the ID and remember the selected cols
-          Dense V(rank, get_n_cols(col_block));
-          selected_cols[j] = id(col_block, V, rank);
+          Dense V;
+          std::tie(V, selected_cols[j]) = one_sided_rid(col_block, rank+5, rank);
           row_basis[j] = std::make_shared<Dense>(std::move(V));
         }
       }
