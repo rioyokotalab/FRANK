@@ -23,13 +23,10 @@ class LowRankShared : public Node {
     // Special member functions
     SharedBasis() = default;
     ~SharedBasis() = default;
-    // TODO Not that these do deep copies - is that in line with the idea of a
-    // shared basis?
-    SharedBasis(const SharedBasis& A) : basis(std::make_shared<Dense>(A)) {}
-    SharedBasis& operator=(const SharedBasis& A) {
-      basis = std::make_shared<Dense>(A);
-      return *this;
-    }
+    // TODO Not that these do not copy - they simply share the same basis with
+    // the copied from object.
+    SharedBasis(const SharedBasis& A) = default;
+    SharedBasis& operator=(const SharedBasis& A) = default;
     // TODO Should these be implemented? If we create a temporary from the
     // custom constructor and then move from it, it will share the basis.
     SharedBasis(SharedBasis&& A) = default;
@@ -37,6 +34,12 @@ class LowRankShared : public Node {
 
     // Additional constructors
     SharedBasis(std::shared_ptr<Dense> A) : basis(A) {};
+
+    // Additional constructors
+    SharedBasis& operator=(std::shared_ptr<Dense> A) {
+      basis = A;
+      return *this;
+    };
 
     // Implicit conversion operators
     operator Dense& () { return *basis; }
