@@ -27,50 +27,17 @@ UniformHierarchical::UniformHierarchical() : Hierarchical() { MM_INIT(); }
 
 UniformHierarchical::~UniformHierarchical() = default;
 
-MULTI_METHOD(
-  reset_basis, void,
-  virtual_<Node>&, std::shared_ptr<Dense> U, std::shared_ptr<Dense> V
-);
-
-BEGIN_SPECIALIZATION(
-  reset_basis, void,
-  LowRankShared& A, std::shared_ptr<Dense> U, std::shared_ptr<Dense> V
-) {
-  A.U = U;
-  A.V = V;
-} END_SPECIALIZATION;
-
-BEGIN_SPECIALIZATION(
-  reset_basis, void,
-  Dense& A, std::shared_ptr<Dense> U, std::shared_ptr<Dense> V
-) {
-  // Do nothing
-} END_SPECIALIZATION;
-
-
-BEGIN_SPECIALIZATION(
-  reset_basis, void,
-  Node& A, std::shared_ptr<Dense> U, std::shared_ptr<Dense> V
-) {
-  std::cout << "Cannot reset basis on from " << A.type() << "!" << std::endl;
-  abort();
-} END_SPECIALIZATION;
-
 UniformHierarchical::UniformHierarchical(const UniformHierarchical& A){
   MM_INIT();
   *this = A;
-  for (int i=0; i<dim[0]; i++) {
-    col_basis[i] = std::make_shared<Dense>(get_col_basis(i));
-  }
-  for (int j=0; j<dim[1]; j++) {
-    row_basis[j] = std::make_shared<Dense>(get_row_basis(j));
-  }
+  copy_col_basis(A);
+  copy_row_basis(A);
   for (int i=0; i<dim[0]; i++) {
     for (int j=0; j<dim[1]; j++) {
-      reset_basis((*this)(i, j), col_basis[i], row_basis[j]);
+      set_col_basis(i, j);
+      set_row_basis(i, j);
     }
   }
-
 }
 
 UniformHierarchical&
