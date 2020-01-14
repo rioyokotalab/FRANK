@@ -6,8 +6,8 @@
 #include "hicma/operations/LAPACK/qr.h"
 #include "hicma/operations/LAPACK/svd.h"
 #include "hicma/operations/randomized/rsvd.h"
-#include "hicma/util/print.h"
 #include "hicma/util/counter.h"
+#include "hicma/util/timer.h"
 
 #include <algorithm>
 #include <cassert>
@@ -185,6 +185,7 @@ namespace hicma {
       //Rounded addition by exploiting orthogonality
 
       // TODO consider copies here, especially once H(D) no longer copies!
+      timing::start("LR += LR");
       Hierarchical OuterU(1, 2);
       Dense InnerU;
       std::tie(OuterU[1], InnerU) = merge_basis(U, A.U, false);
@@ -203,6 +204,7 @@ namespace hicma {
       V = Dense(rank, dim[1]);
       gemm(OuterU, Uhat, U, 1, 0);
       gemm(Vhat, OuterV, V, 1, 0);
+      timing::stop("LR += LR");
     }
     return *this;
   }

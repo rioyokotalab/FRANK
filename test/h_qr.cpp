@@ -18,7 +18,7 @@ int main(int argc, char** argv) {
     randx[i] = drand48();
   }
   std::sort(randx.begin(), randx.end());
-  start("Init matrix");
+  timing::start("Init matrix");
   int nblocks=0, admis=0;
   if(argc < 2) {
     std::cout <<"Argument(s) needed" <<std::endl;
@@ -52,28 +52,24 @@ int main(int argc, char** argv) {
     nblocks = 2; // Hierarchical (log_2(N/nleaf) levels)
     admis = 1; // Strong admissibility
   }
-  start("CPU compression");
+  timing::start("CPU compression");
   Hierarchical A(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
-  stop("CPU compression");
+  timing::stop("CPU compression");
   rsvd_batch();
   Hierarchical Q(zeros, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   Hierarchical R(zeros, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   Hierarchical QR(zeros, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
-  stop("Init matrix");
+  timing::stopAndPrint("Init matrix");
   admis = N / nleaf; // Full rank
-  start("Dense tree");
+  timing::start("Dense tree");
   Hierarchical D(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
-  stop("Dense tree");
-  start("Verification");
-  stop("Verification");
+  timing::stopAndPrint("Dense tree");
   print("Compression Accuracy");
   print("Rel. L2 Error", l2_error(A, D), false);
   print("Time");
-  start("QR decomposition");
+  timing::start("QR decomposition");
   qr(A, Q, R);
-  stop("QR decomposition");
-  printTime("-DGEQRF");
-  printTime("-DGEMM");
+  timing::stopAndPrint("QR decomposition", 1);
   gemm(Q, R, QR, 1, 1);
   print("QR Accuracy");
   print("Rel. L2 Error", l2_error(QR, D), false);

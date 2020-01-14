@@ -18,14 +18,14 @@ int main(int argc, char** argv) {
   }
   std::sort(randx.begin(), randx.end());
   print("Time");
-  start("Init matrix");
-  Dense D(laplace1d, randx, N, N-2, 0, N);
-  stop("Init matrix");
-  start("LR Add");
+  timing::start("Init matrix");
+  Dense D(laplace1d, randx, N, N, 0, N);
   LowRank A(D, rank);
   LowRank B(D, rank);
+  timing::stopAndPrint("Init matrix");
+  timing::start("LR Add");
   A += B;
-  stop("LR Add");
+  timing::stopAndPrint("LR Add", 2);
   print("Accuracy");
   print("Rel. L2 Error", l2_error(D+D, A), false);
   return 0;

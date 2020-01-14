@@ -23,14 +23,14 @@ int main(int argc, char const *argv[])
     randx[i] = drand48();
   }
   std::sort(randx.begin(), randx.end());
-  start("Init matrix");
+  timing::start("Init matrix");
   UniformHierarchical A(
     laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
-  stop("Init matrix");
-  start("Init matrix SVD");
+  timing::stopAndPrint("Init matrix", 1);
+  timing::start("Init matrix SVD");
   UniformHierarchical A_svd(
     laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks, true);
-  stop("Init matrix SVD");
+  timing::stopAndPrint("Init matrix SVD", 1);
   // printXML(A);
   Hierarchical H(
     laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
@@ -40,29 +40,29 @@ int main(int argc, char const *argv[])
   Dense b(N, 1);
   gemm(A, x, b, 1, 1);
 
-  start("Verification");
+  timing::start("Verification");
   print("Compression Accuracy");
   print("H Rel. L2 Error", l2_error(D, H), false);
   print("UH Rel. L2 Error", l2_error(D, A), false);
-  stop("Verification");
+  timing::stopAndPrint("Verification");
 
   print("GEMM");
-  start("GEMM");
+  timing::start("GEMM");
   Dense test1(N, N);
   gemm(A, rand, test1, 1, 0);
-  stop("GEMM");
+  timing::stopAndPrint("GEMM", 1);
 
   print("LU");
-  start("UBLR LU");
+  timing::start("UBLR LU");
   UniformHierarchical L, U;
   std::tie(L, U) = getrf(A);
-  stop("UBLR LU");
+  timing::stopAndPrint("UBLR LU", 2);
 
-  start("Verification");
+  timing::start("Verification");
   trsm(L, b,'l');
   trsm(U, b,'u');
   print("UH Rel. L2 Error", l2_error(x, b), false);
-  stop("Verification");
+  timing::stopAndPrint("Verification");
 
 
   return 0;

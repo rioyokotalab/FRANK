@@ -92,7 +92,9 @@ namespace hicma {
     Node(i_abs, j_abs, level, IndexRange(0, m), IndexRange(0, n)),
     true
   ) {
+    timing::start("Dense alloc");
     data.resize(dim[0]*dim[1], 0);
+    timing::stop("Dense alloc");
   }
 
   Dense::Dense(
@@ -159,22 +161,26 @@ namespace hicma {
   const Dense& Dense::operator+=(const Dense& A) {
     assert(dim[0] == A.dim[0]);
     assert(dim[1] == A.dim[1]);
+    timing::start("Dense -= Dense");
     for (int i=0; i<dim[0]; i++) {
       for (int j=0; j<dim[1]; j++) {
         (*this)(i, j) += A(i, j);
       }
     }
+    timing::stop("Dense -= Dense");
     return *this;
   }
 
   const Dense& Dense::operator-=(const Dense& A) {
     assert(dim[0] == A.dim[0]);
     assert(dim[1] == A.dim[1]);
+    timing::start("Dense += Dense");
     for (int i=0; i<dim[0]; i++) {
       for (int j=0; j<dim[1]; j++) {
         (*this)(i, j) -= A(i, j);
       }
     }
+    timing::stop("Dense += Dense");
     return *this;
   }
 
@@ -236,6 +242,7 @@ namespace hicma {
   void Dense::resize(int dim0, int dim1) {
     assert(dim0 <= dim[0]);
     assert(dim1 <= dim[1]);
+    timing::start("Dense resize");
     if (dim0 == dim[0] && dim1 == dim[1]) return;
     for (int i=0; i<dim0; i++) {
       for (int j=0; j<dim1; j++) {
@@ -251,6 +258,7 @@ namespace hicma {
     dim[1] = dim1;
     stride = dim[1];
     data.resize(dim[0]*dim[1]);
+    timing::stop("Dense resize");
   }
 
   Dense Dense::transpose() const {

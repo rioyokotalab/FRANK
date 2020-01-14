@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
   Dense Ax(N);
   gemm(A, x, Ax, 1, 0);
   print("Time");
-  start("QR decomposition");
+  timing::start("QR decomposition");
   for(int k = 0; k < Nc; k++) {
     geqrt(A(k, k), T(k, k));
     for(int j = k+1; j < Nc; j++) {
@@ -96,7 +96,7 @@ int main(int argc, char** argv) {
       }
     }
   }
-  stop("QR decomposition");
+  timing::stopAndPrint("QR decomposition");
   //Build Q: Apply Q to Id
   for(int k = Nc-1; k >= 0; k--) {
     for(int i = Nc-1; i > k; i--) {

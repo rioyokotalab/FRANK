@@ -48,7 +48,7 @@ BEGIN_SPECIALIZATION(
   bool TransA, bool TransB,
   double alpha, double beta
 ) {
-  start("-DGEMM");
+  timing::start("DGEMM");
   if (B.dim[1] == 1) {
     cblas_dgemv(
       CblasRowMajor,
@@ -74,7 +74,7 @@ BEGIN_SPECIALIZATION(
       &C, C.stride
     );
   }
-  stop("-DGEMM",false);
+  timing::stop("DGEMM");
 } END_SPECIALIZATION;
 
 // Fallback default, abort with error message

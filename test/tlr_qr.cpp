@@ -77,7 +77,7 @@ int main(int argc, char** argv) {
 
   print("Time");
   resetCounter("LR-addition");
-  start("BLR QR decomposition");
+  timing::start("BLR QR decomposition");
   for(int k = 0; k < Nc; k++) {
     geqrt(A(k, k), T(k, k));
     for(int j = k+1; j < Nc; j++) {
@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
       }
     }
   }
-  stop("BLR QR decomposition");
+  timing::stopAndPrint("BLR QR decomposition");
   //Build Q: Apply Q to Id
   for(int k = Nc-1; k >= 0; k--) {
     for(int i = Nc-1; i > k; i--) {

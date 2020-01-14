@@ -8,6 +8,7 @@
 #include "hicma/functions.h"
 #include "hicma/operations/BLAS/gemm.h"
 #include "hicma/operations/misc/transpose.h"
+#include "hicma/util/timer.h"
 
 #include <cassert>
 #include <iostream>
@@ -62,10 +63,14 @@ namespace hicma
     assert(Q.dim[1] == A.dim[1]);
     assert(R.dim[0] == A.dim[1]);
     assert(R.dim[1] == A.dim[1]);
+    timing::start("QR");
     int k = std::min(A.dim[0], A.dim[1]);
     std::vector<double> tau(k);
     for(int i=0; i<std::min(Q.dim[0], Q.dim[1]); i++) Q(i, i) = 1.0;
+    timing::start("DGEQRF");
     LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, A.dim[0], A.dim[1], &A, A.stride, &tau[0]);
+    timing::stop("DGEQRF");
+    timing::start("DORGQR");
     for(int i=0; i<A.dim[0]; i++) {
       for(int j=0; j<A.dim[1]; j++) {
         if(j>=i)
@@ -80,6 +85,8 @@ namespace hicma
     // reflector form, uses dormqr instead of gemm and can be transformed to
     // Dense via dorgqr!
     LAPACKE_dorgqr(LAPACK_ROW_MAJOR, Q.dim[0], Q.dim[1], k, &Q, Q.stride, &tau[0]);
+    timing::stop("DORGQR");
+    timing::stop("QR");
   } END_SPECIALIZATION;
 
   BEGIN_SPECIALIZATION(qr_omm, void, Hierarchical& A, Hierarchical& Q, Hierarchical& R) {

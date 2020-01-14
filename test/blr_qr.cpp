@@ -74,8 +74,8 @@ int main(int argc, char** argv) {
   print("Rel. L2 Error", l2_error(A, D), false);
 
   print("Time");
-  start("BLR QR decomposition");
   resetCounter("LR-addition");
+  timing::start("BLR QR decomposition");
   for(int j=0; j<Nc; j++) {
     Hierarchical Aj(Nc, 1);
     Hierarchical Qsj(Nc, 1);
@@ -107,8 +107,8 @@ int main(int argc, char** argv) {
       }
     }
   }
-  stop("BLR QR decomposition");
   printCounter("LR-addition");
+  timing::stopAndPrint("BLR QR decomposition", 1);
 
   //Residual
   Dense Rx(N);

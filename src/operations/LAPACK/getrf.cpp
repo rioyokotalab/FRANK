@@ -46,7 +46,7 @@ BEGIN_SPECIALIZATION(getrf_omm, NodePair, Hierarchical& A) {
 } END_SPECIALIZATION;
 
 BEGIN_SPECIALIZATION(getrf_omm, NodePair, Dense& A) {
-  start("-DGETRF");
+  timing::start("DGETRF");
   std::vector<int> ipiv(std::min(A.dim[0], A.dim[1]));
   LAPACKE_dgetrf(
     LAPACK_ROW_MAJOR,
@@ -62,7 +62,7 @@ BEGIN_SPECIALIZATION(getrf_omm, NodePair, Dense& A) {
     }
     L(i, i) = 1;
   }
-  stop("-DGETRF",false);
+  timing::stop("DGETRF");
   return {std::move(L), std::move(A)};
 } END_SPECIALIZATION;
 

@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
   }
   std::sort(randx.begin(), randx.end());
   print("Time");
-  start("Init matrix");
+  timing::start("Init matrix");
   for(int ic = 0; ic < Nc; ic++) {
     for(int jc = 0; jc < Nc; jc++) {
       Dense Aij(laplace1d, randx, Nb, Nb, Nb*ic, Nb*jc);
@@ -31,9 +31,9 @@ int main(int argc, char** argv) {
       R(ic, jc) = Rij;
     }
   }
-  stop("Init matrix");
+  timing::stopAndPrint("Init matrix");
   Hierarchical _A(A); //Copy of A
-  start("QR decomposition");
+  timing::start("QR decomposition");
   for(int j = 0; j < Nc; j++) {
     Hierarchical HAsj(Nc, 1);
     for(int i = 0; i < Nc; i++) {
@@ -67,9 +67,7 @@ int main(int argc, char** argv) {
       }
     }
   }
-  stop("QR decomposition");
-  printTime("-DGEQRF");
-  printTime("-DGEMM");
+  timing::stopAndPrint("QR decomposition");
   Dense QR(N, N);
   gemm(Dense(Q), Dense(R), QR, 1, 1);
   print("Accuracy");

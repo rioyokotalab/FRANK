@@ -79,7 +79,7 @@ BEGIN_SPECIALIZATION(
   const Dense& A, Dense& B,
   const char& uplo, bool left
 ) {
-  start("-DTRSM");
+  timing::start("DTRSM");
   switch (uplo) {
   case 'l' :
     cblas_dtrsm(
@@ -107,7 +107,7 @@ BEGIN_SPECIALIZATION(
     std::cerr << "Second argument must be 'l' for lower, 'u' for upper." << std::endl;
     abort();
   }
-  stop("-DTRSM",false);
+  timing::stop("DTRSM");
 } END_SPECIALIZATION;
 
 BEGIN_SPECIALIZATION(
