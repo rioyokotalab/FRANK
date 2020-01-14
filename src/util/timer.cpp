@@ -66,10 +66,9 @@ public:
     }
   }
 
-  void print_to_depth(int depth, int at_depth) const {
-    std::string tag = "";
-    for (int i=0; i<at_depth-1; i++) tag += " ";
-    if (at_depth != 0) tag += "|-";
+  void print_to_depth(int depth, int at_depth, std::string tag_pre = "") const {
+    std::string tag = tag_pre;
+    if (at_depth != 0) tag += "--";
     tag += name;
     print(tag, duration.count());
     if (depth > 0) {
@@ -84,7 +83,13 @@ public:
         }
       );
       for (const TimerClass* ptr : duration_sorted) {
-        ptr->print_to_depth(depth-1, at_depth+1);
+        std::string child_tag = tag_pre;
+        if (ptr == duration_sorted.back()) {
+          child_tag += " !";
+        } else {
+          child_tag += " |";
+        }
+        ptr->print_to_depth(depth-1, at_depth+1, child_tag);
       }
     }
   }
