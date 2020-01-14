@@ -51,7 +51,7 @@ namespace hicma
       uplo == 'u' ? CblasUpper : CblasLower,
       trans == 't' ? CblasTrans : CblasNoTrans,
       diag == 'u' ? CblasUnit : CblasNonUnit,
-      B.dim[0], B.dim[1], alpha, &A[0], A.stride, &B[0], B.stride
+      B.dim[0], B.dim[1], alpha, &A, A.stride, &B, B.stride
     );
   } END_SPECIALIZATION;
 

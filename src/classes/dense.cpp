@@ -40,11 +40,6 @@ namespace hicma {
 
   Dense& Dense::operator=(Dense&& A) = default;
 
-  Dense::Dense(int m) : dim{m, 1}, stride(dim[1]) {
-    MM_INIT();
-    data.resize(dim[0], 0);
-  }
-
   std::unique_ptr<Node> Dense::clone() const {
     return std::make_unique<Dense>(*this);
   }

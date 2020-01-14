@@ -33,6 +33,7 @@ namespace hicma {
     // Virtual functions for inheritance
     // TODO Consider moving these three into multi-methods.
     // That would make inheritance a pure formality (which is good)
+    // TODO Or consider making them protected members!
     virtual std::unique_ptr<Node> clone() const;
 
     virtual std::unique_ptr<Node> move_clone();

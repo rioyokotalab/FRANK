@@ -36,8 +36,8 @@ int main(int argc, char const *argv[])
     laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   Hierarchical D(laplace1d, randx, N, N, rank, nleaf, N/nblocks, nblocks, nblocks);
   Dense rand(random_normal, randx, N, N);
-  Dense x(random_uniform, randx, N, 1);
-  Dense b(N, 1);
+  Dense x(random_uniform, randx, N);
+  Dense b(N);
   gemm(A, x, b, 1, 1);
 
   timing::start("Verification");

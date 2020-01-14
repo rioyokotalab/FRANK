@@ -28,8 +28,8 @@ int main(int argc, char** argv) {
   rsvd_batch();
   // printXML(A);
   admis = N / nleaf; // Full rank
-  Dense x(random_uniform, randx, N, 1);
-  Dense b(N, 1);
+  Dense x(random_uniform, randx, N);
+  Dense b(N);
   // timing::start("Dense tree");
   // Hierarchical D(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   // timing::stop("Dense tree");

@@ -50,10 +50,8 @@ namespace hicma {
     Dense(NodeProxy&&);
 
     // Additional constructors
-    Dense(int m);
-
     Dense(
-      int m, int n,
+      int m, int n=1,
       int i_abs=0, int j_abs=0,
       int level=0
     );
@@ -67,7 +65,7 @@ namespace hicma {
     Dense(
       void (*func)(Dense& A, std::vector<double>& x),
       std::vector<double>& x,
-      int ni, int nj,
+      int ni, int nj=1,
       int i_begin=0, int j_begin=0,
       int i_abs=0, int j_abs=0,
       int level=0
