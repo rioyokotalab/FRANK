@@ -64,6 +64,15 @@ namespace hicma
     zero_whole_omm, void,
     virtual_<Node>&
   );
+
+
+  void rq(Node&, Node&, Node&);
+
+  MULTI_METHOD(
+    rq_omm, void,
+    virtual_<Node>&, virtual_<Node>&, virtual_<Node>&
+  );
+
 } // namespace hicma
 
 #endif // hicma_operations_LAPACK_qr_h

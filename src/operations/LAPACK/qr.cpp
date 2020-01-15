@@ -279,7 +279,6 @@ namespace hicma
     abort();
   } END_SPECIALIZATION;
 
-
   BEGIN_SPECIALIZATION(zero_lowtri_omm, void, Dense& A) {
     for(int i=0; i<A.dim[0]; i++)
       for(int j=0; j<i; j++)
@@ -292,7 +291,6 @@ namespace hicma
     std::cerr << ") undefined." << std::endl;
     abort();
   } END_SPECIALIZATION;
-
 
   BEGIN_SPECIALIZATION(zero_whole_omm, void, Dense& A) {
     A = 0.0;
@@ -309,6 +307,39 @@ namespace hicma
     std::cerr << A.type();
     std::cerr << ") undefined." << std::endl;
     abort();
+  } END_SPECIALIZATION;
+
+
+  void rq(Node& A, Node& R, Node& Q) {
+    rq_omm(A, R, Q);
+  }
+
+  BEGIN_SPECIALIZATION(rq_omm, void, Dense& A, Dense& R, Dense& Q) {
+    assert(R.dim[0] == A.dim[0]);
+    assert(R.dim[1] == A.dim[0]);
+    assert(Q.dim[0] == A.dim[0]);
+    assert(Q.dim[1] == A.dim[1]);
+    timing::start("DGEQRF");
+    std::vector<double> tau(A.dim[1]);
+    LAPACKE_dgerqf(LAPACK_ROW_MAJOR, A.dim[0], A.dim[1], &A, A.stride, &tau[0]);
+    // TODO Consider making special function for this. Performance heavy
+    // and not always needed. If Q should be applied to something, use directly!
+    // Alternatively, create Dense deriative that remains in elementary
+    // reflector form, uses dormqr instead of gemm and can be transformed to
+    // Dense via dorgqr!
+    for (int i=0; i<R.dim[0]; i++) {
+      for (int j=0; j<R.dim[1]; j++) {
+        if (j>=i) R(i, j) = A(i, A.dim[1]-R.dim[1]+j);
+      }
+    }
+    LAPACKE_dorgrq(
+      LAPACK_ROW_MAJOR,
+      A.dim[0], A.dim[1], A.dim[0],
+      &A, A.dim[1],
+      &tau[0]
+    );
+    Q = std::move(A);
+    timing::stop("DGEQRF");
   } END_SPECIALIZATION;
 
 } // namespace hicma

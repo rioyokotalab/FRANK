@@ -76,54 +76,75 @@ namespace hicma {
     V.resize(k, dim[1]);
     rank = k;
   }
-  std::tuple<Dense, Dense> merge_basis(
-    const Dense& A, const Dense& B, bool trans
+
+  std::tuple<Dense, Dense> merge_col_basis(
+    const Dense& U, const Dense& Au
   ) {
-    // For U trans=false
-    // For V trans=true
-    assert(A.dim[trans?1:0] == B.dim[trans?1:0]);
-    int N = A.dim[trans?1:0];
-    int Arank = A.dim[trans?0:1];
-    int Brank = B.dim[trans?0:1];
+    assert(U.dim[0] == Au.dim[0]);
+    int Arank = U.dim[1];
+    int Brank = Au.dim[1];
     assert(Arank == Brank);
 
-    Dense Inner(Arank+Brank, Brank);
-    NoCopySplit InnerH(Inner, 2, 1);
+    Dense InnerU(Arank+Brank, Brank);
+    NoCopySplit InnerH(InnerU, 2, 1);
+    gemm(U, Au, InnerH[0], true, false, 1, 0);
 
-    gemm(A, B, InnerH[0], !trans, trans, 1, 0);
+    Dense U_UUtAu(Au);
+    gemm(U, InnerH[0], U_UUtAu, -1, 1);
 
-    Dense B_AAB(trans ? B.transpose(): B);
-    gemm(A, InnerH[0], B_AAB, trans, false, -1, 1);
+    Dense Q(U.dim[0], Brank);
+    qr(U_UUtAu, Q, InnerH[1]);
 
-    Dense Q(N, Brank);
-    qr(B_AAB, Q, InnerH[1]);
-
-    if (trans) Q.transpose();
-    return {std::move(Q), std::move(Inner)};
+    return {std::move(Q), std::move(InnerU)};
   }
+
+  std::tuple<Dense, Dense> merge_row_basis(
+    const Dense& V, const Dense& Av
+  ) {
+    assert(V.dim[1] == Av.dim[1]);
+    int Arank = V.dim[0];
+    int Brank = Av.dim[0];
+    assert(Arank == Brank);
+
+    Dense InnerV(Brank, Arank+Brank);
+    NoCopySplit InnerH(InnerV, 1, 2);
+    gemm(Av, V, InnerH[0], false, true, 1, 0);
+
+    Dense Av_AvVtV(Av);
+    gemm(InnerH[0], V, Av_AvVtV, -1, 1);
+
+    Dense Q(Brank, V.dim[1]);
+    rq(Av_AvVtV, InnerH[1], Q);
+
+    return {std::move(Q), std::move(InnerV)};
+  }
+
 
   std::tuple<Dense, Dense, Dense> merge_S(
     const Dense& S, const Dense& AS,
-    const Dense& InnerU, const Dense& InnerVt
+    const Dense& InnerU, const Dense& InnerV
   ) {
+    assert(S.dim[0] == S.dim[1]);
+    int rank = S.dim[0];
+
     Dense InnerUAS(InnerU.dim[0], AS.dim[1]);
     gemm(InnerU, AS, InnerUAS, 1, 0);
 
-    // TODO consider copies here, especially once H(D) no longer copies!
-    // Also consider move!
-    Hierarchical M(2, 2);
-    M(0, 0) = S;
-    M(0, 1) = Dense(S.dim[0], S.dim[1]);
-    M(1, 0) = Dense(S.dim[0], S.dim[1]);
-    M(1, 1) = Dense(S.dim[0], S.dim[1]);
-    Dense MD(M);
-    gemm(InnerUAS, InnerVt, MD, false, true, 1, 1);
+    // TODO Consider using move for S if possible!
+    Dense M(rank*2, rank*2);
+    for (int i=0; i<rank; i++) {
+      for (int j=0; j<rank; j++) {
+        M(i, j) = S(i, j);
+      }
+    }
+    gemm(InnerUAS, InnerV, M, 1, 1);
 
     Dense Uhat, Shat, Vhat;
-    std::tie(Uhat, Shat, Vhat) = svd(MD);
-    Shat.resize(S.dim[0], S.dim[1]);
-    Uhat.resize(Uhat.dim[0], S.dim[0]);
-    Vhat.resize(S.dim[1], Vhat.dim[1]);
+    std::tie(Uhat, Shat, Vhat) = svd(M);
+
+    Shat.resize(rank, rank);
+    Uhat.resize(Uhat.dim[0], rank);
+    Vhat.resize(rank, Vhat.dim[1]);
 
     return {std::move(Uhat), std::move(Shat), std::move(Vhat)};
   }
@@ -183,27 +204,34 @@ namespace hicma {
     } else {
       //Bebendorf HMatrix Book p17
       //Rounded addition by exploiting orthogonality
+      timing::start("LR += LR");
 
       // TODO consider copies here, especially once H(D) no longer copies!
-      timing::start("LR += LR");
+      timing::start("Merge col basis");
       Hierarchical OuterU(1, 2);
       Dense InnerU;
-      std::tie(OuterU[1], InnerU) = merge_basis(U, A.U, false);
+      std::tie(OuterU[1], InnerU) = merge_col_basis(U, A.U);
       OuterU[0] = std::move(U);
+      timing::stop("Merge col basis");
 
+      timing::start("Merge row basis");
       Hierarchical OuterV(2, 1);
       Dense InnerVt;
-      std::tie(OuterV[1], InnerVt) = merge_basis(V, A.V, true);
+      std::tie(OuterV[1], InnerVt) = merge_row_basis(V, A.V);
       OuterV[0] = std::move(V);
+      timing::stop("Merge row basis");
 
+      timing::start("Merge S");
       Dense Uhat, Vhat;
       std::tie(Uhat, S, Vhat) = merge_S(S, A.S, InnerU, InnerVt);
+      timing::stop("Merge S");
 
       // Restore moved-from U and V and finalize basis
       U = Dense(dim[0], rank);
       V = Dense(rank, dim[1]);
       gemm(OuterU, Uhat, U, 1, 0);
       gemm(Vhat, OuterV, V, 1, 0);
+
       timing::stop("LR += LR");
     }
     return *this;
