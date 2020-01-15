@@ -17,7 +17,7 @@ using yorel::multi_methods::virtual_;
 namespace hicma {
 
   bool VERBOSE = true;
-  static const int stringLength = 24; //!< Length of formatted string
+  static const int stringLength = 30; //!< Length of formatted string
   static const int decimal = 7; //!< Decimal precision
 
   MULTI_METHOD(

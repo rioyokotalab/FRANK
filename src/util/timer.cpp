@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <map>
 #include <string>
 #include <chrono>
@@ -68,9 +69,7 @@ public:
 
   void print_to_depth(int depth, int at_depth, std::string tag_pre = "") const {
     std::string tag = tag_pre;
-    if (at_depth != 0) tag += "--";
-    tag += name;
-    print(tag, duration.count());
+    print(at_depth == 0 ? name : tag+"--"+name, duration.count());
     if (depth > 0) {
       std::vector<const TimerClass*> duration_sorted;
       for (const auto& pair : subtimers) {
@@ -84,13 +83,19 @@ public:
       );
       for (const TimerClass* ptr : duration_sorted) {
         std::string child_tag = tag_pre;
-        if (ptr == duration_sorted.back()) {
-          child_tag += " !";
-        } else {
-          child_tag += " |";
-        }
+        child_tag += " |";
         ptr->print_to_depth(depth-1, at_depth+1, child_tag);
       }
+    }
+    if (depth > 0 && subtimers.size() > 0) {
+      double subcounter_sum = 0;
+      for (const auto& pair : subtimers) {
+        subcounter_sum += pair.second.duration.count();
+      }
+      print(
+        tag+" |_Subcounters [%]",
+        int(std::round(subcounter_sum/duration.count()*100))
+      );
     }
   }
 
