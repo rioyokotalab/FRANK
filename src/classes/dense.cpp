@@ -238,7 +238,10 @@ namespace hicma {
     assert(dim0 <= dim[0]);
     assert(dim1 <= dim[1]);
     timing::start("Dense resize");
-    if (dim0 == dim[0] && dim1 == dim[1]) return;
+    if (dim0 == dim[0] && dim1 == dim[1]) {
+      timing::stop("Dense resize");
+      return;
+    }
     for (int i=0; i<dim0; i++) {
       for (int j=0; j<dim1; j++) {
         // TODO this is the only place where data is used directly now. Would be
