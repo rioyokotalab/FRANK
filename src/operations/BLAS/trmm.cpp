@@ -64,9 +64,9 @@ namespace hicma
     assert(A.dim[0] == A.dim[1]);
     assert(A.dim[0] == (side == 'l' ? B.dim[0] : B.dim[1]));
     if(side == 'l')
-      trmm(A, B.U, side, uplo, trans, diag, alpha);
+      trmm(A, B.U(), side, uplo, trans, diag, alpha);
     else if(side == 'r')
-      trmm(A, B.V, side, uplo, trans, diag, alpha);
+      trmm(A, B.V(), side, uplo, trans, diag, alpha);
   } END_SPECIALIZATION;
 
   BEGIN_SPECIALIZATION(

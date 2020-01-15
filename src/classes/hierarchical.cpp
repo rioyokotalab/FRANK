@@ -9,7 +9,7 @@
 #include "hicma/operations/LAPACK/qr.h"
 #include "hicma/operations/misc/get_dim.h"
 #include "hicma/gpu_batch/batch.h"
-#include "hicma/util/print.h"
+#include "hicma/util/timer.h"
 
 #include <algorithm>
 #include <cassert>
@@ -312,11 +312,13 @@ namespace hicma {
     make_hierarchical_omm, Hierarchical,
     const Dense& A, int ni_level, int nj_level
   ) {
+    timing::start("make_hierarchical(D)");
     Hierarchical out(A, ni_level, nj_level, true);
     out.create_children();
     for (NodeProxy& child : out) {
       child = A.get_part(child);
     }
+    timing::stop("make_hierarchical(D)");
     return out;
   } END_SPECIALIZATION;
 
@@ -324,11 +326,13 @@ namespace hicma {
     make_hierarchical_omm, Hierarchical,
     const LowRank& A, int ni_level, int nj_level
   ) {
+    timing::start("make_hierarchical(LR)");
     Hierarchical out(A, ni_level, nj_level, true);
     out.create_children();
     for (NodeProxy& child : out) {
       child = A.get_part(child);
     }
+    timing::stop("make_hierarchical(LR)");
     return out;
   } END_SPECIALIZATION;
 
@@ -400,6 +404,18 @@ namespace hicma {
 
   BEGIN_SPECIALIZATION(
     make_no_copy_split_omm, NoCopySplit,
+    LowRank& A, int ni_level, int nj_level
+  ) {
+    NoCopySplit out(A, ni_level, nj_level, true);
+    out.create_children();
+    for (NodeProxy& child : out) {
+      child = LowRankView(child, A);
+    }
+    return out;
+  } END_SPECIALIZATION;
+
+  BEGIN_SPECIALIZATION(
+    make_no_copy_split_omm, NoCopySplit,
     Node& A, int ni_level, int nj_level
   ) {
     std::cout << "Cannot create NoCopySplit from " << A.type() << "!" << std::endl;
@@ -429,6 +445,18 @@ namespace hicma {
     out.create_children();
     for (NodeProxy& child : out) {
       child = DenseView(child, A);
+    }
+    return out;
+  } END_SPECIALIZATION;
+
+  BEGIN_SPECIALIZATION(
+    make_no_copy_split_const_omm, NoCopySplit,
+    const LowRank& A, int ni_level, int nj_level
+  ) {
+    NoCopySplit out(A, ni_level, nj_level, true);
+    out.create_children();
+    for (NodeProxy& child : out) {
+      child = LowRankView(child, A);
     }
     return out;
   } END_SPECIALIZATION;

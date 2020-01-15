@@ -55,7 +55,7 @@ BEGIN_SPECIALIZATION(
   const Dense& V, const Dense& T, LowRank& C,
   bool trans
 ) {
-  larfb(V, T, C.U, trans);
+  larfb(V, T, C.U(), trans);
 } END_SPECIALIZATION;
 
 BEGIN_SPECIALIZATION(

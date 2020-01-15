@@ -49,7 +49,7 @@ namespace hicma {
   }
 
   bool Node::is_child(const Node& node) const {
-    bool out = node.level == level + 1;
+    bool out = node.level >= level;
     out &= row_range.is_subrange(node.row_range);
     out &= col_range.is_subrange(node.col_range);
     return out;

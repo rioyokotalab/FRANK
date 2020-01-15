@@ -150,7 +150,7 @@ UniformHierarchical::UniformHierarchical(
         }
         Dense row_block(row_block_h);
         if (use_svd) {
-          col_basis[i] = std::make_shared<Dense>(LowRank(row_block, rank).U);
+          col_basis[i] = std::make_shared<Dense>(LowRank(row_block, rank).U());
         } else {
           // Construct U using the ID and remember the selected rows
           Dense Ut;
@@ -174,7 +174,7 @@ UniformHierarchical::UniformHierarchical(
         }
         Dense col_block(col_block_h);
         if (use_svd) {
-          row_basis[j] = std::make_shared<Dense>(LowRank(col_block, rank).V);
+          row_basis[j] = std::make_shared<Dense>(LowRank(col_block, rank).V());
         } else {
           // Construct V using the ID and remember the selected cols
           Dense V;

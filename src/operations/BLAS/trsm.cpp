@@ -117,10 +117,10 @@ BEGIN_SPECIALIZATION(
 ) {
   switch (uplo) {
   case 'l' :
-    trsm(A, B.U, uplo, left);
+    trsm(A, B.U(), uplo, left);
     break;
   case 'u' :
-    trsm(A, B.V, uplo, left);
+    trsm(A, B.V(), uplo, left);
     break;
   default :
     std::cerr << "Second argument must be 'l' for lower, 'u' for upper." << std::endl;

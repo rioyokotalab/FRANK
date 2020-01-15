@@ -158,6 +158,9 @@ namespace hicma {
 
     DenseView(const Node& node, const Dense& A);
 
+    // Additional operators
+    DenseView& operator=(const Dense& A);
+
     // Overridden operators
     double& operator[](int i) override;
 

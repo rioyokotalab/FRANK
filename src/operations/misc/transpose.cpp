@@ -24,11 +24,11 @@ BEGIN_SPECIALIZATION(transpose_omm, void, Dense& A) {
 
 BEGIN_SPECIALIZATION(transpose_omm, void, LowRank& A) {
   using std::swap;
-  transpose(A.U);
-  transpose(A.S);
-  transpose(A.V);
+  transpose(A.U());
+  transpose(A.S());
+  transpose(A.V());
   swap(A.dim[0], A.dim[1]);
-  swap(A.U, A.V);
+  swap(A.U(), A.V());
 } END_SPECIALIZATION;
 
 

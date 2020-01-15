@@ -119,10 +119,10 @@ BEGIN_SPECIALIZATION(
   double alpha, double beta
 ) {
   Dense VxB(A.rank, B.dim[1]);
-  gemm(A.V, B, VxB, 1, 0);
+  gemm(A.V(), B, VxB, 1, 0);
   Dense SxVxB(A.rank, B.dim[1]);
-  gemm(A.S, VxB, SxVxB, 1, 0);
-  gemm(A.U, SxVxB, C, alpha, beta);
+  gemm(A.S(), VxB, SxVxB, 1, 0);
+  gemm(A.U(), SxVxB, C, alpha, beta);
 } END_SPECIALIZATION;
 
 BEGIN_SPECIALIZATION(
@@ -131,10 +131,10 @@ BEGIN_SPECIALIZATION(
   double alpha, double beta
 ) {
   Dense AxU(C.dim[0], B.rank);
-  gemm(A, B.U, AxU, 1, 0);
+  gemm(A, B.U(), AxU, 1, 0);
   Dense AxUxS(C.dim[0], B.rank);
-  gemm(AxU, B.S, AxUxS, 1, 0);
-  gemm(AxUxS, B.V, C, alpha, beta);
+  gemm(AxU, B.S(), AxUxS, 1, 0);
+  gemm(AxUxS, B.V(), C, alpha, beta);
 } END_SPECIALIZATION;
 
 BEGIN_SPECIALIZATION(
@@ -143,14 +143,14 @@ BEGIN_SPECIALIZATION(
   double alpha, double beta
 ) {
   Dense VxU(A.rank, B.rank);
-  gemm(A.V, B.U, VxU, 1, 0);
+  gemm(A.V(), B.U(), VxU, 1, 0);
   Dense SxVxU(A.rank, B.rank);
-  gemm(A.S, VxU, SxVxU, 1, 0);
+  gemm(A.S(), VxU, SxVxU, 1, 0);
   Dense SxVxUxS(A.rank, B.rank);
-  gemm(SxVxU, B.S, SxVxUxS, 1, 0);
+  gemm(SxVxU, B.S(), SxVxUxS, 1, 0);
   Dense UxSxVxUxS(A.dim[0], B.rank);
-  gemm(A.U, SxVxUxS, UxSxVxUxS, 1, 0);
-  gemm(UxSxVxUxS, B.V, C, alpha, beta);
+  gemm(A.U(), SxVxUxS, UxSxVxUxS, 1, 0);
+  gemm(UxSxVxUxS, B.V(), C, alpha, beta);
 } END_SPECIALIZATION;
 
 BEGIN_SPECIALIZATION(
@@ -163,7 +163,7 @@ BEGIN_SPECIALIZATION(
   assert(C.dim[1] == B.dim[1]);
   Dense AB(C.dim[0], C.dim[1]);
   gemm(A, B, AB, alpha, 0);
-  C.S *= beta;
+  C.S() *= beta;
   C += LowRank(AB, C.rank);
 } END_SPECIALIZATION;
 
@@ -172,9 +172,10 @@ BEGIN_SPECIALIZATION(
   const LowRank& A, const Dense& B, LowRank& C,
   double alpha, double beta
 ) {
+  // TODO could be optimized to copy less with LowRankView!
   LowRank AVxB(A);
-  gemm(A.V, B, AVxB.V, alpha, 0);
-  C.S *= beta;
+  gemm(A.V(), B, AVxB.V(), alpha, 0);
+  C.S() *= beta;
   C += AVxB;
 } END_SPECIALIZATION;
 
@@ -183,9 +184,10 @@ BEGIN_SPECIALIZATION(
   const Dense& A, const LowRank& B, LowRank& C,
   double alpha, double beta
 ) {
+  // TODO could be optimized to copy less with LowRankView!
   LowRank AxBU(B);
-  gemm(A, B.U, AxBU.U, alpha, 0);
-  C.S *= beta;
+  gemm(A, B.U(), AxBU.U(), alpha, 0);
+  C.S() *= beta;
   C += AxBU;
 } END_SPECIALIZATION;
 
@@ -195,15 +197,17 @@ BEGIN_SPECIALIZATION(
   double alpha, double beta
 ) {
   assert(A.rank == B.rank);
-  LowRank AxB(A.dim[0], B.dim[1], A.rank);
-  AxB.U = A.U;
-  AxB.V = B.V;
-  Dense VxU(A.rank, B.rank);
-  gemm(A.V, B.U, VxU, 1, 0);
+  LowRankView AxB(A, A);
+  AxB.V() = B.V();
+  AxB.col_range = B.col_range;
+  AxB.dim[1] = B.dim[1];
+  Dense S(A.rank, B.rank);
+  gemm(A.V(), B.U(), S, 1, 0);
   Dense SxVxU(A.rank, B.rank);
-  gemm(A.S, VxU, SxVxU, 1, 0);
-  gemm(SxVxU, B.S, AxB.S, alpha, 0);
-  C.S *= beta;
+  gemm(A.S(), S, SxVxU, 1, 0);
+  gemm(SxVxU, B.S(), S, alpha, 0);
+  AxB.S() = S;
+  C.S() *= beta;
   C += AxB;
 } END_SPECIALIZATION;
 
@@ -237,11 +241,11 @@ BEGIN_SPECIALIZATION(
 
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
-  const Node& A, const Node& B, Hierarchical& C,
+  const LowRank& A, const LowRank& B, Hierarchical& C,
   double alpha, double beta
 ) {
-  Hierarchical AH(A, C.dim[0], 1);
-  Hierarchical BH(B, 1, C.dim[1]);
+  NoCopySplit AH(A, C.dim[0], 1);
+  NoCopySplit BH(B, 1, C.dim[1]);
   gemm(AH, BH, C, alpha, beta);
 } END_SPECIALIZATION;
 
@@ -257,11 +261,11 @@ BEGIN_SPECIALIZATION(
 
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
-  const Hierarchical& A, const Node& B, Hierarchical& C,
+  const Hierarchical& A, const LowRank& B, Hierarchical& C,
   double alpha, double beta
 ) {
   assert(A.dim[0] == C.dim[0]);
-  Hierarchical BH(B, A.dim[1], C.dim[1]);
+  NoCopySplit BH(B, A.dim[1], C.dim[1]);
   gemm(A, BH, C, alpha, beta);
 } END_SPECIALIZATION;
 
@@ -277,11 +281,11 @@ BEGIN_SPECIALIZATION(
 
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
-  const Node& A, const Hierarchical& B, Hierarchical& C,
+  const LowRank& A, const Hierarchical& B, Hierarchical& C,
   double alpha, double beta
 ) {
   assert(B.dim[1] == C.dim[1]);
-  Hierarchical AH(A, C.dim[0], B.dim[0]);
+  NoCopySplit AH(A, C.dim[0], B.dim[0]);
   gemm(AH, B, C, alpha, beta);
 } END_SPECIALIZATION;
 
@@ -290,10 +294,11 @@ BEGIN_SPECIALIZATION(
   const Hierarchical& A, const LowRank& B, LowRank& C,
   double alpha, double beta
 ) {
+  // TODO could be optimized to copy less with LowRankView!
   LowRank B_copy(B);
-  gemm(A, B.U, B_copy.U, 1, 0);
-  B_copy.S *= alpha;
-  C.S *= beta;
+  gemm(A, B.U(), B_copy.U(), 1, 0);
+  B_copy.S() *= alpha;
+  C.S() *= beta;
   C += B_copy;
 } END_SPECIALIZATION;
 
@@ -302,10 +307,11 @@ BEGIN_SPECIALIZATION(
   const LowRank& A, const Hierarchical& B, LowRank& C,
   double alpha, double beta
 ) {
+  // TODO could be optimized to copy less with LowRankView!
   LowRank A_copy(A);
-  gemm(A.V, B, A_copy.V, 1, 0);
-  A_copy.S *= alpha;
-  C.S *= beta;
+  gemm(A.V(), B, A_copy.V(), 1, 0);
+  A_copy.S() *= alpha;
+  C.S() *= beta;
   C += A_copy;
 } END_SPECIALIZATION;
 
@@ -348,11 +354,11 @@ BEGIN_SPECIALIZATION(
 
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
-  const Node& A, const Hierarchical& B, Node& C,
+  const LowRank& A, const Hierarchical& B, Dense& C,
   double alpha, double beta
 ) {
-  Hierarchical AH(A, 1, B.dim[0]);
-  Hierarchical CH(C, 1, B.dim[1]);
+  NoCopySplit AH(A, 1, B.dim[0]);
+  NoCopySplit CH(C, 1, B.dim[1]);
   gemm(AH, B, CH, alpha, beta);
 } END_SPECIALIZATION;
 

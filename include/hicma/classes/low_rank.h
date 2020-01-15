@@ -11,16 +11,17 @@
 namespace hicma {
 
   class LowRank : public Node {
+  private:
+    Dense _U, _S, _V;
   public:
     MM_CLASS(LowRank, Node);
-    Dense U, S, V;
     int dim[2];
     int rank;
 
     // Special member functions
     LowRank();
 
-    ~LowRank();
+    virtual ~LowRank();
 
     LowRank(const LowRank& A);
 
@@ -31,14 +32,24 @@ namespace hicma {
     LowRank& operator=(LowRank&& A);
 
     // Overridden functions from Node
-    std::unique_ptr<Node> clone() const override;
+    virtual std::unique_ptr<Node> clone() const override;
 
-    std::unique_ptr<Node> move_clone() override;
+    virtual std::unique_ptr<Node> move_clone() override;
 
-    const char* type() const override;
+    virtual const char* type() const override;
+
+    // Getters and setters
+    virtual Dense& U();
+    virtual const Dense& U() const;
+
+    virtual Dense& S();
+    virtual const Dense& S() const;
+
+    virtual Dense& V();
+    virtual const Dense& V() const;
 
     // Additional constructors
-    LowRank(const Node& node, int k);
+    LowRank(const Node& node, int k, bool node_only=false);
 
     LowRank(
       int m, int n,
@@ -60,6 +71,45 @@ namespace hicma {
     void mergeV(const LowRank& A, const LowRank& B);
 
     LowRank get_part(const Node& node) const;
+  };
+
+  class LowRankView : public LowRank {
+  private:
+    DenseView _U, _S, _V;
+  public:
+    MM_CLASS(LowRankView, LowRank);
+
+    // Special member functions
+    LowRankView();
+
+    ~LowRankView();
+
+    LowRankView(const LowRankView& A);
+
+    LowRankView& operator=(const LowRankView& A);
+
+    LowRankView(LowRankView&& A);
+
+    LowRankView& operator=(LowRankView&& A);
+
+    // Overridden functions from Node
+    std::unique_ptr<Node> clone() const override;
+
+    std::unique_ptr<Node> move_clone() override;
+
+    const char* type() const override;
+
+    DenseView& U() override;
+    const DenseView& U() const override;
+
+    DenseView& S() override;
+    const DenseView& S() const override;
+
+    DenseView& V() override;
+    const DenseView& V() const override;
+
+    LowRankView(const Node& node, const LowRank& A);
+
   };
 
 } // namespace hicma

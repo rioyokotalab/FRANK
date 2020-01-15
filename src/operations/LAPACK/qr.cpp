@@ -152,14 +152,14 @@ namespace hicma
   } END_SPECIALIZATION
 
   BEGIN_SPECIALIZATION(make_left_orthogonal_omm, dense_tuple, const LowRank& A) {
-    Dense Au(A.U);
-    Dense Qu(A.U.dim[0], A.U.dim[1]);
-    Dense Ru(A.U.dim[1], A.U.dim[1]);
+    Dense Au(A.U());
+    Dense Qu(A.U().dim[0], A.U().dim[1]);
+    Dense Ru(A.U().dim[1], A.U().dim[1]);
     qr(Au, Qu, Ru);
-    Dense RS(Ru.dim[0], A.S.dim[1]);
-    gemm(Ru, A.S, RS, 1, 1);
-    Dense RSV(RS.dim[0], A.V.dim[1]);
-    gemm(RS, A.V, RSV, 1, 1);
+    Dense RS(Ru.dim[0], A.S().dim[1]);
+    gemm(Ru, A.S(), RS, 1, 1);
+    Dense RSV(RS.dim[0], A.V().dim[1]);
+    gemm(RS, A.V(), RSV, 1, 1);
     return {std::move(Qu), std::move(RSV)};
   } END_SPECIALIZATION;
 
@@ -191,13 +191,13 @@ namespace hicma
 
   BEGIN_SPECIALIZATION(split_by_column_omm, NodeProxy, const LowRank& A, Hierarchical& storage, int& currentRow) {
     LowRank _A(A);
-    Dense Qu(_A.U.dim[0], _A.U.dim[1]);
-    Dense Ru(_A.U.dim[1], _A.U.dim[1]);
-    qr(_A.U, Qu, Ru);
-    Dense RS(Ru.dim[0], _A.S.dim[1]);
-    gemm(Ru, _A.S, RS, 1, 0);
-    Dense RSV(RS.dim[0], _A.V.dim[1]);
-    gemm(RS, _A.V, RSV, 1, 0);
+    Dense Qu(_A.U().dim[0], _A.U().dim[1]);
+    Dense Ru(_A.U().dim[1], _A.U().dim[1]);
+    qr(_A.U(), Qu, Ru);
+    Dense RS(Ru.dim[0], _A.S().dim[1]);
+    gemm(Ru, _A.S(), RS, 1, 0);
+    Dense RSV(RS.dim[0], _A.V().dim[1]);
+    gemm(RS, _A.V(), RSV, 1, 0);
     //Split R*S*V
     Hierarchical splitted(RSV, 1, storage.dim[1]);
     for(int i=0; i<storage.dim[1]; i++) {
@@ -252,9 +252,9 @@ namespace hicma
     assert(concatenatedRow.dim[0] == A.rank);
     assert(concatenatedRow.dim[1] == A.dim[1]);
     LowRank _A(A.dim[0], A.dim[1], A.rank);
-    _A.U = Q;
-    _A.V = concatenatedRow;
-    _A.S = Dense(identity, x, _A.rank, _A.rank);
+    _A.U() = Q;
+    _A.V() = concatenatedRow;
+    _A.S() = Dense(identity, x, _A.rank, _A.rank);
     currentRow++;
     return _A;
   } END_SPECIALIZATION;
@@ -297,9 +297,11 @@ namespace hicma
   } END_SPECIALIZATION;
 
   BEGIN_SPECIALIZATION(zero_whole_omm, void, LowRank& A) {
-    A.U = 0.0; for(int i=0; i<std::min(A.U.dim[0], A.U.dim[1]); i++) A.U(i, i) = 1.0;
-    A.S = 0.0;
-    A.V = 0.0; for(int i=0; i<std::min(A.V.dim[0], A.V.dim[1]); i++) A.V(i, i) = 1.0;
+    A.U() = 0.0;
+    for(int i=0; i<std::min(A.U().dim[0], A.U().dim[1]); i++) A.U()(i, i) = 1.0;
+    A.S() = 0.0;
+    A.V() = 0.0;
+    for(int i=0; i<std::min(A.V().dim[0], A.V().dim[1]); i++) A.V()(i, i) = 1.0;
   } END_SPECIALIZATION;
 
   BEGIN_SPECIALIZATION(zero_whole_omm, void, Node& A) {
