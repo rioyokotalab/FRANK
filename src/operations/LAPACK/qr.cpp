@@ -64,13 +64,15 @@ namespace hicma
     assert(R.dim[0] == A.dim[1]);
     assert(R.dim[1] == A.dim[1]);
     timing::start("QR");
+    timing::start("DGEQRF");
     int k = std::min(A.dim[0], A.dim[1]);
     std::vector<double> tau(k);
     for(int i=0; i<std::min(Q.dim[0], Q.dim[1]); i++) Q(i, i) = 1.0;
-    timing::start("DGEQRF");
     LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, A.dim[0], A.dim[1], &A, A.stride, &tau[0]);
     timing::stop("DGEQRF");
     timing::start("DORGQR");
+    // TODO Consider using A for the dorgqr and moving to Q afterwards! That
+    // also simplify this loop.
     for(int i=0; i<A.dim[0]; i++) {
       for(int j=0; j<A.dim[1]; j++) {
         if(j>=i)
