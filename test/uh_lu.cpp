@@ -18,11 +18,7 @@ int main(int argc, char const *argv[])
   int rank = argc > 3 ? atoi(argv[3]) : 8;
   int admis = argc > 4 ? atoi(argv[4]) : 0;
   int nleaf = N/nblocks;
-  std::vector<double> randx(N);
-  for (int i=0; i<N; i++) {
-    randx[i] = drand48();
-  }
-  std::sort(randx.begin(), randx.end());
+  std::vector<double> randx = get_sorted_random_vector(N);
   timing::start("Init matrix");
   UniformHierarchical A(
     laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);

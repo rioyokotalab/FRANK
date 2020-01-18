@@ -26,11 +26,7 @@ int main(int argc, char** argv)
     int n = (b+1)*16;
     m = 16;
     n = 16;
-    std::vector<double> randx(2*m);
-    for (int i=0; i<2*m; i++) {
-      randx[i] = drand48();
-    }
-    std::sort(randx.begin(), randx.end());
+    std::vector<double> randx = get_sorted_random_vector(2*m);
     Dense A(laplace1d, randx, m, n, 0, n);
     vecA.push_back(A);
   }

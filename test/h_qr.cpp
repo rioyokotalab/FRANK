@@ -13,11 +13,7 @@ int main(int argc, char** argv) {
   int N = 128;
   int nleaf = 16;
   int rank = 8;
-  std::vector<double> randx(N);
-  for (int i=0; i<N; i++) {
-    randx[i] = drand48();
-  }
-  std::sort(randx.begin(), randx.end());
+  std::vector<double> randx = get_sorted_random_vector(N);
   timing::start("Init matrix");
   int nblocks=0, admis=0;
   if(argc < 2) {

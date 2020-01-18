@@ -1,5 +1,6 @@
 add_library(util OBJECT
     counter.cpp
+    experiment_setup.cpp
     get_memory_usage.cpp
     l2_error.cpp
     print.cpp

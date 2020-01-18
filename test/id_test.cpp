@@ -19,9 +19,7 @@ TEST(IDTest, Precision) {
   int k = 32;
 
   timing::start("Initialization");
-  std::vector<double> randx(std::max(M, N)*2);
-  for (double& a : randx) a = drand48();
-  std::sort(randx.begin(), randx.end());
+  std::vector<double> randx = get_sorted_random_vector(N);
   Hierarchical H(laplace1d, randx, M*2, N*2, k, std::max(M, N), 1);
   Dense A(H(M>=N, M<N));
   Dense Awork(A);

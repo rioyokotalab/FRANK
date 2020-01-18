@@ -12,14 +12,10 @@ int main(int argc, char** argv) {
   int N = 64;
   int Nb = 16;
   int Nc = N / Nb;
-  std::vector<double> randx(N);
+  std::vector<double> randx = get_sorted_random_vector(N);
   Hierarchical A(Nc, Nc);
   Hierarchical Q(Nc, Nc);
   Hierarchical R(Nc, Nc);
-  for(int i = 0; i < N; i++) {
-    randx[i] = drand48();
-  }
-  std::sort(randx.begin(), randx.end());
   print("Time");
   timing::start("Init matrix");
   for(int ic = 0; ic < Nc; ic++) {

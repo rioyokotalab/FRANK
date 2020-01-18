@@ -12,11 +12,7 @@ int main(int argc, char** argv) {
   yorel::multi_methods::initialize();
   int N = 2048;
   int rank = 128;
-  std::vector<double> randx(2*N);
-  for (int i=0; i<2*N; i++) {
-    randx[i] = drand48();
-  }
-  std::sort(randx.begin(), randx.end());
+  std::vector<double> randx = get_sorted_random_vector(2*N);
   print("Time");
   timing::start("Init matrix");
   Dense D(laplace1d, randx, N, N, 0, N);

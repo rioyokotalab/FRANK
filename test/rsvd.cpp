@@ -14,11 +14,7 @@ int main(int argc, char** argv) {
   int rank = 16;
 
   timing::start("Init matrix");
-  std::vector<double> randx(2*N);
-  for (int i=0; i<2*N; i++) {
-    randx[i] = drand48();
-  }
-  std::sort(randx.begin(), randx.end());
+  std::vector<double> randx = get_sorted_random_vector(2*N);
   Dense D(laplace1d, randx, N, N, 0, N);
   timing::stopAndPrint("Init matrix");
 
