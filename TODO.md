@@ -1,6 +1,14 @@
 ### Immediate
 
 ### Features to implement
+* Regression testing
+    * Clearly defined benchmarking suite
+    * Separate repo with HiCMA as submodule
+    * Execute on TSUBAME, ABCI etc
+    * Automatic figure generation
+    * Simple website for viewing? (Highchart, free for research projects)
+* Testing
+* Documentation
 * RSVD with controllable precision on CPU
 * Tile LU
 * GPU LU
