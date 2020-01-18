@@ -22,16 +22,16 @@ namespace hicma {
 
   MULTI_METHOD(
     fillXML_omm, void,
-    const virtual_<Node>&, boost::property_tree::ptree& tree
+    const virtual_<Node>&, pt::ptree& tree
   );
 
-  void fillXML(const Node& A, boost::property_tree::ptree& tree) {
+  void fillXML(const Node& A, pt::ptree& tree) {
     fillXML_omm(A, tree);
   }
 
   BEGIN_SPECIALIZATION(
     fillXML_omm, void,
-    const Hierarchical& A, boost::property_tree::ptree& tree
+    const Hierarchical& A, pt::ptree& tree
   ) {
     for (int i=0; i<A.dim[0]; i++) {
       for (int j=0; j<A.dim[1]; j++) {
@@ -52,7 +52,7 @@ namespace hicma {
 
   BEGIN_SPECIALIZATION(
     fillXML_omm, void,
-    const LowRank& A, boost::property_tree::ptree& tree
+    const LowRank& A, pt::ptree& tree
   ) {
     Dense AD(A);
     Dense S = get_singular_values(AD);
@@ -71,7 +71,7 @@ namespace hicma {
 
   BEGIN_SPECIALIZATION(
     fillXML_omm, void,
-    const LowRankShared& A, boost::property_tree::ptree& tree
+    const LowRankShared& A, pt::ptree& tree
   ) {
     Dense AD(A);
     Dense S = get_singular_values(AD);
@@ -90,7 +90,7 @@ namespace hicma {
 
   BEGIN_SPECIALIZATION(
     fillXML_omm, void,
-    const Dense& A, boost::property_tree::ptree& tree
+    const Dense& A, pt::ptree& tree
   ) {
     Dense A_(A);
     Dense S = get_singular_values(A_);
@@ -108,13 +108,12 @@ namespace hicma {
 
   BEGIN_SPECIALIZATION(
     fillXML_omm, void,
-    const Node& A, boost::property_tree::ptree& tree
+    const Node& A, pt::ptree& tree
   ) {
     std::cerr << "WARNING: XML output not defined for " << A.type() << "!" << std::endl;
   } END_SPECIALIZATION;
 
   void printXML(const Node& A, std::string filename) {
-    namespace pt = boost::property_tree;
     pt::ptree tree;
     // Write any header info you want here, like a time stamp
     // And then pass pass A into printXML along with the basic ptree
