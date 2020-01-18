@@ -10,8 +10,10 @@
 namespace hicma {
 namespace timing {
 
+class Timer;
+
 // Functions to manipulate global timer state machine
-void start(std::string event);
+Timer& start(std::string event);
 
 double stop(std::string event);
 
@@ -20,6 +22,10 @@ void clearTimers();
 void stopAndPrint(std::string event, int depth = 0);
 
 void printTime(std::string event, int depth = 0);
+
+double getTotalTime(std::string event);
+
+unsigned int getNRuns(std::string event);
 
 // Interface of the Timer class if user wants to create own timers
 class Timer {
@@ -40,19 +46,19 @@ public:
 
   Timer* get_parent() const;
 
-  std::vector<double> get_durations_list() const;
+  std::vector<double> get_times() const;
 
-  size_t get_number_of_runs() const;
+  size_t get_n_runs() const;
 
-  double get_total_duration() const;
+  double get_total_time() const;
 
-  const std::map<std::string, Timer>& get_subtimers() const;
+  const std::map<std::string, double> get_subtimers() const;
 
   const Timer& operator[](std::string event) const;
 
   Timer& operator[](std::string event);
 
-  void print_to_depth(std::string event, int depth) const;
+  void print_to_depth(int depth) const;
 
 private:
   using clock = std::chrono::high_resolution_clock;
@@ -62,8 +68,8 @@ private:
   Timer* parent;
   bool running;
   time_point start_time;
-  std::vector<seconds> durations;
-  seconds total_duration;
+  std::vector<seconds> times;
+  seconds total_time;
   std::map<std::string, Timer> subtimers;
 
   void print_to_depth(int depth, int at_depth, std::string tag_pre = "") const;

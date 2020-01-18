@@ -18,9 +18,10 @@ Timer GlobalTimer;
 // Timer into recursive state machine
 Timer* current_timer = &GlobalTimer;
 
-void start(std::string event) {
+Timer& start(std::string event) {
   current_timer->start_subtimer(event);
   current_timer = &(*current_timer)[event];
+  return *current_timer;
 }
 
 double stop(std::string event) {
@@ -42,19 +43,26 @@ void stopAndPrint(std::string event, int depth) {
 }
 
 void printTime(std::string event, int depth) {
-  current_timer->print_to_depth(event, depth);
+  (*current_timer)[event].print_to_depth(depth);
 }
 
+double getTotalTime(std::string event) {
+  return (*current_timer)[event].get_total_time();
+}
+
+unsigned int getNRuns(std::string event){
+  return (*current_timer)[event].get_n_runs();
+}
 
 Timer::Timer() {
   name = "";
   parent = nullptr;
-  total_duration = seconds::zero();
+  total_time = seconds::zero();
 }
 
 Timer::Timer(std::string name, Timer* parent)
 : name(name), parent(parent) {
-  total_duration = seconds::zero();
+  total_time = seconds::zero();
 }
 
 void Timer::start() {
@@ -74,16 +82,16 @@ double Timer::stop() {
   assert(running);
   time_point end_time = clock::now();
   running = false;
-  seconds duration = end_time - start_time;
-  durations.push_back(duration);
-  total_duration += duration;
-  return duration.count();
+  seconds time = end_time - start_time;
+  times.push_back(time);
+  total_time += time;
+  return time.count();
 }
 
 void Timer::clear() {
   assert(!running);
   assert(parent == nullptr && name.empty());
-  total_duration = seconds::zero();
+  total_time = seconds::zero();
   subtimers.clear();
 }
 
@@ -91,24 +99,28 @@ std::string Timer::get_name() const { return name; }
 
 Timer* Timer::get_parent() const { return parent; }
 
-double Timer::get_total_duration() const {
-  return total_duration.count();
+double Timer::get_total_time() const {
+  return total_time.count();
 }
 
-std::vector<double> Timer::get_durations_list() const {
-  std::vector<double> durations_list;
-  for (const seconds& duration : durations) {
-    durations_list.push_back(duration.count());
+std::vector<double> Timer::get_times() const {
+  std::vector<double> times_list;
+  for (const seconds& time : times) {
+    times_list.push_back(time.count());
   }
-  return durations_list;
+  return times_list;
 }
 
-size_t Timer::get_number_of_runs() const {
-  return durations.size();
+size_t Timer::get_n_runs() const {
+  return times.size();
 }
 
-const std::map<std::string, Timer>& Timer::get_subtimers() const {
-  return subtimers;
+const std::map<std::string, double> Timer::get_subtimers() const {
+  std::map<std::string, double> subtimer_list;
+  for (const auto& pair : subtimers) {
+    subtimer_list[pair.first] = pair.second.get_total_time();
+  }
+  return subtimer_list;
 }
 
 const Timer& Timer::operator[](std::string event) const {
@@ -121,28 +133,26 @@ Timer& Timer::operator[](std::string event) {
   return subtimers[event];
 }
 
-void Timer::print_to_depth(
-  std::string event, int depth
-) const {
-  assert(!(*this)[event].running);
-  (*this)[event].print_to_depth(depth, 0);
+void Timer::print_to_depth(int depth) const {
+  assert(!running);
+  print_to_depth(depth, 0);
 }
 
 void Timer::print_to_depth(int depth, int at_depth, std::string tag_pre) const {
   std::string tag = tag_pre;
-  print(at_depth == 0 ? name : tag+"--"+name, total_duration.count());
+  print(at_depth == 0 ? name : tag+"--"+name, total_time.count());
   if (depth > 0) {
-    std::vector<const Timer*> duration_sorted;
+    std::vector<const Timer*> time_sorted;
     for (const auto& pair : subtimers) {
-      duration_sorted.push_back(&pair.second);
+      time_sorted.push_back(&pair.second);
     }
     std::sort(
-      duration_sorted.begin(), duration_sorted.end(),
+      time_sorted.begin(), time_sorted.end(),
       [](const Timer* a, const Timer* b) {
-        return a->total_duration > b->total_duration;
+        return a->total_time > b->total_time;
       }
     );
-    for (const Timer* ptr : duration_sorted) {
+    for (const Timer* ptr : time_sorted) {
       std::string child_tag = tag_pre;
       child_tag += " |";
       ptr->print_to_depth(depth-1, at_depth+1, child_tag);
@@ -151,11 +161,11 @@ void Timer::print_to_depth(int depth, int at_depth, std::string tag_pre) const {
   if (depth > 0 && subtimers.size() > 0) {
     double subcounter_sum = 0;
     for (const auto& pair : subtimers) {
-      subcounter_sum += pair.second.total_duration.count();
+      subcounter_sum += pair.second.total_time.count();
     }
     print(
       tag+" |_Subcounters [%]",
-      int(std::round(subcounter_sum/total_duration.count()*100))
+      int(std::round(subcounter_sum/total_time.count()*100))
     );
   }
 }
