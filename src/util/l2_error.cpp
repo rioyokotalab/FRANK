@@ -15,6 +15,7 @@ using yorel::multi_methods::virtual_;
 namespace hicma
 {
 
+// TODO Inefficient! Avoid copies!
 double l2_error(const Node& A, const Node& B) {
   return l2_error_omm(A, B);
 }
