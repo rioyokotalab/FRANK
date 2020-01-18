@@ -321,7 +321,7 @@ namespace hicma
     assert(R.dim[1] == A.dim[0]);
     assert(Q.dim[0] == A.dim[0]);
     assert(Q.dim[1] == A.dim[1]);
-    timing::start("DGEQRF");
+    timing::start("DGERQF");
     std::vector<double> tau(A.dim[1]);
     LAPACKE_dgerqf(LAPACK_ROW_MAJOR, A.dim[0], A.dim[1], &A, A.stride, &tau[0]);
     // TODO Consider making special function for this. Performance heavy
@@ -341,7 +341,7 @@ namespace hicma
       &tau[0]
     );
     Q = std::move(A);
-    timing::stop("DGEQRF");
+    timing::stop("DGERQF");
   } END_SPECIALIZATION;
 
 } // namespace hicma
