@@ -102,6 +102,7 @@ namespace hicma {
     NoCopySplit InnerH(InnerU, 2, 1);
     gemm(U, Au, InnerH[0], true, false, 1, 0);
 
+    // TODO This copy has significant cost. Avoidable?
     Dense U_UUtAu(Au);
     gemm(U, InnerH[0], U_UUtAu, -1, 1);
 
@@ -123,6 +124,7 @@ namespace hicma {
     NoCopySplit InnerH(InnerV, 1, 2);
     gemm(Av, V, InnerH[0], false, true, 1, 0);
 
+    // TODO This copy has significant cost. Avoidable?
     Dense Av_AvVtV(Av);
     gemm(InnerH[0], V, Av_AvVtV, -1, 1);
 
