@@ -64,12 +64,12 @@ private:
   using clock = std::chrono::high_resolution_clock;
   typedef std::chrono::time_point<std::chrono::high_resolution_clock> time_point;
   typedef std::chrono::duration<double> seconds;
-  std::string name;
-  Timer* parent;
-  bool running;
+  std::string name = "";
+  Timer* parent = nullptr;
+  bool running = false;
   time_point start_time;
   std::vector<seconds> times;
-  seconds total_time;
+  seconds total_time = seconds::zero();
   std::map<std::string, Timer> subtimers;
 
   void print_to_depth(int depth, int at_depth, std::string tag_pre = "") const;

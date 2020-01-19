@@ -58,11 +58,13 @@ Timer::Timer() {
   name = "";
   parent = nullptr;
   total_time = seconds::zero();
+  running = false;
 }
 
 Timer::Timer(std::string name, Timer* parent)
 : name(name), parent(parent) {
   total_time = seconds::zero();
+  running = false;
 }
 
 void Timer::start() {
