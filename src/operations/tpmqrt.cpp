@@ -36,7 +36,7 @@ BEGIN_SPECIALIZATION(
   LAPACKE_dtprfb(
     LAPACK_ROW_MAJOR,
     'L', (trans ? 'T': 'N'), 'F', 'C',
-    A.dim[0], A.dim[1], V.dim[1], 0,
+    B.dim[0], B.dim[1], T.dim[1], 0,
     &V[0], V.dim[1],
     &T[0], T.dim[1],
     &A[0], A.dim[1],
@@ -153,7 +153,7 @@ BEGIN_SPECIALIZATION(
   Vt.transpose();
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
-  gemm(Dense(identity, x, C.dim[0], C.dim[1]), C, A, -1, 1); //A = A - I*C
+  gemm(Dense(identity, x, C.dim[0], C.dim[0]), C, A, -1, 1); //A = A - I*C
   gemm(V, C, B, -1, 1); //B = B - Y*C
 } END_SPECIALIZATION;
 
@@ -162,17 +162,6 @@ BEGIN_SPECIALIZATION(
   const LowRank& V, const Dense& T, LowRank& A, LowRank& B,
   const bool trans
 ) {
-  // Using this method, somehow overall accuracy is better (runtime might be slower)
-  // For laplace1d matrix, N=256, Nb=32, weak admis:
-  //   Accuracy went from 1e-09 to 1e-11
-  //   Orthogonality went from 1e-10 to 1e-13
-  // Dense UV(V.U.dim[0], V.V.dim[1]);
-  // gemm(V.U, V.V, UV, 1, 0);
-  // Dense AD(A);
-  // Dense BD(B);
-  // tpmqrt(UV, T, AD, BD, trans);
-  // A = LowRank(AD, A.rank);
-  // B = LowRank(BD, B.rank);
   std::vector<double> x;
   LowRank C(A);
   LowRank Vt(V);
@@ -251,3 +240,4 @@ BEGIN_SPECIALIZATION(
 } END_SPECIALIZATION;
 
 } // namespace hicma
+
