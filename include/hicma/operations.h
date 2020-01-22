@@ -10,5 +10,6 @@
 #include "hicma/operations/larfb.h"
 #include "hicma/operations/geqrt.h"
 #include "hicma/operations/qr.h"
+#include "hicma/operations/get_dim.h"
 
 #endif // operations_h

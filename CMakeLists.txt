@@ -48,6 +48,7 @@ add_library(hicma
     src/operations/larfb.cpp
     src/operations/geqrt.cpp
     src/operations/qr.cpp
+    src/operations/get_dim.cpp
 )
 
 # Custom compilation options
