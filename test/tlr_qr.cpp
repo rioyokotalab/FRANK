@@ -9,48 +9,69 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <random>
 
 #include "yorel/multi_methods.hpp"
 
 using namespace hicma;
 
+std::vector<std::vector<double>> generatePoints(int N, int dim) {
+  std::mt19937 generator;
+  std::uniform_real_distribution<double> distribution(0.0, 1.0);
+  std::vector<std::vector<double>> pts(dim, std::vector<double>(N));
+  //Generate points from random distribution
+  for(int i=0; i<N; i++) {
+    for(int j=0; j<dim; j++) {
+      pts[j][i] = distribution(generator);
+    }
+  }
+  //Sort points
+  for(int j=0; j<dim; j++) {
+    std::sort(pts[j].begin(), pts[j].end());
+  }
+  return pts;
+}
+
 int main(int argc, char** argv) {
   yorel::multi_methods::initialize();
-  int N = 256;
-  int Nb = 32;
+  int N = argc > 1 ? atoi(argv[1]) : 256;
+  int Nb = argc > 2 ? atoi(argv[2]) : 32;
+  int rank = argc > 3 ? atoi(argv[3]) : 16;
+  double admis = argc > 4 ? atof(argv[4]) : 0;
   int Nc = N / Nb;
-  int rank = 16;
-  std::vector<double> randx(N);
-  for(int i = 0; i < N; i++) {
-    randx[i] = drand48();
-  }
-  std::sort(randx.begin(), randx.end());
+  std::vector<std::vector<double>> randpts = generatePoints(N, 1);
+
   Hierarchical A(Nc, Nc);
   Hierarchical D(Nc, Nc);
   Hierarchical Q(Nc, Nc);
   Hierarchical T(Nc, Nc);
-  Hierarchical QR(Nc, Nc);
   for (int ic=0; ic<Nc; ic++) {
     for (int jc=0; jc<Nc; jc++) {
-      Dense Aij(laplace1d, randx, Nb, Nb, Nb*ic, Nb*jc);
-      Dense Qij(identity, randx, Nb, Nb, Nb*ic, Nb*jc);
-      Dense Tij(zeros, randx, Nb, Nb, Nb*ic, Nb*jc);
+      int bi = Nb + ((ic == (Nc-1)) ? N % Nb : 0);
+      int bj = Nb + ((jc == (Nc-1)) ? N % Nb : 0);
+      Dense Aij(laplacend, randpts, bi, bj, Nb*ic, Nb*jc, ic, jc, 1);
+      Dense Qij(identity, randpts[0], bi, bj, Nb*ic, Nb*jc);
+      Dense Tij(zeros, randpts[0], bj, bj);
       D(ic,jc) = Aij;
       T(ic,jc) = Tij;
-      if (std::abs(ic - jc) <= 0) {
+      if (std::abs(ic-jc) <= (int)admis) {
         A(ic,jc) = Aij;
         Q(ic,jc) = Qij;
-        QR(ic,jc) = Tij;
       }
       else {
         rsvd_push(A(ic,jc), Aij, rank);
         rsvd_push(Q(ic,jc), Qij, rank);
-        rsvd_push(QR(ic,jc), Tij, rank);
       }
     }
   }
   rsvd_batch();
-  Hierarchical A_copy(A);
+  printXML(A);
+
+  // For residual measurement
+  Dense x(N); x = 1.0;
+  Dense Ax(N);
+  gemm(A, x, Ax, 1, 1);
+  //Approximation error
   double diff, norm;
   diff = (Dense(A) - Dense(D)).norm();
   norm = D.norm();
@@ -94,15 +115,20 @@ int main(int argc, char** argv) {
     }
   }
 
-  gemm(Q, A, QR, 1, 1);
-  diff = (Dense(A_copy) - Dense(QR)).norm();
-  norm = A_copy.norm();
-  print("Accuracy");
+  //Residual
+  Dense Rx(N);
+  gemm(A, x, Rx, 1, 1);
+  Dense QRx(N);
+  gemm(Q, Rx, QRx, 1, 1);
+  diff = (Ax - QRx).norm();
+  norm = Ax.norm();
+  print("Residual");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
+  //Orthogonality
   Dense DQ(Q);
   Dense QtQ(DQ.dim[0], DQ.dim[1]);
   gemm(DQ, DQ, QtQ, CblasTrans, CblasNoTrans, 1, 0);
-  Dense Id(identity, randx, QtQ.dim[0], QtQ.dim[1]);
+  Dense Id(identity, randpts[0], QtQ.dim[0], QtQ.dim[1]);
   diff = (QtQ - Id).norm();
   norm = Id.norm();
   print("Orthogonality");
