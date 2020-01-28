@@ -10,6 +10,7 @@
 #include <cmath>
 #include <iostream>
 #include <random>
+#include <iomanip>
 
 #include "yorel/multi_methods.hpp"
 
@@ -122,12 +123,13 @@ int main(int argc, char** argv) {
   print("Residual");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
   //Orthogonality
-  Dense DQ(Q);
-  Dense QtQ(DQ.dim[1], DQ.dim[1]);
-  gemm(DQ, DQ, QtQ, CblasTrans, CblasNoTrans, 1, 0);
-  Dense Id(identity, randpts[0], QtQ.dim[0], QtQ.dim[1]);
-  diff = (QtQ - Id).norm();
-  norm = Id.norm();
+  Dense Qx(N);
+  gemm(Q, x, Qx, 1, 1);
+  Dense QtQx(N);
+  Q.transpose();
+  gemm(Q, Qx, QtQx, 1, 1);
+  diff = (QtQx - x).norm();
+  norm = (double)N;
   print("Orthogonality");
   print("Rel. L2 Orthogonality", std::sqrt(diff/norm), false);
   return 0;
