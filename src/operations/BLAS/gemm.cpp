@@ -6,6 +6,7 @@
 #include "hicma/classes/low_rank_shared.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/uniform_hierarchical.h"
+#include "hicma/operations/misc/addition.h"
 #include "hicma/operations/misc/get_dim.h"
 #include "hicma/util/timer.h"
 #include "hicma/util/counter.h"
@@ -244,9 +245,17 @@ BEGIN_SPECIALIZATION(
   const LowRank& A, const LowRank& B, Hierarchical& C,
   double alpha, double beta
 ) {
-  NoCopySplit AH(A, C.dim[0], 1);
-  NoCopySplit BH(B, 1, C.dim[1]);
-  gemm(AH, BH, C, alpha, beta);
+  LowRankView AxB(A, A);
+  AxB.V() = B.V();
+  AxB.col_range = B.col_range;
+  AxB.dim[1] = B.dim[1];
+  Dense S(A.rank, B.rank);
+  gemm(A.V(), B.U(), S, 1, 0);
+  Dense SxVxU(A.rank, B.rank);
+  gemm(A.S(), S, SxVxU, 1, 0);
+  gemm(SxVxU, B.S(), S, alpha, 0);
+  AxB.S() = S;
+  C += AxB;
 } END_SPECIALIZATION;
 
 BEGIN_SPECIALIZATION(

@@ -60,9 +60,6 @@ namespace hicma {
 
     LowRank(const Dense& A, int k);
 
-    // Additional operators
-    const LowRank& operator+=(const LowRank& A);
-
     // Utility methods
     void mergeU(const LowRank& A, const LowRank& B);
 

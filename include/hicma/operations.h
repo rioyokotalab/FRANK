@@ -16,6 +16,7 @@
 #include "hicma/operations/LAPACK/tpmqrt.h"
 #include "hicma/operations/LAPACK/tpqrt.h"
 
+#include "hicma/operations/misc/addition.h"
 #include "hicma/operations/misc/get_dim.h"
 #include "hicma/operations/misc/misc.h"
 #include "hicma/operations/misc/norm.h"
