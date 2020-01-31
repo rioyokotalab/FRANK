@@ -22,7 +22,7 @@ using yorel::multi_methods::virtual_;
 
 namespace hicma {
 
-  Dense::Dense() : dim{0, 0}, stride(dim[1]) { MM_INIT(); }
+  Dense::Dense() : Node() { MM_INIT(); }
 
   Dense::~Dense() = default;
 

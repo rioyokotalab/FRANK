@@ -12,9 +12,9 @@ namespace hicma {
   class Node : public yorel::multi_methods::selector {
   public:
     MM_CLASS(Node);
-    int i_abs; //! Row number of the node on the current recursion level
-    int j_abs; //! Column number of the node on the current recursion level
-    int level; //! Recursion level of the node
+    int i_abs = 0; //! Row number of the node on the current recursion level
+    int j_abs = 0; //! Column number of the node on the current recursion level
+    int level = 0; //! Recursion level of the node
     IndexRange row_range, col_range;
 
     // Special member functions

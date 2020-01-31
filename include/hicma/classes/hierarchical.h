@@ -21,7 +21,7 @@ namespace hicma {
     std::vector<NodeProxy> data;
   public:
     MM_CLASS(Hierarchical, Node);
-    int dim[2];
+    int dim[2] = {0, 0};
 
     // Special member functions
     Hierarchical();

@@ -10,7 +10,7 @@
 
 namespace hicma {
 
-  Node::Node() : i_abs(0), j_abs(0), level(0) { MM_INIT(); }
+  Node::Node() { MM_INIT(); }
 
   Node::~Node() = default;
 

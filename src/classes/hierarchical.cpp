@@ -23,7 +23,7 @@
 
 namespace hicma {
 
-  Hierarchical::Hierarchical() : dim{0, 0} { MM_INIT(); }
+  Hierarchical::Hierarchical() : Node() { MM_INIT(); }
 
   Hierarchical::~Hierarchical() = default;
 
@@ -102,7 +102,7 @@ namespace hicma {
     dim[0] = std::min(ni_level, row_range.length);
     dim[1] = std::min(nj_level, col_range.length);
     create_children();
-    for (NodeProxy& child : data) {
+    for (NodeProxy& child : *this) {
       if (is_admissible(child, admis)) {
         if (is_leaf(child, nleaf)) {
           child = Dense(child, func, x);

@@ -20,8 +20,8 @@ namespace hicma {
     std::vector<double> data;
   public:
     MM_CLASS(Dense, Node);
-    int dim[2];
-    int stride;
+    int dim[2] = {0, 0};
+    int stride = 0;
 
     // Special member functions
     Dense();

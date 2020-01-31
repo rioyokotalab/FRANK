@@ -8,8 +8,8 @@ namespace hicma
 
 class IndexRange {
 public:
-  int start;
-  int length;
+  int start = 0;
+  int length = 0;
 
   // Special member functions
   IndexRange();

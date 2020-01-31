@@ -13,7 +13,7 @@
 namespace hicma
 {
 
-LowRankShared::LowRankShared() : dim{0, 0}, rank(0) { MM_INIT(); }
+LowRankShared::LowRankShared() : Node() { MM_INIT(); }
 
 LowRankShared::~LowRankShared() = default;
 

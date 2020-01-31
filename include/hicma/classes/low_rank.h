@@ -15,8 +15,8 @@ namespace hicma {
     Dense _U, _S, _V;
   public:
     MM_CLASS(LowRank, Node);
-    int dim[2];
-    int rank;
+    int dim[2] = {0, 0};
+    int rank = 0;
 
     // Special member functions
     LowRank();

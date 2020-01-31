@@ -13,8 +13,8 @@ namespace hicma {
 class LowRankShared : public Node {
  public:
   MM_CLASS(LowRankShared, Node);
-  int dim[2];
-  int rank;
+  int dim[2] = {0, 0};
+  int rank = 0;
 
   class SharedBasis {
   private:
