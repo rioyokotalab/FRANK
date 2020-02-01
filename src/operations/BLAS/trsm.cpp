@@ -4,6 +4,7 @@
 #include "hicma/classes/dense.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/hierarchical.h"
+#include "hicma/classes/no_copy_split.h"
 #include "hicma/operations/BLAS/gemm.h"
 #include "hicma/util/timer.h"
 

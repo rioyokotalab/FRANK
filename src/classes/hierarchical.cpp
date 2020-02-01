@@ -1,4 +1,5 @@
 #include "hicma/classes/hierarchical.h"
+#include "hicma/extension_headers/classes.h"
 
 #include "hicma/classes/node.h"
 #include "hicma/classes/node_proxy.h"
@@ -53,6 +54,10 @@ namespace hicma {
 
   MULTI_METHOD(move_from_hierarchical, Hierarchical, virtual_<Node>&);
 
+  Hierarchical::Hierarchical(NodeProxy&& A) {
+    *this = move_from_hierarchical(A);
+  }
+
   BEGIN_SPECIALIZATION(
     move_from_hierarchical, Hierarchical,
     Hierarchical& A
@@ -68,10 +73,6 @@ namespace hicma {
     abort();
   } END_SPECIALIZATION;
 
-  Hierarchical::Hierarchical(NodeProxy&& A) {
-    *this = move_from_hierarchical(A);
-  }
-
   Hierarchical::Hierarchical(
     const Node& node, int ni_level, int nj_level, bool node_only
   ) : Node(node), dim{ni_level, nj_level} {
@@ -82,6 +83,42 @@ namespace hicma {
       *this = make_hierarchical(node, ni_level, nj_level);
     }
   }
+
+  BEGIN_SPECIALIZATION(
+    make_hierarchical, Hierarchical,
+    const Dense& A, int ni_level, int nj_level
+  ) {
+    timing::start("make_hierarchical(D)");
+    Hierarchical out(A, ni_level, nj_level, true);
+    out.create_children();
+    for (NodeProxy& child : out) {
+      child = A.get_part(child);
+    }
+    timing::stop("make_hierarchical(D)");
+    return out;
+  } END_SPECIALIZATION;
+
+  BEGIN_SPECIALIZATION(
+    make_hierarchical, Hierarchical,
+    const LowRank& A, int ni_level, int nj_level
+  ) {
+    timing::start("make_hierarchical(LR)");
+    Hierarchical out(A, ni_level, nj_level, true);
+    out.create_children();
+    for (NodeProxy& child : out) {
+      child = A.get_part(child);
+    }
+    timing::stop("make_hierarchical(LR)");
+    return out;
+  } END_SPECIALIZATION;
+
+  BEGIN_SPECIALIZATION(
+    make_hierarchical, Hierarchical,
+    const Node& A, int ni_level, int nj_level
+  ) {
+    std::cout << "Cannot create Hierarchical from " << A.type() << "!" << std::endl;
+    abort();
+  } END_SPECIALIZATION;
 
   Hierarchical::Hierarchical(
     int ni_level, int nj_level,
@@ -301,172 +338,5 @@ namespace hicma {
       node.j_abs - j_abs*dim[1]
     };
   }
-
-  Hierarchical make_hierarchical(
-    const Node& A, int ni_level, int nj_level
-  ) {
-    return make_hierarchical_omm(A, ni_level, nj_level);
-  }
-
-  BEGIN_SPECIALIZATION(
-    make_hierarchical_omm, Hierarchical,
-    const Dense& A, int ni_level, int nj_level
-  ) {
-    timing::start("make_hierarchical(D)");
-    Hierarchical out(A, ni_level, nj_level, true);
-    out.create_children();
-    for (NodeProxy& child : out) {
-      child = A.get_part(child);
-    }
-    timing::stop("make_hierarchical(D)");
-    return out;
-  } END_SPECIALIZATION;
-
-  BEGIN_SPECIALIZATION(
-    make_hierarchical_omm, Hierarchical,
-    const LowRank& A, int ni_level, int nj_level
-  ) {
-    timing::start("make_hierarchical(LR)");
-    Hierarchical out(A, ni_level, nj_level, true);
-    out.create_children();
-    for (NodeProxy& child : out) {
-      child = A.get_part(child);
-    }
-    timing::stop("make_hierarchical(LR)");
-    return out;
-  } END_SPECIALIZATION;
-
-  BEGIN_SPECIALIZATION(
-    make_hierarchical_omm, Hierarchical,
-    const Node& A, int ni_level, int nj_level
-  ) {
-    std::cout << "Cannot create Hierarchical from " << A.type() << "!" << std::endl;
-    abort();
-  } END_SPECIALIZATION;
-
-
-  NoCopySplit::NoCopySplit() : Hierarchical() { MM_INIT(); }
-
-  NoCopySplit::~NoCopySplit() = default;
-
-  NoCopySplit::NoCopySplit(const NoCopySplit& A) {
-    MM_INIT();
-    *this = A;
-  }
-
-  NoCopySplit& NoCopySplit::operator=(const NoCopySplit& A) = default;
-
-  NoCopySplit::NoCopySplit(NoCopySplit&& A) {
-    MM_INIT();
-    *this = std::move(A);
-  }
-
-  NoCopySplit& NoCopySplit::operator=(NoCopySplit&& A) = default;
-
-  std::unique_ptr<Node> NoCopySplit::clone() const {
-    return std::make_unique<NoCopySplit>(*this);
-  }
-
-  std::unique_ptr<Node> NoCopySplit::move_clone() {
-    return std::make_unique<NoCopySplit>(std::move(*this));
-  }
-
-  const char* NoCopySplit::type() const {
-    return "NoCopySplit";
-  }
-
-  NoCopySplit::NoCopySplit(
-    Node& A, int ni_level, int nj_level, bool node_only
-  ) : Hierarchical(A, ni_level, nj_level, true) {
-    MM_INIT();
-    if (!node_only) {
-      *this = make_no_copy_split(A, ni_level, nj_level);
-    }
-  }
-
-  NoCopySplit make_no_copy_split(
-    Node& A, int ni_level, int nj_level
-  ) {
-    return make_no_copy_split_omm(A, ni_level, nj_level);
-  }
-
-  BEGIN_SPECIALIZATION(
-    make_no_copy_split_omm, NoCopySplit,
-    Dense& A, int ni_level, int nj_level
-  ) {
-    NoCopySplit out(A, ni_level, nj_level, true);
-    out.create_children();
-    for (NodeProxy& child : out) {
-      child = DenseView(child, A);
-    }
-    return out;
-  } END_SPECIALIZATION;
-
-  BEGIN_SPECIALIZATION(
-    make_no_copy_split_omm, NoCopySplit,
-    LowRank& A, int ni_level, int nj_level
-  ) {
-    NoCopySplit out(A, ni_level, nj_level, true);
-    out.create_children();
-    for (NodeProxy& child : out) {
-      child = LowRankView(child, A);
-    }
-    return out;
-  } END_SPECIALIZATION;
-
-  BEGIN_SPECIALIZATION(
-    make_no_copy_split_omm, NoCopySplit,
-    Node& A, int ni_level, int nj_level
-  ) {
-    std::cout << "Cannot create NoCopySplit from " << A.type() << "!" << std::endl;
-    abort();
-  } END_SPECIALIZATION;
-
-  NoCopySplit::NoCopySplit(
-    const Node& A, int ni_level, int nj_level, bool node_only
-  ) : Hierarchical(A, ni_level, nj_level, true) {
-    MM_INIT();
-    if (!node_only) {
-      *this = make_no_copy_split(A, ni_level, nj_level);
-    }
-  }
-
-  NoCopySplit make_no_copy_split(
-    const Node& A, int ni_level, int nj_level
-  ) {
-    return make_no_copy_split_const_omm(A, ni_level, nj_level);
-  }
-
-  BEGIN_SPECIALIZATION(
-    make_no_copy_split_const_omm, NoCopySplit,
-    const Dense& A, int ni_level, int nj_level
-  ) {
-    NoCopySplit out(A, ni_level, nj_level, true);
-    out.create_children();
-    for (NodeProxy& child : out) {
-      child = DenseView(child, A);
-    }
-    return out;
-  } END_SPECIALIZATION;
-
-  BEGIN_SPECIALIZATION(
-    make_no_copy_split_const_omm, NoCopySplit,
-    const LowRank& A, int ni_level, int nj_level
-  ) {
-    NoCopySplit out(A, ni_level, nj_level, true);
-    out.create_children();
-    for (NodeProxy& child : out) {
-      child = LowRankView(child, A);
-    }
-    return out;
-  } END_SPECIALIZATION;
-
-  BEGIN_SPECIALIZATION(
-    make_no_copy_split_const_omm, NoCopySplit,
-    const Node& A, int ni_level, int nj_level
-  ) {
-    std::cout << "Cannot create NoCopySplit from " << A.type() << "!" << std::endl;
-    abort();
-  } END_SPECIALIZATION;
 
 } // namespace hicma

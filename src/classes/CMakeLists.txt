@@ -6,6 +6,7 @@ add_library(classes OBJECT
     low_rank.cpp
     low_rank_shared.cpp
     hierarchical.cpp
+    no_copy_split.cpp
     uniform_hierarchical.cpp
 )
 target_include_directories(classes
