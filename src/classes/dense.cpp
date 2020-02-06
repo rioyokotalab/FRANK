@@ -196,14 +196,22 @@ namespace hicma {
     return *this;
   }
 
+  double* Dense::get_pointer() {
+    return &data[0];
+  }
+
+  const double* Dense::get_pointer() const {
+    return &data[0];
+  }
+
   double& Dense::operator[](int i) {
     assert(dim[0] == 1 || dim[1] == 1);
     if (dim[0] == 1) {
       assert(i < dim[1]);
-      return data[i];
+      return get_pointer()[i];
     } else {
       assert(i < dim[0]);
-      return data[i*stride];
+      return get_pointer()[i*stride];
     }
   }
 
@@ -211,31 +219,31 @@ namespace hicma {
     assert(dim[0] == 1 || dim[1] == 1);
     if (dim[0] == 1) {
       assert(i < dim[1]);
-      return data[i];
+      return get_pointer()[i];
     } else {
       assert(i < dim[0]);
-      return data[i*stride];
+      return get_pointer()[i*stride];
     }
   }
 
   double& Dense::operator()(int i, int j) {
     assert(i < dim[0]);
     assert(j < dim[1]);
-    return data[i*stride+j];
+    return get_pointer()[i*stride+j];
   }
 
   const double& Dense::operator()(int i, int j) const {
     assert(i < dim[0]);
     assert(j < dim[1]);
-    return data[i*stride+j];
+    return get_pointer()[i*stride+j];
   }
 
   double* Dense::operator&() {
-    return &data[0];
+    return get_pointer();
   }
 
   const double* Dense::operator&() const {
-    return &data[0];
+    return get_pointer();
   }
 
   int Dense::size() const {
@@ -403,50 +411,12 @@ namespace hicma {
     return *this;
   }
 
-  double& DenseView::operator[](int i) {
-    assert(dim[0] == 1 || dim[1] == 1);
-    assert(data != nullptr);
-    if (dim[0] == 1) {
-      assert(i < dim[1]);
-      return data[i];
-    } else {
-      assert(i < dim[0]);
-      return data[i*stride];
-    }
-  }
-
-  const double& DenseView::operator[](int i) const {
-    assert(dim[0] == 1 || dim[1] == 1);
-    assert(data != nullptr || const_data != nullptr);
-    if (dim[0] == 1) {
-      assert(i < dim[1]);
-      return data!=nullptr ? data[i] : const_data[i];
-    } else {
-      assert(i < dim[0]);
-      return data!=nullptr ? data[i*stride] : const_data[i*stride];
-    }
-  }
-
-  double& DenseView::operator()(int i, int j) {
-    assert(i < dim[0]);
-    assert(j < dim[1]);
-    assert(data != nullptr);
-    return data[i*stride+j];
-  }
-
-  const double& DenseView::operator()(int i, int j) const {
-    assert(i < dim[0]);
-    assert(j < dim[1]);
-    assert(data != nullptr || const_data != nullptr);
-    return data!=nullptr ? data[i*stride+j] : const_data[i*stride+j];
-  }
-
-  double* DenseView::operator&() {
+  double* DenseView::get_pointer() {
     assert(data != nullptr);
     return data;
   }
 
-  const double* DenseView::operator&() const {
+  const double* DenseView::get_pointer() const {
     assert(data != nullptr || const_data != nullptr);
     return data!=nullptr ? data : const_data;
   }

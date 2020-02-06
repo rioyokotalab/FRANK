@@ -18,6 +18,10 @@ namespace hicma {
   class Dense : public Node {
   private:
     std::vector<double> data;
+  protected:
+    virtual double* get_pointer();
+
+    virtual const double* get_pointer() const;
   public:
     MM_CLASS(Dense, Node);
     int dim[2] = {0, 0};
@@ -98,17 +102,17 @@ namespace hicma {
 
     const Dense& operator*=(const double);
 
-    virtual double& operator[](int i);
+    double& operator[](int i);
 
-    virtual const double& operator[](int i) const;
+    const double& operator[](int i) const;
 
-    virtual double& operator()(int i, int j);
+    double& operator()(int i, int j);
 
-    virtual const double& operator()(int i, int j) const;
+    const double& operator()(int i, int j) const;
 
-    virtual double* operator&();
+    double* operator&();
 
-    virtual const double* operator&() const;
+    const double* operator&() const;
 
     // Utility methods
     int size() const;
@@ -130,6 +134,10 @@ namespace hicma {
   private:
     double* data;
     const double* const_data;
+  protected:
+    virtual double* get_pointer() override;
+
+    virtual const double* get_pointer() const override;
   public:
     MM_CLASS(DenseView, Dense);
 
@@ -160,19 +168,6 @@ namespace hicma {
 
     // Additional operators
     DenseView& operator=(const Dense& A);
-
-    // Overridden operators
-    double& operator[](int i) override;
-
-    const double& operator[](int i) const override;
-
-    double& operator()(int i, int j) override;
-
-    const double& operator()(int i, int j) const override;
-
-    double* operator&() override;
-
-    const double* operator&() const override;
 
     // Delete methods that cannot be used from Dense
     void tranpose() = delete;
