@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "yorel/multi_methods.hpp"
-using yorel::multi_methods::virtual_;
 
 namespace hicma {
 
@@ -127,8 +126,6 @@ namespace hicma {
     Dense get_part(const Node& node) const;
 
   };
-
-  MULTI_METHOD(make_dense, Dense, const virtual_<Node>&);
 
 } // namespace hicma
 

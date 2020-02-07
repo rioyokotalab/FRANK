@@ -1,4 +1,5 @@
 #include "hicma/classes/dense.h"
+#include "hicma/extension_headers/classes.h"
 
 #include "hicma/classes/node.h"
 #include "hicma/classes/node_proxy.h"
@@ -65,7 +66,55 @@ namespace hicma {
     }
   }
 
+  BEGIN_SPECIALIZATION(make_dense, Dense, const Hierarchical& A){
+    timing::start("make_dense(H)");
+    Dense B(get_n_rows(A), get_n_cols(A));
+    // TODO This loop copies the data multiple times
+    int i_begin = 0;
+    for (int i=0; i<A.dim[0]; i++) {
+      int j_begin = 0;
+      for (int j=0; j<A.dim[1]; j++) {
+        Dense AD = Dense(A(i,j));
+        for (int ic=0; ic<AD.dim[0]; ic++) {
+          for (int jc=0; jc<AD.dim[1]; jc++) {
+            B(ic+i_begin, jc+j_begin) = AD(ic,jc);
+          }
+        }
+        j_begin += AD.dim[1];
+      }
+      i_begin += get_n_rows(A(i, 0));
+    }
+    timing::stop("make_dense(H)");
+    // TODO Consider return with std::move. Test if the copy is elided!!
+    return B;
+  } END_SPECIALIZATION;
+
+  BEGIN_SPECIALIZATION(make_dense, Dense, const LowRank& A){
+    timing::start("make_dense(LR)");
+    Dense B(A.dim[0], A.dim[1]);
+    Dense UxS(A.dim[0], A.rank);
+    gemm(A.U(), A.S(), UxS, 1, 0);
+    gemm(UxS, A.V(), B, 1, 0);
+    // TODO Consider return with std::move. Test if the copy is elided!!
+    timing::stop("make_dense(LR)");
+    return B;
+  } END_SPECIALIZATION;
+
+  BEGIN_SPECIALIZATION(make_dense, Dense, const Dense& A){
+    // TODO Consider return with std::move. Test if the copy is elided!!
+    return Dense(A);
+  } END_SPECIALIZATION;
+
+  BEGIN_SPECIALIZATION(make_dense, Dense, const Node& A){
+    std::cout << "Cannot create Dense from " << A.type() << "!" << std::endl;
+    abort();
+  } END_SPECIALIZATION;
+
   MULTI_METHOD(move_from_dense, Dense, virtual_<Node>&);
+
+  Dense::Dense(NodeProxy&& A) {
+    *this = move_from_dense(A);
+  }
 
   BEGIN_SPECIALIZATION(
     move_from_dense, Dense,
@@ -81,10 +130,6 @@ namespace hicma {
     std::cout << "Cannot move to Dense from " << A.type() << "!" << std::endl;
     abort();
   } END_SPECIALIZATION;
-
-  Dense::Dense(NodeProxy&& A) {
-    *this = move_from_dense(A);
-  }
 
   Dense::Dense(
     int m, int n,
@@ -310,49 +355,5 @@ namespace hicma {
     }
     return A;
   }
-
-  BEGIN_SPECIALIZATION(make_dense, Dense, const Hierarchical& A){
-    timing::start("make_dense(H)");
-    Dense B(get_n_rows(A), get_n_cols(A));
-    // TODO This loop copies the data multiple times
-    int i_begin = 0;
-    for (int i=0; i<A.dim[0]; i++) {
-      int j_begin = 0;
-      for (int j=0; j<A.dim[1]; j++) {
-        Dense AD = Dense(A(i,j));
-        for (int ic=0; ic<AD.dim[0]; ic++) {
-          for (int jc=0; jc<AD.dim[1]; jc++) {
-            B(ic+i_begin, jc+j_begin) = AD(ic,jc);
-          }
-        }
-        j_begin += AD.dim[1];
-      }
-      i_begin += get_n_rows(A(i, 0));
-    }
-    timing::stop("make_dense(H)");
-    // TODO Consider return with std::move. Test if the copy is elided!!
-    return B;
-  } END_SPECIALIZATION;
-
-  BEGIN_SPECIALIZATION(make_dense, Dense, const LowRank& A){
-    timing::start("make_dense(LR)");
-    Dense B(A.dim[0], A.dim[1]);
-    Dense UxS(A.dim[0], A.rank);
-    gemm(A.U(), A.S(), UxS, 1, 0);
-    gemm(UxS, A.V(), B, 1, 0);
-    // TODO Consider return with std::move. Test if the copy is elided!!
-    timing::stop("make_dense(LR)");
-    return B;
-  } END_SPECIALIZATION;
-
-  BEGIN_SPECIALIZATION(make_dense, Dense, const Dense& A){
-    // TODO Consider return with std::move. Test if the copy is elided!!
-    return Dense(A);
-  } END_SPECIALIZATION;
-
-  BEGIN_SPECIALIZATION(make_dense, Dense, const Node& A){
-    std::cout << "Cannot create Dense from " << A.type() << "!" << std::endl;
-    abort();
-  } END_SPECIALIZATION;
 
 } // namespace hicma

@@ -1,10 +1,8 @@
 #ifndef hicma_operations_randomized_rid_h
 #define hicma_operations_randomized_rid_h
 
-#include "yorel/multi_methods.hpp"
-using yorel::multi_methods::virtual_;
-
 #include <tuple>
+#include <vector>
 
 namespace hicma
 {

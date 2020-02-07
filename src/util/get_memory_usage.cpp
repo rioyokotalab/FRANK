@@ -10,7 +10,6 @@
 #include "hicma/util/print.h"
 
 #include "yorel/multi_methods.hpp"
-using yorel::multi_methods::virtual_;
 
 #include <memory>
 

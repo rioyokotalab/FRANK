@@ -8,6 +8,7 @@ namespace hicma
 {
 
 class Node;
+class Dense;
 class Hierarchical;
 class NoCopySplit;
 
@@ -25,6 +26,8 @@ MULTI_METHOD(
   make_no_copy_split_const, NoCopySplit,
   const virtual_<Node>&, int ni_level, int nj_level
 );
+
+MULTI_METHOD(make_dense, Dense, const virtual_<Node>&);
 
 } // namespace hicma
 

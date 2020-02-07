@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "yorel/multi_methods.hpp"
-using yorel::multi_methods::virtual_;
 
 namespace hicma
 {
