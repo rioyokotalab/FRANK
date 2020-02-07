@@ -40,16 +40,18 @@ UniformHierarchical::UniformHierarchical(const UniformHierarchical& A){
   }
 }
 
-UniformHierarchical&
-UniformHierarchical::operator=(const UniformHierarchical& A) = default;
+UniformHierarchical& UniformHierarchical::operator=(
+  const UniformHierarchical& A
+) = default;
 
 UniformHierarchical::UniformHierarchical(UniformHierarchical&& A) {
   MM_INIT();
   *this = std::move(A);
 }
 
-UniformHierarchical&
-UniformHierarchical::operator=(UniformHierarchical&& A) = default;
+UniformHierarchical& UniformHierarchical::operator=(
+  UniformHierarchical&& A
+) = default;
 
 std::unique_ptr<Node> UniformHierarchical::clone() const {
   return std::make_unique<UniformHierarchical>(*this);
@@ -75,7 +77,8 @@ BEGIN_SPECIALIZATION(
   move_from_uniform_hierarchical, UniformHierarchical,
   Node& A
 ) {
-  std::cout << "Cannot move to UniformHierarchical from " << A.type() << "!" << std::endl;
+  std::cout << "Cannot move to UniformHierarchical from " << A.type() << "!";
+  std::cout << std::endl;
   abort();
 } END_SPECIALIZATION;
 
@@ -178,7 +181,8 @@ UniformHierarchical::UniformHierarchical(
         } else {
           // Construct V using the ID and remember the selected cols
           Dense V;
-          std::tie(V, selected_cols[j]) = one_sided_rid(col_block, rank+5, rank);
+          std::tie(V, selected_cols[j]) = one_sided_rid(
+            col_block, rank+5, rank);
           row_basis[j] = std::make_shared<Dense>(std::move(V));
         }
       }
