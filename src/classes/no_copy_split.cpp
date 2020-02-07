@@ -4,7 +4,9 @@
 #include "hicma/classes/node.h"
 #include "hicma/classes/node_proxy.h"
 #include "hicma/classes/dense.h"
+#include "hicma/classes/dense_view.h"
 #include "hicma/classes/low_rank.h"
+#include "hicma/classes/low_rank_view.h"
 #include "hicma/classes/hierarchical.h"
 
 #include "yorel/multi_methods.hpp"

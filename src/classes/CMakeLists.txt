@@ -3,8 +3,10 @@ add_library(classes OBJECT
     node.cpp
     node_proxy.cpp
     dense.cpp
+    dense_view.cpp
     low_rank.cpp
     low_rank_shared.cpp
+    low_rank_view.cpp
     hierarchical.cpp
     no_copy_split.cpp
     uniform_hierarchical.cpp

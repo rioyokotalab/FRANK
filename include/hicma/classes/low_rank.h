@@ -70,45 +70,6 @@ namespace hicma {
     LowRank get_part(const Node& node) const;
   };
 
-  class LowRankView : public LowRank {
-  private:
-    DenseView _U, _S, _V;
-  public:
-    MM_CLASS(LowRankView, LowRank);
-
-    // Special member functions
-    LowRankView();
-
-    ~LowRankView();
-
-    LowRankView(const LowRankView& A);
-
-    LowRankView& operator=(const LowRankView& A);
-
-    LowRankView(LowRankView&& A);
-
-    LowRankView& operator=(LowRankView&& A);
-
-    // Overridden functions from Node
-    std::unique_ptr<Node> clone() const override;
-
-    std::unique_ptr<Node> move_clone() override;
-
-    const char* type() const override;
-
-    DenseView& U() override;
-    const DenseView& U() const override;
-
-    DenseView& S() override;
-    const DenseView& S() const override;
-
-    DenseView& V() override;
-    const DenseView& V() const override;
-
-    LowRankView(const Node& node, const LowRank& A);
-
-  };
-
 } // namespace hicma
 
 #endif // hicma_classes_low_rank_h
