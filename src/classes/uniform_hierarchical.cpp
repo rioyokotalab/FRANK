@@ -154,8 +154,8 @@ UniformHierarchical::UniformHierarchical(
         } else {
           // Construct U using the ID and remember the selected rows
           Dense Ut;
-          transpose(row_block);
-          std::tie(Ut, selected_rows[i]) = one_sided_rid(row_block, rank+5, rank);
+          std::tie(Ut, selected_rows[i]) = one_sided_rid(
+            row_block, rank+5, rank, true);
           transpose(Ut);
           col_basis[i] = std::make_shared<Dense>(std::move(Ut));
         }
