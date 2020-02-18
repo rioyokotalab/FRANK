@@ -13,10 +13,43 @@ namespace hicma
 
 class NodeProxy;
 class Dense;
+class LowRankShared;
 
 class UniformHierarchical : public Hierarchical {
 private:
   std::vector<std::shared_ptr<Dense>> row_basis, col_basis;
+
+  Dense make_row_block(
+    int row,
+    void (*func)(Dense& A, std::vector<double>& x),
+    std::vector<double>& x,
+    int admis
+  );
+
+  Dense make_col_block(
+    int row,
+    void (*func)(Dense& A, std::vector<double>& x),
+    std::vector<double>& x,
+    int admis
+  );
+
+  LowRankShared construct_shared_block_id(
+    NodeProxy& child,
+    std::vector<std::vector<int>>& selected_rows,
+    std::vector<std::vector<int>>& selected_cols,
+    void (*func)(Dense& A, std::vector<double>& x),
+    std::vector<double>& x,
+    int rank,
+    int admis
+  );
+
+  LowRankShared construct_shared_block_svd(
+    NodeProxy& child,
+    void (*func)(Dense& A, std::vector<double>& x),
+    std::vector<double>& x,
+    int rank,
+    int admis
+  );
 public:
   MM_CLASS(UniformHierarchical, Hierarchical);
 

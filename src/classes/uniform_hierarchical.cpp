@@ -94,6 +94,120 @@ UniformHierarchical::UniformHierarchical(
   row_basis.resize(nj_level);
 }
 
+Dense UniformHierarchical::make_row_block(
+  int row,
+  void (*func)(Dense& A, std::vector<double>& x),
+  std::vector<double>& x,
+  int admis
+) {
+  // Create row block without admissible blocks
+  int n_non_admissible_blocks = 0;
+  for (int j_b=0; j_b<dim[1]; ++j_b)
+    if (!is_admissible((*this)(row, j_b), admis)) n_non_admissible_blocks++;
+  Hierarchical row_block_h(1, n_non_admissible_blocks);
+  // Note the ins counter!
+  // TODO j_b goes across entire matrix, outside of confines of *this.
+  // Find way to combine this with create_children!
+  for (int j_b=0, ins=0; j_b<dim[1]; ++j_b) {
+    if (!is_admissible((*this)(row, j_b), admis)) {
+      row_block_h[ins++] = Dense((*this)(row, j_b), func, x);
+    }
+  }
+  return Dense(row_block_h);
+}
+
+Dense UniformHierarchical::make_col_block(
+  int col,
+  void (*func)(Dense& A, std::vector<double>& x),
+  std::vector<double>& x,
+  int admis
+) {
+    // Create col block without admissible blocks
+    int n_non_admissible_blocks = 0;
+    for (int i_b=0; i_b<dim[0]; ++i_b) {
+      if (!is_admissible((*this)(i_b, col), admis)) n_non_admissible_blocks++;
+    }
+    Hierarchical col_block_h(n_non_admissible_blocks, 1);
+    // Note the ins counter!
+    for (int i_b=0, ins=0; i_b<dim[0]; ++i_b) {
+      if (!is_admissible((*this)(i_b, col), admis)) {
+        col_block_h[ins++] = Dense((*this)(i_b, col), func, x);
+      }
+    }
+    return Dense(col_block_h);
+}
+
+LowRankShared UniformHierarchical::construct_shared_block_id(
+  NodeProxy& child,
+  std::vector<std::vector<int>>& selected_rows,
+  std::vector<std::vector<int>>& selected_cols,
+  void (*func)(Dense& A, std::vector<double>& x),
+  std::vector<double>& x,
+  int rank,
+  int admis
+) {
+  int i, j;
+  std::tie(i, j) = get_rel_pos_child(child);
+  if (col_basis[i].get() == nullptr) {
+    Dense row_block = make_row_block(i, func, x, admis);
+    // Construct U using the ID and remember the selected rows
+    Dense Ut;
+    std::tie(Ut, selected_rows[i]) = one_sided_rid(
+      row_block, rank+5, rank, true);
+    transpose(Ut);
+    col_basis[i] = std::make_shared<Dense>(std::move(Ut));
+  }
+  if (row_basis[j].get() == nullptr) {
+    Dense col_block = make_col_block(j, func, x, admis);
+    // Construct V using the ID and remember the selected cols
+    Dense V;
+    std::tie(V, selected_cols[j]) = one_sided_rid(
+      col_block, rank+5, rank);
+    row_basis[j] = std::make_shared<Dense>(std::move(V));
+  }
+  Dense D(child, func, x);
+  Dense S(rank, rank);
+  for (int ic=0; ic<rank; ++ic) {
+    for (int jc=0; jc<rank; ++jc) {
+      S(ic, jc) = D(selected_rows[i][ic], selected_cols[j][jc]);
+    }
+  }
+  return LowRankShared(
+    child,
+    S,
+    col_basis[i], row_basis[j]
+  );
+}
+
+LowRankShared UniformHierarchical::construct_shared_block_svd(
+  NodeProxy& child,
+  void (*func)(Dense& A, std::vector<double>& x),
+  std::vector<double>& x,
+  int rank,
+  int admis
+) {
+  int i, j;
+  std::tie(i, j) = get_rel_pos_child(child);
+  if (col_basis[i].get() == nullptr) {
+    Dense row_block = make_row_block(i, func, x, admis);
+    col_basis[i] = std::make_shared<Dense>(LowRank(row_block, rank).U());
+  }
+  if (row_basis[j].get() == nullptr) {
+    Dense col_block = make_col_block(j, func, x, admis);
+    row_basis[j] = std::make_shared<Dense>(LowRank(col_block, rank).V());
+  }
+  Dense D(child, func, x);
+  Dense S(rank, rank);
+  Dense UD(col_basis[i]->dim[1], D.dim[1]);
+  gemm(*col_basis[i], D, UD, true, false, 1, 0);
+  gemm(UD, *row_basis[j], S, false, true, 1, 0);
+  return LowRankShared(
+    child,
+    S,
+    col_basis[i], row_basis[j]
+  );
+}
+
 UniformHierarchical::UniformHierarchical(
   const Node& node,
   void (*func)(Dense& A, std::vector<double>& x),
@@ -133,77 +247,12 @@ UniformHierarchical::UniformHierarchical(
           child, func, x, rank, nleaf, admis, ni_level, nj_level, use_svd);
       }
     } else {
-      int i, j;
-      std::tie(i, j) = get_rel_pos_child(child);
-      if (col_basis[i].get() == nullptr) {
-        // Create row block without admissible blocks
-        int n_non_admissible_blocks = 0;
-        for (int j_b=0; j_b<dim[1]; ++j_b) {
-          if (!is_admissible((*this)(i, j_b), admis)) {
-            n_non_admissible_blocks++;
-          }
-        }
-        Hierarchical row_block_h(1, n_non_admissible_blocks);
-        // Note the ins counter!
-        // TODO j_b goes across entire matrix, outside of confines of *this.
-        // Find way to combine this with create_children!
-        for (int j_b=0, ins=0; j_b<dim[1]; ++j_b) {
-          if (!is_admissible((*this)(i, j_b), admis))
-            row_block_h[ins++] = Dense((*this)(i, j_b), func, x);
-        }
-        Dense row_block(row_block_h);
-        if (use_svd) {
-          col_basis[i] = std::make_shared<Dense>(LowRank(row_block, rank).U());
-        } else {
-          // Construct U using the ID and remember the selected rows
-          Dense Ut;
-          std::tie(Ut, selected_rows[i]) = one_sided_rid(
-            row_block, rank+5, rank, true);
-          transpose(Ut);
-          col_basis[i] = std::make_shared<Dense>(std::move(Ut));
-        }
-      }
-      if (row_basis[j].get() == nullptr) {
-        // Create col block without admissible blocks
-        int n_non_admissible_blocks = 0;
-        for (int i_b=0; i_b<dim[0]; ++i_b) {
-          if (!is_admissible((*this)(i_b, j), admis)) n_non_admissible_blocks++;
-        }
-        Hierarchical col_block_h(n_non_admissible_blocks, 1);
-        // Note the ins counter!
-        for (int i_b=0, ins=0; i_b<dim[0]; ++i_b) {
-          if (!is_admissible((*this)(i_b, j), admis))
-            col_block_h[ins++] = Dense((*this)(i_b, j), func, x);
-        }
-        Dense col_block(col_block_h);
-        if (use_svd) {
-          row_basis[j] = std::make_shared<Dense>(LowRank(col_block, rank).V());
-        } else {
-          // Construct V using the ID and remember the selected cols
-          Dense V;
-          std::tie(V, selected_cols[j]) = one_sided_rid(
-            col_block, rank+5, rank);
-          row_basis[j] = std::make_shared<Dense>(std::move(V));
-        }
-      }
-      Dense D(child, func, x);
-      Dense S(rank, rank);
       if (use_svd) {
-        Dense UD(col_basis[i]->dim[1], D.dim[1]);
-        gemm(*col_basis[i], D, UD, true, false, 1, 0);
-        gemm(UD, *row_basis[j], S, false, true, 1, 0);
+        child = construct_shared_block_svd(child, func, x, rank, admis);
       } else {
-        for (int ic=0; ic<rank; ++ic) {
-          for (int jc=0; jc<rank; ++jc) {
-            S(ic, jc) = D(selected_rows[i][ic], selected_cols[j][jc]);
-          }
-        }
+        child = construct_shared_block_id(
+          child, selected_rows, selected_cols, func, x, rank, admis);
       }
-      (*this)(i, j) = LowRankShared(
-        child,
-        S,
-        col_basis[i], row_basis[j]
-      );
     }
   }
 }
