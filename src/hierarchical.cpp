@@ -289,16 +289,17 @@ namespace hicma {
     Hierarchical HQb(B.dim[0], B.dim[1]);
     int rowOffset = 0;
     for(int i=0; i<HQb.dim[0]; i++) {
-      Dense Bi(B(i, 0));
-      Dense Qbi(Bi.dim[0], Bi.dim[1]);
-      for(int row=0; row<Bi.dim[0]; row++) {
-        for(int col=0; col<Bi.dim[1]; col++) {
+      int nrows = get_n_rows(B(i, 0));
+      int ncols = get_n_cols(B(i, 0));
+      Dense Qbi(nrows, ncols);
+      for(int row=0; row<nrows; row++) {
+        for(int col=0; col<ncols; col++) {
           Qbi(row, col) = Qb(rowOffset + row, col);
         }
       }
       // Using move should now make a difference. Why is this not auto-optimized?
       HQb(i, 0) = std::move(Qbi);
-      rowOffset += Bi.dim[0];
+      rowOffset += nrows;
     }
     for(int i=0; i<dim[0]; i++) {
       gemm(Qu(i, 0), HQb(i, 0), Q(i, 0), 1, 0);
