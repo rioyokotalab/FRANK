@@ -57,6 +57,15 @@ namespace hicma {
                  const int& j_begin
                  );
 
+  void cauchy2d(
+                 std::vector<double>& data,
+                 std::vector<std::vector<double>>& x,
+                 const int& ni,
+                 const int& nj,
+                 const int& i_begin,
+                 const int& j_begin
+                 );
+
   void laplacend(
                  std::vector<double>& data,
                  std::vector<std::vector<double>>& x,
@@ -96,5 +105,14 @@ namespace hicma {
                         const double& admis
                         );
 
+  bool is_admissible_nd_morton(
+                               std::vector<std::vector<double>>& x,
+                               const int& ni,
+                               const int& nj,
+                               const int& i_begin,
+                               const int& j_begin,
+                               const double& admis
+                               );
 }
+
 #endif
