@@ -49,9 +49,6 @@ BEGIN_SPECIALIZATION(
   const LowRank& V, const Dense& T, Dense& A, Dense& B,
   const bool trans
 ) {
-  // Dense UV(V.U.dim[0], V.V.dim[1]);
-  // gemm(V.U, V.V, UV, 1, 0);
-  // tpmqrt(UV, T, A, B, trans);
   std::vector<double> x;
   Dense C(A);
   LowRank Vt(V); Vt.transpose();
