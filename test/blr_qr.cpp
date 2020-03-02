@@ -5,32 +5,26 @@
 #include "hicma/gpu_batch/batch.h"
 #include "hicma/util/print.h"
 #include "hicma/util/timer.h"
+#include "hicma/util/counter.h"
 
 #include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <random>
 #include <iomanip>
+#include <cassert>
 
 #include "yorel/multi_methods.hpp"
 
 using namespace hicma;
 
-std::vector<std::vector<double>> generatePoints(int N, int dim) {
-  std::mt19937 generator(time(0));
-  std::uniform_real_distribution<double> distribution(0.0, 1.0);
-  std::vector<std::vector<double>> pts(dim, std::vector<double>(N));
-  //Generate points from random distribution
-  for(int i=0; i<N; i++) {
-    for(int j=0; j<dim; j++) {
-      pts[j][i] = distribution(generator);
+void getSubmatrix(const Dense& A, int ni, int nj, int i_begin, int j_begin, Dense& out) {
+  assert(out.dim[0] == ni);
+  assert(out.dim[1] == nj);
+  for(int i=0; i<ni; i++)
+    for(int j=0; j<nj; j++) {
+      out(i, j) = A(i+i_begin, j+j_begin);
     }
-  }
-  //Sort points
-  for(int j=0; j<dim; j++) {
-    std::sort(pts[j].begin(), pts[j].end());
-  }
-  return pts;
 }
 
 int main(int argc, char** argv) {
@@ -39,8 +33,29 @@ int main(int argc, char** argv) {
   int Nb = argc > 2 ? atoi(argv[2]) : 32;
   int rank = argc > 3 ? atoi(argv[3]) : 16;
   double admis = argc > 4 ? atof(argv[4]) : 0;
+  int lra = argc > 5 ? atoi(argv[5]) : 1; updateCounter("LRA", lra);
   int Nc = N / Nb;
-  std::vector<std::vector<double>> randpts = generatePoints(N, 1);
+  std::vector<std::vector<double>> randpts;
+  randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
+  // randpts.push_back(equallySpacedVector(N, -4.25, 998.25));
+  // randpts.push_back(equallySpacedVector(N, -2.15, 999.45));
+
+  //Generate input matrix using LAPACK DLATMS
+  // char dist = 'U'; //Uses uniform distribution when generating random SV
+  // std::vector<int> iseed{ 1, 23, 456, 789 };
+  // char sym = 'N'; //Generate symmetric matrix
+  // std::vector<double> d(N, 0.0); //Singular values to be used
+  // // d[0] = 1.0;
+  // // d[1] = 1.0;
+  // // d[2] = 1e-15;
+  // int mode = 1; //See docs
+  // double _cond = 1e+12; //Condition number of generated matrix
+  // double dmax = 1.0;
+  // int kl = N-1;
+  // int ku = N-1;
+  // char pack = 'N';
+  // Dense DA(N, N);
+  // latms(N, N, dist, iseed, sym, d, mode, _cond, dmax, kl, ku, pack, DA);
 
   Hierarchical A(Nc, Nc);
   Hierarchical D(Nc, Nc);
@@ -51,6 +66,7 @@ int main(int argc, char** argv) {
       int bi = Nb + ((ic == (Nc-1)) ? N % Nb : 0);
       int bj = Nb + ((jc == (Nc-1)) ? N % Nb : 0);
       Dense Aij(laplacend, randpts, bi, bj, Nb*ic, Nb*jc, ic, jc, 1);
+      // getSubmatrix(DA, bi, bj, Nb*ic, Nb*jc, Aij);
       Dense Rij(zeros, randpts[0], bi, bj, Nb*ic, Nb*jc, ic, jc, 1);
       D(ic,jc) = Aij;
       if (std::abs(ic - jc) <= (int)admis) {
@@ -64,6 +80,9 @@ int main(int argc, char** argv) {
     }
   }
   rsvd_batch();
+
+  //Compute condition number of A
+  // print("Cond(A)", cond(Dense(D)), false);
 
   //For residual measurement
   Dense x(N);
@@ -80,6 +99,8 @@ int main(int argc, char** argv) {
 
   print("Time");
   start("BLR QR decomposition");
+  resetCounter("Recompression");
+  resetCounter("LR-addition");
   for(int j=0; j<Nc; j++) {
     Hierarchical Aj(Nc, 1);
     Hierarchical Qsj(Nc, 1);
@@ -89,14 +110,13 @@ int main(int argc, char** argv) {
     }
     Hierarchical Rjj(1, 1);
     Aj.blr_col_qr(Qsj, Rjj);
-    R(j, j) = Rjj(0, 0);
+    R(j, j) = std::move(Rjj(0, 0));
     //Copy column of Qsj to Q
     for(int i = 0; i < Nc; i++) {
       Q(i, j) = Qsj(i, 0);
     }
-    //Transpose of Qsj to be used in processing next columns
-    Hierarchical TrQsj(Qsj);
-    TrQsj.transpose();
+    //Transpose of Qsj to be used in computing Rjk
+    Hierarchical TrQsj(Qsj); TrQsj.transpose();
     //Process next columns
     for(int k=j+1; k<Nc; k++) {
       //Take k-th column
@@ -104,14 +124,18 @@ int main(int argc, char** argv) {
       for(int i=0; i<Nc; i++) {
         Ak(i, 0) = A(i, k);
       }
-      gemm(TrQsj, Ak, R(j, k), 1, 1); //Rjk = Q*j^T x A*k
+      gemm(TrQsj, Ak, R(j, k), 1, 0); //Rjk = Q*j^T x A*k
       gemm(Qsj, R(j, k), Ak, -1, 1); //A*k = A*k - Q*j x Rjk
       for(int i=0; i<Nc; i++) {
-        A(i, k) = Ak(i, 0);
+        A(i, k) = std::move(Ak(i, 0));
       }
     }
   }
   stop("BLR QR decomposition");
+
+  // std::cout <<"BLR dimension = " <<Nc <<"x" <<Nc <<std::endl;
+  // printCounter("Recompression");
+  // printCounter("LR-addition");
 
   //Residual
   Dense Rx(N);

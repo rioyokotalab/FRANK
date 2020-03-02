@@ -5,32 +5,26 @@
 #include "hicma/gpu_batch/batch.h"
 #include "hicma/util/print.h"
 #include "hicma/util/timer.h"
+#include "hicma/util/counter.h"
 
 #include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <random>
 #include <iomanip>
+#include <cassert>
 
 #include "yorel/multi_methods.hpp"
 
 using namespace hicma;
 
-std::vector<std::vector<double>> generatePoints(int N, int dim) {
-  std::mt19937 generator;
-  std::uniform_real_distribution<double> distribution(0.0, 1.0);
-  std::vector<std::vector<double>> pts(dim, std::vector<double>(N));
-  //Generate points from random distribution
-  for(int i=0; i<N; i++) {
-    for(int j=0; j<dim; j++) {
-      pts[j][i] = distribution(generator);
+void getSubmatrix(const Dense& A, int ni, int nj, int i_begin, int j_begin, Dense& out) {
+  assert(out.dim[0] == ni);
+  assert(out.dim[1] == nj);
+  for(int i=0; i<ni; i++)
+    for(int j=0; j<nj; j++) {
+      out(i, j) = A(i+i_begin, j+j_begin);
     }
-  }
-  //Sort points
-  for(int j=0; j<dim; j++) {
-    std::sort(pts[j].begin(), pts[j].end());
-  }
-  return pts;
 }
 
 int main(int argc, char** argv) {
@@ -39,8 +33,29 @@ int main(int argc, char** argv) {
   int Nb = argc > 2 ? atoi(argv[2]) : 32;
   int rank = argc > 3 ? atoi(argv[3]) : 16;
   double admis = argc > 4 ? atof(argv[4]) : 0;
+  int lra = argc > 5 ? atoi(argv[5]) : 1; updateCounter("LRA", lra);
   int Nc = N / Nb;
-  std::vector<std::vector<double>> randpts = generatePoints(N, 1);
+  std::vector<std::vector<double>> randpts;
+  randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
+  // randpts.push_back(equallySpacedVector(N, -4.25, 998.25));
+  // randpts.push_back(equallySpacedVector(N, -2.15, 999.45));
+
+  //Generate input matrix using LAPACK DLATMS
+  // char dist = 'U'; //Uses uniform distribution when generating random SV
+  // std::vector<int> iseed{ 1, 23, 456, 789 };
+  // char sym = 'N'; //Generate symmetric matrix
+  // std::vector<double> d(N, 0.0); //Singular values to be used
+  // // d[0] = 1.0;
+  // // d[1] = 1.0;
+  // // d[2] = 1e-15;
+  // int mode = 1; //See docs
+  // double _cond = 1e+12; //Condition number of generated matrix
+  // double dmax = 1.0;
+  // int kl = N-1;
+  // int ku = N-1;
+  // char pack = 'N';
+  // Dense DA(N, N);
+  // latms(N, N, dist, iseed, sym, d, mode, _cond, dmax, kl, ku, pack, DA);
 
   Hierarchical A(Nc, Nc);
   Hierarchical D(Nc, Nc);
@@ -51,7 +66,8 @@ int main(int argc, char** argv) {
       int bi = Nb + ((ic == (Nc-1)) ? N % Nb : 0);
       int bj = Nb + ((jc == (Nc-1)) ? N % Nb : 0);
       Dense Aij(laplacend, randpts, bi, bj, Nb*ic, Nb*jc, ic, jc, 1);
-      Dense Qij(identity, randpts[0], bi, bj, Nb*ic, Nb*jc);
+      // getSubmatrix(DA, bi, bj, Nb*ic, Nb*jc, Aij);
+      Dense Qij(identity, randpts[0], bi, bj, Nb*ic, Nb*jc, ic, jc, 1);
       Dense Tij(zeros, randpts[0], bj, bj);
       D(ic,jc) = Aij;
       T(ic,jc) = Tij;
@@ -66,7 +82,9 @@ int main(int argc, char** argv) {
     }
   }
   rsvd_batch();
-  // printXML(A);
+
+  //Compute condition number of A
+  // print("Cond(A)", cond(Dense(D)), false);
 
   // For residual measurement
   Dense x(N); x = 1.0;
@@ -81,6 +99,8 @@ int main(int argc, char** argv) {
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
 
   print("Time");
+  resetCounter("Recompression");
+  resetCounter("LR-addition");
   start("BLR QR decomposition");
   for(int k = 0; k < Nc; k++) {
     geqrt(A(k, k), T(k, k));
@@ -95,6 +115,8 @@ int main(int argc, char** argv) {
     }
   }
   stop("BLR QR decomposition");
+  int additionAfterR = globalCounter["LR-addition"];
+  int recompAfterR = globalCounter["Recompression"];
   //Build Q: Apply Q to Id
   for(int k = Nc-1; k >= 0; k--) {
     for(int i = Nc-1; i > k; i--) {
@@ -106,6 +128,17 @@ int main(int argc, char** argv) {
       larfb(A(k, k), T(k, k), Q(k, j), false);
     }
   }
+
+  int additionAfterQ = globalCounter["LR-addition"] - additionAfterR;
+  int recompAfterQ = globalCounter["Recompression"] - recompAfterR;
+  // std::cout <<"BLR dimension = " <<Nc <<"x" <<Nc <<std::endl;
+  // print("LR addition (after building R)", additionAfterR);
+  // print("LR addition (after building Q)", additionAfterQ);
+  // print("LR addition (total)", additionAfterR + additionAfterQ);
+  // print("Recompression (after building R)", recompAfterR);
+  // print("Recompression (after building Q)", recompAfterQ);
+  // print("Recompression (total)", recompAfterR + recompAfterQ);
+
   //Build R: Take upper triangular part of modified A
   for(int i=0; i<A.dim[0]; i++) {
     for(int j=0; j<=i; j++) {
@@ -115,7 +148,6 @@ int main(int argc, char** argv) {
         zero_whole(A(i, j));
     }
   }
-
   //Residual
   Dense Rx(N);
   gemm(A, x, Rx, 1, 1);
