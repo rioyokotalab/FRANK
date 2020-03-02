@@ -5,6 +5,7 @@
 #include "hicma/low_rank.h"
 #include "hicma/hierarchical.h"
 #include "hicma/util/timer.h"
+#include "hicma/util/counter.h"
 #include "hicma/gpu_batch/batch.h"
 #include "hicma/operations/get_dim.h"
 
@@ -72,8 +73,7 @@ BEGIN_SPECIALIZATION(
   LowRank AxBU(A.dim[0], B.dim[1], B.rank);
   AxBU.S = B.S;
   AxBU.V = B.V;
-  gemm(A, B.U, AxBU.U, 1, 0);
-  AxBU.S *= alpha;
+  gemm(A, B.U, AxBU.U, alpha, 0);
   C.S *= beta;
   C += AxBU;
 } END_SPECIALIZATION;
@@ -89,8 +89,7 @@ BEGIN_SPECIALIZATION(
   LowRank AVxB(A.dim[0], B.dim[1], A.rank);
   AVxB.U = A.U;
   AVxB.S = A.S;
-  gemm(A.V, B, AVxB.V, 1, 0);
-  AVxB.S *= alpha;
+  gemm(A.V, B, AVxB.V, alpha, 0);
   C.S *= beta;
   C += AVxB;
 } END_SPECIALIZATION;
@@ -127,7 +126,8 @@ BEGIN_SPECIALIZATION(
   Dense AB(C.dim[0], C.dim[1]);
   gemm(A, B, AB, alpha, 0);
   C.S *= beta;
-  C += LowRank(AB, C.rank);
+  C += LowRank(AB, C.rank); //Recompression
+  updateCounter("Recompression", 1);
 } END_SPECIALIZATION;
 
 BEGIN_SPECIALIZATION(
@@ -141,8 +141,7 @@ BEGIN_SPECIALIZATION(
   LowRank AxBU(get_n_rows(A), B.dim[1], B.rank);
   AxBU.S = B.S;
   AxBU.V = B.V;
-  gemm(A, B.U, AxBU.U, 1, 0);
-  AxBU.S *= alpha;
+  gemm(A, B.U, AxBU.U, alpha, 0);
   C.S *= beta;
   C += AxBU;
 } END_SPECIALIZATION;
@@ -158,8 +157,7 @@ BEGIN_SPECIALIZATION(
   LowRank AVxB(A.dim[0], get_n_cols(B), A.rank);
   AVxB.U = A.U;
   AVxB.S = A.S;
-  gemm(A.V, B, AVxB.V, 1, 0);
-  AVxB.S *= alpha;
+  gemm(A.V, B, AVxB.V, alpha, 0);
   C.S *= beta;
   C += AVxB;
 } END_SPECIALIZATION;
