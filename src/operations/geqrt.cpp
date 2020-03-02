@@ -34,7 +34,7 @@ BEGIN_SPECIALIZATION(geqrt_omm, void, Dense& A, Dense& T) {
   );
 } END_SPECIALIZATION;
 
-BEGIN_SPECIALIZATION(geqrt_omm, void, Hierarchical& A, Hierarchical&T) {
+BEGIN_SPECIALIZATION(geqrt_omm, void, Hierarchical& A, Hierarchical& T) {
   std::cerr << "Possibly not fully implemented yet. Read code!!!" << std::endl;
   for(int k = 0; k < A.dim[1]; k++) {
     geqrt(A(k, k), T(k, k));
@@ -50,6 +50,14 @@ BEGIN_SPECIALIZATION(geqrt_omm, void, Hierarchical& A, Hierarchical&T) {
       }
     }
   }
+} END_SPECIALIZATION;
+
+// Fallback default, abort with error message
+BEGIN_SPECIALIZATION(geqrt_omm, void, Node& A, Node& T) {
+  std::cerr << "geqrt(";
+  std::cerr << A.type() << "," << T.type();
+  std::cerr << ") undefined." << std::endl;
+  abort();
 } END_SPECIALIZATION;
 
 void geqrt2(Dense& A, Dense& T) {
