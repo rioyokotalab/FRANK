@@ -11,5 +11,7 @@
 #include "hicma/operations/geqrt.h"
 #include "hicma/operations/qr.h"
 #include "hicma/operations/get_dim.h"
+#include "hicma/operations/misc.h"
+#include "hicma/operations/latms.h"
 
 #endif // operations_h
