@@ -17,6 +17,7 @@ include(add_external)
 add_library(util
     src/util/print.cpp
     src/util/timer.cpp
+    src/util/counter.cpp
 )
 target_include_directories(util
     PUBLIC ${PROJECT_SOURCE_DIR}/include
@@ -47,8 +48,10 @@ add_library(hicma
     src/operations/tpqrt.cpp
     src/operations/larfb.cpp
     src/operations/geqrt.cpp
+    src/operations/latms.cpp
     src/operations/qr.cpp
     src/operations/get_dim.cpp
+    src/operations/misc.cpp
 )
 
 # Custom compilation options
