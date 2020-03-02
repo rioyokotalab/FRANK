@@ -56,18 +56,19 @@ namespace hicma
   }
 
   BEGIN_SPECIALIZATION(qr_omm, void, Dense& A, Dense& Q, Dense& R) {
-    std::vector<double> tau(A.dim[1]);
-    for (int i=0; i<A.dim[1]; i++) Q[i*(A.dim[1])+i] = 1.0;
+    int k = std::min(A.dim[0], A.dim[1]);
+    std::vector<double> tau(k);
     LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, A.dim[0], A.dim[1], &A[0], A.dim[1], &tau[0]);
-    LAPACKE_dormqr(LAPACK_ROW_MAJOR, 'L', 'N', A.dim[0], A.dim[1], A.dim[1],
-                   &A[0], A.dim[1], &tau[0], &Q[0], A.dim[1]);
-    for(int i=0; i<A.dim[1]; i++) {
+    for(int i=0; i<std::min(Q.dim[0], Q.dim[1]); i++) Q(i, i) = 1.0;
+    for(int i=0; i<A.dim[0]; i++) {
       for(int j=0; j<A.dim[1]; j++) {
-        if(j>=i){
+        if(j>=i)
           R[i*(A.dim[1])+j] = A[i*(A.dim[1])+j];
-        }
+        else
+          Q(i,j) = A(i,j);
       }
     }
+    LAPACKE_dorgqr(LAPACK_ROW_MAJOR, Q.dim[0], Q.dim[1], k, &Q[0], Q.dim[1], &tau[0]);
   } END_SPECIALIZATION;
 
   BEGIN_SPECIALIZATION(qr_omm, void, Hierarchical& A, Hierarchical& Q, Hierarchical& R) {
@@ -279,9 +280,9 @@ namespace hicma
   } END_SPECIALIZATION;
 
   BEGIN_SPECIALIZATION(zero_whole_omm, void, LowRank& A) {
-    A.U = 0.0;
+    A.U = 0.0; for(int i=0; i<std::min(A.U.dim[0], A.U.dim[1]); i++) A.U(i, i) = 1.0;
     A.S = 0.0;
-    A.V = 0.0;
+    A.V = 0.0; for(int i=0; i<std::min(A.V.dim[0], A.V.dim[1]); i++) A.V(i, i) = 1.0;
   } END_SPECIALIZATION;
 
   BEGIN_SPECIALIZATION(zero_whole_omm, void, Node& A) {
