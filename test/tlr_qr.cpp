@@ -19,6 +19,7 @@ using namespace hicma;
 
 int main(int argc, char** argv) {
   yorel::multi_methods::initialize();
+  updateCounter("LR_ADDITION_COUNTER", 1); //Enable LR addition counter
   int N = argc > 1 ? atoi(argv[1]) : 256;
   int Nb = argc > 2 ? atoi(argv[2]) : 32;
   int rank = argc > 3 ? atoi(argv[3]) : 16;
@@ -114,7 +115,6 @@ int main(int argc, char** argv) {
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
 
   print("Time");
-  resetCounter("Recompression");
   resetCounter("LR-addition");
   start("BLR QR decomposition");
   for(int k = 0; k < Nc; k++) {
@@ -130,8 +130,6 @@ int main(int argc, char** argv) {
     }
   }
   stop("BLR QR decomposition");
-  int additionAfterR = globalCounter["LR-addition"];
-  int recompAfterR = globalCounter["Recompression"];
   //Build Q: Apply Q to Id
   for(int k = Nc-1; k >= 0; k--) {
     for(int i = Nc-1; i > k; i--) {
@@ -144,15 +142,7 @@ int main(int argc, char** argv) {
     }
   }
 
-  int additionAfterQ = globalCounter["LR-addition"] - additionAfterR;
-  int recompAfterQ = globalCounter["Recompression"] - recompAfterR;
-  // std::cout <<"BLR dimension = " <<Nc <<"x" <<Nc <<std::endl;
-  // print("LR addition (after building R)", additionAfterR);
-  // print("LR addition (after building Q)", additionAfterQ);
-  // print("LR addition (total)", additionAfterR + additionAfterQ);
-  // print("Recompression (after building R)", recompAfterR);
-  // print("Recompression (after building Q)", recompAfterQ);
-  // print("Recompression (total)", recompAfterR + recompAfterQ);
+  printCounter("LR-addition");
 
   //Build R: Take upper triangular part of modified A
   for(int i=0; i<A.dim[0]; i++) {

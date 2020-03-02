@@ -19,6 +19,7 @@ using namespace hicma;
 
 int main(int argc, char** argv) {
   yorel::multi_methods::initialize();
+  updateCounter("LR_ADDITION_COUNTER", 1); //Enable LR addition counter
   int N = argc > 1 ? atoi(argv[1]) : 256;
   int Nb = argc > 2 ? atoi(argv[2]) : 32;
   int rank = argc > 3 ? atoi(argv[3]) : 16;
@@ -114,7 +115,6 @@ int main(int argc, char** argv) {
 
   print("Time");
   start("BLR QR decomposition");
-  resetCounter("Recompression");
   resetCounter("LR-addition");
   for(int j=0; j<Nc; j++) {
     Hierarchical Aj(Nc, 1);
@@ -148,9 +148,7 @@ int main(int argc, char** argv) {
   }
   stop("BLR QR decomposition");
 
-  // std::cout <<"BLR dimension = " <<Nc <<"x" <<Nc <<std::endl;
-  // printCounter("Recompression");
-  // printCounter("LR-addition");
+  printCounter("LR-addition");
 
   //Residual
   Dense Rx(N);

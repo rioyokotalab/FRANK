@@ -108,7 +108,7 @@ namespace hicma {
     assert(dim[0] == A.dim[0]);
     assert(dim[1] == A.dim[1]);
     assert(rank == A.rank);
-    updateCounter("LR-addition", 1);
+    if(getCounter("LR_ADDITION_COUNTER") == 1) updateCounter("LR-addition", 1);
     if(getCounter("LRA") == 0) {
       //Truncate and Recompress if rank > min(nrow, ncol)
       if (rank+A.rank >= std::min(dim[0], dim[1])) {

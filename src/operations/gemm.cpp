@@ -126,8 +126,7 @@ BEGIN_SPECIALIZATION(
   Dense AB(C.dim[0], C.dim[1]);
   gemm(A, B, AB, alpha, 0);
   C.S *= beta;
-  C += LowRank(AB, C.rank); //Recompression
-  updateCounter("Recompression", 1);
+  C += LowRank(AB, C.rank);
 } END_SPECIALIZATION;
 
 BEGIN_SPECIALIZATION(
