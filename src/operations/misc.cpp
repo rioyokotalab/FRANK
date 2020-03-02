@@ -1,0 +1,50 @@
+#include "hicma/operations/misc.h"
+
+#include "hicma/node.h"
+#include "hicma/dense.h"
+#include <iostream>
+#include <utility>
+
+#include "yorel/multi_methods.hpp"
+
+namespace hicma
+{
+  std::vector<int> getIndex(int dim, int mortonIndex) {
+    std::vector<int> index(dim, 0);
+    int d = 0, level = 0;
+    while (mortonIndex != 0) {
+      index[d] += (mortonIndex % 2) * (1 << level);
+      mortonIndex >>= 1;
+      d = (d + 1) % dim;
+      if (d == 0) level++;
+    }
+    return index;
+  }
+
+  int getMortonIndex(std::vector<int> index, int level) {
+    int mortonIndex = 0;
+    for(int lev=0; lev<level; lev++) {
+      for(int d=0; d<(int)index.size(); d++) {
+        mortonIndex += index[d] % 2 << (index.size() * lev + d);
+        index[d] >>= 1;
+      }
+    }
+    return mortonIndex;
+  }
+
+  std::vector<double> equallySpacedVector(int N, double minVal, double maxVal) {
+    std::vector<double> res(N, 0.0);
+    double rnge = maxVal - minVal;
+    for(int i=0; i<N; i++) {
+      res[i] = minVal + ((double)i/(double)rnge);
+    }
+    return res;
+  }
+
+  double cond(Dense A) {
+    int k = std::min(A.dim[0], A.dim[1]);
+    Dense S(k);
+    A.svd(S);
+    return (S(0, 0) / S(k-1, 0));
+  }
+} // namespace hicma
