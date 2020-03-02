@@ -49,9 +49,16 @@ BEGIN_SPECIALIZATION(
   const LowRank& V, const Dense& T, Dense& A, Dense& B,
   const bool trans
 ) {
-  Dense UV(V.U.dim[0], V.V.dim[1]);
-  gemm(V.U, V.V, UV, 1, 0);
-  tpmqrt(UV, T, A, B, trans);
+  // Dense UV(V.U.dim[0], V.V.dim[1]);
+  // gemm(V.U, V.V, UV, 1, 0);
+  // tpmqrt(UV, T, A, B, trans);
+  std::vector<double> x;
+  Dense C(A);
+  LowRank Vt(V); Vt.transpose();
+  gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
+  trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
+  gemm(Dense(identity, x, C.dim[0], C.dim[0]), C, A, -1, 1); //A = A - I*C
+  gemm(V, C, B, -1, 1); //B = B - Y*C
 } END_SPECIALIZATION;
 
 BEGIN_SPECIALIZATION(
@@ -63,7 +70,7 @@ BEGIN_SPECIALIZATION(
   Dense C(A);
   gemm(V, B, C, CblasTrans, CblasNoTrans, 1, 1); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
-  gemm(Dense(identity, x, C.dim[0], C.dim[0]), C, A, -1, 1); //A = A - I*C
+  gemm(Dense(identity, x, C.dim[0], C.dim[0]), C, A, -1, 1); //A = A - I*C //Recompression
   gemm(V, C, B, -1, 1); //B = B - Y*C
 } END_SPECIALIZATION;
 
@@ -162,12 +169,19 @@ BEGIN_SPECIALIZATION(
   const LowRank& V, const Dense& T, LowRank& A, LowRank& B,
   const bool trans
 ) {
+  //With conversion to dense
+  // Dense DA(A);
+  // Dense DB(B);
+  // tpmqrt(V, T, DA, DB, trans);
+  // A = LowRank(DA, A.rank);
+  // B = LowRank(DB, B.rank);
+  //Without conversion to dense
   std::vector<double> x;
   LowRank C(A);
   LowRank Vt(V);
   Vt.transpose();
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
-  trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //T = T*C or T^t*C
+  trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(Dense(identity, x, C.dim[0], C.dim[0]), C, A, -1, 1); //A = A - I*C
   gemm(V, C, B, -1, 1); //B = B - Y*C
 } END_SPECIALIZATION;
