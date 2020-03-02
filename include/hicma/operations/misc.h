@@ -17,6 +17,9 @@ namespace hicma
   std::vector<double> equallySpacedVector(int N, double minVal, double maxVal);
 
   double cond(Dense A);
+
+  void getSubmatrix(const Dense& A, int ni, int nj, int i_begin, int j_begin, Dense& out);
+
 } // namespace hicma
 
 #endif // operations_misc_h

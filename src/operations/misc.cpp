@@ -4,6 +4,7 @@
 #include "hicma/dense.h"
 #include <iostream>
 #include <utility>
+#include <cassert>
 
 #include "yorel/multi_methods.hpp"
 
@@ -47,4 +48,14 @@ namespace hicma
     A.svd(S);
     return (S(0, 0) / S(k-1, 0));
   }
+
+  void getSubmatrix(const Dense& A, int ni, int nj, int i_begin, int j_begin, Dense& out) {
+    assert(out.dim[0] == ni);
+    assert(out.dim[1] == nj);
+    for(int i=0; i<ni; i++)
+      for(int j=0; j<nj; j++) {
+        out(i, j) = A(i+i_begin, j+j_begin);
+      }
+  }
+
 } // namespace hicma
