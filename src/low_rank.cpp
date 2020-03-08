@@ -126,7 +126,7 @@ namespace hicma {
       }
     }
     else if(getCounter("LRA") == 1) {
-      //Bebendorf HMatrix Book p??
+      //Bebendorf HMatrix Book p16
       //Rounded Addition
       LowRank B(dim[0], dim[1], rank+A.rank, i_abs, j_abs, level);
       B.mergeU(*this, A);
@@ -155,20 +155,14 @@ namespace hicma {
 
       RRS.resize(rank, rank);
       swap(S, RRS);
-
-      Dense _U(Qu.dim[0], RRU.dim[1]);
-      gemm(Qu, RRU, _U, 1, 0);
-      _U.resize(dim[0], rank);
-      swap(U, _U);
-
-      Dense _V(RRV.dim[0], Qv.dim[0]);
-      gemm(RRV, Qv, _V, CblasNoTrans, CblasTrans, 1, 0);
-      _V.resize(rank, dim[1]);
-      swap(V, _V);
+      RRU.resize(RRU.dim[0], rank);
+      gemm(Qu, RRU, U, 1, 0);
+      RRV.resize(rank, RRV.dim[1]);
+      gemm(RRV, Qv, V, CblasNoTrans, CblasTrans, 1, 0);
     }
     else {
-      //Bebendorf HMatrix Book p??
-      //LR addition utilizing orthogonality
+      //Bebendorf HMatrix Book p17
+      //Rounded addition by exploiting orthogonality
       int rank2 = 2 * rank;
 
       Dense Xu(rank, rank);
