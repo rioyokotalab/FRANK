@@ -200,8 +200,10 @@ namespace hicma {
   }
 
   Dense Dense::operator-(const Dense& A) const {
+    timing::start("Dense - Dense");
     Dense B(*this);
     B -= A;
+    timing::stop("Dense - Dense");
     return B;
   }
 

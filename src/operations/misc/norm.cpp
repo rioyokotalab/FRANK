@@ -4,6 +4,7 @@
 #include "hicma/classes/dense.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/hierarchical.h"
+#include "hicma/util/timer.h"
 
 #include "yorel/multi_methods.hpp"
 
@@ -16,11 +17,13 @@ double norm(const Node& A) {
 
 BEGIN_SPECIALIZATION(norm_omm, double, const Dense& A) {
   double l2 = 0;
+  timing::start("Norm(Dense)");
   for (int i=0; i<A.dim[0]; i++) {
     for (int j=0; j<A.dim[1]; j++) {
       l2 += A(i, j) * A(i, j);
     }
   }
+  timing::stop("Norm(Dense)");
   return l2;
 } END_SPECIALIZATION;
 
