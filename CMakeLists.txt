@@ -1,10 +1,22 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.1)
 
 project(HICMA
     LANGUAGES CXX
     VERSION 1.0
 )
 set(CMAKE_CXX_STANDARD 14)
+
+# Use Release build by default
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
+# Set appropriate compiler options
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    list(APPEND HICMA_OPTIONS -O3)
+elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    list(APPEND HICMA_OPTIONS -Wall -Wextra -g)
+endif()
 
 # Check for OpenMP
 find_package(OpenMP)

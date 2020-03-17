@@ -24,5 +24,8 @@ target_include_directories(operations
 PUBLIC
     $<INSTALL_INTERFACE:include>
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+)
+target_include_directories(operations
+SYSTEM PUBLIC
     $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/yomm11-src/include>
 )

@@ -14,6 +14,9 @@ target_include_directories(hicma
 PUBLIC
     $<INSTALL_INTERFACE:include>
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+)
+target_include_directories(hicma
+SYSTEM PUBLIC
     $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/yomm11-src/include>
 )
 target_compile_options(hicma PUBLIC ${HICMA_OPTIONS})
