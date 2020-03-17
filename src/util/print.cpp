@@ -108,7 +108,7 @@ namespace hicma {
 
   BEGIN_SPECIALIZATION(
     fillXML_omm, void,
-    const Node& A, pt::ptree& tree
+    const Node& A, [[maybe_unused]] pt::ptree& tree
   ) {
     std::cerr << "WARNING: XML output not defined for " << A.type() << "!" << std::endl;
   } END_SPECIALIZATION;
@@ -136,7 +136,7 @@ namespace hicma {
     print_omm, void,
     const Node& A
   ) {
-    std::cout << "Uninitialized (Node)" << std::endl;
+    std::cout << "Print not defined for " << A.type() << std::endl;
   } END_SPECIALIZATION;
 
   BEGIN_SPECIALIZATION(

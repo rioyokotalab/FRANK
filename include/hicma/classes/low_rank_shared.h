@@ -13,9 +13,8 @@ namespace hicma {
 class LowRankShared : public Node {
  public:
   MM_CLASS(LowRankShared, Node);
-  int dim[2] = {0, 0};
-  int rank = 0;
 
+  // TODO Make these members private just like in LowRank
   class SharedBasis {
   private:
     std::shared_ptr<Dense> basis;
@@ -51,6 +50,8 @@ class LowRankShared : public Node {
     }
   } U, V;
   Dense S;
+  int dim[2] = {0, 0};
+  int rank = 0;
 
   // Special member functions
   LowRankShared();

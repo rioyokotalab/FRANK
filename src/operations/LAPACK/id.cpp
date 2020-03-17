@@ -81,7 +81,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   id_omm, std::vector<int>,
   Node& A, Node& B,
-  int k
+  [[maybe_unused]] int k
 ) {
   std::cerr << "id(";
   std::cerr << A.type() << "," << B.type();
@@ -126,7 +126,7 @@ BEGIN_SPECIALIZATION(
 // Fallback default, abort with error message
 BEGIN_SPECIALIZATION(
   two_sided_id_omm, dense_triplet,
-  Node& A, int k
+  Node& A, [[maybe_unused]] int k
 ) {
   std::cerr << "id(";
   std::cerr << A.type();

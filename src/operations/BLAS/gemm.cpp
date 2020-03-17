@@ -84,8 +84,8 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   gemm_trans_omm, void,
   const Node& A, const Node& B, Node& C,
-  bool TransA, bool TransB,
-  double alpha, double beta
+  [[maybe_unused]] bool TransA, [[maybe_unused]] bool TransB,
+  [[maybe_unused]] double alpha, [[maybe_unused]] double beta
 ) {
   std::cerr << "gemm_trans(";
   std::cerr << A.type() << "," << B.type() << "," << C.type();
@@ -464,8 +464,9 @@ BEGIN_SPECIALIZATION(
 
 BEGIN_SPECIALIZATION(
   gemm_regular_only_omm, void,
-  const LowRankShared& A, const Dense& B, Dense& C,
-  double alpha, double beta
+  [[maybe_unused]] const LowRankShared& A, [[maybe_unused]] const Dense& B,
+  Dense& C,
+  [[maybe_unused]] double alpha, double beta
 ) {
   // Only apply beta
   C *= beta;
@@ -482,7 +483,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   gemm_regular_only_omm, void,
   const Node& A, const Node& B, Node& C,
-  double alpha, double beta
+  [[maybe_unused]] double alpha, [[maybe_unused]] double beta
 ) {
   std::cerr << "gemm_regular_only(";
   std::cerr << A.type() << "," << B.type() << "," << C.type();
@@ -513,8 +514,9 @@ BEGIN_SPECIALIZATION(
 
 BEGIN_SPECIALIZATION(
   gemm_shared_only_omm, bool,
-  const Dense& A, const Node& B, Node& C,
-  double alpha, double beta
+  [[maybe_unused]] const Dense& A, [[maybe_unused]] const Node& B,
+  [[maybe_unused]] Node& C,
+  [[maybe_unused]] double alpha, [[maybe_unused]] double beta
 ) {
   // Do nothing
   return false;
@@ -522,8 +524,9 @@ BEGIN_SPECIALIZATION(
 
 BEGIN_SPECIALIZATION(
   gemm_shared_only_omm, bool,
-  const UniformHierarchical& A, const Node& B, Node& C,
-  double alpha, double beta
+  [[maybe_unused]] const UniformHierarchical& A, [[maybe_unused]] const Node& B,
+  [[maybe_unused]] Node& C,
+  [[maybe_unused]] double alpha, [[maybe_unused]] double beta
 ) {
   // Do nothing
   return false;
@@ -532,7 +535,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   gemm_shared_only_omm, bool,
   const Node& A, const Node& B, Node& C,
-  double alpha, double beta
+  [[maybe_unused]] double alpha, [[maybe_unused]] double beta
 ) {
   std::cerr << "gemm_shared_only(";
   std::cerr << A.type() << "," << B.type() << "," << C.type();
@@ -585,7 +588,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   gemm_omm, void,
   const Node& A, const Node& B, Node& C,
-  double alpha, double beta
+  [[maybe_unused]] double alpha, [[maybe_unused]] double beta
 ) {
   std::cerr << "gemm(";
   std::cerr << A.type() << "," << B.type() << "," << C.type();

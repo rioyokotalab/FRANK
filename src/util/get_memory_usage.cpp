@@ -103,7 +103,7 @@ BEGIN_SPECIALIZATION(
 
 BEGIN_SPECIALIZATION(
   get_memory_usage_omm, unsigned long,
-  const Node& A, bool include_structure
+  const Node& A, [[maybe_unused]] bool include_structure
 ) {
   std::cerr << "get_memory_usage(";
   std::cerr << A.type();

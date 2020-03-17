@@ -115,7 +115,7 @@ namespace hicma {
 
   BEGIN_SPECIALIZATION(
     make_hierarchical, Hierarchical,
-    const Node& A, int ni_level, int nj_level
+    const Node& A, [[maybe_unused]] int ni_level, [[maybe_unused]] int nj_level
   ) {
     std::cout << "Cannot create Hierarchical from " << A.type() << "!" << std::endl;
     abort();

@@ -237,7 +237,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   tpmqrt_omm, void,
   const Node& V, const Node& T, Node& A, Node& B,
-  bool trans
+  [[maybe_unused]] bool trans
 ) {
   std::cerr << "tpmqrt(";
   std::cerr << V.type() << "," << T.type() << "," << A.type() << "," << B.type();

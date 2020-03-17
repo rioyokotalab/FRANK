@@ -83,7 +83,7 @@ BEGIN_SPECIALIZATION(
 
 BEGIN_SPECIALIZATION(
   make_no_copy_split, NoCopySplit,
-  Node& A, int ni_level, int nj_level
+  Node& A, [[maybe_unused]] int ni_level, [[maybe_unused]] int nj_level
 ) {
   std::cout << "Cannot create NoCopySplit from " << A.type() << "!" << std::endl;
   abort();
@@ -124,7 +124,7 @@ BEGIN_SPECIALIZATION(
 
 BEGIN_SPECIALIZATION(
   make_no_copy_split_const, NoCopySplit,
-  const Node& A, int ni_level, int nj_level
+  const Node& A, [[maybe_unused]] int ni_level, [[maybe_unused]] int nj_level
 ) {
   std::cout << "Cannot create NoCopySplit from " << A.type() << "!" << std::endl;
   abort();

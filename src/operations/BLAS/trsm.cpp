@@ -152,7 +152,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   trsm_omm, void,
   const Node& A, Node& B,
-  const char& uplo, bool left
+  [[maybe_unused]] const char& uplo, [[maybe_unused]] bool left
 ) {
   std::cerr << "trsm(";
   std::cerr << A.type() << "," << B.type();

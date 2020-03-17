@@ -12,7 +12,7 @@ namespace hicma {
 
 void zeros(
   Dense& A,
-  std::vector<double>& x
+  [[maybe_unused]] std::vector<double>& x
 ) {
   for (int i=0; i<A.dim[0]; i++) {
     for (int j=0; j<A.dim[1]; j++) {
@@ -23,7 +23,7 @@ void zeros(
 
 void identity(
   Dense& A,
-  std::vector<double>& x
+  [[maybe_unused]] std::vector<double>& x
 ) {
   for (int i=0; i<A.dim[0]; i++) {
     for (int j=0; j<A.dim[1]; j++) {
@@ -34,7 +34,7 @@ void identity(
 
 void random_normal(
   Dense& A,
-  std::vector<double>& x
+  [[maybe_unused]] std::vector<double>& x
 ) {
   std::random_device rd;
   std::mt19937 gen(rd());
@@ -50,7 +50,7 @@ void random_normal(
 
 void random_uniform(
   Dense& A,
-  std::vector<double>& x
+  [[maybe_unused]] std::vector<double>& x
 ) {
   std::random_device rd;
   std::mt19937 gen(rd());
@@ -66,7 +66,7 @@ void random_uniform(
 
 void arange(
   Dense& A,
-  std::vector<double>& x
+  [[maybe_unused]] std::vector<double>& x
 ) {
   for (int i=0; i<A.dim[0]; i++) {
     for (int j=0; j<A.dim[1]; j++) {

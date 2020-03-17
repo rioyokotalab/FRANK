@@ -217,7 +217,7 @@ namespace hicma
     return Dense(0, 0);
   } END_SPECIALIZATION;
 
-  BEGIN_SPECIALIZATION(split_by_column_omm, NodeProxy, const Node& A, Node& storage, int& currentRow) {
+  BEGIN_SPECIALIZATION(split_by_column_omm, NodeProxy, const Node& A, Node& storage, [[maybe_unused]] int& currentRow) {
     std::cerr << "split_by_column(";
     std::cerr << A.type() << "," << storage.type() << ",int";
     std::cerr << ") undefined." << std::endl;
@@ -272,7 +272,7 @@ namespace hicma
     return concatenatedRow;
   } END_SPECIALIZATION;
 
-  BEGIN_SPECIALIZATION(concat_columns_omm, NodeProxy, const Node& A, const Node& splitted, int& currentRow, const Node& Q) {
+  BEGIN_SPECIALIZATION(concat_columns_omm, NodeProxy, const Node& A, const Node& splitted, [[maybe_unused]] int& currentRow, [[maybe_unused]] const Node& Q) {
     std::cerr << "concat_columns(";
     std::cerr << A.type() << "," << splitted.type() << ",int," << Q.type();
     std::cerr << ") undefined." << std::endl;

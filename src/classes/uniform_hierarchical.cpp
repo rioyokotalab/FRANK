@@ -370,21 +370,22 @@ BEGIN_SPECIALIZATION(
 
 BEGIN_SPECIALIZATION(
   set_col_basis_omm, void,
-  Dense& A, std::shared_ptr<Dense> basis
+  [[maybe_unused]] Dense& A, [[maybe_unused]] std::shared_ptr<Dense> basis
 ) {
   // Do nothing
 } END_SPECIALIZATION;
 
 BEGIN_SPECIALIZATION(
   set_col_basis_omm, void,
-  UniformHierarchical& A, std::shared_ptr<Dense> basis
+  [[maybe_unused]] UniformHierarchical& A,
+  [[maybe_unused]] std::shared_ptr<Dense> basis
 ) {
   // Do nothing
 } END_SPECIALIZATION;
 
 BEGIN_SPECIALIZATION(
   set_col_basis_omm, void,
-  Node& A, std::shared_ptr<Dense> basis
+  Node& A, [[maybe_unused]] std::shared_ptr<Dense> basis
 ) {
   std::cout << "Cannot set column basis on " << A.type() << "!" << std::endl;
   abort();
@@ -404,21 +405,22 @@ BEGIN_SPECIALIZATION(
 
 BEGIN_SPECIALIZATION(
   set_row_basis_omm, void,
-  Dense& A, std::shared_ptr<Dense> basis
+  [[maybe_unused]] Dense& A, [[maybe_unused]] std::shared_ptr<Dense> basis
 ) {
   // Do nothing
 } END_SPECIALIZATION;
 
 BEGIN_SPECIALIZATION(
   set_row_basis_omm, void,
-  UniformHierarchical& A, std::shared_ptr<Dense> basis
+  [[maybe_unused]] UniformHierarchical& A,
+  [[maybe_unused]] std::shared_ptr<Dense> basis
 ) {
   // Do nothing
 } END_SPECIALIZATION;
 
 BEGIN_SPECIALIZATION(
   set_row_basis_omm, void,
-  Node& A, std::shared_ptr<Dense> basis
+  Node& A, [[maybe_unused]] std::shared_ptr<Dense> basis
 ) {
   std::cout << "Cannot set row basis on " << A.type() << "!" << std::endl;
   abort();

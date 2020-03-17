@@ -113,7 +113,7 @@ BEGIN_SPECIALIZATION(
 BEGIN_SPECIALIZATION(
   larfb_omm, void,
   const Node& V, const Node& T, Node& C,
-  bool trans
+  [[maybe_unused]] bool trans
 ) {
   std::cerr << "larfb(";
   std::cerr << V.type() << "," << T.type() << "," << C.type();
