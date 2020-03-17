@@ -257,6 +257,7 @@ BEGIN_SPECIALIZATION(
   gemm(A.S(), S, SxVxU, 1, 0);
   gemm(SxVxU, B.S(), S, alpha, 0);
   AxB.S() = S;
+  AxB.S() *= beta;
   C += AxB;
 } END_SPECIALIZATION;
 
