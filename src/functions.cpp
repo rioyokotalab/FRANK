@@ -37,11 +37,13 @@ void random_normal(
   std::vector<double>& x
 ) {
   std::random_device rd;
-  std::mt19937 mt(rd());
+  std::mt19937 gen(rd());
+  // TODO Remove random seed when experiments end
+  gen.seed(0);
   std::normal_distribution<double> dist(0.0, 1.0);
   for (int i=0; i<A.dim[0]; i++) {
     for (int j=0; j<A.dim[1]; j++) {
-      A(i, j) = dist(mt);
+      A(i, j) = dist(gen);
     }
   }
 }
@@ -51,11 +53,13 @@ void random_uniform(
   std::vector<double>& x
 ) {
   std::random_device rd;
-  std::mt19937 mt(rd());
+  std::mt19937 gen(rd());
+  // TODO Remove random seed when experiments end
+  gen.seed(0);
   std::uniform_real_distribution<double> dist(0.0, 1.0);
   for (int i=0; i<A.dim[0]; i++) {
     for (int j=0; j<A.dim[1]; j++) {
-      A(i, j) = dist(mt);
+      A(i, j) = dist(gen);
     }
   }
 }
