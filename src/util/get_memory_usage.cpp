@@ -70,7 +70,7 @@ BEGIN_SPECIALIZATION(
   }
   if (include_structure) {
     memory_usage += A.dim[0] * A.dim[1] * sizeof(NodeProxy);
-    memory_usage + sizeof(Hierarchical);
+    memory_usage += sizeof(Hierarchical);
   }
   return memory_usage;
 } END_SPECIALIZATION;
