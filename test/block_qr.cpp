@@ -7,7 +7,7 @@
 
 using namespace hicma;
 
-int main(int argc, char** argv) {
+int main() {
   yorel::multi_methods::initialize();
   int N = 64;
   int Nb = 16;
