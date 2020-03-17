@@ -12,10 +12,11 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # Set appropriate compiler options
+list(APPEND HICMA_OPTIONS -Wall -Wextra)
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
     list(APPEND HICMA_OPTIONS -O3)
 elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    list(APPEND HICMA_OPTIONS -Wall -Wextra -g)
+    list(APPEND HICMA_OPTIONS -g)
 endif()
 
 # Check for OpenMP

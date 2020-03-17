@@ -10,7 +10,7 @@
 
 using namespace hicma;
 
-int main() {
+int main(int argc, char** argv) {
   yorel::multi_methods::initialize();
   int N = argc > 1 ? atoi(argv[1]) : 256;
   int Nb = argc > 2 ? atoi(argv[2]) : 32;
