@@ -1,4 +1,4 @@
-#include "hicma/operations/LAPACK/latms.h"
+#include "hicma/operations/LAPACK.h"
 
 #include "hicma/classes/dense.h"
 

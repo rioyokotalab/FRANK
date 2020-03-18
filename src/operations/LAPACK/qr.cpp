@@ -1,4 +1,5 @@
-#include "hicma/operations/LAPACK/qr.h"
+#include "hicma/operations/LAPACK.h"
+#include "hicma/extension_headers/operations.h"
 
 #include "hicma/classes/node.h"
 #include "hicma/classes/node_proxy.h"
@@ -21,6 +22,7 @@
 #include <lapacke.h>
 #endif
 #include "yorel/yomm2/cute.hpp"
+
 
 namespace hicma
 {
@@ -144,13 +146,13 @@ namespace hicma
   }
 
 
-  define_method(dense_tuple, make_left_orthogonal_omm, (const Dense& A)) {
+  define_method(DensePair, make_left_orthogonal_omm, (const Dense& A)) {
     std::vector<double> x;
     Dense Id(identity, x, A.dim[0], A.dim[0]);
     return {std::move(Id), A};
   }
 
-  define_method(dense_tuple, make_left_orthogonal_omm, (const LowRank& A)) {
+  define_method(DensePair, make_left_orthogonal_omm, (const LowRank& A)) {
     Dense Au(A.U());
     Dense Qu(A.U().dim[0], A.U().dim[1]);
     Dense Ru(A.U().dim[1], A.U().dim[1]);
@@ -162,7 +164,7 @@ namespace hicma
     return {std::move(Qu), std::move(RSV)};
   }
 
-  define_method(dense_tuple, make_left_orthogonal_omm, (const Node& A)) {
+  define_method(DensePair, make_left_orthogonal_omm, (const Node& A)) {
     std::cerr << "make_left_orthogonal(";
     std::cerr << A.type();
     std::cerr << ") undefined." << std::endl;

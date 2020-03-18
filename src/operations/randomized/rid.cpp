@@ -3,11 +3,11 @@
 #include "hicma/classes/dense.h"
 #include "hicma/functions.h"
 #include "hicma/operations/BLAS.h"
-#include "hicma/operations/LAPACK/id.h"
-#include "hicma/operations/LAPACK/qr.h"
+#include "hicma/operations/LAPACK.h"
 
 #include <utility>
 #include <vector>
+
 
 namespace hicma
 {

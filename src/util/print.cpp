@@ -4,7 +4,7 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/low_rank_shared.h"
 #include "hicma/classes/hierarchical.h"
-#include "hicma/operations/LAPACK/svd.h"
+#include "hicma/operations/LAPACK.h"
 
 #include <iostream>
 #include <string>
@@ -13,6 +13,7 @@
 namespace pt = boost::property_tree;
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
+
 
 namespace hicma {
 

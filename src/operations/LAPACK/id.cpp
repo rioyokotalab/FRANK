@@ -1,4 +1,5 @@
-#include "hicma/operations/LAPACK/id.h"
+#include "hicma/operations/LAPACK.h"
+#include "hicma/extension_headers/operations.h"
 
 #include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
@@ -6,8 +7,6 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/functions.h"
 #include "hicma/operations/BLAS.h"
-#include "hicma/operations/LAPACK/geqp3.h"
-#include "hicma/operations/LAPACK/qr.h"
 
 #include <algorithm>
 #include <cassert>
@@ -16,6 +15,7 @@
 #include <vector>
 
 #include "yorel/yomm2/cute.hpp"
+
 
 namespace hicma
 {
@@ -99,7 +99,7 @@ Dense get_cols(const Dense& A, std::vector<int> Pr) {
 }
 
 // Fallback default, abort with error message
-define_method(dense_triplet, two_sided_id_omm, (Dense& A, int k)) {
+define_method(DenseTriplet, two_sided_id_omm, (Dense& A, int k)) {
   Dense V(k, A.dim[1]);
   Dense Awork(A);
   std::vector<int> selected_cols = id(Awork, V, k);
@@ -116,7 +116,7 @@ define_method(dense_triplet, two_sided_id_omm, (Dense& A, int k)) {
 
 // Fallback default, abort with error message
 define_method(
-  dense_triplet, two_sided_id_omm,
+  DenseTriplet, two_sided_id_omm,
   (Node& A, [[maybe_unused]] int k)
 ) {
   std::cerr << "id(";

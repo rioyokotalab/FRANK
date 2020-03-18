@@ -1,4 +1,4 @@
-#include "hicma/operations/LAPACK/svd.h"
+#include "hicma/operations/LAPACK.h"
 
 #include "hicma/classes/dense.h"
 #include "hicma/util/timer.h"
@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <tuple>
 #include <utility>
+
 
 namespace hicma
 {

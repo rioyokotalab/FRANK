@@ -2,7 +2,7 @@
 
 #include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
-#include "hicma/operations/LAPACK/svd.h"
+#include "hicma/operations/LAPACK.h"
 
 #include <algorithm>
 #include <cassert>

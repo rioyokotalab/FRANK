@@ -1,4 +1,5 @@
-#include "hicma/operations/LAPACK/geqp3.h"
+#include "hicma/operations/LAPACK.h"
+#include "hicma/extension_headers/operations.h"
 
 #include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
@@ -14,6 +15,7 @@
 #include <lapacke.h>
 #endif
 #include "yorel/yomm2/cute.hpp"
+
 
 namespace hicma
 {

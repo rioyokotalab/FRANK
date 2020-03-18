@@ -6,14 +6,14 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/no_copy_split.h"
 #include "hicma/operations/BLAS.h"
-#include "hicma/operations/LAPACK/qr.h"
-#include "hicma/operations/LAPACK/svd.h"
+#include "hicma/operations/LAPACK.h"
 #include "hicma/util/counter.h"
 #include "hicma/util/timer.h"
 
 #include "yorel/yomm2/cute.hpp"
 
 #include <cassert>
+
 
 namespace hicma
 {
