@@ -132,11 +132,14 @@ namespace hicma
   }
 
 
-  define_method(bool, need_split_omm, (const Hierarchical& A)) {
+  define_method(
+    bool, need_split_omm,
+    ([[maybe_unused]] const Hierarchical& A)
+  ) {
     return true;
   }
 
-  define_method(bool, need_split_omm, (const Node& A)) {
+  define_method(bool, need_split_omm, ([[maybe_unused]] const Node& A)) {
     return false;
   }
 

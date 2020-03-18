@@ -78,7 +78,6 @@ int main(int argc, char** argv) {
   print("Cond(A)", cond(Dense(A)), false);
 
   // For residual measurement
-  double diff, l2;
   Dense x(N); x = 1.0;
   Dense Ax(N);
   gemm(A, x, Ax, 1, 0);
