@@ -25,18 +25,6 @@ using yorel::yomm2::virtual_;
 
 namespace hicma {
 
-  Hierarchical::Hierarchical() = default;
-
-  Hierarchical::~Hierarchical() = default;
-
-  Hierarchical::Hierarchical(const Hierarchical& A) = default;
-
-  Hierarchical& Hierarchical::operator=(const Hierarchical& A) = default;
-
-  Hierarchical::Hierarchical(Hierarchical&& A) = default;
-
-  Hierarchical& Hierarchical::operator=(Hierarchical&& A) = default;
-
   std::unique_ptr<Node> Hierarchical::clone() const {
     return std::make_unique<Hierarchical>(*this);
   }

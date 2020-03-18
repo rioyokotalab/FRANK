@@ -21,17 +21,17 @@ namespace hicma {
     virtual const double* get_pointer() const override;
   public:
     // Special member functions
-    DenseView();
+    DenseView() = default;
 
-    ~DenseView();
+    ~DenseView() = default;
 
-    DenseView(const DenseView& A);
+    DenseView(const DenseView& A) = default;
 
-    DenseView& operator=(const DenseView& A);
+    DenseView& operator=(const DenseView& A) = default;
 
-    DenseView(DenseView&& A);
+    DenseView(DenseView&& A) = default;
 
-    DenseView& operator=(DenseView&& A);
+    DenseView& operator=(DenseView&& A) = default;
 
     // Overridden functions from Node
     std::unique_ptr<Node> clone() const override;

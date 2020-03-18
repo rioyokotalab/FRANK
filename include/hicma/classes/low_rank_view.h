@@ -17,17 +17,17 @@ namespace hicma {
     DenseView _U, _S, _V;
   public:
     // Special member functions
-    LowRankView();
+    LowRankView() = default;
 
-    ~LowRankView();
+    ~LowRankView() = default;
 
-    LowRankView(const LowRankView& A);
+    LowRankView(const LowRankView& A) = default;
 
-    LowRankView& operator=(const LowRankView& A);
+    LowRankView& operator=(const LowRankView& A) = default;
 
-    LowRankView(LowRankView&& A);
+    LowRankView(LowRankView&& A) = default;
 
-    LowRankView& operator=(LowRankView&& A);
+    LowRankView& operator=(LowRankView&& A) = default;
 
     // Overridden functions from Node
     std::unique_ptr<Node> clone() const override;

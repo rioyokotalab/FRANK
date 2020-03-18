@@ -18,18 +18,6 @@
 namespace hicma
 {
 
-NoCopySplit::NoCopySplit() = default;
-
-NoCopySplit::~NoCopySplit() = default;
-
-NoCopySplit::NoCopySplit(const NoCopySplit& A) = default;
-
-NoCopySplit& NoCopySplit::operator=(const NoCopySplit& A) = default;
-
-NoCopySplit::NoCopySplit(NoCopySplit&& A) = default;
-
-NoCopySplit& NoCopySplit::operator=(NoCopySplit&& A) = default;
-
 std::unique_ptr<Node> NoCopySplit::clone() const {
   return std::make_unique<NoCopySplit>(*this);
 }

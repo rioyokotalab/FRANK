@@ -9,18 +9,6 @@
 
 namespace hicma {
 
-  DenseView::DenseView() = default;
-
-  DenseView::~DenseView() = default;
-
-  DenseView::DenseView(const DenseView& A) = default;
-
-  DenseView& DenseView::operator=(const DenseView& A) = default;
-
-  DenseView::DenseView(DenseView&& A) = default;
-
-  DenseView& DenseView::operator=(DenseView&& A) = default;
-
   std::unique_ptr<Node> DenseView::clone() const {
     return std::make_unique<DenseView>(*this);
   }

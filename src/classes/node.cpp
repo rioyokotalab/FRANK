@@ -10,18 +10,6 @@
 
 namespace hicma {
 
-  Node::Node() = default;
-
-  Node::~Node() = default;
-
-  Node::Node(const Node& A) = default;
-
-  Node& Node::operator=(const Node& A) = default;
-
-  Node::Node(Node&& A) = default;
-
-  Node& Node::operator=(Node&& A) = default;
-
   std::unique_ptr<Node> Node::clone() const {
     return std::make_unique<Node>(*this);
   }

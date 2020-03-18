@@ -15,17 +15,17 @@ class Node;
 class NoCopySplit : public Hierarchical {
 public:
   // Special member functions
-  NoCopySplit();
+  NoCopySplit() = default;
 
-  ~NoCopySplit();
+  ~NoCopySplit() = default;
 
-  NoCopySplit(const NoCopySplit& A);
+  NoCopySplit(const NoCopySplit& A) = default;
 
-  NoCopySplit& operator=(const NoCopySplit& A);
+  NoCopySplit& operator=(const NoCopySplit& A) = default;
 
-  NoCopySplit(NoCopySplit&& A);
+  NoCopySplit(NoCopySplit&& A) = default;
 
-  NoCopySplit& operator=(NoCopySplit&& A);
+  NoCopySplit& operator=(NoCopySplit&& A) = default;
 
   // Overridden functions from Node
   std::unique_ptr<Node> clone() const override;

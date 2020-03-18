@@ -18,17 +18,17 @@ namespace hicma {
     int rank = 0;
 
     // Special member functions
-    LowRank();
+    LowRank() = default;
 
-    virtual ~LowRank();
+    virtual ~LowRank() = default;
 
-    LowRank(const LowRank& A);
+    LowRank(const LowRank& A) = default;
 
-    LowRank& operator=(const LowRank& A);
+    LowRank& operator=(const LowRank& A) = default;
 
-    LowRank(LowRank&& A);
+    LowRank(LowRank&& A) = default;
 
-    LowRank& operator=(LowRank&& A);
+    LowRank& operator=(LowRank&& A) = default;
 
     // Overridden functions from Node
     virtual std::unique_ptr<Node> clone() const override;

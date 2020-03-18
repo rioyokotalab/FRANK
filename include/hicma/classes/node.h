@@ -17,17 +17,17 @@ namespace hicma {
     IndexRange row_range, col_range;
 
     // Special member functions
-    Node();
+    Node() = default;
 
-    virtual ~Node();
+    virtual ~Node() = default;
 
-    Node(const Node& A);
+    Node(const Node& A) = default;
 
-    Node& operator=(const Node& A);
+    Node& operator=(const Node& A) = default;
 
-    Node(Node&& A);
+    Node(Node&& A) = default;
 
-    Node& operator=(Node&& A);
+    Node& operator=(Node&& A) = default;
 
     // Virtual functions for inheritance
     // TODO Consider moving these three into multi-methods.

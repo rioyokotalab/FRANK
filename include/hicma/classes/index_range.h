@@ -12,17 +12,17 @@ public:
   int length = 0;
 
   // Special member functions
-  IndexRange();
+  IndexRange() = default;
 
-  ~IndexRange();
+  ~IndexRange() = default;
 
-  IndexRange(const IndexRange&);
+  IndexRange(const IndexRange&) = default;
 
-  IndexRange& operator=(const IndexRange&);
+  IndexRange& operator=(const IndexRange&) = default;
 
-  IndexRange(IndexRange&&);
+  IndexRange(IndexRange&&) = default;
 
-  IndexRange& operator=(IndexRange&&);
+  IndexRange& operator=(IndexRange&&) = default;
 
   // Additional constructors
   IndexRange(int start, int length);

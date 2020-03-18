@@ -52,17 +52,17 @@ private:
   );
 public:
   // Special member functions
-  UniformHierarchical();
+  UniformHierarchical() = default;
 
-  ~UniformHierarchical();
+  ~UniformHierarchical() = default;
 
   UniformHierarchical(const UniformHierarchical& A);
 
-  UniformHierarchical& operator=(const UniformHierarchical& A);
+  UniformHierarchical& operator=(const UniformHierarchical& A) = default;
 
-  UniformHierarchical(UniformHierarchical&& A);
+  UniformHierarchical(UniformHierarchical&& A) = default;
 
-  UniformHierarchical& operator=(UniformHierarchical&& A);
+  UniformHierarchical& operator=(UniformHierarchical&& A) = default;
 
   // Overridden functions from Hierarchical
   std::unique_ptr<Node> clone() const override;

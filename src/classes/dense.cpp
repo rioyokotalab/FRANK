@@ -22,10 +22,6 @@ using yorel::yomm2::virtual_;
 
 namespace hicma {
 
-  Dense::Dense() = default;
-
-  Dense::~Dense() = default;
-
   Dense::Dense(const Dense& A)
   : Node(A), dim{A.dim[0], A.dim[1]}, stride(A.dim[1]) {
     timing::start("Dense cctor");
@@ -37,12 +33,6 @@ namespace hicma {
     }
     timing::stop("Dense cctor");
   }
-
-  Dense& Dense::operator=(const Dense& A) = default;
-
-  Dense::Dense(Dense&& A) = default;
-
-  Dense& Dense::operator=(Dense&& A) = default;
 
   std::unique_ptr<Node> Dense::clone() const {
     return std::make_unique<Dense>(*this);

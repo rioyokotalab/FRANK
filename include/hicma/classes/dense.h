@@ -26,17 +26,17 @@ namespace hicma {
     int stride = 0;
 
     // Special member functions
-    Dense();
+    Dense() = default;
 
-    virtual ~Dense();
+    virtual ~Dense() = default;
 
     Dense(const Dense& A);
 
-    Dense& operator=(const Dense& A);
+    Dense& operator=(const Dense& A) = default;
 
-    Dense(Dense&& A);
+    Dense(Dense&& A) = default;
 
-    Dense& operator=(Dense&& A);
+    Dense& operator=(Dense&& A) = default;
 
     // Overridden functions from Node
     virtual std::unique_ptr<Node> clone() const override;

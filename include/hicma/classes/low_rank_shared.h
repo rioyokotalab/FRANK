@@ -52,17 +52,17 @@ class LowRankShared : public Node {
   int rank = 0;
 
   // Special member functions
-  LowRankShared();
+  LowRankShared() = default;
 
-  ~LowRankShared();
+  ~LowRankShared() = default;
 
-  LowRankShared(const LowRankShared& A);
+  LowRankShared(const LowRankShared& A) = default;
 
-  LowRankShared& operator=(const LowRankShared& A);
+  LowRankShared& operator=(const LowRankShared& A) = default;
 
-  LowRankShared(LowRankShared&& A);
+  LowRankShared(LowRankShared&& A) = default;
 
-  LowRankShared& operator=(LowRankShared&& A);
+  LowRankShared& operator=(LowRankShared&& A) = default;
 
   // Overridden functions from Node
   std::unique_ptr<Node> clone() const override;

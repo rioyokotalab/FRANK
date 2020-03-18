@@ -3,18 +3,6 @@
 namespace hicma
 {
 
-IndexRange::IndexRange() = default;
-
-IndexRange::~IndexRange() = default;
-
-IndexRange::IndexRange(const IndexRange&) = default;
-
-IndexRange& IndexRange::operator=(const IndexRange&) = default;
-
-IndexRange::IndexRange(IndexRange&&) = default;
-
-IndexRange& IndexRange::operator=(IndexRange&&) = default;
-
 IndexRange::IndexRange(int start, int length)
 : start(start), length(length) {}
 

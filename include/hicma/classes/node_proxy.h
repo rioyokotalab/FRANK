@@ -12,17 +12,17 @@ namespace hicma {
     std::unique_ptr<Node> ptr;
   public:
     // Special member functions
-    NodeProxy();
+    NodeProxy() = default;
 
-    ~NodeProxy();
+    ~NodeProxy() = default;
 
     NodeProxy(const NodeProxy& A);
 
     NodeProxy& operator=(const NodeProxy& A);
 
-    NodeProxy(NodeProxy&& A);
+    NodeProxy(NodeProxy&& A) = default;
 
-    NodeProxy& operator=(NodeProxy&& A);
+    NodeProxy& operator=(NodeProxy&& A) = default;
 
     // Additional constructors from Node to allow implicit conversion
     NodeProxy(const Node& A);

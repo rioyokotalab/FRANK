@@ -23,10 +23,6 @@ using yorel::yomm2::virtual_;
 namespace hicma
 {
 
-UniformHierarchical::UniformHierarchical() = default;
-
-UniformHierarchical::~UniformHierarchical() = default;
-
 UniformHierarchical::UniformHierarchical(const UniformHierarchical& A)
 : Hierarchical(A) {
   col_basis.resize(A.dim[0]);
@@ -40,16 +36,6 @@ UniformHierarchical::UniformHierarchical(const UniformHierarchical& A)
     }
   }
 }
-
-UniformHierarchical& UniformHierarchical::operator=(
-  const UniformHierarchical& A
-) = default;
-
-UniformHierarchical::UniformHierarchical(UniformHierarchical&& A) = default;
-
-UniformHierarchical& UniformHierarchical::operator=(
-  UniformHierarchical&& A
-) = default;
 
 std::unique_ptr<Node> UniformHierarchical::clone() const {
   return std::make_unique<UniformHierarchical>(*this);

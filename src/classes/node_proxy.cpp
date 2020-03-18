@@ -8,10 +8,6 @@
 
 namespace hicma {
 
-  NodeProxy::NodeProxy() = default;
-
-  NodeProxy::~NodeProxy() = default;
-
   // Reconsider these constructors. Performance testing needed!!
   NodeProxy::NodeProxy(const NodeProxy& A) : ptr(A.ptr->clone()) {}
 
@@ -19,10 +15,6 @@ namespace hicma {
     ptr = A.ptr->clone();
     return *this;
   }
-
-  NodeProxy::NodeProxy(NodeProxy&& A) = default;
-
-  NodeProxy& NodeProxy::operator=(NodeProxy&& A) = default;
 
   NodeProxy::NodeProxy(const Node& A) : ptr(A.clone()) {}
 

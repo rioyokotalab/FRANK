@@ -22,17 +22,17 @@ namespace hicma {
     int dim[2] = {0, 0};
 
     // Special member functions
-    Hierarchical();
+    Hierarchical() = default;
 
-    virtual ~Hierarchical();
+    virtual ~Hierarchical() = default;
 
-    Hierarchical(const Hierarchical& A);
+    Hierarchical(const Hierarchical& A) = default;
 
-    Hierarchical& operator=(const Hierarchical& A);
+    Hierarchical& operator=(const Hierarchical& A) = default;
 
-    Hierarchical(Hierarchical&& A);
+    Hierarchical(Hierarchical&& A) = default;
 
-    Hierarchical& operator=(Hierarchical&& A);
+    Hierarchical& operator=(Hierarchical&& A) = default;
 
     // Overridden functions from Node
     virtual std::unique_ptr<Node> clone() const override;
