@@ -53,6 +53,11 @@ namespace hicma {
     const_data = &A(rel_row_begin, rel_col_begin);
   }
 
+  DenseView& DenseView::operator=(Dense& A) {
+    *this = DenseView(A, A);
+    return *this;
+  }
+
   DenseView& DenseView::operator=(const Dense& A) {
     *this = DenseView(A, A);
     return *this;

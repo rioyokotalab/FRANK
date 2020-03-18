@@ -46,6 +46,8 @@ namespace hicma {
     DenseView(const Node& node, const Dense& A);
 
     // Additional operators
+    DenseView& operator=(Dense& A);
+
     DenseView& operator=(const Dense& A);
 
     // Delete methods that cannot be used from Dense
