@@ -4,8 +4,7 @@
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/uniform_hierarchical.h"
-#include "hicma/operations/BLAS/gemm.h"
-#include "hicma/operations/BLAS/trsm.h"
+#include "hicma/operations/BLAS.h"
 #include "hicma/util/timer.h"
 
 #include <iostream>

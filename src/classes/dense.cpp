@@ -5,7 +5,7 @@
 #include "hicma/classes/node_proxy.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/hierarchical.h"
-#include "hicma/operations/BLAS/gemm.h"
+#include "hicma/operations/BLAS.h"
 #include "hicma/operations/misc/get_dim.h"
 #include "hicma/util/print.h"
 #include "hicma/util/timer.h"

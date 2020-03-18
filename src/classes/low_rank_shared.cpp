@@ -4,7 +4,7 @@
 #include "hicma/classes/dense.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/extension_headers/classes.h"
-#include "hicma/operations/BLAS/gemm.h"
+#include "hicma/operations/BLAS.h"
 
 #include <memory>
 #include <utility>

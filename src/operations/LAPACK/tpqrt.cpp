@@ -4,7 +4,7 @@
 #include "hicma/classes/dense.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/hierarchical.h"
-#include "hicma/operations/BLAS/gemm.h"
+#include "hicma/operations/BLAS.h"
 #include "hicma/operations/LAPACK/tpmqrt.h"
 
 #include <algorithm>

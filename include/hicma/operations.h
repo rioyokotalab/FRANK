@@ -1,9 +1,7 @@
 #ifndef hicma_operations_h
 #define hicma_operations_h
 
-#include "hicma/operations/BLAS/gemm.h"
-#include "hicma/operations/BLAS/trmm.h"
-#include "hicma/operations/BLAS/trsm.h"
+#include "hicma/operations/BLAS.h"
 
 #include "hicma/operations/LAPACK/geqp3.h"
 #include "hicma/operations/LAPACK/geqrt.h"

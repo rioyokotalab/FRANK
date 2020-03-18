@@ -5,8 +5,7 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/functions.h"
-#include "hicma/operations/BLAS/gemm.h"
-#include "hicma/operations/BLAS/trsm.h"
+#include "hicma/operations/BLAS.h"
 #include "hicma/operations/LAPACK/geqp3.h"
 #include "hicma/operations/LAPACK/qr.h"
 

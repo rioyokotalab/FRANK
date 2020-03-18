@@ -5,7 +5,7 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/no_copy_split.h"
-#include "hicma/operations/BLAS/gemm.h"
+#include "hicma/operations/BLAS.h"
 #include "hicma/operations/LAPACK/qr.h"
 #include "hicma/operations/LAPACK/svd.h"
 #include "hicma/util/counter.h"

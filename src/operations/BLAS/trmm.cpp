@@ -1,10 +1,11 @@
-#include "hicma/operations/BLAS/trmm.h"
+#include "hicma/operations/BLAS.h"
+#include "hicma/extension_headers/operations.h"
 
 #include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/hierarchical.h"
-#include "hicma/operations/BLAS/gemm.h"
+#include "hicma/operations/BLAS.h"
 #include "hicma/util/timer.h"
 
 #include <cassert>

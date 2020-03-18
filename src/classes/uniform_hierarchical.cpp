@@ -6,7 +6,7 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/low_rank_shared.h"
 #include "hicma/classes/hierarchical.h"
-#include "hicma/operations/BLAS/gemm.h"
+#include "hicma/operations/BLAS.h"
 #include "hicma/operations/randomized/rid.h"
 #include "hicma/operations/misc/get_dim.h"
 #include "hicma/operations/misc/transpose.h"
