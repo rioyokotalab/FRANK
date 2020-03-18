@@ -91,7 +91,7 @@ std::tuple<Dense, Dense, Dense> two_sided_id(Node& A, int k) {
 
 Dense get_cols(const Dense& A, std::vector<int> Pr) {
   Dense B(A.dim[0], Pr.size());
-  for (int j=0; j<Pr.size(); ++j) {
+  for (int j=0; j<B.dim[1]; ++j) {
     for (int i=0; i<A.dim[0]; ++i) {
       B(i, j) = A(i, Pr[j]);
     }
