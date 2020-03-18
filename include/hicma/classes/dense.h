@@ -6,7 +6,7 @@
 #include <vector>
 #include <memory>
 
-#include "yorel/multi_methods.hpp"
+#include "yorel/yomm2/cute.hpp"
 
 namespace hicma {
 
@@ -22,7 +22,6 @@ namespace hicma {
 
     virtual const double* get_pointer() const;
   public:
-    MM_CLASS(Dense, Node);
     int dim[2] = {0, 0};
     int stride = 0;
 
@@ -124,8 +123,9 @@ namespace hicma {
 
     // Get part of other Dense
     Dense get_part(const Node& node) const;
-
   };
+
+  register_class(Dense, Node);
 
 } // namespace hicma
 

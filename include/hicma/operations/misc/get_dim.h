@@ -1,28 +1,22 @@
 #ifndef hicma_operations_misc_get_dim_h
 #define hicma_operations_misc_get_dim_h
 
-#include "yorel/multi_methods.hpp"
-using yorel::multi_methods::virtual_;
+#include "hicma/classes/node.h"
+
+#include "yorel/yomm2/cute.hpp"
+using yorel::yomm2::virtual_;
 
 
 namespace hicma
 {
 
-class Node;
-
 int get_n_rows(const Node&);
 
-MULTI_METHOD(
-  get_n_rows_omm, int,
-  const virtual_<Node>&
-);
+declare_method(int, get_n_rows_omm, (virtual_<const Node&>));
 
 int get_n_cols(const Node&);
 
-MULTI_METHOD(
-  get_n_cols_omm, int,
-  const virtual_<Node>&
-);
+declare_method(int, get_n_cols_omm, (virtual_<const Node&>));
 
 } // namespace hicma
 

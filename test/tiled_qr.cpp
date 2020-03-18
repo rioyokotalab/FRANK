@@ -4,12 +4,12 @@
 #include <cmath>
 #include <iostream>
 
-#include "yorel/multi_methods.hpp"
+#include "yorel/yomm2/cute.hpp"
 
 using namespace hicma;
 
 int main(int argc, char** argv) {
-  yorel::multi_methods::initialize();
+  yorel::yomm2::update_methods();
   int N = argc > 1 ? atoi(argv[1]) : 256;
   int Nb = argc > 2 ? atoi(argv[2]) : 32;
   int matCode = argc > 3 ? atoi(argv[3]) : 0;

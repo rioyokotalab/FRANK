@@ -1,21 +1,18 @@
 #ifndef hicma_operations_misc_transpose_h
 #define hicma_operations_misc_transpose_h
 
-#include "yorel/multi_methods.hpp"
-using yorel::multi_methods::virtual_;
+#include "hicma/classes/node.h"
+
+#include "yorel/yomm2/cute.hpp"
+using yorel::yomm2::virtual_;
 
 
 namespace hicma
 {
 
-class Node;
-
 void transpose(Node&);
 
-MULTI_METHOD(
-  transpose_omm, void,
-  virtual_<Node>&
-);
+declare_method(void, transpose_omm, (virtual_<Node&>));
 
 } // namespace hicma
 

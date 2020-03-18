@@ -1,23 +1,22 @@
 #ifndef hicma_operations_LAPACK_id_h
 #define hicma_operations_LAPACK_id_h
 
+#include "hicma/classes/node.h"
+#include "hicma/classes/dense.h"
+
 #include <vector>
 
-#include "yorel/multi_methods.hpp"
-using yorel::multi_methods::virtual_;
+#include "yorel/yomm2/cute.hpp"
+using yorel::yomm2::virtual_;
 
 namespace hicma
 {
 
-class Node;
-class Dense;
-
 std::vector<int> id(Node& A, Node& B, int k);
 
-MULTI_METHOD(
-  id_omm, std::vector<int>,
-  virtual_<Node>&, virtual_<Node>&,
-  int k
+declare_method(
+  std::vector<int>, id_omm,
+  (virtual_<Node&>, virtual_<Node&>, int)
 );
 
 Dense get_cols(const Dense& A, std::vector<int> P);
@@ -25,10 +24,7 @@ Dense get_cols(const Dense& A, std::vector<int> P);
 std::tuple<Dense, Dense, Dense> two_sided_id(Node& A, int k);
 
 typedef std::tuple<Dense, Dense, Dense> dense_triplet;
-MULTI_METHOD(
-  two_sided_id_omm, dense_triplet,
-  virtual_<Node>&, int k
-);
+declare_method(dense_triplet, two_sided_id_omm, (virtual_<Node&>, int));
 
 } // namespace hicma
 

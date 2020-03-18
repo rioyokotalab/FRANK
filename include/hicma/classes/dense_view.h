@@ -3,7 +3,7 @@
 
 #include "hicma/classes/dense.h"
 
-#include "yorel/multi_methods.hpp"
+#include "yorel/yomm2/cute.hpp"
 
 #include <memory>
 
@@ -20,8 +20,6 @@ namespace hicma {
 
     virtual const double* get_pointer() const override;
   public:
-    MM_CLASS(DenseView, Dense);
-
     // Special member functions
     DenseView();
 
@@ -55,6 +53,8 @@ namespace hicma {
 
     void resize(int dim0, int dim1) = delete;
   };
+
+  register_class(DenseView, Dense);
 
 } // namespace hicma
 

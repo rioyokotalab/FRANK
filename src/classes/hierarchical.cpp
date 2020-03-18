@@ -20,26 +20,20 @@
 #include <tuple>
 #include <utility>
 
-#include "yorel/multi_methods.hpp"
-using yorel::multi_methods::virtual_;
+#include "yorel/yomm2/cute.hpp"
+using yorel::yomm2::virtual_;
 
 namespace hicma {
 
-  Hierarchical::Hierarchical() : Node() { MM_INIT(); }
+  Hierarchical::Hierarchical() = default;
 
   Hierarchical::~Hierarchical() = default;
 
-  Hierarchical::Hierarchical(const Hierarchical& A) {
-    MM_INIT();
-    *this = A;
-  }
+  Hierarchical::Hierarchical(const Hierarchical& A) = default;
 
   Hierarchical& Hierarchical::operator=(const Hierarchical& A) = default;
 
-  Hierarchical::Hierarchical(Hierarchical&& A) {
-    MM_INIT();
-    *this = std::move(A);
-  }
+  Hierarchical::Hierarchical(Hierarchical&& A) = default;
 
   Hierarchical& Hierarchical::operator=(Hierarchical&& A) = default;
 
@@ -53,31 +47,25 @@ namespace hicma {
 
   const char* Hierarchical::type() const { return "Hierarchical"; }
 
-  MULTI_METHOD(move_from_hierarchical, Hierarchical, virtual_<Node>&);
+  declare_method(Hierarchical, move_from_hierarchical, (virtual_<Node&>));
 
   Hierarchical::Hierarchical(NodeProxy&& A) {
     *this = move_from_hierarchical(A);
   }
 
-  BEGIN_SPECIALIZATION(
-    move_from_hierarchical, Hierarchical,
-    Hierarchical& A
-  ) {
+  define_method(Hierarchical, move_from_hierarchical, (Hierarchical& A)) {
     return std::move(A);
-  } END_SPECIALIZATION;
+  }
 
-  BEGIN_SPECIALIZATION(
-    move_from_hierarchical, Hierarchical,
-    Node& A
-  ) {
-    std::cout << "Cannot move to Hierarchical from " << A.type() << "!" << std::endl;
+  define_method(Hierarchical, move_from_hierarchical, (Node& A)) {
+    std::cout << "Cannot move to Hierarchical from " << A.type() << "!";
+    std::cout << std::endl;
     abort();
-  } END_SPECIALIZATION;
+  }
 
   Hierarchical::Hierarchical(
     const Node& node, int ni_level, int nj_level, bool node_only
   ) : Node(node), dim{ni_level, nj_level} {
-    MM_INIT();
     if (node_only) {
       data.resize(dim[0]*dim[1]);
     } else {
@@ -85,9 +73,9 @@ namespace hicma {
     }
   }
 
-  BEGIN_SPECIALIZATION(
-    make_hierarchical, Hierarchical,
-    const Dense& A, int ni_level, int nj_level
+  define_method(
+    Hierarchical, make_hierarchical,
+    (const Dense& A, int ni_level, int nj_level)
   ) {
     timing::start("make_hierarchical(D)");
     Hierarchical out(A, ni_level, nj_level, true);
@@ -97,11 +85,11 @@ namespace hicma {
     }
     timing::stop("make_hierarchical(D)");
     return out;
-  } END_SPECIALIZATION;
+  }
 
-  BEGIN_SPECIALIZATION(
-    make_hierarchical, Hierarchical,
-    const LowRank& A, int ni_level, int nj_level
+  define_method(
+    Hierarchical, make_hierarchical,
+    (const LowRank& A, int ni_level, int nj_level)
   ) {
     timing::start("make_hierarchical(LR)");
     Hierarchical out(A, ni_level, nj_level, true);
@@ -111,15 +99,19 @@ namespace hicma {
     }
     timing::stop("make_hierarchical(LR)");
     return out;
-  } END_SPECIALIZATION;
+  }
 
-  BEGIN_SPECIALIZATION(
-    make_hierarchical, Hierarchical,
-    const Node& A, [[maybe_unused]] int ni_level, [[maybe_unused]] int nj_level
+  define_method(
+    Hierarchical, make_hierarchical,
+    (
+      const Node& A,
+      [[maybe_unused]] int ni_level, [[maybe_unused]] int nj_level
+    )
   ) {
-    std::cout << "Cannot create Hierarchical from " << A.type() << "!" << std::endl;
+    std::cout << "Cannot create Hierarchical from " << A.type() << "!";
+    std::cout << std::endl;
     abort();
-  } END_SPECIALIZATION;
+  }
 
   Hierarchical::Hierarchical(
     int ni_level, int nj_level,
@@ -136,7 +128,6 @@ namespace hicma {
     int admis,
     int ni_level, int nj_level
   ) : Node(node) {
-    MM_INIT();
     dim[0] = std::min(ni_level, row_range.length);
     dim[1] = std::min(nj_level, col_range.length);
     create_children();
@@ -241,7 +232,7 @@ namespace hicma {
           Qbi(row, col) = Qb(rowOffset + row, col);
         }
       }
-      // Using move should now make a difference. Why is this not auto-optimized?
+      // Moving should not make a difference. Why is this not auto-optimized?
       HQb(i, 0) = std::move(Qbi);
       rowOffset += nrows;
     }
@@ -267,14 +258,16 @@ namespace hicma {
     *this = std::move(spA);
   }
 
-  void Hierarchical::restore_col(const Hierarchical& Sp, const Hierarchical& QL) {
+  void Hierarchical::restore_col(
+    const Hierarchical& Sp, const Hierarchical& QL
+  ) {
     assert(dim[1] == 1);
     assert(dim[0] == QL.dim[0]);
     assert(QL.dim[1] == 1);
     Hierarchical restoredA(dim[0], dim[1]);
     int curSpRow = 0;
     for(int i=0; i<dim[0]; i++) {
-      restoredA(i, 0) = concat_columns((*this)(i, 0), Sp, curSpRow, QL(i, 0));
+      restoredA(i, 0) = concat_columns((*this)(i, 0), Sp, QL(i, 0), curSpRow);
     }
     *this = std::move(restoredA);
   }

@@ -6,25 +6,19 @@
 #include <memory>
 #include <utility>
 
-#include "yorel/multi_methods.hpp"
+#include "yorel/yomm2/cute.hpp"
 
 namespace hicma {
 
-  Node::Node() { MM_INIT(); }
+  Node::Node() = default;
 
   Node::~Node() = default;
 
-  Node::Node(const Node& A) {
-    MM_INIT();
-    *this = A;
-  }
+  Node::Node(const Node& A) = default;
 
   Node& Node::operator=(const Node& A) = default;
 
-  Node::Node(Node&& A) {
-    MM_INIT();
-    *this = std::move(A);
-  }
+  Node::Node(Node&& A) = default;
 
   Node& Node::operator=(Node&& A) = default;
 
@@ -39,13 +33,12 @@ namespace hicma {
   const char* Node::type() const { return "Node"; }
 
   Node::Node(int i_abs, int j_abs, int level)
-  : i_abs(i_abs), j_abs(j_abs), level(level) { MM_INIT(); }
+  : i_abs(i_abs), j_abs(j_abs), level(level) {}
 
   Node::Node(
     int i_abs, int j_abs, int level, IndexRange row_range, IndexRange col_range
   ) : i_abs(i_abs), j_abs(j_abs), level(level),
       row_range(row_range), col_range(col_range) {
-    MM_INIT();
   }
 
   bool Node::is_child(const Node& node) const {

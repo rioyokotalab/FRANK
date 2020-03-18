@@ -5,7 +5,7 @@
 
 #include <memory>
 
-#include "yorel/multi_methods.hpp"
+#include "yorel/yomm2/cute.hpp"
 
 namespace hicma
 {
@@ -14,7 +14,6 @@ class Node;
 
 class NoCopySplit : public Hierarchical {
 public:
-  MM_CLASS(NoCopySplit, Hierarchical);
   // Special member functions
   NoCopySplit();
 
@@ -40,6 +39,8 @@ public:
 
   NoCopySplit(const Node&, int ni_level, int nj_level, bool node_only=false);
 };
+
+register_class(NoCopySplit, Hierarchical);
 
 } // namespace hicma
 

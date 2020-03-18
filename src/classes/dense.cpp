@@ -17,18 +17,17 @@
 #include <utility>
 #include <vector>
 
-#include "yorel/multi_methods.hpp"
-using yorel::multi_methods::virtual_;
+#include "yorel/yomm2/cute.hpp"
+using yorel::yomm2::virtual_;
 
 namespace hicma {
 
-  Dense::Dense() : Node() { MM_INIT(); }
+  Dense::Dense() = default;
 
   Dense::~Dense() = default;
 
   Dense::Dense(const Dense& A)
   : Node(A), dim{A.dim[0], A.dim[1]}, stride(A.dim[1]) {
-    MM_INIT();
     timing::start("Dense cctor");
     data.resize(dim[0]*dim[1], 0);
     for (int i=0; i<dim[0]; i++) {
@@ -41,10 +40,7 @@ namespace hicma {
 
   Dense& Dense::operator=(const Dense& A) = default;
 
-  Dense::Dense(Dense&& A) {
-    MM_INIT();
-    *this = std::move(A);
-  }
+  Dense::Dense(Dense&& A) = default;
 
   Dense& Dense::operator=(Dense&& A) = default;
 
@@ -60,13 +56,12 @@ namespace hicma {
 
   Dense::Dense(const Node& A, bool only_node)
   : Node(A), dim{A.row_range.length, A.col_range.length}, stride(dim[1]) {
-    MM_INIT();
     if (!only_node) {
       *this = make_dense(A);
     }
   }
 
-  BEGIN_SPECIALIZATION(make_dense, Dense, const Hierarchical& A){
+  define_method(Dense, make_dense, (const Hierarchical& A)) {
     timing::start("make_dense(H)");
     Dense B(get_n_rows(A), get_n_cols(A));
     // TODO This loop copies the data multiple times
@@ -87,9 +82,9 @@ namespace hicma {
     timing::stop("make_dense(H)");
     // TODO Consider return with std::move. Test if the copy is elided!!
     return B;
-  } END_SPECIALIZATION;
+  }
 
-  BEGIN_SPECIALIZATION(make_dense, Dense, const LowRank& A){
+  define_method(Dense, make_dense, (const LowRank& A)) {
     timing::start("make_dense(LR)");
     Dense B(A.dim[0], A.dim[1]);
     Dense UxS(A.dim[0], A.rank);
@@ -98,38 +93,38 @@ namespace hicma {
     // TODO Consider return with std::move. Test if the copy is elided!!
     timing::stop("make_dense(LR)");
     return B;
-  } END_SPECIALIZATION;
+  }
 
-  BEGIN_SPECIALIZATION(make_dense, Dense, const Dense& A){
+  define_method(Dense, make_dense, (const Dense& A)) {
     // TODO Consider return with std::move. Test if the copy is elided!!
     return Dense(A);
-  } END_SPECIALIZATION;
+  }
 
-  BEGIN_SPECIALIZATION(make_dense, Dense, const Node& A){
+  define_method(Dense, make_dense, (const Node& A)) {
     std::cout << "Cannot create Dense from " << A.type() << "!" << std::endl;
     abort();
-  } END_SPECIALIZATION;
+  }
 
-  MULTI_METHOD(move_from_dense, Dense, virtual_<Node>&);
+  declare_method(Dense, move_from_dense, (virtual_<Node&>));
 
   Dense::Dense(NodeProxy&& A) {
     *this = move_from_dense(A);
   }
 
-  BEGIN_SPECIALIZATION(
-    move_from_dense, Dense,
-    Dense& A
+  define_method(
+    Dense, move_from_dense,
+    (Dense& A)
   ) {
     return std::move(A);
-  } END_SPECIALIZATION;
+  }
 
-  BEGIN_SPECIALIZATION(
-    move_from_dense, Dense,
-    Node& A
+  define_method(
+    Dense, move_from_dense,
+    (Node& A)
   ) {
     std::cout << "Cannot move to Dense from " << A.type() << "!" << std::endl;
     abort();
-  } END_SPECIALIZATION;
+  }
 
   Dense::Dense(
     int m, int n,
@@ -149,7 +144,6 @@ namespace hicma {
     void (*func)(Dense& A, std::vector<double>& x),
     std::vector<double>& x
   ) : Node(node), dim{node.row_range.length, node.col_range.length}, stride(dim[1]) {
-    MM_INIT();
     data.resize(dim[0]*dim[1]);
     func(*this, x);
   }
@@ -179,7 +173,6 @@ namespace hicma {
     const int i_abs, const int j_abs,
     const int level
   ) : Node(i_abs,j_abs,level), dim{ni, nj}, stride(nj) {
-    MM_INIT();
     data.resize(dim[0]*dim[1]);
     func(data, x, ni, nj, i_begin, j_begin);
   }

@@ -17,18 +17,17 @@
 #include <memory>
 #include <utility>
 
-#include "yorel/multi_methods.hpp"
-using yorel::multi_methods::virtual_;
+#include "yorel/yomm2/cute.hpp"
+using yorel::yomm2::virtual_;
 
 namespace hicma
 {
 
-UniformHierarchical::UniformHierarchical() : Hierarchical() { MM_INIT(); }
+UniformHierarchical::UniformHierarchical() = default;
 
 UniformHierarchical::~UniformHierarchical() = default;
 
 UniformHierarchical::UniformHierarchical(const UniformHierarchical& A){
-  MM_INIT();
   *this = A;
   copy_col_basis(A);
   copy_row_basis(A);
@@ -44,10 +43,7 @@ UniformHierarchical& UniformHierarchical::operator=(
   const UniformHierarchical& A
 ) = default;
 
-UniformHierarchical::UniformHierarchical(UniformHierarchical&& A) {
-  MM_INIT();
-  *this = std::move(A);
-}
+UniformHierarchical::UniformHierarchical(UniformHierarchical&& A) = default;
 
 UniformHierarchical& UniformHierarchical::operator=(
   UniformHierarchical&& A
@@ -63,24 +59,24 @@ std::unique_ptr<Node> UniformHierarchical::move_clone() {
 
 const char* UniformHierarchical::type() const { return "UniformHierarchical"; }
 
-MULTI_METHOD(
-  move_from_uniform_hierarchical, UniformHierarchical, virtual_<Node>&);
+declare_method(
+  UniformHierarchical, move_from_uniform_hierarchical, (virtual_<Node&>));
 
-BEGIN_SPECIALIZATION(
-  move_from_uniform_hierarchical, UniformHierarchical,
-  UniformHierarchical& A
+define_method(
+  UniformHierarchical, move_from_uniform_hierarchical,
+  (UniformHierarchical& A)
 ) {
   return std::move(A);
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  move_from_uniform_hierarchical, UniformHierarchical,
-  Node& A
+define_method(
+  UniformHierarchical, move_from_uniform_hierarchical,
+  (Node& A)
 ) {
   std::cout << "Cannot move to UniformHierarchical from " << A.type() << "!";
   std::cout << std::endl;
   abort();
-} END_SPECIALIZATION;
+}
 
 UniformHierarchical::UniformHierarchical(NodeProxy&& A) {
   *this = move_from_uniform_hierarchical(A);
@@ -89,7 +85,6 @@ UniformHierarchical::UniformHierarchical(NodeProxy&& A) {
 UniformHierarchical::UniformHierarchical(
   const Node& node, int ni_level, int nj_level
 ) : Hierarchical(node, ni_level, nj_level, true) {
-  MM_INIT();
   col_basis.resize(ni_level);
   row_basis.resize(nj_level);
 }
@@ -218,7 +213,6 @@ UniformHierarchical::UniformHierarchical(
   int ni_level, int nj_level,
   bool use_svd
 ) : Hierarchical(node, ni_level, nj_level, true) {
-  MM_INIT();
   // TODO All dense UH not allowed for now!
   assert(dim[0] > admis + 1 && dim[1] > admis+1);
   // TODO Only single leve allowed for now. Constructions and some operations
@@ -274,15 +268,15 @@ UniformHierarchical::UniformHierarchical(
   func, x, rank, nleaf, admis, ni_level, nj_level, use_svd
 ) {}
 
-// MULTI_METHOD(is_LowRankShared, bool, const virtual_<Node>&);
+// declare_method(bool, is_LowRankShared, (virtual_<const Node&>));
 
-// BEGIN_SPECIALIZATION(is_LowRankShared, bool, const LowRankShared&) {
+// define_method(bool, is_LowRankShared, (const LowRankShared&)) {
 //   return true;
-// } END_SPECIALIZATION;
+// }
 
-// BEGIN_SPECIALIZATION(is_LowRankShared, bool, const Node&) {
+// define_method(bool, is_LowRankShared, (const Node&)) {
 //   return false;
-// } END_SPECIALIZATION;
+// }
 
 // const UniformHierarchical& UniformHierarchical::operator+=(const UniformHierarchical& A) {
 //   // Model after LR+=LR!
@@ -356,75 +350,79 @@ void UniformHierarchical::copy_row_basis(const UniformHierarchical& A) {
 }
 
 
-MULTI_METHOD(
-  set_col_basis_omm, void,
-  virtual_<Node>& A, std::shared_ptr<Dense> basis
+declare_method(
+  void, set_col_basis_omm,
+  (virtual_<Node&>, std::shared_ptr<Dense>)
 );
 
-BEGIN_SPECIALIZATION(
-  set_col_basis_omm, void,
-  LowRankShared& A, std::shared_ptr<Dense> basis
+define_method(
+  void, set_col_basis_omm,
+  (LowRankShared& A, std::shared_ptr<Dense> basis)
 ) {
   A.U = basis;
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  set_col_basis_omm, void,
-  [[maybe_unused]] Dense& A, [[maybe_unused]] std::shared_ptr<Dense> basis
+define_method(
+  void, set_col_basis_omm,
+  ([[maybe_unused]] Dense& A, [[maybe_unused]] std::shared_ptr<Dense> basis)
 ) {
   // Do nothing
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  set_col_basis_omm, void,
-  [[maybe_unused]] UniformHierarchical& A,
-  [[maybe_unused]] std::shared_ptr<Dense> basis
+define_method(
+  void, set_col_basis_omm,
+  (
+    [[maybe_unused]] UniformHierarchical& A,
+    [[maybe_unused]] std::shared_ptr<Dense> basis
+  )
 ) {
   // Do nothing
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  set_col_basis_omm, void,
-  Node& A, [[maybe_unused]] std::shared_ptr<Dense> basis
+define_method(
+  void, set_col_basis_omm,
+  (Node& A, [[maybe_unused]] std::shared_ptr<Dense> basis)
 ) {
   std::cout << "Cannot set column basis on " << A.type() << "!" << std::endl;
   abort();
-} END_SPECIALIZATION;
+}
 
-MULTI_METHOD(
-  set_row_basis_omm, void,
-  virtual_<Node>& A, std::shared_ptr<Dense> basis
+declare_method(
+  void, set_row_basis_omm,
+  (virtual_<Node&>, std::shared_ptr<Dense>)
 );
 
-BEGIN_SPECIALIZATION(
-  set_row_basis_omm, void,
-  LowRankShared& A, std::shared_ptr<Dense> basis
+define_method(
+  void, set_row_basis_omm,
+  (LowRankShared& A, std::shared_ptr<Dense> basis)
 ) {
   A.V = basis;
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  set_row_basis_omm, void,
-  [[maybe_unused]] Dense& A, [[maybe_unused]] std::shared_ptr<Dense> basis
+define_method(
+  void, set_row_basis_omm,
+  ([[maybe_unused]] Dense& A, [[maybe_unused]] std::shared_ptr<Dense> basis)
 ) {
   // Do nothing
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  set_row_basis_omm, void,
-  [[maybe_unused]] UniformHierarchical& A,
-  [[maybe_unused]] std::shared_ptr<Dense> basis
+define_method(
+  void, set_row_basis_omm,
+  (
+    [[maybe_unused]] UniformHierarchical& A,
+    [[maybe_unused]] std::shared_ptr<Dense> basis
+  )
 ) {
   // Do nothing
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  set_row_basis_omm, void,
-  Node& A, [[maybe_unused]] std::shared_ptr<Dense> basis
+define_method(
+  void, set_row_basis_omm,
+  (Node& A, [[maybe_unused]] std::shared_ptr<Dense> basis)
 ) {
   std::cout << "Cannot set row basis on " << A.type() << "!" << std::endl;
   abort();
-} END_SPECIALIZATION;
+}
 
 void UniformHierarchical::set_col_basis(int i, int j) {
   hicma::set_col_basis_omm((*this)(i, j), col_basis[i]);

@@ -6,14 +6,12 @@
 
 #include <memory>
 
-#include "yorel/multi_methods.hpp"
+#include "yorel/yomm2/cute.hpp"
 
 namespace hicma {
 
 class LowRankShared : public Node {
  public:
-  MM_CLASS(LowRankShared, Node);
-
   // TODO Make these members private just like in LowRank
   class SharedBasis {
   private:
@@ -80,6 +78,8 @@ class LowRankShared : public Node {
     std::shared_ptr<Dense> U, std::shared_ptr<Dense> V
   );
 };
+
+register_class(LowRankShared, Node);
 
 } // namespace hicma
 

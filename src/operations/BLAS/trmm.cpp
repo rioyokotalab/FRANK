@@ -16,7 +16,7 @@
 #include <cblas.h>
 #include <lapacke.h>
 #endif
-#include "yorel/multi_methods.hpp"
+#include "yorel/yomm2/cute.hpp"
 
 namespace hicma
 {
@@ -37,11 +37,13 @@ namespace hicma
     trmm_omm(A, B, side, uplo, 'n', 'n', alpha);
   }
 
-  BEGIN_SPECIALIZATION(
-    trmm_omm, void,
-    const Dense& A, Dense& B,
-    const char& side, const char& uplo, const char& trans, const char& diag,
-    const double& alpha
+  define_method(
+    void, trmm_omm,
+    (
+      const Dense& A, Dense& B,
+      const char& side, const char& uplo, const char& trans, const char& diag,
+      const double& alpha
+    )
   ) {
     assert(A.dim[0] == A.dim[1]);
     assert(A.dim[0] == (side == 'l' ? B.dim[0] : B.dim[1]));
@@ -53,13 +55,15 @@ namespace hicma
       diag == 'u' ? CblasUnit : CblasNonUnit,
       B.dim[0], B.dim[1], alpha, &A, A.stride, &B, B.stride
     );
-  } END_SPECIALIZATION;
+  }
 
-  BEGIN_SPECIALIZATION(
-    trmm_omm, void,
-    const Dense& A, LowRank& B,
-    const char& side, const char& uplo,  const char& trans, const char& diag,
-    const double& alpha
+  define_method(
+    void, trmm_omm,
+    (
+      const Dense& A, LowRank& B,
+      const char& side, const char& uplo,  const char& trans, const char& diag,
+      const double& alpha
+    )
   ) {
     assert(A.dim[0] == A.dim[1]);
     assert(A.dim[0] == (side == 'l' ? B.dim[0] : B.dim[1]));
@@ -67,13 +71,15 @@ namespace hicma
       trmm(A, B.U(), side, uplo, trans, diag, alpha);
     else if(side == 'r')
       trmm(A, B.V(), side, uplo, trans, diag, alpha);
-  } END_SPECIALIZATION;
+  }
 
-  BEGIN_SPECIALIZATION(
-    trmm_omm, void,
-    const Hierarchical& A, Hierarchical& B,
-    const char& side, const char& uplo, const char& trans, const char& diag,
-    const double& alpha
+  define_method(
+    void, trmm_omm,
+    (
+      const Hierarchical& A, Hierarchical& B,
+      const char& side, const char& uplo, const char& trans, const char& diag,
+      const double& alpha
+    )
   ) {
     assert(A.dim[0] == A.dim[1]);
     assert(A.dim[0] == (side == 'l' ? B.dim[0] : B.dim[1]));
@@ -109,19 +115,21 @@ namespace hicma
         }
       }
     }
-  } END_SPECIALIZATION;
+  }
 
   // Fallback default, abort with error message
-  BEGIN_SPECIALIZATION(
-    trmm_omm, void,
-    const Node& A, Node& B,
-    const char& side, const char& uplo, const char& trans, const char& diag,
-    const double& alpha
+  define_method(
+    void, trmm_omm,
+    (
+      const Node& A, Node& B,
+      const char& side, const char& uplo, const char& trans, const char& diag,
+      const double& alpha
+    )
   ) {
     std::cerr << "trmm(";
     std::cerr << A.type() << "," << B.type();
     std::cerr << ") undefined." << std::endl;
     abort();
-  } END_SPECIALIZATION;
+  }
 
 } // namespace hicma

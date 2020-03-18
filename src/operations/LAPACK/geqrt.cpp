@@ -14,7 +14,7 @@
 #else
 #include <lapacke.h>
 #endif
-#include "yorel/multi_methods.hpp"
+#include "yorel/yomm2/cute.hpp"
 
 namespace hicma
 {
@@ -23,7 +23,7 @@ void geqrt(Node& A, Node& T) {
   geqrt_omm(A, T);
 }
 
-BEGIN_SPECIALIZATION(geqrt_omm, void, Dense& A, Dense& T) {
+define_method(void, geqrt_omm, (Dense& A, Dense& T)) {
   assert(T.dim[0] == A.dim[1]);
   assert(T.dim[1] == A.dim[1]);
   LAPACKE_dgeqrt3(
@@ -32,9 +32,9 @@ BEGIN_SPECIALIZATION(geqrt_omm, void, Dense& A, Dense& T) {
     &A, A.stride,
     &T, T.stride
   );
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(geqrt_omm, void, Hierarchical& A, Hierarchical& T) {
+define_method(void, geqrt_omm, (Hierarchical& A, Hierarchical& T)) {
   std::cerr << "Possibly not fully implemented yet. Read code!!!" << std::endl;
   for(int k = 0; k < A.dim[1]; k++) {
     geqrt(A(k, k), T(k, k));
@@ -50,15 +50,15 @@ BEGIN_SPECIALIZATION(geqrt_omm, void, Hierarchical& A, Hierarchical& T) {
       }
     }
   }
-} END_SPECIALIZATION;
+}
 
 // Fallback default, abort with error message
-BEGIN_SPECIALIZATION(geqrt_omm, void, Node& A, Node& T) {
+define_method(void, geqrt_omm, (Node& A, Node& T)) {
   std::cerr << "geqrt(";
   std::cerr << A.type() << "," << T.type();
   std::cerr << ") undefined." << std::endl;
   abort();
-} END_SPECIALIZATION;
+}
 
 void geqrt2(Dense& A, Dense& T) {
   assert(T.dim[0] == A.dim[1]);

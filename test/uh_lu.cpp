@@ -6,13 +6,13 @@
 #include <vector>
 #include <memory>
 
-#include "yorel/multi_methods.hpp"
+#include "yorel/yomm2/cute.hpp"
 
 using namespace hicma;
 
 int main(int argc, char const *argv[])
 {
-  yorel::multi_methods::initialize();
+  yorel::yomm2::update_methods();
   int N = argc > 1 ? atoi(argv[1]) : 256;
   int nblocks = argc > 2 ? atoi(argv[2]) : 2;
   int rank = argc > 3 ? atoi(argv[3]) : 8;

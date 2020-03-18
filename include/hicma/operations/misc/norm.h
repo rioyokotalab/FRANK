@@ -1,21 +1,18 @@
 #ifndef hicma_operations_misc_norm_h
 #define hicma_operations_misc_norm_h
 
-#include "yorel/multi_methods.hpp"
-using yorel::multi_methods::virtual_;
+#include "hicma/classes/node.h"
+
+#include "yorel/yomm2/cute.hpp"
+using yorel::yomm2::virtual_;
 
 
 namespace hicma
 {
 
-class Node;
-
 double norm(const Node&);
 
-MULTI_METHOD(
-  norm_omm, double,
-  const virtual_<Node>&
-);
+declare_method(double, norm_omm, (virtual_<const Node&>));
 
 } // namespace hicma
 

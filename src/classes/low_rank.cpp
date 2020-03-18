@@ -4,7 +4,7 @@
 #include "hicma/classes/dense.h"
 #include "hicma/operations/randomized/rsvd.h"
 
-#include "yorel/multi_methods.hpp"
+#include "yorel/yomm2/cute.hpp"
 
 #include <algorithm>
 #include <cassert>
@@ -14,23 +14,15 @@
 
 namespace hicma {
 
-  LowRank::LowRank() : Node() { MM_INIT(); }
+  LowRank::LowRank() = default;
 
   LowRank::~LowRank() = default;
 
-  LowRank::LowRank(const LowRank& A)
-  : Node(A), _U(A.U()), _S(A.S()), _V(A.V()),
-    dim{A.dim[0], A.dim[1]}, rank(A.rank)
-  {
-    MM_INIT();
-  }
+  LowRank::LowRank(const LowRank& A) = default;
 
   LowRank& LowRank::operator=(const LowRank& A) = default;
 
-  LowRank::LowRank(LowRank&& A) {
-    MM_INIT();
-    *this = std::move(A);
-  }
+  LowRank::LowRank(LowRank&& A) = default;
 
   LowRank& LowRank::operator=(LowRank&& A) = default;
 
@@ -55,7 +47,6 @@ namespace hicma {
 
   LowRank::LowRank(const Node& node, int k, bool node_only)
   : Node(node), dim{row_range.length, col_range.length}, rank(k) {
-    MM_INIT();
     if (!node_only) {
       U() = Dense(dim[0], k, i_abs, j_abs, level);
       S() = Dense(k, k, i_abs, j_abs, level);
@@ -75,7 +66,6 @@ namespace hicma {
 
   LowRank::LowRank(const Dense& A, int k)
   : Node(A), dim{A.dim[0], A.dim[1]} {
-    MM_INIT();
     // Rank with oversampling limited by dimensions
     rank = std::min(std::min(k+5, dim[0]), dim[1]);
     std::tie(U(), S(), V()) = rsvd(A, rank);

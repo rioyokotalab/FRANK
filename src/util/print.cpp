@@ -11,8 +11,8 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 namespace pt = boost::property_tree;
-#include "yorel/multi_methods.hpp"
-using yorel::multi_methods::virtual_;
+#include "yorel/yomm2/cute.hpp"
+using yorel::yomm2::virtual_;
 
 namespace hicma {
 
@@ -20,19 +20,13 @@ namespace hicma {
   static const int stringLength = 30; //!< Length of formatted string
   static const int decimal = 7; //!< Decimal precision
 
-  MULTI_METHOD(
-    fillXML_omm, void,
-    const virtual_<Node>&, pt::ptree& tree
-  );
+  declare_method(void, fillXML_omm, (virtual_<const Node&>, pt::ptree&));
 
   void fillXML(const Node& A, pt::ptree& tree) {
     fillXML_omm(A, tree);
   }
 
-  BEGIN_SPECIALIZATION(
-    fillXML_omm, void,
-    const Hierarchical& A, pt::ptree& tree
-  ) {
+  define_method(void, fillXML_omm, (const Hierarchical& A, pt::ptree& tree)) {
     for (int i=0; i<A.dim[0]; i++) {
       for (int j=0; j<A.dim[1]; j++) {
         pt::ptree el_subtree{};
@@ -48,12 +42,9 @@ namespace hicma {
     tree.put("<xmlattr>.i_abs", A.i_abs);
     tree.put("<xmlattr>.j_abs", A.j_abs);
     tree.put("<xmlattr>.level", A.level);
-  } END_SPECIALIZATION;
+  }
 
-  BEGIN_SPECIALIZATION(
-    fillXML_omm, void,
-    const LowRank& A, pt::ptree& tree
-  ) {
+  define_method(void, fillXML_omm, (const LowRank& A, pt::ptree& tree)) {
     Dense AD(A);
     Dense S = get_singular_values(AD);
     std::string singular_values = std::to_string(S[0]);
@@ -67,12 +58,9 @@ namespace hicma {
     tree.put("<xmlattr>.level", A.level);
     tree.put("<xmlattr>.rank", A.rank);
     tree.put("<xmlattr>.svalues", singular_values);
-  } END_SPECIALIZATION;
+  }
 
-  BEGIN_SPECIALIZATION(
-    fillXML_omm, void,
-    const LowRankShared& A, pt::ptree& tree
-  ) {
+  define_method(void, fillXML_omm, (const LowRankShared& A, pt::ptree& tree)) {
     Dense AD(A);
     Dense S = get_singular_values(AD);
     std::string singular_values = std::to_string(S[0]);
@@ -86,12 +74,9 @@ namespace hicma {
     tree.put("<xmlattr>.level", A.level);
     tree.put("<xmlattr>.rank", A.rank);
     tree.put("<xmlattr>.svalues", singular_values);
-  } END_SPECIALIZATION;
+  }
 
-  BEGIN_SPECIALIZATION(
-    fillXML_omm, void,
-    const Dense& A, pt::ptree& tree
-  ) {
+  define_method(void, fillXML_omm, (const Dense& A, pt::ptree& tree)) {
     Dense A_(A);
     Dense S = get_singular_values(A_);
     std::string singular_values = std::to_string(S[0]);
@@ -104,14 +89,14 @@ namespace hicma {
     tree.put("<xmlattr>.j_abs", A.j_abs);
     tree.put("<xmlattr>.level", A.level);
     tree.put("<xmlattr>.svalues", singular_values);
-  } END_SPECIALIZATION;
+  }
 
-  BEGIN_SPECIALIZATION(
-    fillXML_omm, void,
-    const Node& A, [[maybe_unused]] pt::ptree& tree
+  define_method(
+    void, fillXML_omm,
+    (const Node& A, [[maybe_unused]] pt::ptree& tree)
   ) {
     std::cerr << "WARNING: XML output not defined for " << A.type() << "!" << std::endl;
-  } END_SPECIALIZATION;
+  }
 
   void printXML(const Node& A, std::string filename) {
     pt::ptree tree;
@@ -132,17 +117,11 @@ namespace hicma {
     std::cout << std::endl;
   }
 
-  BEGIN_SPECIALIZATION(
-    print_omm, void,
-    const Node& A
-  ) {
+  define_method(void, print_omm, (const Node& A)) {
     std::cout << "Print not defined for " << A.type() << std::endl;
-  } END_SPECIALIZATION;
+  }
 
-  BEGIN_SPECIALIZATION(
-    print_omm, void,
-    const Dense& A
-  ) {
+  define_method(void, print_omm, (const Dense& A)) {
     for (int i=0; i<A.dim[0]; i++) {
       for (int j=0; j<A.dim[1]; j++) {
         std::cout << std::setw(20) << std::setprecision(15) << A(i, j) << ' ';
@@ -150,12 +129,9 @@ namespace hicma {
       std::cout << std::endl;
     }
     print_separation_line();
-  } END_SPECIALIZATION;
+  }
 
-  BEGIN_SPECIALIZATION(
-    print_omm, void,
-    const LowRank& A
-  ) {
+  define_method(void, print_omm, (const LowRank& A)) {
     std::cout << "U : --------------------------------------" << std::endl;
     print(A.U());
     std::cout << "S : --------------------------------------" << std::endl;
@@ -163,12 +139,9 @@ namespace hicma {
     std::cout << "V : --------------------------------------" << std::endl;
     print(A.V());
     print_separation_line();
-  } END_SPECIALIZATION;
+  }
 
-  BEGIN_SPECIALIZATION(
-    print_omm, void,
-    const Hierarchical& A
-  ) {
+  define_method(void, print_omm, (const Hierarchical& A)) {
     for (int i=0; i<A.dim[0]; i++) {
       for (int j=0; j<A.dim[1]; j++) {
         std::cout << A(i, j).type() << " (" << i << "," << j << ")" << std::endl;
@@ -177,7 +150,7 @@ namespace hicma {
       std::cout << std::endl;
     }
     print_separation_line();
-  } END_SPECIALIZATION;
+  }
 
   void print(std::string s) {
     if (!VERBOSE) return;

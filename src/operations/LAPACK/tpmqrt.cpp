@@ -17,7 +17,7 @@
 #else
 #include <lapacke.h>
 #endif
-#include "yorel/multi_methods.hpp"
+#include "yorel/yomm2/cute.hpp"
 
 namespace hicma
 {
@@ -29,10 +29,9 @@ void tpmqrt(
   tpmqrt_omm(V, T, A, B, trans);
 }
 
-BEGIN_SPECIALIZATION(
-  tpmqrt_omm, void,
-  const Dense& V, const Dense& T, Dense& A, Dense& B,
-  bool trans
+define_method(
+  void, tpmqrt_omm,
+  (const Dense& V, const Dense& T, Dense& A, Dense& B, bool trans)
 ) {
   LAPACKE_dtprfb(
     LAPACK_ROW_MAJOR,
@@ -43,12 +42,11 @@ BEGIN_SPECIALIZATION(
     &A, A.stride,
     &B, B.stride
   );
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  tpmqrt_omm, void,
-  const LowRank& V, const Dense& T, Dense& A, Dense& B,
-  bool trans
+define_method(
+  void, tpmqrt_omm,
+  (const LowRank& V, const Dense& T, Dense& A, Dense& B, bool trans)
 ) {
   std::vector<double> x;
   Dense C(A);
@@ -58,12 +56,11 @@ BEGIN_SPECIALIZATION(
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(Dense(identity, x, C.dim[0], C.dim[0]), C, A, -1, 1); //A = A - I*C
   gemm(V, C, B, -1, 1); //B = B - Y*C
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  tpmqrt_omm, void,
-  const Dense& V, const Dense& T, LowRank& A, Dense& B,
-  bool trans
+define_method(
+  void, tpmqrt_omm,
+  (const Dense& V, const Dense& T, LowRank& A, Dense& B, bool trans)
 ) {
   std::vector<double> x;
   Dense C(A);
@@ -71,12 +68,11 @@ BEGIN_SPECIALIZATION(
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(Dense(identity, x, C.dim[0], C.dim[0]), C, A, -1, 1); //A = A - I*C //Recompression
   gemm(V, C, B, -1, 1); //B = B - Y*C
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  tpmqrt_omm, void,
-  const LowRank& V, const Dense& T, LowRank& A, Dense& B,
-  bool trans
+define_method(
+  void, tpmqrt_omm,
+  (const LowRank& V, const Dense& T, LowRank& A, Dense& B, bool trans)
 ) {
   std::vector<double> x;
   LowRank C(A);
@@ -86,12 +82,11 @@ BEGIN_SPECIALIZATION(
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(Dense(identity, x, C.dim[0], C.dim[0]), C, A, -1, 1); //A = A - I*C
   gemm(V, C, B, -1, 1); //B = B - Y*C
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  tpmqrt_omm, void,
-  const Dense& V, const Dense& T, Hierarchical& A, Dense& B,
-  bool trans
+define_method(
+  void, tpmqrt_omm,
+  (const Dense& V, const Dense& T, Hierarchical& A, Dense& B, bool trans)
 ) {
   Dense Vt(V);
   transpose(Vt);
@@ -106,22 +101,23 @@ BEGIN_SPECIALIZATION(
   Dense VTt(V.dim[0], T_upper_tri.dim[1]);
   gemm(V, T_upper_tri, VTt, 1, 0);
   gemm(VTt, AH, B, -1, 1); // B = B - V*(T or Tt)*AH
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  tpmqrt_omm, void,
-  const Hierarchical& V, const Hierarchical& T, Hierarchical& A, Dense& B,
-  bool trans
+define_method(
+  void, tpmqrt_omm,
+  (
+    const Hierarchical& V, const Hierarchical& T, Hierarchical& A, Dense& B,
+    bool trans
+  )
 ) {
   Hierarchical BH(B, A.dim[0], A.dim[1]);
   tpmqrt(V, T, A, BH, trans);
   B = Dense(BH);
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  tpmqrt_omm, void,
-  const Dense& V, const Dense& T, Dense& A, LowRank& B,
-  bool trans
+define_method(
+  void, tpmqrt_omm,
+  (const Dense& V, const Dense& T, Dense& A, LowRank& B, bool trans)
 ) {
   std::vector<double> x;
   Dense C(A);
@@ -131,12 +127,11 @@ BEGIN_SPECIALIZATION(
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(Dense(identity, x, C.dim[0], C.dim[0]), C, A, -1, 1); //A = A - I*C
   gemm(V, C, B, -1, 1); //B = B - Y*C
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  tpmqrt_omm, void,
-  const LowRank& V, const Dense& T, Dense& A, LowRank& B,
-  bool trans
+define_method(
+  void, tpmqrt_omm,
+  (const LowRank& V, const Dense& T, Dense& A, LowRank& B, bool trans)
 ) {
   std::vector<double> x;
   Dense C(A);
@@ -146,12 +141,11 @@ BEGIN_SPECIALIZATION(
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(Dense(identity, x, C.dim[0], C.dim[0]), C, A, -1, 1); //A = A - I*C
   gemm(V, C, B, -1, 1); //B = B - Y*C
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  tpmqrt_omm, void,
-  const Dense& V, const Dense& T, LowRank& A, LowRank& B,
-  bool trans
+define_method(
+  void, tpmqrt_omm,
+  (const Dense& V, const Dense& T, LowRank& A, LowRank& B, bool trans)
 ) {
   std::vector<double> x;
   LowRank C(A);
@@ -161,12 +155,11 @@ BEGIN_SPECIALIZATION(
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(Dense(identity, x, C.dim[0], C.dim[0]), C, A, -1, 1); //A = A - I*C
   gemm(V, C, B, -1, 1); //B = B - Y*C
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  tpmqrt_omm, void,
-  const LowRank& V, const Dense& T, LowRank& A, LowRank& B,
-  bool trans
+define_method(
+  void, tpmqrt_omm,
+  (const LowRank& V, const Dense& T, LowRank& A, LowRank& B, bool trans)
 ) {
   std::vector<double> x;
   LowRank C(A);
@@ -176,12 +169,11 @@ BEGIN_SPECIALIZATION(
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(Dense(identity, x, C.dim[0], C.dim[0]), C, A, -1, 1); //A = A - I*C
   gemm(V, C, B, -1, 1); //B = B - Y*C
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  tpmqrt_omm, void,
-  const Dense& V, const Dense& T, Dense& A, Hierarchical& B,
-  bool trans
+define_method(
+  void, tpmqrt_omm,
+  (const Dense& V, const Dense& T, Dense& A, Hierarchical& B, bool trans)
 ) {
   Dense C(A);
   Dense Vt(V);
@@ -196,22 +188,26 @@ BEGIN_SPECIALIZATION(
   Dense VTt(V.dim[0], T_upper_tri.dim[1]);
   gemm(V, T_upper_tri, VTt, 1, 1);
   gemm(VTt, C, B, -1, 1); // B = B - V*(T or Tt)*C
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  tpmqrt_omm, void,
-  const Hierarchical& V, const Hierarchical& T, Dense& A, Hierarchical& B,
-  bool trans
+define_method(
+  void, tpmqrt_omm,
+  (
+    const Hierarchical& V, const Hierarchical& T, Dense& A, Hierarchical& B,
+    bool trans
+  )
 ) {
   Hierarchical HA(A, B.dim[0], B.dim[1]);
   tpmqrt(V, T, HA, B, trans);
   A = Dense(HA);
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  tpmqrt_omm, void,
-  const Hierarchical& V, const Hierarchical& T, Hierarchical& A, Hierarchical& B,
-  bool trans
+define_method(
+  void, tpmqrt_omm,
+  (
+    const Hierarchical& V, const Hierarchical& T, Hierarchical& A, Hierarchical& B,
+    bool trans
+  )
 ) {
   if(trans) {
     for(int i = 0; i < B.dim[0]; i++) {
@@ -231,19 +227,18 @@ BEGIN_SPECIALIZATION(
       }
     }
   }
-} END_SPECIALIZATION;
+}
 
 // Fallback default, abort with error message
-BEGIN_SPECIALIZATION(
-  tpmqrt_omm, void,
-  const Node& V, const Node& T, Node& A, Node& B,
-  [[maybe_unused]] bool trans
+define_method(
+  void, tpmqrt_omm,
+  (const Node& V, const Node& T, Node& A, Node& B, [[maybe_unused]] bool trans)
 ) {
   std::cerr << "tpmqrt(";
   std::cerr << V.type() << "," << T.type() << "," << A.type() << "," << B.type();
   std::cerr << ") undefined." << std::endl;
   abort();
-} END_SPECIALIZATION;
+}
 
 } // namespace hicma
 

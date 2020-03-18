@@ -9,7 +9,7 @@
 
 #include <cmath>
 
-#include "yorel/multi_methods.hpp"
+#include "yorel/yomm2/cute.hpp"
 
 namespace hicma
 {
@@ -19,34 +19,22 @@ double l2_error(const Node& A, const Node& B) {
   return l2_error_omm(A, B);
 }
 
-BEGIN_SPECIALIZATION(
-  l2_error_omm, double,
-  const Dense& A, const Dense& B
-) {
+define_method(double, l2_error_omm, (const Dense& A, const Dense& B)) {
   double diff = norm(A - B);
   double l2 = norm(A);
   return std::sqrt(diff/l2);
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  l2_error_omm, double,
-  const Dense& A, const Node& B
-) {
+define_method(double, l2_error_omm, (const Dense& A, const Node& B)) {
   return l2_error(A, Dense(B));
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  l2_error_omm, double,
-  const Node& A, const Dense& B
-) {
+define_method(double, l2_error_omm, (const Node& A, const Dense& B)) {
   return l2_error(Dense(A), B);
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  l2_error_omm, double,
-  const Node& A, const Node& B
-) {
+define_method(double, l2_error_omm, (const Node& A, const Node& B)) {
   return l2_error(Dense(A), Dense(B));
-} END_SPECIALIZATION;
+}
 
 } // namespace hicma

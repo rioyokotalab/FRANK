@@ -6,7 +6,7 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/util/timer.h"
 
-#include "yorel/multi_methods.hpp"
+#include "yorel/yomm2/cute.hpp"
 
 namespace hicma
 {
@@ -15,7 +15,7 @@ double norm(const Node& A) {
   return norm_omm(A);
 }
 
-BEGIN_SPECIALIZATION(norm_omm, double, const Dense& A) {
+define_method(double, norm_omm, (const Dense& A)) {
   double l2 = 0;
   timing::start("Norm(Dense)");
   for (int i=0; i<A.dim[0]; i++) {
@@ -25,14 +25,13 @@ BEGIN_SPECIALIZATION(norm_omm, double, const Dense& A) {
   }
   timing::stop("Norm(Dense)");
   return l2;
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(norm_omm, double, const LowRank& A) {
+define_method(double, norm_omm, (const LowRank& A)) {
   return norm(Dense(A));
-} END_SPECIALIZATION;
+}
 
-
-BEGIN_SPECIALIZATION(norm_omm, double, const Hierarchical& A) {
+define_method(double, norm_omm, (const Hierarchical& A)) {
   double l2 = 0;
   for (int i=0; i<A.dim[0]; i++) {
     for (int j=0; j<A.dim[1]; j++) {
@@ -40,14 +39,13 @@ BEGIN_SPECIALIZATION(norm_omm, double, const Hierarchical& A) {
     }
   }
   return l2;
-} END_SPECIALIZATION;
+}
 
-
-BEGIN_SPECIALIZATION(norm_omm, double, const Node& A) {
+define_method(double, norm_omm, (const Node& A)) {
   std::cerr << "norm(";
   std::cerr << A.type();
   std::cerr << ") undefined." << std::endl;
   abort();
-} END_SPECIALIZATION;
+}
 
 } // namespace hicma

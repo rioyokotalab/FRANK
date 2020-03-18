@@ -16,7 +16,7 @@
 #include <tuple>
 #include <vector>
 
-#include "yorel/multi_methods.hpp"
+#include "yorel/yomm2/cute.hpp"
 
 namespace hicma
 {
@@ -53,11 +53,7 @@ std::vector<int> id(Node& A, Node& B, int k) {
   return id_omm(A, B, k);
 }
 
-BEGIN_SPECIALIZATION(
-  id_omm, std::vector<int>,
-  Dense& A, Dense& B,
-  int k
-) {
+define_method(std::vector<int>, id_omm, (Dense& A, Dense& B, int k)) {
   assert(k <= std::min(A.dim[0], A.dim[1]));
   Dense R(A.dim[1], A.dim[1]);
   std::vector<int> P = geqp3(A, R);
@@ -75,19 +71,18 @@ BEGIN_SPECIALIZATION(
   P.resize(k);
   // Returns the selected columns of A
   return P;
-} END_SPECIALIZATION;
+}
 
 // Fallback default, abort with error message
-BEGIN_SPECIALIZATION(
-  id_omm, std::vector<int>,
-  Node& A, Node& B,
-  [[maybe_unused]] int k
+define_method(
+  std::vector<int>, id_omm,
+  (Node& A, Node& B, [[maybe_unused]] int k)
 ) {
   std::cerr << "id(";
   std::cerr << A.type() << "," << B.type();
   std::cerr << ") undefined." << std::endl;
   abort();
-} END_SPECIALIZATION;
+}
 
 
 std::tuple<Dense, Dense, Dense> two_sided_id(Node& A, int k) {
@@ -105,10 +100,7 @@ Dense get_cols(const Dense& A, std::vector<int> Pr) {
 }
 
 // Fallback default, abort with error message
-BEGIN_SPECIALIZATION(
-  two_sided_id_omm, dense_triplet,
-  Dense& A, int k
-) {
+define_method(dense_triplet, two_sided_id_omm, (Dense& A, int k)) {
   Dense V(k, A.dim[1]);
   Dense Awork(A);
   std::vector<int> selected_cols = id(Awork, V, k);
@@ -121,17 +113,17 @@ BEGIN_SPECIALIZATION(
   U.transpose();
   A.transpose();
   return {std::move(U), std::move(A), std::move(V)};
-} END_SPECIALIZATION;
+}
 
 // Fallback default, abort with error message
-BEGIN_SPECIALIZATION(
-  two_sided_id_omm, dense_triplet,
-  Node& A, [[maybe_unused]] int k
+define_method(
+  dense_triplet, two_sided_id_omm,
+  (Node& A, [[maybe_unused]] int k)
 ) {
   std::cerr << "id(";
   std::cerr << A.type();
   std::cerr << ") undefined." << std::endl;
   abort();
-} END_SPECIALIZATION;
+}
 
 } // namespace hicma

@@ -1,22 +1,23 @@
 #ifndef hicma_operations_LAPACK_geqrt_h
 #define hicma_operations_LAPACK_geqrt_h
 
-#include "yorel/multi_methods.hpp"
-using yorel::multi_methods::virtual_;
+#include "hicma/classes/node.h"
+
+#include "yorel/yomm2/cute.hpp"
+using yorel::yomm2::virtual_;
 
 namespace hicma
 {
 
-class Node;
 class Dense;
 
 void geqrt(Node&, Node&);
 
 void geqrt2(Dense&, Dense&);
 
-MULTI_METHOD(
-  geqrt_omm, void,
-  virtual_<Node>&, virtual_<Node>&
+declare_method(
+  void, geqrt_omm,
+  (virtual_<Node&>, virtual_<Node&>)
 );
 
 } // namespace hicma

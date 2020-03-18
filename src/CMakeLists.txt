@@ -17,7 +17,7 @@ PUBLIC
 )
 target_include_directories(hicma
 SYSTEM PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/yomm11-src/include>
+    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/yomm2-src/include>
 )
 target_compile_options(hicma PUBLIC ${HICMA_OPTIONS})
 target_compile_definitions(hicma PUBLIC ${HICMA_DEFINITIONS})
@@ -41,7 +41,7 @@ if(${CMAKE_VERSION} VERSION_LESS "3.10.0")
 )
 else()
     install(
-        TARGETS hicma yomm11
+        TARGETS hicma yomm2
         EXPORT hicma
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib

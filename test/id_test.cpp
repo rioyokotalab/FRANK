@@ -7,12 +7,12 @@
 #include <utility>
 
 #include "gtest/gtest.h"
-#include "yorel/multi_methods.hpp"
+#include "yorel/yomm2/cute.hpp"
 
 using namespace hicma;
 
 TEST(IDTest, Precision) {
-  yorel::multi_methods::initialize();
+  yorel::yomm2::update_methods();
   // Check whether the Dense(Hierarchical) constructor works correctly.
   int M = 4096;
   int N = 512;

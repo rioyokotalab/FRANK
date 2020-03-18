@@ -23,18 +23,17 @@
 #else
 #include <cblas.h>
 #endif
-#include "yorel/multi_methods.hpp"
+#include "yorel/yomm2/cute.hpp"
 
 namespace hicma
 {
 
-MULTI_METHOD(
-  gemm_trans_omm, void,
-  const virtual_<Node>&,
-  const virtual_<Node>&,
-  virtual_<Node>&,
-  bool, bool,
-  double, double
+declare_method(
+  void, gemm_trans_omm,
+  (
+    virtual_<const Node&>, virtual_<const Node&>, virtual_<Node&>,
+    bool, bool, double, double
+  )
 );
 
 void gemm(
@@ -45,11 +44,13 @@ void gemm(
   gemm_trans_omm(A, B, C, TransA, TransB, alpha, beta);
 }
 
-BEGIN_SPECIALIZATION(
-  gemm_trans_omm, void,
-  const Dense& A, const Dense& B, Dense& C,
-  bool TransA, bool TransB,
-  double alpha, double beta
+define_method(
+  void, gemm_trans_omm,
+  (
+    const Dense& A, const Dense& B, Dense& C,
+    bool TransA, bool TransB,
+    double alpha, double beta
+  )
 ) {
   timing::start("DGEMM");
   if (B.dim[1] == 1) {
@@ -78,20 +79,22 @@ BEGIN_SPECIALIZATION(
     );
   }
   timing::stop("DGEMM");
-} END_SPECIALIZATION;
+}
 
 // Fallback default, abort with error message
-BEGIN_SPECIALIZATION(
-  gemm_trans_omm, void,
-  const Node& A, const Node& B, Node& C,
-  [[maybe_unused]] bool TransA, [[maybe_unused]] bool TransB,
-  [[maybe_unused]] double alpha, [[maybe_unused]] double beta
+define_method(
+  void, gemm_trans_omm,
+  (
+    const Node& A, const Node& B, Node& C,
+    [[maybe_unused]] bool TransA, [[maybe_unused]] bool TransB,
+    [[maybe_unused]] double alpha, [[maybe_unused]] double beta
+  )
 ) {
   std::cerr << "gemm_trans(";
   std::cerr << A.type() << "," << B.type() << "," << C.type();
   std::cerr << ") undefined." << std::endl;
   abort();
-} END_SPECIALIZATION;
+}
 
 void gemm(
   const Node& A, const Node& B, Node& C,
@@ -100,10 +103,12 @@ void gemm(
   gemm_omm(A, B, C, alpha, beta);
 }
 
-BEGIN_SPECIALIZATION(
-  gemm_omm, void,
-  const Dense& A, const Dense& B, Dense& C,
-  double alpha, double beta
+define_method(
+  void, gemm_omm,
+  (
+    const Dense& A, const Dense& B, Dense& C,
+    double alpha, double beta
+  )
 ) {
   assert(C.dim[0] == A.dim[0]);
   assert(A.dim[1] == B.dim[0]);
@@ -114,36 +119,42 @@ BEGIN_SPECIALIZATION(
   else {
     gemm(A, B, C, false, false, alpha, beta);
   }
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  gemm_omm, void,
-  const LowRank& A, const Dense& B, Dense& C,
-  double alpha, double beta
+define_method(
+  void, gemm_omm,
+  (
+    const LowRank& A, const Dense& B, Dense& C,
+    double alpha, double beta
+  )
 ) {
   Dense VxB(A.rank, B.dim[1]);
   gemm(A.V(), B, VxB, 1, 0);
   Dense SxVxB(A.rank, B.dim[1]);
   gemm(A.S(), VxB, SxVxB, 1, 0);
   gemm(A.U(), SxVxB, C, alpha, beta);
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  gemm_omm, void,
-  const Dense& A, const LowRank& B, Dense& C,
-  double alpha, double beta
+define_method(
+  void, gemm_omm,
+  (
+    const Dense& A, const LowRank& B, Dense& C,
+    double alpha, double beta
+  )
 ) {
   Dense AxU(C.dim[0], B.rank);
   gemm(A, B.U(), AxU, 1, 0);
   Dense AxUxS(C.dim[0], B.rank);
   gemm(AxU, B.S(), AxUxS, 1, 0);
   gemm(AxUxS, B.V(), C, alpha, beta);
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  gemm_omm, void,
-  const LowRank& A, const LowRank& B, Dense& C,
-  double alpha, double beta
+define_method(
+  void, gemm_omm,
+  (
+    const LowRank& A, const LowRank& B, Dense& C,
+    double alpha, double beta
+  )
 ) {
   Dense VxU(A.rank, B.rank);
   gemm(A.V(), B.U(), VxU, 1, 0);
@@ -154,12 +165,14 @@ BEGIN_SPECIALIZATION(
   Dense UxSxVxUxS(A.dim[0], B.rank);
   gemm(A.U(), SxVxUxS, UxSxVxUxS, 1, 0);
   gemm(UxSxVxUxS, B.V(), C, alpha, beta);
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  gemm_omm, void,
-  const Dense& A, const Dense& B, LowRank& C,
-  double alpha, double beta
+define_method(
+  void, gemm_omm,
+  (
+    const Dense& A, const Dense& B, LowRank& C,
+    double alpha, double beta
+  )
 ) {
   assert(C.dim[0] == A.dim[0]);
   assert(A.dim[1] == B.dim[0]);
@@ -168,36 +181,42 @@ BEGIN_SPECIALIZATION(
   gemm(A, B, AB, alpha, 0);
   C.S() *= beta;
   C += LowRank(AB, C.rank);
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  gemm_omm, void,
-  const LowRank& A, const Dense& B, LowRank& C,
-  double alpha, double beta
+define_method(
+  void, gemm_omm,
+  (
+    const LowRank& A, const Dense& B, LowRank& C,
+    double alpha, double beta
+  )
 ) {
   // TODO could be optimized to copy less with LowRankView!
   LowRank AVxB(A);
   gemm(A.V(), B, AVxB.V(), alpha, 0);
   C.S() *= beta;
   C += AVxB;
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  gemm_omm, void,
-  const Dense& A, const LowRank& B, LowRank& C,
-  double alpha, double beta
+define_method(
+  void, gemm_omm,
+  (
+    const Dense& A, const LowRank& B, LowRank& C,
+    double alpha, double beta
+  )
 ) {
   // TODO could be optimized to copy less with LowRankView!
   LowRank AxBU(B);
   gemm(A, B.U(), AxBU.U(), alpha, 0);
   C.S() *= beta;
   C += AxBU;
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  gemm_omm, void,
-  const LowRank& A, const LowRank& B, LowRank& C,
-  double alpha, double beta
+define_method(
+  void, gemm_omm,
+  (
+    const LowRank& A, const LowRank& B, LowRank& C,
+    double alpha, double beta
+  )
 ) {
   assert(A.rank == B.rank);
   LowRankView AxB(A, A);
@@ -212,12 +231,14 @@ BEGIN_SPECIALIZATION(
   AxB.S() = S;
   C.S() *= beta;
   C += AxB;
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  gemm_omm, void,
-  const Hierarchical& A, const Hierarchical& B, Hierarchical& C,
-  double alpha, double beta
+define_method(
+  void, gemm_omm,
+  (
+    const Hierarchical& A, const Hierarchical& B, Hierarchical& C,
+    double alpha, double beta
+  )
 ) {
   assert(C.dim[0] == A.dim[0]);
   assert(C.dim[1] == B.dim[1]);
@@ -230,22 +251,26 @@ BEGIN_SPECIALIZATION(
       }
     }
   }
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  gemm_omm, void,
-  const Dense& A, const Dense& B, Hierarchical& C,
-  double alpha, double beta
+define_method(
+  void, gemm_omm,
+  (
+    const Dense& A, const Dense& B, Hierarchical& C,
+    double alpha, double beta
+  )
 ) {
   NoCopySplit AH(A, C.dim[0], 1);
   NoCopySplit BH(B, 1, C.dim[1]);
   gemm(AH, BH, C, alpha, beta);
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  gemm_omm, void,
-  const LowRank& A, const LowRank& B, Hierarchical& C,
-  double alpha, double beta
+define_method(
+  void, gemm_omm,
+  (
+    const LowRank& A, const LowRank& B, Hierarchical& C,
+    double alpha, double beta
+  )
 ) {
   LowRankView AxB(A, A);
   AxB.V() = B.V();
@@ -259,52 +284,62 @@ BEGIN_SPECIALIZATION(
   AxB.S() = S;
   AxB.S() *= beta;
   C += AxB;
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  gemm_omm, void,
-  const Hierarchical& A, const Dense& B, Hierarchical& C,
-  double alpha, double beta
+define_method(
+  void, gemm_omm,
+  (
+    const Hierarchical& A, const Dense& B, Hierarchical& C,
+    double alpha, double beta
+  )
 ) {
   assert(A.dim[0] == C.dim[0]);
   NoCopySplit BH(B, A.dim[1], C.dim[1]);
   gemm(A, BH, C, alpha, beta);
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  gemm_omm, void,
-  const Hierarchical& A, const LowRank& B, Hierarchical& C,
-  double alpha, double beta
+define_method(
+  void, gemm_omm,
+  (
+    const Hierarchical& A, const LowRank& B, Hierarchical& C,
+    double alpha, double beta
+  )
 ) {
   assert(A.dim[0] == C.dim[0]);
   NoCopySplit BH(B, A.dim[1], C.dim[1]);
   gemm(A, BH, C, alpha, beta);
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  gemm_omm, void,
-  const Dense& A, const Hierarchical& B, Hierarchical& C,
-  double alpha, double beta
+define_method(
+  void, gemm_omm,
+  (
+    const Dense& A, const Hierarchical& B, Hierarchical& C,
+    double alpha, double beta
+  )
 ) {
   assert(B.dim[1] == C.dim[1]);
   NoCopySplit AH(A, C.dim[0], B.dim[0]);
   gemm(AH, B, C, alpha, beta);
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  gemm_omm, void,
-  const LowRank& A, const Hierarchical& B, Hierarchical& C,
-  double alpha, double beta
+define_method(
+  void, gemm_omm,
+  (
+    const LowRank& A, const Hierarchical& B, Hierarchical& C,
+    double alpha, double beta
+  )
 ) {
   assert(B.dim[1] == C.dim[1]);
   NoCopySplit AH(A, C.dim[0], B.dim[0]);
   gemm(AH, B, C, alpha, beta);
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  gemm_omm, void,
-  const Hierarchical& A, const LowRank& B, LowRank& C,
-  double alpha, double beta
+define_method(
+  void, gemm_omm,
+  (
+    const Hierarchical& A, const LowRank& B, LowRank& C,
+    double alpha, double beta
+  )
 ) {
   // TODO could be optimized to copy less with LowRankView!
   LowRank B_copy(B);
@@ -312,12 +347,14 @@ BEGIN_SPECIALIZATION(
   B_copy.S() *= alpha;
   C.S() *= beta;
   C += B_copy;
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  gemm_omm, void,
-  const LowRank& A, const Hierarchical& B, LowRank& C,
-  double alpha, double beta
+define_method(
+  void, gemm_omm,
+  (
+    const LowRank& A, const Hierarchical& B, LowRank& C,
+    double alpha, double beta
+  )
 ) {
   // TODO could be optimized to copy less with LowRankView!
   LowRank A_copy(A);
@@ -325,12 +362,14 @@ BEGIN_SPECIALIZATION(
   A_copy.S() *= alpha;
   C.S() *= beta;
   C += A_copy;
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  gemm_omm, void,
-  const Hierarchical& A, const Hierarchical& B, LowRank& C,
-  double alpha, double beta
+define_method(
+  void, gemm_omm,
+  (
+    const Hierarchical& A, const Hierarchical& B, LowRank& C,
+    double alpha, double beta
+  )
 ) {
   /*
     Making a Hierarchical out of C might be better
@@ -342,64 +381,76 @@ BEGIN_SPECIALIZATION(
   Dense CD(C);
   gemm(A, B, CD, alpha, beta);
   C = LowRank(CD, C.rank);
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  gemm_omm, void,
-  const Hierarchical& A, const Hierarchical& B, Dense& C,
-  double alpha, double beta
+define_method(
+  void, gemm_omm,
+  (
+    const Hierarchical& A, const Hierarchical& B, Dense& C,
+    double alpha, double beta
+  )
 ) {
   assert(A.dim[1] == B.dim[0]);
   NoCopySplit CH(C, A.dim[0], B.dim[1]);
   gemm(A, B, CH, alpha, beta);
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  gemm_omm, void,
-  const Dense& A, const Hierarchical& B, Dense& C,
-  double alpha, double beta
+define_method(
+  void, gemm_omm,
+  (
+    const Dense& A, const Hierarchical& B, Dense& C,
+    double alpha, double beta
+  )
 ) {
   NoCopySplit AH(A, 1, B.dim[0]);
   NoCopySplit CH(C, 1, B.dim[1]);
   gemm(AH, B, CH, alpha, beta);
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  gemm_omm, void,
-  const LowRank& A, const Hierarchical& B, Dense& C,
-  double alpha, double beta
+define_method(
+  void, gemm_omm,
+  (
+    const LowRank& A, const Hierarchical& B, Dense& C,
+    double alpha, double beta
+  )
 ) {
   NoCopySplit AH(A, 1, B.dim[0]);
   NoCopySplit CH(C, 1, B.dim[1]);
   gemm(AH, B, CH, alpha, beta);
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  gemm_omm, void,
-  const Hierarchical& A, const Dense& B, Dense& C,
-  double alpha, double beta
+define_method(
+  void, gemm_omm,
+  (
+    const Hierarchical& A, const Dense& B, Dense& C,
+    double alpha, double beta
+  )
 ) {
   NoCopySplit BH(B, A.dim[1], 1);
   NoCopySplit CH(C, A.dim[0], 1);
   gemm(A, BH, CH, alpha, beta);
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  gemm_omm, void,
-  const LowRankShared& A, const Dense& B, Dense& C,
-  double alpha, double beta
+define_method(
+  void, gemm_omm,
+  (
+    const LowRankShared& A, const Dense& B, Dense& C,
+    double alpha, double beta
+  )
 ) {
   Dense VxB(A.rank, B.dim[1]);
   gemm(A.V, B, VxB, 1, 0);
   Dense SxVxB(A.rank, B.dim[1]);
   gemm(A.S, VxB, SxVxB, 1, 0);
   gemm(A.U, SxVxB, C, alpha, beta);
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  gemm_omm, void,
-  const LowRankShared& A, const LowRankShared& B, Dense& C,
-  double alpha, double beta
+define_method(
+  void, gemm_omm,
+  (
+    const LowRankShared& A, const LowRankShared& B, Dense& C,
+    double alpha, double beta
+  )
 ) {
   // TODO Exactly the same as gemm(LR, LR, D)! Consider making LRS a child of LR
   Dense VxU(A.rank, B.rank);
@@ -411,12 +462,14 @@ BEGIN_SPECIALIZATION(
   Dense UxSxVxUxS(A.dim[0], B.rank);
   gemm(A.U, SxVxUxS, UxSxVxUxS, 1, 0);
   gemm(UxSxVxUxS, B.V, C, alpha, beta);
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  gemm_omm, void,
-  const LowRankShared& A, const LowRankShared& B, LowRankShared& C,
-  double alpha, double beta
+define_method(
+  void, gemm_omm,
+  (
+    const LowRankShared& A, const LowRankShared& B, LowRankShared& C,
+    double alpha, double beta
+  )
 ) {
   assert(C.U == A.U);
   assert(C.V == B.V);
@@ -425,12 +478,14 @@ BEGIN_SPECIALIZATION(
   Dense SxVxU(A.rank, B.rank);
   gemm(A.S, VxU, SxVxU, 1, 0);
   gemm(SxVxU, B.S, C.S, alpha, beta);
-} END_SPECIALIZATION;
+}
 
-MULTI_METHOD(
-  gemm_regular_only_omm, void,
-  const virtual_<Node>&, const virtual_<Node>&, virtual_<Node>&,
-  double alpha, double beta
+declare_method(
+  void, gemm_regular_only_omm,
+  (
+    virtual_<const Node&>, virtual_<const Node&>, virtual_<Node&>,
+    double, double
+  )
 );
 
 void gemm_regular_only(
@@ -439,18 +494,22 @@ void gemm_regular_only(
   gemm_regular_only_omm(A, B, C, alpha, beta);
 }
 
-BEGIN_SPECIALIZATION(
-  gemm_regular_only_omm, void,
-  const UniformHierarchical& A, const Dense& B, Dense& C,
-  double alpha, double beta
+define_method(
+  void, gemm_regular_only_omm,
+  (
+    const UniformHierarchical& A, const Dense& B, Dense& C,
+    double alpha, double beta
+  )
 ) {
   gemm(A, B, C, alpha, beta);
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  gemm_regular_only_omm, void,
-  const UniformHierarchical& A, const Hierarchical& B, Hierarchical& C,
-  double alpha, double beta
+define_method(
+  void, gemm_regular_only_omm,
+  (
+    const UniformHierarchical& A, const Hierarchical& B, Hierarchical& C,
+    double alpha, double beta
+  )
 ) {
   for (int i=0; i<C.dim[0]; i++) {
     for (int j=0; j<C.dim[1]; j++) {
@@ -460,41 +519,49 @@ BEGIN_SPECIALIZATION(
       }
     }
   }
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  gemm_regular_only_omm, void,
-  [[maybe_unused]] const LowRankShared& A, [[maybe_unused]] const Dense& B,
-  Dense& C,
-  [[maybe_unused]] double alpha, double beta
+define_method(
+  void, gemm_regular_only_omm,
+  (
+    [[maybe_unused]] const LowRankShared& A, [[maybe_unused]] const Dense& B,
+    Dense& C,
+    [[maybe_unused]] double alpha, double beta
+  )
 ) {
   // Only apply beta
   C *= beta;
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  gemm_regular_only_omm, void,
-  const Dense& A, const Dense& B, Dense& C,
-  double alpha, double beta
+define_method(
+  void, gemm_regular_only_omm,
+  (
+    const Dense& A, const Dense& B, Dense& C,
+    double alpha, double beta
+  )
 ) {
   gemm(A, B, C, alpha, beta);
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  gemm_regular_only_omm, void,
-  const Node& A, const Node& B, Node& C,
-  [[maybe_unused]] double alpha, [[maybe_unused]] double beta
+define_method(
+  void, gemm_regular_only_omm,
+  (
+    const Node& A, const Node& B, Node& C,
+    [[maybe_unused]] double alpha, [[maybe_unused]] double beta
+  )
 ) {
   std::cerr << "gemm_regular_only(";
   std::cerr << A.type() << "," << B.type() << "," << C.type();
   std::cerr << ") undefined." << std::endl;
   abort();
-} END_SPECIALIZATION;
+}
 
-MULTI_METHOD(
-  gemm_shared_only_omm, bool,
-  const virtual_<Node>&, const virtual_<Node>&, virtual_<Node>&,
-  double alpha, double beta
+declare_method(
+  bool, gemm_shared_only_omm,
+  (
+    virtual_<const Node&>, virtual_<const Node&>, virtual_<Node&>,
+    double, double
+  )
 );
 
 bool gemm_shared_only(
@@ -503,50 +570,60 @@ bool gemm_shared_only(
   return gemm_shared_only_omm(A, B, C, alpha, beta);
 }
 
-BEGIN_SPECIALIZATION(
-  gemm_shared_only_omm, bool,
-  const LowRankShared& A, const Dense& B, Dense& C,
-  double alpha, double beta
+define_method(
+  bool, gemm_shared_only_omm,
+  (
+    const LowRankShared& A, const Dense& B, Dense& C,
+    double alpha, double beta
+  )
 ) {
   gemm(A.S, B, C, alpha, beta);
   return true;
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  gemm_shared_only_omm, bool,
-  [[maybe_unused]] const Dense& A, [[maybe_unused]] const Node& B,
-  [[maybe_unused]] Node& C,
-  [[maybe_unused]] double alpha, [[maybe_unused]] double beta
+define_method(
+  bool, gemm_shared_only_omm,
+  (
+    [[maybe_unused]] const Dense& A, [[maybe_unused]] const Node& B,
+    [[maybe_unused]] Node& C,
+    [[maybe_unused]] double alpha, [[maybe_unused]] double beta
+  )
 ) {
   // Do nothing
   return false;
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  gemm_shared_only_omm, bool,
-  [[maybe_unused]] const UniformHierarchical& A, [[maybe_unused]] const Node& B,
-  [[maybe_unused]] Node& C,
-  [[maybe_unused]] double alpha, [[maybe_unused]] double beta
+define_method(
+  bool, gemm_shared_only_omm,
+  (
+    [[maybe_unused]] const UniformHierarchical& A, [[maybe_unused]] const Node& B,
+    [[maybe_unused]] Node& C,
+    [[maybe_unused]] double alpha, [[maybe_unused]] double beta
+  )
 ) {
   // Do nothing
   return false;
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  gemm_shared_only_omm, bool,
-  const Node& A, const Node& B, Node& C,
-  [[maybe_unused]] double alpha, [[maybe_unused]] double beta
+define_method(
+  bool, gemm_shared_only_omm,
+  (
+    const Node& A, const Node& B, Node& C,
+    [[maybe_unused]] double alpha, [[maybe_unused]] double beta
+  )
 ) {
   std::cerr << "gemm_shared_only(";
   std::cerr << A.type() << "," << B.type() << "," << C.type();
   std::cerr << ") undefined." << std::endl;
   abort();
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  gemm_omm, void,
-  const UniformHierarchical& A, const Dense& B, Dense& C,
-  double alpha, double beta
+define_method(
+  void, gemm_omm,
+  (
+    const UniformHierarchical& A, const Dense& B, Dense& C,
+    double alpha, double beta
+  )
 ) {
   C *= beta;
   NoCopySplit BH(B, A.dim[1], 1);
@@ -582,18 +659,20 @@ BEGIN_SPECIALIZATION(
       }
     }
   }
-} END_SPECIALIZATION;
+}
 
 // Fallback default, abort with error message
-BEGIN_SPECIALIZATION(
-  gemm_omm, void,
-  const Node& A, const Node& B, Node& C,
-  [[maybe_unused]] double alpha, [[maybe_unused]] double beta
+define_method(
+  void, gemm_omm,
+  (
+    const Node& A, const Node& B, Node& C,
+    [[maybe_unused]] double alpha, [[maybe_unused]] double beta
+  )
 ) {
   std::cerr << "gemm(";
   std::cerr << A.type() << "," << B.type() << "," << C.type();
   std::cerr << ") undefined." << std::endl;
   abort();
-} END_SPECIALIZATION;
+}
 
 } // namespace hicma

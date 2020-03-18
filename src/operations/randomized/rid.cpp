@@ -6,8 +6,6 @@
 #include "hicma/operations/LAPACK/id.h"
 #include "hicma/operations/LAPACK/qr.h"
 
-#include "yorel/multi_methods.hpp"
-
 #include <utility>
 #include <vector>
 

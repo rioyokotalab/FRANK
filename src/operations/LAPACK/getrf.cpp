@@ -16,7 +16,7 @@
 #else
 #include <lapacke.h>
 #endif
-#include "yorel/multi_methods.hpp"
+#include "yorel/yomm2/cute.hpp"
 
 namespace hicma
 {
@@ -25,7 +25,7 @@ std::tuple<NodeProxy, NodeProxy> getrf(Node& A) {
   return getrf_omm(A);
 }
 
-BEGIN_SPECIALIZATION(getrf_omm, NodePair, Hierarchical& A) {
+define_method(NodePair, getrf_omm, (Hierarchical& A)) {
   Hierarchical L(A, A.dim[0], A.dim[1], true);
   for (int i=0; i<A.dim[0]; i++) {
     std::tie(L(i, i), A(i, i)) = getrf(A(i,i));
@@ -43,9 +43,9 @@ BEGIN_SPECIALIZATION(getrf_omm, NodePair, Hierarchical& A) {
     }
   }
   return {std::move(L), std::move(A)};
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(getrf_omm, NodePair, Dense& A) {
+define_method(NodePair, getrf_omm, (Dense& A)) {
   timing::start("DGETRF");
   std::vector<int> ipiv(std::min(A.dim[0], A.dim[1]));
   LAPACKE_dgetrf(
@@ -64,9 +64,9 @@ BEGIN_SPECIALIZATION(getrf_omm, NodePair, Dense& A) {
   }
   timing::stop("DGETRF");
   return {std::move(L), std::move(A)};
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(getrf_omm, NodePair, UniformHierarchical& A) {
+define_method(NodePair, getrf_omm, (UniformHierarchical& A)) {
   UniformHierarchical L(A, A.dim[0], A.dim[1]);
   // TODO This is a fairly instable way of copying the bases.
   // Later methods involvin LowRankShared will check for matching pointers to
@@ -92,11 +92,11 @@ BEGIN_SPECIALIZATION(getrf_omm, NodePair, UniformHierarchical& A) {
     }
   }
   return {std::move(L), std::move(A)};
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(getrf_omm, NodePair, Node& A) {
+define_method(NodePair, getrf_omm, (Node& A)) {
   std::cerr << "getrf(" << A.type() << ") undefined!" << std::endl;
   abort();
-} END_SPECIALIZATION;
+}
 
 } // namespace hicma

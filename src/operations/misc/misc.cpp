@@ -3,14 +3,14 @@
 #include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
 #include "hicma/operations/LAPACK/svd.h"
-#include <iostream>
-#include <cmath>
-#include <random>
-#include <algorithm>
-#include <utility>
-#include <cassert>
 
-#include "yorel/multi_methods.hpp"
+#include <algorithm>
+#include <cassert>
+#include <cmath>
+#include <iostream>
+#include <utility>
+#include <random>
+
 
 namespace hicma
 {

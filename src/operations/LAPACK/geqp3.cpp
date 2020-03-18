@@ -13,7 +13,7 @@
 #else
 #include <lapacke.h>
 #endif
-#include "yorel/multi_methods.hpp"
+#include "yorel/yomm2/cute.hpp"
 
 namespace hicma
 {
@@ -23,10 +23,7 @@ std::vector<int> geqp3(Node& A, Node& R) {
 }
 
 // Fallback default, abort with error message
-BEGIN_SPECIALIZATION(
-  geqp3_omm, std::vector<int>,
-  Dense& A, Dense& R
-) {
+define_method(std::vector<int>, geqp3_omm, (Dense& A, Dense& R)) {
   assert(A.dim[1] == R.dim[1]);
   // TODO The 0 initial value is important! Otherwise axes are fixed and results
   // can be wrong. See netlib dgeqp3 reference.
@@ -47,17 +44,14 @@ BEGIN_SPECIALIZATION(
     }
   }
   return jpvt;
-} END_SPECIALIZATION;
+}
 
 // Fallback default, abort with error message
-BEGIN_SPECIALIZATION(
-  geqp3_omm, std::vector<int>,
-  Node& A, Node& R
-) {
+define_method(std::vector<int>, geqp3_omm, (Node& A, Node& R)) {
   std::cerr << "geqp3(";
   std::cerr << A.type() << "," << R.type();
   std::cerr << ") undefined." << std::endl;
   abort();
-} END_SPECIALIZATION;
+}
 
 } // namespace hicma

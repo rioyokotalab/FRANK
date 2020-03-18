@@ -13,7 +13,7 @@
 #else
 #include <lapacke.h>
 #endif
-#include "yorel/multi_methods.hpp"
+#include "yorel/yomm2/cute.hpp"
 
 namespace hicma
 {
@@ -25,10 +25,9 @@ void larfb(
   larfb_omm(V, T, C, trans);
 }
 
-BEGIN_SPECIALIZATION(
-  larfb_omm, void,
-  const Dense& V, const Dense& T, Dense& C,
-  bool trans
+define_method(
+  void, larfb_omm,
+  (const Dense& V, const Dense& T, Dense& C, bool trans)
 ) {
   LAPACKE_dlarfb(
     LAPACK_ROW_MAJOR,
@@ -38,30 +37,27 @@ BEGIN_SPECIALIZATION(
     &T, T.stride,
     &C, C.stride
   );
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  larfb_omm, void,
-  const Hierarchical& V, const Hierarchical& T, Dense& C,
-  bool trans
+define_method(
+  void, larfb_omm,
+  (const Hierarchical& V, const Hierarchical& T, Dense& C, bool trans)
 ) {
   Hierarchical CH(C, V.dim[0], V.dim[1]);
   larfb(V, T, CH, trans);
   C = Dense(CH);
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  larfb_omm, void,
-  const Dense& V, const Dense& T, LowRank& C,
-  bool trans
+define_method(
+  void, larfb_omm,
+  (const Dense& V, const Dense& T, LowRank& C, bool trans)
 ) {
   larfb(V, T, C.U(), trans);
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  larfb_omm, void,
-  const Dense& V, const Dense& T, Hierarchical& C,
-  bool trans
+define_method(
+  void, larfb_omm,
+  (const Dense& V, const Dense& T, Hierarchical& C, bool trans)
 ) {
   Dense V_lower_tri(V);
   for(int i = 0; i < V_lower_tri.dim[0]; i++) {
@@ -76,12 +72,11 @@ BEGIN_SPECIALIZATION(
   gemm(VT, V_lower_tri, VTVt, false, true, 1, 0);
   Hierarchical C_copy(C);
   gemm(VTVt, C_copy, C, -1, 1);
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  larfb_omm, void,
-  const Hierarchical& V, const Hierarchical& T, Hierarchical& C,
-  bool trans
+define_method(
+  void, larfb_omm,
+  (const Hierarchical& V, const Hierarchical& T, Hierarchical& C, bool trans)
 ) {
   if(trans) {
     for(int k = 0; k < C.dim[1]; k++) {
@@ -107,18 +102,17 @@ BEGIN_SPECIALIZATION(
       }
     }
   }
-} END_SPECIALIZATION;
+}
 
 // Fallback default, abort with error message
-BEGIN_SPECIALIZATION(
-  larfb_omm, void,
-  const Node& V, const Node& T, Node& C,
-  [[maybe_unused]] bool trans
+define_method(
+  void, larfb_omm,
+  (const Node& V, const Node& T, Node& C, [[maybe_unused]] bool trans)
 ) {
   std::cerr << "larfb(";
   std::cerr << V.type() << "," << T.type() << "," << C.type();
   std::cerr << ") undefined." << std::endl;
   abort();
-} END_SPECIALIZATION;
+}
 
 } // namespace hicma

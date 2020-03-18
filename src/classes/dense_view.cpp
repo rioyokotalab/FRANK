@@ -2,8 +2,6 @@
 
 #include "hicma/classes/dense.h"
 
-#include "yorel/multi_methods.hpp"
-
 #include <cassert>
 #include <memory>
 #include <utility>
@@ -11,20 +9,15 @@
 
 namespace hicma {
 
-  DenseView::DenseView() : Dense() { MM_INIT(); }
+  DenseView::DenseView() = default;
 
   DenseView::~DenseView() = default;
 
-  DenseView::DenseView(const DenseView& A) {
-    MM_INIT();
-    *this = A;
-  }
+  DenseView::DenseView(const DenseView& A) = default;
+
   DenseView& DenseView::operator=(const DenseView& A) = default;
 
-  DenseView::DenseView(DenseView&& A) {
-    MM_INIT();
-    *this = std::move(A);
-  }
+  DenseView::DenseView(DenseView&& A) = default;
 
   DenseView& DenseView::operator=(DenseView&& A) = default;
 

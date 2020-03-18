@@ -8,7 +8,7 @@
 #include <memory>
 #include <tuple>
 
-#include "yorel/multi_methods.hpp"
+#include "yorel/yomm2/cute.hpp"
 
 namespace hicma {
 
@@ -19,7 +19,6 @@ namespace hicma {
   private:
     std::vector<NodeProxy> data;
   public:
-    MM_CLASS(Hierarchical, Node);
     int dim[2] = {0, 0};
 
     // Special member functions
@@ -113,6 +112,8 @@ namespace hicma {
 
     std::tuple<int, int> get_rel_pos_child(const Node& node);
   };
+
+  register_class(Hierarchical, Node);
 
 } // namespace hicma
 

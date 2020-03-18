@@ -1,20 +1,20 @@
 #ifndef hicma_operations_misc_addition_h
 #define hicma_operations_misc_addition_h
 
-#include "yorel/multi_methods.hpp"
-using yorel::multi_methods::virtual_;
+#include "hicma/classes/node.h"
+
+#include "yorel/yomm2/cute.hpp"
+using yorel::yomm2::virtual_;
 
 
 namespace hicma
 {
 
-class Node;
-
 void operator+=(Node&, const Node&);
 
-MULTI_METHOD(
-  addition_omm, void,
-  virtual_<Node>&, const virtual_<Node>&
+declare_method(
+  void, addition_omm,
+  (virtual_<Node&>, virtual_<const Node&>)
 );
 
 } // namespace hicma

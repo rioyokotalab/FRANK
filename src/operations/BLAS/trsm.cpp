@@ -15,7 +15,7 @@
 #else
 #include <cblas.h>
 #endif
-#include "yorel/multi_methods.hpp"
+#include "yorel/yomm2/cute.hpp"
 
 namespace hicma
 {
@@ -24,10 +24,12 @@ void trsm(const Node& A, Node& B, const char& uplo, bool left) {
   trsm_omm(A, B, uplo, left);
 }
 
-BEGIN_SPECIALIZATION(
-  trsm_omm, void,
-  const Hierarchical& A, Hierarchical& B,
-  const char& uplo, bool left
+define_method(
+  void, trsm_omm,
+  (
+    const Hierarchical& A, Hierarchical& B,
+    const char& uplo, bool left
+  )
 ) {
   switch (uplo) {
   case 'l' :
@@ -73,12 +75,14 @@ BEGIN_SPECIALIZATION(
     std::cerr << "Second argument must be 'l' for lower, 'u' for upper." << std::endl;
     abort();
   }
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  trsm_omm, void,
-  const Dense& A, Dense& B,
-  const char& uplo, bool left
+define_method(
+  void, trsm_omm,
+  (
+    const Dense& A, Dense& B,
+    const char& uplo, bool left
+  )
 ) {
   timing::start("DTRSM");
   switch (uplo) {
@@ -109,12 +113,14 @@ BEGIN_SPECIALIZATION(
     abort();
   }
   timing::stop("DTRSM");
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  trsm_omm, void,
-  const Node& A, LowRank& B,
-  const char& uplo, bool left
+define_method(
+  void, trsm_omm,
+  (
+    const Node& A, LowRank& B,
+    const char& uplo, bool left
+  )
 ) {
   switch (uplo) {
   case 'l' :
@@ -127,12 +133,14 @@ BEGIN_SPECIALIZATION(
     std::cerr << "Second argument must be 'l' for lower, 'u' for upper." << std::endl;
     abort();
   }
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  trsm_omm, void,
-  const Hierarchical& A, Dense& B,
-  const char& uplo, bool left
+define_method(
+  void, trsm_omm,
+  (
+    const Hierarchical& A, Dense& B,
+    const char& uplo, bool left
+  )
 ) {
   NoCopySplit BH(B, left?A.dim[0]:1, left?1:A.dim[1]);
   switch (uplo) {
@@ -146,18 +154,20 @@ BEGIN_SPECIALIZATION(
     std::cerr << "Second argument must be 'l' for lower, 'u' for upper." << std::endl;
     abort();
   }
-} END_SPECIALIZATION;
+}
 
 // Fallback default, abort with error message
-BEGIN_SPECIALIZATION(
-  trsm_omm, void,
-  const Node& A, Node& B,
-  [[maybe_unused]] const char& uplo, [[maybe_unused]] bool left
+define_method(
+  void, trsm_omm,
+  (
+    const Node& A, Node& B,
+    [[maybe_unused]] const char& uplo, [[maybe_unused]] bool left
+  )
 ) {
   std::cerr << "trsm(";
   std::cerr << A.type() << "," << B.type();
   std::cerr << ") undefined." << std::endl;
   abort();
-} END_SPECIALIZATION;
+}
 
 } // namespace hicma

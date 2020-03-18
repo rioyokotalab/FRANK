@@ -13,7 +13,7 @@ PUBLIC
 )
 target_include_directories(util
 SYSTEM PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/yomm11-src/include>
+    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/yomm2-src/include>
 )
 target_compile_options(util PUBLIC ${HICMA_OPTIONS})
 target_compile_definitions(util PUBLIC ${HICMA_DEFINITIONS})

@@ -9,7 +9,7 @@
 #include "hicma/classes/uniform_hierarchical.h"
 #include "hicma/util/print.h"
 
-#include "yorel/multi_methods.hpp"
+#include "yorel/yomm2/cute.hpp"
 
 #include <memory>
 
@@ -20,9 +20,9 @@ unsigned long get_memory_usage(const Node& A, bool include_structure) {
   return get_memory_usage_omm(A, include_structure);
 }
 
-BEGIN_SPECIALIZATION(
-  get_memory_usage_omm, unsigned long,
-  const Dense& A, bool include_structure
+define_method(
+  unsigned long, get_memory_usage_omm,
+  (const Dense& A, bool include_structure)
 ) {
   unsigned long memory_usage = 0;
   memory_usage += A.dim[0]*A.dim[1]*sizeof(A[0]);
@@ -30,11 +30,11 @@ BEGIN_SPECIALIZATION(
     memory_usage += sizeof(Dense);
   }
   return memory_usage;
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  get_memory_usage_omm, unsigned long,
-  const LowRank& A, bool include_structure
+define_method(
+  unsigned long, get_memory_usage_omm,
+  (const LowRank& A, bool include_structure)
 ) {
   unsigned long memory_usage = 0;
   memory_usage += get_memory_usage(A.U(), include_structure);
@@ -44,11 +44,11 @@ BEGIN_SPECIALIZATION(
     memory_usage += sizeof(LowRank) - 3*sizeof(Dense);
   }
   return memory_usage;
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  get_memory_usage_omm, unsigned long,
-  const LowRankShared& A, bool include_structure
+define_method(
+  unsigned long, get_memory_usage_omm,
+  (const LowRankShared& A, bool include_structure)
 ) {
   unsigned long memory_usage = 0;
   memory_usage += get_memory_usage(A.S, include_structure);
@@ -56,11 +56,11 @@ BEGIN_SPECIALIZATION(
     memory_usage += sizeof(LowRankShared) - sizeof(Dense);
   }
   return memory_usage;
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  get_memory_usage_omm, unsigned long,
-  const Hierarchical& A, bool include_structure
+define_method(
+  unsigned long, get_memory_usage_omm,
+  (const Hierarchical& A, bool include_structure)
 ) {
   unsigned long memory_usage = 0;
   for (int i=0; i<A.dim[0]; ++i) {
@@ -73,11 +73,11 @@ BEGIN_SPECIALIZATION(
     memory_usage += sizeof(Hierarchical);
   }
   return memory_usage;
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  get_memory_usage_omm, unsigned long,
-  const UniformHierarchical& A, bool include_structure
+define_method(
+  unsigned long, get_memory_usage_omm,
+  (const UniformHierarchical& A, bool include_structure)
 ) {
   unsigned long memory_usage = 0;
   for (int i=0; i<A.dim[0]; ++i) {
@@ -99,16 +99,16 @@ BEGIN_SPECIALIZATION(
     memory_usage += sizeof(UniformHierarchical);
   }
   return memory_usage;
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  get_memory_usage_omm, unsigned long,
-  const Node& A, [[maybe_unused]] bool include_structure
+define_method(
+  unsigned long, get_memory_usage_omm,
+  (const Node& A, [[maybe_unused]] bool include_structure)
 ) {
   std::cerr << "get_memory_usage(";
   std::cerr << A.type();
   std::cerr << ") undefined." << std::endl;
   abort();
-} END_SPECIALIZATION;
+}
 
 } // namespace hicma

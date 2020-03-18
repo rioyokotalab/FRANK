@@ -11,7 +11,7 @@
 #include "hicma/util/counter.h"
 #include "hicma/util/timer.h"
 
-#include "yorel/multi_methods.hpp"
+#include "yorel/yomm2/cute.hpp"
 
 #include <cassert>
 
@@ -22,26 +22,20 @@ void operator+=(Node& A, const Node& B) {
   addition_omm(A, B);
 }
 
-BEGIN_SPECIALIZATION(
-  addition_omm, void,
-  Dense& A, const LowRank& B
-) {
+define_method(void, addition_omm, (Dense& A, const LowRank& B)) {
   Dense UxS(B.dim[0], B.rank);
   gemm(B.U(), B.S(), UxS, 1, 0);
   gemm(UxS, B.V(), A, 1, 1);
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  addition_omm, void,
-  Hierarchical& A, const LowRank& B
-) {
+define_method(void, addition_omm, (Hierarchical& A, const LowRank& B)) {
   NoCopySplit BH(B, A.dim[0], A.dim[1]);
   for (int i=0; i<A.dim[0]; i++) {
     for (int j=0; j<A.dim[1]; j++) {
       A(i, j) += BH(i, j);
     }
   }
-} END_SPECIALIZATION;
+}
 
 
 std::tuple<Dense, Dense> merge_col_basis(
@@ -118,10 +112,7 @@ std::tuple<Dense, Dense, Dense> merge_S(
   return {std::move(Uhat), std::move(Shat), std::move(Vhat)};
 }
 
-BEGIN_SPECIALIZATION(
-  addition_omm, void,
-  LowRank& A, const LowRank& B
-) {
+define_method(void, addition_omm, (LowRank& A, const LowRank& B)) {
   assert(A.dim[0] == B.dim[0]);
   assert(A.dim[1] == B.dim[1]);
   assert(A.rank == B.rank);
@@ -205,15 +196,12 @@ BEGIN_SPECIALIZATION(
 
     timing::stop("LR += LR");
   }
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(
-  addition_omm, void,
-  Node& A, const Node& B
-) {
+define_method(void, addition_omm, (Node& A, const Node& B)) {
   std::cerr << A.type() << " += " << B.type();
   std::cerr << " undefined." << std::endl;
   abort();
-} END_SPECIALIZATION;
+}
 
 } // namespace hicma

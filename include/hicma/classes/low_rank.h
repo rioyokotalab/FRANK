@@ -4,7 +4,7 @@
 #include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
 
-#include "yorel/multi_methods.hpp"
+#include "yorel/yomm2/cute.hpp"
 
 #include <memory>
 
@@ -14,7 +14,6 @@ namespace hicma {
   private:
     Dense _U, _S, _V;
   public:
-    MM_CLASS(LowRank, Node);
     int dim[2] = {0, 0};
     int rank = 0;
 
@@ -69,6 +68,8 @@ namespace hicma {
 
     LowRank get_part(const Node& node) const;
   };
+
+  register_class(LowRank, Node);
 
 } // namespace hicma
 

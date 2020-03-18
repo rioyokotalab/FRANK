@@ -4,12 +4,12 @@
 #include <cmath>
 #include <iostream>
 
-#include "yorel/multi_methods.hpp"
+#include "yorel/yomm2/cute.hpp"
 
 using namespace hicma;
 
 int main(int argc, char** argv) {
-  yorel::multi_methods::initialize();
+  yorel::yomm2::update_methods();
   int N = 128;
   int nleaf = 16;
   int rank = 8;

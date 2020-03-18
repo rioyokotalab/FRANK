@@ -4,7 +4,7 @@
 #include "hicma/classes/dense_view.h"
 #include "hicma/classes/low_rank.h"
 
-#include "yorel/multi_methods.hpp"
+#include "yorel/yomm2/cute.hpp"
 
 #include <memory>
 
@@ -16,8 +16,6 @@ namespace hicma {
   private:
     DenseView _U, _S, _V;
   public:
-    MM_CLASS(LowRankView, LowRank);
-
     // Special member functions
     LowRankView();
 
@@ -48,8 +46,9 @@ namespace hicma {
     const DenseView& V() const override;
 
     LowRankView(const Node& node, const LowRank& A);
-
   };
+
+  register_class(LowRankView, LowRank);
 
 } // namespace hicma
 

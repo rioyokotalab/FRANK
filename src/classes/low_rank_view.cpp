@@ -4,27 +4,21 @@
 #include "hicma/classes/dense_view.h"
 #include "hicma/classes/low_rank.h"
 
-#include "yorel/multi_methods.hpp"
+#include "yorel/yomm2/cute.hpp"
 
 #include <memory>
 #include <utility>
 
 namespace hicma {
 
-  LowRankView::LowRankView() : LowRank() { MM_INIT(); }
+  LowRankView::LowRankView() = default;
 
   LowRankView::~LowRankView() = default;
 
-  LowRankView::LowRankView(const LowRankView& A) {
-    MM_INIT();
-    *this = A;
-  }
+  LowRankView::LowRankView(const LowRankView& A) = default;
   LowRankView& LowRankView::operator=(const LowRankView& A) = default;
 
-  LowRankView::LowRankView(LowRankView&& A) {
-    MM_INIT();
-    *this = std::move(A);
-  }
+  LowRankView::LowRankView(LowRankView&& A) = default;
 
   LowRankView& LowRankView::operator=(LowRankView&& A) = default;
 
@@ -53,7 +47,6 @@ namespace hicma {
 
   LowRankView::LowRankView(const Node& node, const LowRank& A)
   : LowRank(node, A.rank, true) {
-    MM_INIT();
     int rel_row_start = (
       node.row_range.start-A.row_range.start + A.U().row_range.start);
     U() = DenseView(Node(

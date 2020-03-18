@@ -6,7 +6,7 @@
 #include <memory>
 #include <vector>
 
-#include "yorel/multi_methods.hpp"
+#include "yorel/yomm2/cute.hpp"
 
 namespace hicma
 {
@@ -51,8 +51,6 @@ private:
     int admis
   );
 public:
-  MM_CLASS(UniformHierarchical, Hierarchical);
-
   // Special member functions
   UniformHierarchical();
 
@@ -122,6 +120,8 @@ public:
 
   void set_row_basis(int i, int j);
 };
+
+register_class(UniformHierarchical, Hierarchical);
 
 } // namespace hicma
 

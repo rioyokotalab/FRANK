@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.5)
 
 project(HICMA
     LANGUAGES CXX
@@ -52,10 +52,10 @@ endif()
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(add_external)
 
-add_external_dependency(yomm11)
-list(APPEND HICMA_DEPENDENCIES yomm11)
+add_external_dependency(yomm2)
+list(APPEND HICMA_DEPENDENCIES yomm2)
 install(
-    DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/yomm11-src/include/yorel
+    DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/yomm2-src/include/yorel
     DESTINATION include
 )
 

@@ -1,16 +1,17 @@
 #ifndef hicma_operations_LAPACK_qr_h
 #define hicma_operations_LAPACK_qr_h
 
+#include "hicma/classes/node.h"
+#include "hicma/classes/node_proxy.h"
+#include "hicma/classes/dense.h"
+
 #include <tuple>
 
-#include "yorel/multi_methods.hpp"
-using yorel::multi_methods::virtual_;
+#include "yorel/yomm2/cute.hpp"
+using yorel::yomm2::virtual_;
 
 namespace hicma
 {
-  class Node;
-  class NodeProxy;
-  class Dense;
 
   typedef std::tuple<Dense, Dense> dense_tuple;
 
@@ -24,54 +25,37 @@ namespace hicma
 
   NodeProxy split_by_column(const Node&, Node&, int&);
 
-  NodeProxy concat_columns(const Node&, const Node&, int&, const Node&);
+  NodeProxy concat_columns(const Node&, const Node&, const Node&, int&);
+
+  declare_method(
+    void, qr_omm,
+    (virtual_<Node&>, virtual_<Node&>, virtual_<Node&>)
+  );
+  declare_method(bool, need_split_omm, (virtual_<const Node&>));
+  declare_method(
+    dense_tuple, make_left_orthogonal_omm, (virtual_<const Node&>));
+  declare_method(
+    void, update_splitted_size_omm, (virtual_<const Node&>, int&, int&));
+  declare_method(
+    NodeProxy, split_by_column_omm,
+    (virtual_<const Node&>, virtual_<Node&>, int&)
+  );
+  declare_method(
+    NodeProxy, concat_columns_omm,
+    (virtual_<const Node&>, virtual_<const Node&>, virtual_<const Node&>, int&)
+  );
 
   void zero_lowtri(Node&);
 
   void zero_whole(Node&);
-
-  MULTI_METHOD(
-    qr_omm, void,
-    virtual_<Node>&, virtual_<Node>&, virtual_<Node>&
-  );
-  MULTI_METHOD(
-    need_split_omm, bool,
-    const virtual_<Node>&
-  );
-  MULTI_METHOD(
-    make_left_orthogonal_omm, dense_tuple,
-    const virtual_<Node>&
-  );
-  MULTI_METHOD(
-    update_splitted_size_omm, void,
-    const virtual_<Node>&, int&, int&
-  );
-  MULTI_METHOD(
-    split_by_column_omm, NodeProxy,
-    const virtual_<Node>&, virtual_<Node>&,
-    int&
-  );
-  MULTI_METHOD(
-    concat_columns_omm, NodeProxy,
-    const virtual_<Node>&, const virtual_<Node>&,
-    int&, const virtual_<Node>&
-  );
-  MULTI_METHOD(
-    zero_lowtri_omm, void,
-    virtual_<Node>&
-  );
-  MULTI_METHOD(
-    zero_whole_omm, void,
-    virtual_<Node>&
-  );
+  declare_method(void, zero_lowtri_omm, (virtual_<Node&>));
+  declare_method(void, zero_whole_omm, (virtual_<Node&>));
 
 
   void rq(Node&, Node&, Node&);
 
-  MULTI_METHOD(
-    rq_omm, void,
-    virtual_<Node>&, virtual_<Node>&, virtual_<Node>&
-  );
+  declare_method(
+    void, rq_omm, (virtual_<Node&>, virtual_<Node&>, virtual_<Node&>));
 
 } // namespace hicma
 

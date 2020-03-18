@@ -1,15 +1,16 @@
 #include "hicma/operations/LAPACK/latms.h"
 
 #include "hicma/classes/dense.h"
-#include <vector>
-#include <cassert>
 
 #ifdef USE_MKL
 #include <mkl.h>
 #else
 #include <lapacke.h>
 #endif
-#include "yorel/multi_methods.hpp"
+
+#include <cassert>
+#include <vector>
+
 
 namespace hicma
 {

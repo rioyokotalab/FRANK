@@ -5,7 +5,7 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/hierarchical.h"
 
-#include "yorel/multi_methods.hpp"
+#include "yorel/yomm2/cute.hpp"
 
 #include <utility>
 
@@ -16,23 +16,22 @@ void transpose(Node& A) {
   transpose_omm(A);
 }
 
-BEGIN_SPECIALIZATION(transpose_omm, void, Dense& A) {
+define_method(void, transpose_omm, (Dense& A)) {
   // This implementation depends heavily on the details of Dense,
   // thus handled inside the class.
   A.transpose();
-} END_SPECIALIZATION;
+}
 
-BEGIN_SPECIALIZATION(transpose_omm, void, LowRank& A) {
+define_method(void, transpose_omm, (LowRank& A)) {
   using std::swap;
   transpose(A.U());
   transpose(A.S());
   transpose(A.V());
   swap(A.dim[0], A.dim[1]);
   swap(A.U(), A.V());
-} END_SPECIALIZATION;
+}
 
-
-BEGIN_SPECIALIZATION(transpose_omm, void, Hierarchical& A) {
+define_method(void, transpose_omm, (Hierarchical& A)) {
   using std::swap;
   Hierarchical A_trans(A.dim[1], A.dim[0]);
   for(int i=0; i<A.dim[0]; i++) {
@@ -42,14 +41,13 @@ BEGIN_SPECIALIZATION(transpose_omm, void, Hierarchical& A) {
     }
   }
   swap(A, A_trans);
-} END_SPECIALIZATION;
+}
 
-
-BEGIN_SPECIALIZATION(transpose_omm, void, Node& A) {
+define_method(void, transpose_omm, (Node& A)) {
   std::cerr << "tranpose(";
   std::cerr << A.type();
   std::cerr << ") undefined." << std::endl;
   abort();
-} END_SPECIALIZATION;
+}
 
 } // namespace hicma

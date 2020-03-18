@@ -3,12 +3,12 @@
 #include <algorithm>
 #include <cmath>
 
-#include "yorel/multi_methods.hpp"
+#include "yorel/yomm2/cute.hpp"
 
 using namespace hicma;
 
 int main() {
-  yorel::multi_methods::initialize();
+  yorel::yomm2::update_methods();
   int N = 64;
   int Nb = 16;
   int Nc = N / Nb;

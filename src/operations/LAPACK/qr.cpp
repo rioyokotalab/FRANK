@@ -20,7 +20,7 @@
 #else
 #include <lapacke.h>
 #endif
-#include "yorel/multi_methods.hpp"
+#include "yorel/yomm2/cute.hpp"
 
 namespace hicma
 {
@@ -46,19 +46,13 @@ namespace hicma
     return split_by_column_omm(A, storage, currentRow);
   }
 
-  NodeProxy concat_columns(const Node& A, const Node& splitted, int& currentRow, const Node& Q) {
-    return concat_columns_omm(A, splitted, currentRow, Q);
+  NodeProxy concat_columns(
+    const Node& A, const Node& splitted, const Node& Q, int& currentRow
+  ) {
+    return concat_columns_omm(A, splitted, Q, currentRow);
   }
 
-  void zero_lowtri(Node& A) {
-    zero_lowtri_omm(A);
-  }
-
-  void zero_whole(Node& A) {
-    zero_whole_omm(A);
-  }
-
-  BEGIN_SPECIALIZATION(qr_omm, void, Dense& A, Dense& Q, Dense& R) {
+  define_method(void, qr_omm, (Dense& A, Dense& Q, Dense& R)) {
     assert(Q.dim[0] == A.dim[0]);
     assert(Q.dim[1] == A.dim[1]);
     assert(R.dim[0] == A.dim[1]);
@@ -89,9 +83,11 @@ namespace hicma
     LAPACKE_dorgqr(LAPACK_ROW_MAJOR, Q.dim[0], Q.dim[1], k, &Q, Q.stride, &tau[0]);
     timing::stop("DORGQR");
     timing::stop("QR");
-  } END_SPECIALIZATION;
+  }
 
-  BEGIN_SPECIALIZATION(qr_omm, void, Hierarchical& A, Hierarchical& Q, Hierarchical& R) {
+  define_method(
+    void, qr_omm, (Hierarchical& A, Hierarchical& Q, Hierarchical& R)
+  ) {
     assert(Q.dim[0] == A.dim[0]);
     assert(Q.dim[1] == A.dim[1]);
     assert(R.dim[0] == A.dim[1]);
@@ -126,32 +122,32 @@ namespace hicma
         }
       }
     }
-  } END_SPECIALIZATION;
+  }
 
-  BEGIN_SPECIALIZATION(qr_omm, void, Node& A, Node& Q, Node& R) {
+  define_method(void, qr_omm, (Node& A, Node& Q, Node& R)) {
     std::cerr << "qr(";
     std::cerr << A.type() << "," << Q.type() << "," << R.type();
     std::cerr << ") undefined." << std::endl;
     abort();
-  } END_SPECIALIZATION;
+  }
 
 
-  BEGIN_SPECIALIZATION(need_split_omm, bool, const Hierarchical& A) {
+  define_method(bool, need_split_omm, (const Hierarchical& A)) {
     return true;
-  } END_SPECIALIZATION;
+  }
 
-  BEGIN_SPECIALIZATION(need_split_omm, bool, const Node& A) {
+  define_method(bool, need_split_omm, (const Node& A)) {
     return false;
-  } END_SPECIALIZATION;
+  }
 
 
-  BEGIN_SPECIALIZATION(make_left_orthogonal_omm, dense_tuple, const Dense& A) {
+  define_method(dense_tuple, make_left_orthogonal_omm, (const Dense& A)) {
     std::vector<double> x;
     Dense Id(identity, x, A.dim[0], A.dim[0]);
     return {std::move(Id), A};
-  } END_SPECIALIZATION
+  }
 
-  BEGIN_SPECIALIZATION(make_left_orthogonal_omm, dense_tuple, const LowRank& A) {
+  define_method(dense_tuple, make_left_orthogonal_omm, (const LowRank& A)) {
     Dense Au(A.U());
     Dense Qu(A.U().dim[0], A.U().dim[1]);
     Dense Ru(A.U().dim[1], A.U().dim[1]);
@@ -161,35 +157,46 @@ namespace hicma
     Dense RSV(RS.dim[0], A.V().dim[1]);
     gemm(RS, A.V(), RSV, 1, 1);
     return {std::move(Qu), std::move(RSV)};
-  } END_SPECIALIZATION;
+  }
 
-  BEGIN_SPECIALIZATION(make_left_orthogonal_omm, dense_tuple, const Node& A) {
+  define_method(dense_tuple, make_left_orthogonal_omm, (const Node& A)) {
     std::cerr << "make_left_orthogonal(";
     std::cerr << A.type();
     std::cerr << ") undefined." << std::endl;
     abort();
-  } END_SPECIALIZATION;
+  }
 
 
-  BEGIN_SPECIALIZATION(update_splitted_size_omm, void, const Hierarchical& A, int& rows, int& cols) {
+  define_method(
+    void, update_splitted_size_omm,
+    (const Hierarchical& A, int& rows, int& cols)
+  ) {
     rows += A.dim[0];
     cols = A.dim[1];
-  } END_SPECIALIZATION;
+  }
 
-  BEGIN_SPECIALIZATION(update_splitted_size_omm, void, const Node& A, int& rows, int& cols) {
+  define_method(
+    void, update_splitted_size_omm, (const Node& A, int& rows, int& cols)
+  ) {
     rows++;
-  } END_SPECIALIZATION;
+  }
 
 
-  BEGIN_SPECIALIZATION(split_by_column_omm, NodeProxy, const Dense& A, Hierarchical& storage, int& currentRow) {
+  define_method(
+    NodeProxy, split_by_column_omm,
+    (const Dense& A, Hierarchical& storage, int& currentRow)
+  ) {
     Hierarchical splitted(A, 1, storage.dim[1]);
     for(int i=0; i<storage.dim[1]; i++)
       storage(currentRow, i) = splitted(0, i);
     currentRow++;
     return Dense(0, 0);
-  } END_SPECIALIZATION;
+  }
 
-  BEGIN_SPECIALIZATION(split_by_column_omm, NodeProxy, const LowRank& A, Hierarchical& storage, int& currentRow) {
+  define_method(
+    NodeProxy, split_by_column_omm,
+    (const LowRank& A, Hierarchical& storage, int& currentRow)
+  ) {
     LowRank _A(A);
     Dense Qu(_A.U().dim[0], _A.U().dim[1]);
     Dense Ru(_A.U().dim[1], _A.U().dim[1]);
@@ -205,9 +212,12 @@ namespace hicma
     }
     currentRow++;
     return Qu;
-  } END_SPECIALIZATION;
+  }
 
-  BEGIN_SPECIALIZATION(split_by_column_omm, NodeProxy, const Hierarchical& A, Hierarchical& storage, int& currentRow) {
+  define_method(
+    NodeProxy, split_by_column_omm,
+    (const Hierarchical& A, Hierarchical& storage, int& currentRow)
+  ) {
     for(int i=0; i<A.dim[0]; i++) {
       for(int j=0; j<A.dim[1]; j++) {
         storage(currentRow, j) = A(i, j);
@@ -215,17 +225,23 @@ namespace hicma
       currentRow++;
     }
     return Dense(0, 0);
-  } END_SPECIALIZATION;
+  }
 
-  BEGIN_SPECIALIZATION(split_by_column_omm, NodeProxy, const Node& A, Node& storage, [[maybe_unused]] int& currentRow) {
+  define_method(
+    NodeProxy, split_by_column_omm,
+    (const Node& A, Node& storage, [[maybe_unused]] int& currentRow)
+  ) {
     std::cerr << "split_by_column(";
     std::cerr << A.type() << "," << storage.type() << ",int";
     std::cerr << ") undefined." << std::endl;
     abort();
-  } END_SPECIALIZATION;
+  }
 
 
-  BEGIN_SPECIALIZATION(concat_columns_omm, NodeProxy, const Dense& A, const Hierarchical& splitted, int& currentRow, const Dense& Q) {
+  define_method(
+    NodeProxy, concat_columns_omm,
+    (const Dense& A, const Hierarchical& splitted, const Dense& Q, int& currentRow)
+  ) {
     //In case of dense, combine the spllited dense matrices into one dense matrix
     Hierarchical SpCurRow(1, splitted.dim[1]);
     for(int i=0; i<splitted.dim[1]; i++) {
@@ -236,9 +252,12 @@ namespace hicma
     assert(A.dim[1] == concatenatedRow.dim[1]);
     currentRow++;
     return concatenatedRow;
-  } END_SPECIALIZATION;
+  }
 
-  BEGIN_SPECIALIZATION(concat_columns_omm, NodeProxy, const LowRank& A, const Hierarchical& splitted, int& currentRow, const Dense& Q) {
+  define_method(
+    NodeProxy, concat_columns_omm,
+    (const LowRank& A, const Hierarchical& splitted, const Dense& Q, int& currentRow)
+  ) {
     //In case of lowrank, combine splitted dense matrices into single dense matrix
     //Then form a lowrank matrix with the stored Q
     std::vector<double> x;
@@ -257,9 +276,14 @@ namespace hicma
     _A.S() = Dense(identity, x, _A.rank, _A.rank);
     currentRow++;
     return _A;
-  } END_SPECIALIZATION;
+  }
 
-  BEGIN_SPECIALIZATION(concat_columns_omm, NodeProxy, const Hierarchical& A, const Hierarchical& splitted, int& currentRow, const Dense& Q) {
+  define_method(
+    NodeProxy, concat_columns_omm,
+    (
+      const Hierarchical& A, const Hierarchical& splitted, const Dense& Q,
+      int& currentRow)
+    ) {
     //In case of hierarchical, just put element in respective cells
     assert(splitted.dim[1] == A.dim[1]);
     Hierarchical concatenatedRow(A.dim[0], A.dim[1]);
@@ -270,53 +294,67 @@ namespace hicma
       currentRow++;
     }
     return concatenatedRow;
-  } END_SPECIALIZATION;
+  }
 
-  BEGIN_SPECIALIZATION(concat_columns_omm, NodeProxy, const Node& A, const Node& splitted, [[maybe_unused]] int& currentRow, [[maybe_unused]] const Node& Q) {
+  define_method(
+    NodeProxy, concat_columns_omm,
+    (
+      const Node& A, const Node& splitted, const Node& Q,
+      [[maybe_unused]] int& currentRow)
+    ) {
     std::cerr << "concat_columns(";
     std::cerr << A.type() << "," << splitted.type() << ",int," << Q.type();
     std::cerr << ") undefined." << std::endl;
     abort();
-  } END_SPECIALIZATION;
+  }
 
-  BEGIN_SPECIALIZATION(zero_lowtri_omm, void, Dense& A) {
+
+  void zero_lowtri(Node& A) {
+    zero_lowtri_omm(A);
+  }
+
+  void zero_whole(Node& A) {
+    zero_whole_omm(A);
+  }
+
+  define_method(void, zero_lowtri_omm, (Dense& A)) {
     for(int i=0; i<A.dim[0]; i++)
       for(int j=0; j<i; j++)
         A(i,j) = 0.0;
-  } END_SPECIALIZATION;
+  }
 
-  BEGIN_SPECIALIZATION(zero_lowtri_omm, void, Node& A) {
+  define_method(void, zero_lowtri_omm, (Node& A)) {
     std::cerr << "zero_lowtri_omm(";
     std::cerr << A.type();
     std::cerr << ") undefined." << std::endl;
     abort();
-  } END_SPECIALIZATION;
+  }
 
-  BEGIN_SPECIALIZATION(zero_whole_omm, void, Dense& A) {
+  define_method(void, zero_whole_omm, (Dense& A)) {
     A = 0.0;
-  } END_SPECIALIZATION;
+  }
 
-  BEGIN_SPECIALIZATION(zero_whole_omm, void, LowRank& A) {
+  define_method(void, zero_whole_omm, (LowRank& A)) {
     A.U() = 0.0;
     for(int i=0; i<std::min(A.U().dim[0], A.U().dim[1]); i++) A.U()(i, i) = 1.0;
     A.S() = 0.0;
     A.V() = 0.0;
     for(int i=0; i<std::min(A.V().dim[0], A.V().dim[1]); i++) A.V()(i, i) = 1.0;
-  } END_SPECIALIZATION;
+  }
 
-  BEGIN_SPECIALIZATION(zero_whole_omm, void, Node& A) {
+  define_method(void, zero_whole_omm, (Node& A)) {
     std::cerr << "zero_whole_omm(";
     std::cerr << A.type();
     std::cerr << ") undefined." << std::endl;
     abort();
-  } END_SPECIALIZATION;
+  }
 
 
   void rq(Node& A, Node& R, Node& Q) {
     rq_omm(A, R, Q);
   }
 
-  BEGIN_SPECIALIZATION(rq_omm, void, Dense& A, Dense& R, Dense& Q) {
+  define_method(void, rq_omm, (Dense& A, Dense& R, Dense& Q)) {
     assert(R.dim[0] == A.dim[0]);
     assert(R.dim[1] == A.dim[0]);
     assert(Q.dim[0] == A.dim[0]);
@@ -342,6 +380,6 @@ namespace hicma
     );
     Q = std::move(A);
     timing::stop("DGERQF");
-  } END_SPECIALIZATION;
+  }
 
 } // namespace hicma

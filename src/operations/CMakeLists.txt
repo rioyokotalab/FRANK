@@ -27,5 +27,5 @@ PUBLIC
 )
 target_include_directories(operations
 SYSTEM PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/yomm11-src/include>
+    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/yomm2-src/include>
 )
