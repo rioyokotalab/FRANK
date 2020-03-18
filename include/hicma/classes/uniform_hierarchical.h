@@ -17,7 +17,7 @@ class LowRankShared;
 
 class UniformHierarchical : public Hierarchical {
 private:
-  std::vector<std::shared_ptr<Dense>> row_basis, col_basis;
+  std::vector<std::shared_ptr<Dense>> col_basis, row_basis;
 
   Dense make_row_block(
     int row,

@@ -27,9 +27,11 @@ UniformHierarchical::UniformHierarchical() = default;
 
 UniformHierarchical::~UniformHierarchical() = default;
 
-UniformHierarchical::UniformHierarchical(const UniformHierarchical& A){
-  *this = A;
+UniformHierarchical::UniformHierarchical(const UniformHierarchical& A)
+: Hierarchical(A) {
+  col_basis.resize(A.dim[0]);
   copy_col_basis(A);
+  row_basis.resize(A.dim[1]);
   copy_row_basis(A);
   for (int i=0; i<dim[0]; i++) {
     for (int j=0; j<dim[1]; j++) {
@@ -223,10 +225,6 @@ UniformHierarchical::UniformHierarchical(
   // TODO For now only admis 0! gemm(D, LR, LR) and gemm(LR, D, LR) needed for
   // more.
   assert(admis == 0);
-  if (!level) {
-    assert(x.size() == std::max(node.row_range.length, node.col_range.length));
-    std::sort(x.begin(),x.end());
-  }
   col_basis.resize(dim[0]);
   row_basis.resize(dim[1]);
   std::vector<std::vector<int>> selected_rows(dim[0]);
