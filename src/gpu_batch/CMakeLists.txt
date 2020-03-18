@@ -10,5 +10,5 @@ target_include_directories(gpu_batch
 SYSTEM PUBLIC
     $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/yomm2-src/include>
 )
-target_compile_options(gpu_batch PUBLIC ${HICMA_OPTIONS})
+target_compile_options(gpu_batch PRIVATE ${HICMA_OPTIONS})
 target_compile_definitions(gpu_batch PUBLIC ${HICMA_DEFINITIONS})
