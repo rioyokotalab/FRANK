@@ -65,7 +65,7 @@ define_method(DenseIntVectorPair, one_sided_id_omm, (Dense& A, int k)) {
     Dense R11, T;
     // TODO Find more abstract way for this. NoCopySplit with designed subnodes?
     std::tie(R11, T) = get_R11_R12(R, k);
-    trsm(R11, T, 'u');
+    trsm(R11, T, TRSM_UPPER);
     col_basis = interleave_id(T, selected_cols);
   } else {
     std::vector<double> x;

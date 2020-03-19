@@ -33,10 +33,10 @@ define_method(NodePair, getrf_omm, (Hierarchical& A)) {
     std::tie(L(i, i), A(i, i)) = getrf(A(i,i));
     for (int i_c=i+1; i_c<L.dim[0]; i_c++) {
       L(i_c, i) = std::move(A(i_c, i));
-      trsm(A(i,i), L(i_c,i), 'u', false);
+      trsm(A(i,i), L(i_c,i), TRSM_UPPER, TRSM_RIGHT);
     }
     for (int j=i+1; j<A.dim[1]; j++) {
-      trsm(L(i,i), A(i,j), 'l');
+      trsm(L(i,i), A(i,j), TRSM_LOWER);
     }
     for (int i_c=i+1; i_c<L.dim[0]; i_c++) {
       for (int k=i+1; k<A.dim[1]; k++) {
@@ -80,8 +80,8 @@ define_method(NodePair, getrf_omm, (UniformHierarchical& A)) {
   // set_basis necessary.
   for (int i=0; i<A.dim[0]; i++) {
     std::tie(L(i, i), A(i, i)) = getrf(A(i,i));
-    trsm(A(i, i), L.get_row_basis(i), 'u', false);
-    trsm(L(i, i), A.get_col_basis(i), 'l');
+    trsm(A(i, i), L.get_row_basis(i), TRSM_UPPER, TRSM_RIGHT);
+    trsm(L(i, i), A.get_col_basis(i), TRSM_LOWER);
     for (int i_c=i+1; i_c<L.dim[0]; i_c++) {
       L(i_c, i) = std::move(A(i_c, i));
       L.set_row_basis(i_c, i);

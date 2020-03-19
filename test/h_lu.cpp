@@ -42,10 +42,10 @@ int main(int argc, char** argv) {
   timing::stopAndPrint("LU decomposition", 2);
   timing::start("Verification time");
   timing::start("Forward substitution");
-  trsm(L, b,'l');
+  trsm(L, b, TRSM_LOWER);
   timing::stop("Forward substitution");
   timing::start("Backward substitution");
-  trsm(U, b,'u');
+  trsm(U, b, TRSM_UPPER);
   timing::stop("Backward substitution");
   print("LU Accuracy");
   print("Rel. L2 Error", l2_error(x, b), false);

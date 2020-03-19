@@ -16,93 +16,77 @@
 #endif
 #include "yorel/yomm2/cute.hpp"
 
-#include <iostream>
+#include <cassert>
 
 
 namespace hicma
 {
 
-void trsm(const Node& A, Node& B, const char& uplo, bool left) {
-  trsm_omm(A, B, uplo, left);
+void trsm(const Node& A, Node& B, int uplo, int lr) {
+  assert(uplo == TRSM_UPPER || uplo == TRSM_LOWER);
+  assert(lr == TRSM_LEFT || lr == TRSM_RIGHT);
+  trsm_omm(A, B, uplo, lr);
 }
 
 define_method(
   void, trsm_omm,
-  (
-    const Hierarchical& A, Hierarchical& B,
-    const char& uplo, bool left
-  )
+  (const Hierarchical& A, Hierarchical& B, int uplo, int lr)
 ) {
   switch (uplo) {
-  case 'l' :
-    if (left) {
-      for (int j=0; j<B.dim[1]; j++) {
-        for (int i=0; i<B.dim[0]; i++) {
-          for (int k=0; k<i; k++) {
-            gemm(A(i,k), B(k,j), B(i,j), -1, 1);
-          }
-          trsm(A(i,i), B(i,j), 'l', left);
-        }
-      }
-    } else {
-      omm_error_handler("Right lower trsm", {A, B}, __FILE__, __LINE__);
-      abort();
-    }
-    break;
-  case 'u' :
-    if (left) {
+  case TRSM_UPPER:
+    switch (lr) {
+    case TRSM_LEFT:
       if (B.dim[1] == 1) {
         for (int i=B.dim[0]-1; i>=0; i--) {
           for (int j=B.dim[0]-1; j>i; j--) {
             gemm(A(i,j), B[j], B[i], -1, 1);
           }
-          trsm(A(i,i), B[i], 'u', left);
+          trsm(A(i,i), B[i], TRSM_UPPER, TRSM_LEFT);
         }
       } else {
-        omm_error_handler("Left upper trsm", {A, B}, __FILE__, __LINE__);
+        omm_error_handler(
+          "Left upper with B.dim[1] != 1 trsm", {A, B}, __FILE__, __LINE__);
         abort();
       }
-    } else {
+      break;
+    case TRSM_RIGHT:
       for (int i=0; i<B.dim[0]; i++) {
         for (int j=0; j<B.dim[1]; j++) {
           for (int k=0; k<j; k++) {
             gemm(B(i,k), A(k,j), B(i,j), -1, 1);
           }
-          trsm(A(j,j), B(i,j), 'u', left);
+          trsm(A(j,j), B(i,j), TRSM_UPPER, TRSM_RIGHT);
         }
       }
     }
     break;
-  default :
-    std::cerr << "Second argument must be 'l' for lower, 'u' for upper." << std::endl;
-    abort();
+  case TRSM_LOWER:
+    switch (lr) {
+    case TRSM_LEFT:
+      for (int j=0; j<B.dim[1]; j++) {
+        for (int i=0; i<B.dim[0]; i++) {
+          for (int k=0; k<i; k++) {
+            gemm(A(i,k), B(k,j), B(i,j), -1, 1);
+          }
+          trsm(A(i,i), B(i,j), TRSM_LOWER, TRSM_LEFT);
+        }
+      }
+      break;
+    case TRSM_RIGHT:
+      omm_error_handler("Right lower trsm", {A, B}, __FILE__, __LINE__);
+      abort();
+    }
+    break;
   }
 }
 
-define_method(
-  void, trsm_omm,
-  (
-    const Dense& A, Dense& B,
-    const char& uplo, bool left
-  )
-) {
+define_method(void, trsm_omm, (const Dense& A, Dense& B, int uplo, int lr)) {
   timing::start("DTRSM");
   switch (uplo) {
-  case 'l' :
+  case TRSM_UPPER:
     cblas_dtrsm(
       CblasRowMajor,
-      left?CblasLeft:CblasRight, CblasLower,
-      CblasNoTrans, CblasUnit,
-      B.dim[0], B.dim[1],
-      1,
-      &A, A.stride,
-      &B, B.stride
-    );
-    break;
-  case 'u' :
-    cblas_dtrsm(
-      CblasRowMajor,
-      left?CblasLeft:CblasRight, CblasUpper,
+      lr==TRSM_LEFT?CblasLeft:CblasRight, CblasUpper,
       CblasNoTrans, CblasNonUnit,
       B.dim[0], B.dim[1],
       1,
@@ -110,51 +94,44 @@ define_method(
       &B, B.stride
     );
     break;
-  default :
-    std::cerr << "Second argument must be 'l' for lower, 'u' for upper." << std::endl;
-    abort();
+  case TRSM_LOWER:
+    cblas_dtrsm(
+      CblasRowMajor,
+      lr==TRSM_LEFT?CblasLeft:CblasRight, CblasLower,
+      CblasNoTrans, CblasUnit,
+      B.dim[0], B.dim[1],
+      1,
+      &A, A.stride,
+      &B, B.stride
+    );
+    break;
   }
   timing::stop("DTRSM");
 }
 
-define_method(
-  void, trsm_omm,
-  (
-    const Node& A, LowRank& B,
-    const char& uplo, bool left
-  )
-) {
+define_method(void, trsm_omm, (const Node& A, LowRank& B, int uplo, int lr)) {
   switch (uplo) {
-  case 'l' :
-    trsm(A, B.U(), uplo, left);
+  case TRSM_UPPER:
+    trsm(A, B.V(), uplo, lr);
     break;
-  case 'u' :
-    trsm(A, B.V(), uplo, left);
+  case TRSM_LOWER:
+    trsm(A, B.U(), uplo, lr);
     break;
-  default :
-    std::cerr << "Second argument must be 'l' for lower, 'u' for upper." << std::endl;
-    abort();
   }
 }
 
 define_method(
   void, trsm_omm,
-  (
-    const Hierarchical& A, Dense& B,
-    const char& uplo, bool left
-  )
+  (const Hierarchical& A, Dense& B, int uplo, int lr)
 ) {
-  NoCopySplit BH(B, left?A.dim[0]:1, left?1:A.dim[1]);
+  NoCopySplit BH(B, lr==TRSM_LEFT?A.dim[0]:1, lr==TRSM_LEFT?1:A.dim[1]);
   switch (uplo) {
-  case 'l' :
-    trsm(A, BH, uplo, left);
+  case TRSM_UPPER:
+    trsm(A, BH, uplo, lr);
     break;
-  case 'u' :
-    trsm(A, BH, uplo, left);
+  case TRSM_LOWER:
+    trsm(A, BH, uplo, lr);
     break;
-  default :
-    std::cerr << "Second argument must be 'l' for lower, 'u' for upper." << std::endl;
-    abort();
   }
 }
 
@@ -163,7 +140,7 @@ define_method(
   void, trsm_omm,
   (
     const Node& A, Node& B,
-    [[maybe_unused]] const char& uplo, [[maybe_unused]] bool left
+    [[maybe_unused]] int uplo, [[maybe_unused]] int lr
   )
 ) {
   omm_error_handler("trsm", {A, B}, __FILE__, __LINE__);

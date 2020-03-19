@@ -27,9 +27,10 @@ void trmm(
   const double& alpha
 );
 
-// TODO consider splitting left and right trsm into separate functions! That
-// would allow nicer syntax: ltrsm(Tri, A, 'u/l') and rtrsm(A, Tri, 'u/l').
-void trsm(const Node&, Node&, const char& uplo, bool left=true);
+enum { TRSM_UPPER, TRSM_LOWER };
+enum { TRSM_LEFT, TRSM_RIGHT };
+
+void trsm(const Node&, Node&, int uplo, int lr=TRSM_LEFT);
 
 } // namespace hicma
 

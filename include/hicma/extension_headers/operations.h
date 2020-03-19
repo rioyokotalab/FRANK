@@ -41,7 +41,7 @@ declare_method(
 
 declare_method(
   void, trsm_omm,
-  (virtual_<const Node&>, virtual_<Node&>, const char&, bool)
+  (virtual_<const Node&>, virtual_<Node&>, int, int)
 )
 
 declare_method(DenseIntVectorPair, geqp3_omm, (virtual_<Node&>))

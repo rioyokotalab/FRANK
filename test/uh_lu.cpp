@@ -53,8 +53,8 @@ int main(int argc, char const *argv[])
   timing::stopAndPrint("UBLR LU", 2);
 
   timing::start("Verification");
-  trsm(L, b,'l');
-  trsm(U, b,'u');
+  trsm(L, b, TRSM_LOWER);
+  trsm(U, b, TRSM_UPPER);
   print("UH Rel. L2 Error", l2_error(x, b), false);
   timing::stopAndPrint("Verification");
 
