@@ -15,7 +15,7 @@ void operator+=(Node&, const Node&);
 declare_method(
   void, addition_omm,
   (virtual_<Node&>, virtual_<const Node&>)
-);
+)
 
 } // namespace hicma
 

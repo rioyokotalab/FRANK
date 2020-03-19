@@ -35,7 +35,7 @@ declare_method(
     virtual_<const Node&>, virtual_<const Node&>, virtual_<Node&>,
     bool, bool, double, double
   )
-);
+)
 
 void gemm(
   const Node& A, const Node& B, Node& C,
@@ -487,7 +487,7 @@ declare_method(
     virtual_<const Node&>, virtual_<const Node&>, virtual_<Node&>,
     double, double
   )
-);
+)
 
 void gemm_regular_only(
   const Node& A, const Node& B, Node& C, double alpha, double beta
@@ -563,7 +563,7 @@ declare_method(
     virtual_<const Node&>, virtual_<const Node&>, virtual_<Node&>,
     double, double
   )
-);
+)
 
 bool gemm_shared_only(
   const Node& A, const Node& B, Node& C, double alpha, double beta

@@ -113,7 +113,7 @@ namespace hicma {
     std::tuple<int, int> get_rel_pos_child(const Node& node);
   };
 
-  register_class(Hierarchical, Node);
+  register_class(Hierarchical, Node)
 
 } // namespace hicma
 

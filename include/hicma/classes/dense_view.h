@@ -56,7 +56,7 @@ namespace hicma {
     void resize(int dim0, int dim1) = delete;
   };
 
-  register_class(DenseView, Dense);
+  register_class(DenseView, Dense)
 
 } // namespace hicma
 

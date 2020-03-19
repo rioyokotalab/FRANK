@@ -15,7 +15,7 @@ double l2_error(const Node&, const Node&);
 declare_method(
   double, l2_error_omm,
   (virtual_<const Node&>, virtual_<const Node&>)
-);
+)
 
 } // namespace hicma
 

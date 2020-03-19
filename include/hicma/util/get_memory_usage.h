@@ -15,7 +15,7 @@ unsigned long get_memory_usage(const Node&, bool include_structure=true);
 declare_method(
   unsigned long, get_memory_usage_omm,
   (virtual_<const Node&>, bool)
-);
+)
 
 } // namespace hicma
 

@@ -69,7 +69,7 @@ namespace hicma {
     LowRank get_part(const Node& node) const;
   };
 
-  register_class(LowRank, Node);
+  register_class(LowRank, Node)
 
 } // namespace hicma
 

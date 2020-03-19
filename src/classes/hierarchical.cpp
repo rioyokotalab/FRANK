@@ -35,7 +35,7 @@ namespace hicma {
 
   const char* Hierarchical::type() const { return "Hierarchical"; }
 
-  declare_method(Hierarchical, move_from_hierarchical, (virtual_<Node&>));
+  declare_method(Hierarchical, move_from_hierarchical, (virtual_<Node&>))
 
   Hierarchical::Hierarchical(NodeProxy&& A) {
     *this = move_from_hierarchical(A);

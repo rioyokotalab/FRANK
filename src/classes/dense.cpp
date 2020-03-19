@@ -95,7 +95,7 @@ namespace hicma {
     abort();
   }
 
-  declare_method(Dense, move_from_dense, (virtual_<Node&>));
+  declare_method(Dense, move_from_dense, (virtual_<Node&>))
 
   Dense::Dense(NodeProxy&& A) {
     *this = move_from_dense(A);

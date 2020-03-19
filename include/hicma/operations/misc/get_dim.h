@@ -12,11 +12,11 @@ namespace hicma
 
 int get_n_rows(const Node&);
 
-declare_method(int, get_n_rows_omm, (virtual_<const Node&>));
+declare_method(int, get_n_rows_omm, (virtual_<const Node&>))
 
 int get_n_cols(const Node&);
 
-declare_method(int, get_n_cols_omm, (virtual_<const Node&>));
+declare_method(int, get_n_cols_omm, (virtual_<const Node&>))
 
 } // namespace hicma
 

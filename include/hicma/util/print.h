@@ -17,7 +17,7 @@ namespace hicma {
 
   void print(const Node&);
 
-  declare_method(void, print_omm, (virtual_<const Node&>));
+  declare_method(void, print_omm, (virtual_<const Node&>))
 
   void print(std::string s);
 

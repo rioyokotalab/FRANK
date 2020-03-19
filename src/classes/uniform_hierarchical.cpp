@@ -49,7 +49,7 @@ std::unique_ptr<Node> UniformHierarchical::move_clone() {
 const char* UniformHierarchical::type() const { return "UniformHierarchical"; }
 
 declare_method(
-  UniformHierarchical, move_from_uniform_hierarchical, (virtual_<Node&>));
+  UniformHierarchical, move_from_uniform_hierarchical, (virtual_<Node&>))
 
 define_method(
   UniformHierarchical, move_from_uniform_hierarchical,
@@ -338,7 +338,7 @@ void UniformHierarchical::copy_row_basis(const UniformHierarchical& A) {
 declare_method(
   void, set_col_basis_omm,
   (virtual_<Node&>, std::shared_ptr<Dense>)
-);
+)
 
 define_method(
   void, set_col_basis_omm,
@@ -375,7 +375,7 @@ define_method(
 declare_method(
   void, set_row_basis_omm,
   (virtual_<Node&>, std::shared_ptr<Dense>)
-);
+)
 
 define_method(
   void, set_row_basis_omm,

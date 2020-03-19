@@ -40,7 +40,7 @@ public:
   NoCopySplit(const Node&, int ni_level, int nj_level, bool node_only=false);
 };
 
-register_class(NoCopySplit, Hierarchical);
+register_class(NoCopySplit, Hierarchical)
 
 } // namespace hicma
 

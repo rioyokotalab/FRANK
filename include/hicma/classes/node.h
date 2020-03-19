@@ -51,7 +51,7 @@ namespace hicma {
     bool is_child(const Node& node) const;
   };
 
-  register_class(Node);
+  register_class(Node)
 
 } // namespace hicma
 

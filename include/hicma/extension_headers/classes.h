@@ -15,16 +15,16 @@ namespace hicma
 declare_method(
   Hierarchical, make_hierarchical,
   (virtual_<const Node &>, int, int)
-);
+)
 
-declare_method(NoCopySplit, make_no_copy_split, (virtual_<Node&>, int, int));
+declare_method(NoCopySplit, make_no_copy_split, (virtual_<Node&>, int, int))
 
 declare_method(
   NoCopySplit, make_no_copy_split_const,
   (virtual_<const Node&>, int, int)
-);
+)
 
-declare_method(Dense, make_dense, (virtual_<const Node&>));
+declare_method(Dense, make_dense, (virtual_<const Node&>))
 
 } // namespace hicma
 

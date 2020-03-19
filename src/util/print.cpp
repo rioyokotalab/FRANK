@@ -21,7 +21,7 @@ namespace hicma {
   static const int stringLength = 30; //!< Length of formatted string
   static const int decimal = 7; //!< Decimal precision
 
-  declare_method(void, fillXML_omm, (virtual_<const Node&>, pt::ptree&));
+  declare_method(void, fillXML_omm, (virtual_<const Node&>, pt::ptree&))
 
   void fillXML(const Node& A, pt::ptree& tree) {
     fillXML_omm(A, tree);

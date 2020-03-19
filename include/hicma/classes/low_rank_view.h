@@ -48,7 +48,7 @@ namespace hicma {
     LowRankView(const Node& node, const LowRank& A);
   };
 
-  register_class(LowRankView, LowRank);
+  register_class(LowRankView, LowRank)
 
 } // namespace hicma
 

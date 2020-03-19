@@ -79,7 +79,7 @@ class LowRankShared : public Node {
   );
 };
 
-register_class(LowRankShared, Node);
+register_class(LowRankShared, Node)
 
 } // namespace hicma
 

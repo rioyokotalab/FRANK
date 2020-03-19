@@ -12,7 +12,7 @@ namespace hicma
 
 double norm(const Node&);
 
-declare_method(double, norm_omm, (virtual_<const Node&>));
+declare_method(double, norm_omm, (virtual_<const Node&>))
 
 } // namespace hicma
 

@@ -125,7 +125,7 @@ namespace hicma {
     Dense get_part(const Node& node) const;
   };
 
-  register_class(Dense, Node);
+  register_class(Dense, Node)
 
 } // namespace hicma
 

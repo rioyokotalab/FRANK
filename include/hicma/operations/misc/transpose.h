@@ -12,7 +12,7 @@ namespace hicma
 
 void transpose(Node&);
 
-declare_method(void, transpose_omm, (virtual_<Node&>));
+declare_method(void, transpose_omm, (virtual_<Node&>))
 
 } // namespace hicma
 

@@ -121,7 +121,7 @@ public:
   void set_row_basis(int i, int j);
 };
 
-register_class(UniformHierarchical, Hierarchical);
+register_class(UniformHierarchical, Hierarchical)
 
 } // namespace hicma
 

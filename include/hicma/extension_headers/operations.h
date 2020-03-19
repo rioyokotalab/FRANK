@@ -27,7 +27,7 @@ declare_method(
     virtual_<const Node&>, virtual_<const Node&>, virtual_<Node&>,
     double, double
   )
-);
+)
 
 declare_method(
   void, trmm_omm,
@@ -41,50 +41,50 @@ declare_method(
 declare_method(
   void, trsm_omm,
   (virtual_<const Node&>, virtual_<Node&>, const char&, bool)
-);
+)
 
-declare_method(DenseIntVectorPair, geqp3_omm, (virtual_<Node&>));
+declare_method(DenseIntVectorPair, geqp3_omm, (virtual_<Node&>))
 
 declare_method(
   void, geqrt_omm,
   (virtual_<Node&>, virtual_<Node&>)
-);
+)
 
 declare_method(
   NodePair, getrf_omm,
   (virtual_<Node&>)
-);
+)
 
-declare_method(DenseIntVectorPair, one_sided_id_omm, (virtual_<Node&>, int));
+declare_method(DenseIntVectorPair, one_sided_id_omm, (virtual_<Node&>, int))
 
-declare_method(DenseTriplet, id_omm, (virtual_<Node&>, int));
+declare_method(DenseTriplet, id_omm, (virtual_<Node&>, int))
 
 declare_method(
   void, larfb_omm,
   (virtual_<const Node&>, virtual_<const Node&>, virtual_<Node&>, bool)
-);
+)
 
 declare_method(
   void, qr_omm,
   (virtual_<Node&>, virtual_<Node&>, virtual_<Node&>)
-);
-declare_method(bool, need_split_omm, (virtual_<const Node&>));
+)
+declare_method(bool, need_split_omm, (virtual_<const Node&>))
 declare_method(
   DensePair, make_left_orthogonal_omm,
   (virtual_<const Node&>)
-);
+)
 declare_method(
   void, update_splitted_size_omm,
   (virtual_<const Node&>, int&, int&)
-);
+)
 declare_method(
   NodeProxy, split_by_column_omm,
   (virtual_<const Node&>, virtual_<Node&>, int&)
-);
+)
 declare_method(
   NodeProxy, concat_columns_omm,
   (virtual_<const Node&>, virtual_<const Node&>, virtual_<const Node&>, int&)
-);
+)
 
 declare_method(void, zero_lowtri_omm, (virtual_<Node&>));
 declare_method(void, zero_whole_omm, (virtual_<Node&>));
@@ -92,7 +92,7 @@ declare_method(void, zero_whole_omm, (virtual_<Node&>));
 declare_method(
   void, rq_omm,
   (virtual_<Node&>, virtual_<Node&>, virtual_<Node&>)
-);
+)
 
 declare_method(
   void, tpmqrt_omm,
@@ -101,12 +101,12 @@ declare_method(
     virtual_<Node&>, virtual_<Node&>,
     bool
   )
-);
+)
 
 declare_method(
   void, tpqrt_omm,
   (virtual_<Node&>, virtual_<Node&>, virtual_<Node&>)
-);
+)
 
 } // namespace hicma
 
