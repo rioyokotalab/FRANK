@@ -21,14 +21,13 @@
 namespace hicma
 {
 
-std::vector<int> geqp3(Node& A, Node& R) {
-  return geqp3_omm(A, R);
+std::tuple<Dense, std::vector<int>> geqp3(Node& A) {
+  return geqp3_omm(A);
 }
 
 // Fallback default, abort with error message
-define_method(std::vector<int>, geqp3_omm, (Dense& A, Dense& R)) {
+define_method(DenseIntVectorPair, geqp3_omm, (Dense& A)) {
   timing::start("DGEQP3");
-  assert(A.dim[1] == R.dim[1]);
   // TODO The 0 initial value is important! Otherwise axes are fixed and results
   // can be wrong. See netlib dgeqp3 reference.
   // However, much faster with -1... maybe better starting values exist?
@@ -42,20 +41,20 @@ define_method(std::vector<int>, geqp3_omm, (Dense& A, Dense& R)) {
   );
   // jpvt is 1-based, bad for indexing!
   for (int& i : jpvt) --i;
-  for(int i=0; i<A.dim[0]; i++) {
-    for(int j=0; j<A.dim[1]; j++) {
-      if (j >= i) R(i, j) = A(i, j);
+  timing::start("R construction");
+  Dense R(A.dim[1], A.dim[1]);
+  for(int i=0; i<std::min(A.dim[0], R.dim[0]); i++) {
+    for(int j=i; j<R.dim[1]; j++) {
+      R(i, j) = A(i, j);
     }
-  }
+  }timing::stop("R construction");
   timing::stop("DGEQP3");
-  return jpvt;
+  return {std::move(R), std::move(jpvt)};
 }
 
 // Fallback default, abort with error message
-define_method(std::vector<int>, geqp3_omm, (Node& A, Node& R)) {
-  std::cerr << "geqp3(";
-  std::cerr << A.type() << "," << R.type();
-  std::cerr << ") undefined." << std::endl;
+define_method(DenseIntVectorPair, geqp3_omm, (Node& A)) {
+  std::cerr << "geqp3(" << A.type() << ") undefined." << std::endl;
   abort();
 }
 

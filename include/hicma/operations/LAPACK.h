@@ -11,7 +11,7 @@ class Node;
 class NodeProxy;
 class Dense;
 
-std::vector<int> geqp3(Node& A, Node& R);
+std::tuple<Dense, std::vector<int>> geqp3(Node& A);
 
 void geqrt(Node&, Node&);
 
@@ -43,14 +43,19 @@ void latms(
 
 void qr(Node&, Node&, Node&);
 
+// TODO Does this need to be in the header?
 bool need_split(const Node&);
 
+// TODO Does this need to be in the header?
 std::tuple<Dense, Dense> make_left_orthogonal(const Node&);
 
+// TODO Does this need to be in the header?
 void update_splitted_size(const Node&, int&, int&);
 
+// TODO Does this need to be in the header?
 NodeProxy split_by_column(const Node&, Node&, int&);
 
+// TODO Does this need to be in the header?
 NodeProxy concat_columns(const Node&, const Node&, const Node&, int&);
 
 void zero_lowtri(Node&);

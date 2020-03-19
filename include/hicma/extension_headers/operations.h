@@ -43,10 +43,7 @@ declare_method(
   (virtual_<const Node&>, virtual_<Node&>, const char&, bool)
 );
 
-declare_method(
-  std::vector<int>, geqp3_omm,
-  (virtual_<Node&>, virtual_<Node&>)
-);
+declare_method(DenseIntVectorPair, geqp3_omm, (virtual_<Node&>));
 
 declare_method(
   void, geqrt_omm,
@@ -58,10 +55,7 @@ declare_method(
   (virtual_<Node&>)
 );
 
-declare_method(
-  DenseIntVectorPair, one_sided_id_omm,
-  (virtual_<Node&>, int)
-);
+declare_method(DenseIntVectorPair, one_sided_id_omm, (virtual_<Node&>, int));
 
 declare_method(DenseTriplet, id_omm, (virtual_<Node&>, int));
 

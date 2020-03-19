@@ -55,8 +55,9 @@ std::tuple<Dense, std::vector<int>> one_sided_id(Node& A, int k) {
 
 define_method(DenseIntVectorPair, one_sided_id_omm, (Dense& A, int k)) {
   assert(k <= std::min(A.dim[0], A.dim[1]));
-  Dense R(A.dim[1], A.dim[1]);
-  std::vector<int> selected_cols = geqp3(A, R);
+  Dense R;
+  std::vector<int> selected_cols;
+  std::tie(R, selected_cols) = geqp3(A);
   // TODO Consider row index range issues
   Dense col_basis;
   // First case applies also when A.dim[1] > A.dim[0] end k == A.dim[0]
