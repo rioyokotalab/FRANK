@@ -3,6 +3,7 @@
 
 #include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
+#include "hicma/util/timer.h"
 
 #include <algorithm>
 #include <cassert>
@@ -26,6 +27,7 @@ std::vector<int> geqp3(Node& A, Node& R) {
 
 // Fallback default, abort with error message
 define_method(std::vector<int>, geqp3_omm, (Dense& A, Dense& R)) {
+  timing::start("DGEQP3");
   assert(A.dim[1] == R.dim[1]);
   // TODO The 0 initial value is important! Otherwise axes are fixed and results
   // can be wrong. See netlib dgeqp3 reference.
@@ -45,6 +47,7 @@ define_method(std::vector<int>, geqp3_omm, (Dense& A, Dense& R)) {
       if (j >= i) R(i, j) = A(i, j);
     }
   }
+  timing::stop("DGEQP3");
   return jpvt;
 }
 

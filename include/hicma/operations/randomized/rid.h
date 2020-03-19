@@ -9,10 +9,10 @@ namespace hicma
 
 class Dense;
 
-std::tuple<Dense, Dense, Dense> rid(const Dense&, int sample_size, int rank);
-
 std::tuple<Dense, std::vector<int>> one_sided_rid(
   const Dense&, int sample_size, int rank, bool transA=false);
+
+std::tuple<Dense, Dense, Dense> rid(const Dense&, int sample_size, int rank);
 
 } // namespace hicma
 

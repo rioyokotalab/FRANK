@@ -2,6 +2,8 @@
 
 #include <algorithm>
 #include <cmath>
+#include <tuple>
+#include <utility>
 #include <vector>
 
 #include "yorel/yomm2/cute.hpp"
@@ -26,10 +28,10 @@ int main() {
 
   print("ID");
   Dense U, S, V;
-  timing::start("Two-sided ID");
+  timing::start("ID");
   Dense Dwork(D);
-  std::tie(U, S, V) = two_sided_id(Dwork, rank);
-  timing::stopAndPrint("Two-sided ID", 2);
+  std::tie(U, S, V) = id(Dwork, rank);
+  timing::stopAndPrint("ID", 2);
   Dense US(U.dim[0], S.dim[1]);
   Dense test(U.dim[0], V.dim[1]);
   gemm(U, S, US, 1, 0);

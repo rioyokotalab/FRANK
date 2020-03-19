@@ -5,6 +5,7 @@
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/LAPACK.h"
 
+#include <tuple>
 #include <utility>
 #include <vector>
 

@@ -15,6 +15,7 @@
 #include <cassert>
 #include <cmath>
 #include <memory>
+#include <tuple>
 #include <utility>
 
 #include "yorel/yomm2/cute.hpp"

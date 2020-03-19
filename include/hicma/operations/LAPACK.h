@@ -19,12 +19,12 @@ void geqrt2(Dense&, Dense&);
 
 std::tuple<NodeProxy, NodeProxy> getrf(Node&);
 
-std::vector<int> id(Node& A, Node& B, int k);
+std::tuple<Dense, std::vector<int>> one_sided_id(Node& A, int k);
 
 // TODO Does this need to be in the header?
 Dense get_cols(const Dense& A, std::vector<int> P);
 
-std::tuple<Dense, Dense, Dense> two_sided_id(Node& A, int k);
+std::tuple<Dense, Dense, Dense> id(Node& A, int k);
 
 void larfb(const Node&, const Node&, Node&, bool);
 

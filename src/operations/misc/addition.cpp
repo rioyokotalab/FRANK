@@ -13,6 +13,8 @@
 #include "yorel/yomm2/cute.hpp"
 
 #include <cassert>
+#include <tuple>
+#include <utility>
 
 
 namespace hicma

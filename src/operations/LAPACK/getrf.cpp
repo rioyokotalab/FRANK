@@ -10,6 +10,7 @@
 
 #include <iostream>
 #include <tuple>
+#include <utility>
 
 #ifdef USE_MKL
 #include <mkl.h>

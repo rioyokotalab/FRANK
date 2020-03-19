@@ -14,9 +14,12 @@ using yorel::yomm2::virtual_;
 namespace hicma
 {
 
+// NOTE These typedefs are necessary since yomm macros use commas to parse the
+// function signature, so type tuples cannot be defined.
 typedef std::tuple<NodeProxy, NodeProxy> NodePair;
 typedef std::tuple<Dense, Dense> DensePair;
 typedef std::tuple<Dense, Dense, Dense> DenseTriplet;
+typedef std::tuple<Dense, std::vector<int>> DenseIntVectorPair;
 
 declare_method(
   void, gemm_omm,
@@ -56,11 +59,11 @@ declare_method(
 );
 
 declare_method(
-  std::vector<int>, id_omm,
-  (virtual_<Node&>, virtual_<Node&>, int)
+  DenseIntVectorPair, one_sided_id_omm,
+  (virtual_<Node&>, int)
 );
 
-declare_method(DenseTriplet, two_sided_id_omm, (virtual_<Node&>, int));
+declare_method(DenseTriplet, id_omm, (virtual_<Node&>, int));
 
 declare_method(
   void, larfb_omm,

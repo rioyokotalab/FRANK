@@ -12,6 +12,7 @@
 #include <cassert>
 #include <iostream>
 #include <tuple>
+#include <utility>
 #include <vector>
 
 #include "yorel/yomm2/cute.hpp"
@@ -48,44 +49,44 @@ Dense interleave_id(const Dense& A, std::vector<int>& P) {
   return Anew;
 }
 
-std::vector<int> id(Node& A, Node& B, int k) {
-  return id_omm(A, B, k);
+std::tuple<Dense, std::vector<int>> one_sided_id(Node& A, int k) {
+  return one_sided_id_omm(A, k);
 }
 
-define_method(std::vector<int>, id_omm, (Dense& A, Dense& B, int k)) {
+define_method(DenseIntVectorPair, one_sided_id_omm, (Dense& A, int k)) {
   assert(k <= std::min(A.dim[0], A.dim[1]));
   Dense R(A.dim[1], A.dim[1]);
-  std::vector<int> P = geqp3(A, R);
+  std::vector<int> selected_cols = geqp3(A, R);
+  // TODO Consider row index range issues
+  Dense col_basis;
   // First case applies also when A.dim[1] > A.dim[0] end k == A.dim[0]
   if (k < std::min(A.dim[0], A.dim[1]) || A.dim[1] > A.dim[0]) {
     Dense R11, T;
     // TODO Find more abstract way for this. NoCopySplit with designed subnodes?
     std::tie(R11, T) = get_R11_R12(R, k);
     trsm(R11, T, 'u');
-    B = interleave_id(T, P);
+    col_basis = interleave_id(T, selected_cols);
   } else {
     std::vector<double> x;
-    B = interleave_id(Dense(identity, x, k, k), P);
+    col_basis = interleave_id(Dense(identity, x, k, k), selected_cols);
   }
-  P.resize(k);
+  selected_cols.resize(k);
   // Returns the selected columns of A
-  return P;
+  return {std::move(col_basis), std::move(selected_cols)};
 }
 
 // Fallback default, abort with error message
 define_method(
-  std::vector<int>, id_omm,
-  (Node& A, Node& B, [[maybe_unused]] int k)
+  DenseIntVectorPair, one_sided_id_omm,
+  (Node& A, [[maybe_unused]] int k)
 ) {
-  std::cerr << "id(";
-  std::cerr << A.type() << "," << B.type();
-  std::cerr << ") undefined." << std::endl;
+  std::cerr << "id(" << A.type() << ") undefined." << std::endl;
   abort();
 }
 
 
-std::tuple<Dense, Dense, Dense> two_sided_id(Node& A, int k) {
-  return two_sided_id_omm(A, k);
+std::tuple<Dense, Dense, Dense> id(Node& A, int k) {
+  return id_omm(A, k);
 }
 
 Dense get_cols(const Dense& A, std::vector<int> Pr) {
@@ -99,15 +100,16 @@ Dense get_cols(const Dense& A, std::vector<int> Pr) {
 }
 
 // Fallback default, abort with error message
-define_method(DenseTriplet, two_sided_id_omm, (Dense& A, int k)) {
+define_method(DenseTriplet, id_omm, (Dense& A, int k)) {
   Dense V(k, A.dim[1]);
   Dense Awork(A);
-  std::vector<int> selected_cols = id(Awork, V, k);
+  std::vector<int> selected_cols;
+  std::tie(V, selected_cols) = one_sided_id(Awork, k);
   Dense AC = get_cols(A, selected_cols);
   Dense U(k, A.dim[0]);
   AC.transpose();
   Dense ACwork(AC);
-  selected_cols = id(ACwork, U, k);
+  std::tie(U, selected_cols) = one_sided_id(ACwork, k);
   A = get_cols(AC, selected_cols);
   U.transpose();
   A.transpose();
@@ -116,12 +118,10 @@ define_method(DenseTriplet, two_sided_id_omm, (Dense& A, int k)) {
 
 // Fallback default, abort with error message
 define_method(
-  DenseTriplet, two_sided_id_omm,
+  DenseTriplet, id_omm,
   (Node& A, [[maybe_unused]] int k)
 ) {
-  std::cerr << "id(";
-  std::cerr << A.type();
-  std::cerr << ") undefined." << std::endl;
+  std::cerr << "id(" << A.type() << ") undefined." << std::endl;
   abort();
 }
 

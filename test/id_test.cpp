@@ -4,6 +4,7 @@
 #include <cmath>
 #include <iostream>
 #include <vector>
+#include <tuple>
 #include <utility>
 
 #include "gtest/gtest.h"
@@ -26,10 +27,11 @@ TEST(IDTest, Precision) {
   Dense V(k, N);
   timing::stopAndPrint("Initialization");
 
-  timing::start("ID");
-  std::vector<int> Pr = id(Awork, V, k);
+  timing::start("One-sided ID");
+  std::vector<int> Pr;
+  std::tie(V, Pr) = one_sided_id(Awork, k);
   Dense Acols = get_cols(A, Pr);
-  timing::stopAndPrint("ID", 1);
+  timing::stopAndPrint("One-sided ID", 1);
 
 
   timing::start("Verification");
@@ -40,10 +42,10 @@ TEST(IDTest, Precision) {
   timing::stopAndPrint("Verification");
 
   Awork = A;
-  timing::start("Two-sided ID");
+  timing::start("ID");
   Dense U, S;
-  std::tie(U, S, V) = two_sided_id(Awork, k);
-  timing::stopAndPrint("Two-sided ID", 1);
+  std::tie(U, S, V) = id(Awork, k);
+  timing::stopAndPrint("ID", 1);
 
   timing::start("Verification");
   Dense US(M, k);
