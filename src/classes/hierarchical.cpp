@@ -10,12 +10,12 @@
 #include "hicma/operations/LAPACK.h"
 #include "hicma/operations/misc/get_dim.h"
 #include "hicma/gpu_batch/batch.h"
+#include "hicma/util/omm_error_handler.h"
 #include "hicma/util/timer.h"
 
 #include <algorithm>
 #include <cassert>
 #include <cmath>
-#include <iostream>
 #include <memory>
 #include <tuple>
 #include <utility>
@@ -46,8 +46,7 @@ namespace hicma {
   }
 
   define_method(Hierarchical, move_from_hierarchical, (Node& A)) {
-    std::cout << "Cannot move to Hierarchical from " << A.type() << "!";
-    std::cout << std::endl;
+    omm_error_handler("move_from_hierarchical", {A}, __FILE__, __LINE__);
     abort();
   }
 
@@ -96,8 +95,7 @@ namespace hicma {
       [[maybe_unused]] int ni_level, [[maybe_unused]] int nj_level
     )
   ) {
-    std::cout << "Cannot create Hierarchical from " << A.type() << "!";
-    std::cout << std::endl;
+    omm_error_handler("make_hierarchical", {A}, __FILE__, __LINE__);
     abort();
   }
 

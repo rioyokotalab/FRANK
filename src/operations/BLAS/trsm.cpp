@@ -6,6 +6,7 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/no_copy_split.h"
+#include "hicma/util/omm_error_handler.h"
 #include "hicma/util/timer.h"
 
 #include <iostream>
@@ -43,7 +44,7 @@ define_method(
         }
       }
     } else {
-      std::cerr << " Right lower trsm not implemented yet!" << std::endl;
+      omm_error_handler("Right lower trsm", {A, B}, __FILE__, __LINE__);
       abort();
     }
     break;
@@ -57,7 +58,7 @@ define_method(
           trsm(A(i,i), B[i], 'u', left);
         }
       } else {
-        std::cerr << "Hierarchical left upper trsm not implemented yet!" << std::endl;
+        omm_error_handler("Left upper trsm", {A, B}, __FILE__, __LINE__);
         abort();
       }
     } else {
@@ -164,9 +165,7 @@ define_method(
     [[maybe_unused]] const char& uplo, [[maybe_unused]] bool left
   )
 ) {
-  std::cerr << "trsm(";
-  std::cerr << A.type() << "," << B.type();
-  std::cerr << ") undefined." << std::endl;
+  omm_error_handler("trsm", {A, B}, __FILE__, __LINE__);
   abort();
 }
 

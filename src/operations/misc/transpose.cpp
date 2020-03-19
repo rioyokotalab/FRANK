@@ -4,10 +4,10 @@
 #include "hicma/classes/dense.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/hierarchical.h"
+#include "hicma/util/omm_error_handler.h"
 
 #include "yorel/yomm2/cute.hpp"
 
-#include <iostream>
 #include <utility>
 
 
@@ -46,9 +46,7 @@ define_method(void, transpose_omm, (Hierarchical& A)) {
 }
 
 define_method(void, transpose_omm, (Node& A)) {
-  std::cerr << "tranpose(";
-  std::cerr << A.type();
-  std::cerr << ") undefined." << std::endl;
+  omm_error_handler("transpose", {A}, __FILE__, __LINE__);
   abort();
 }
 

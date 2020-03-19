@@ -7,12 +7,12 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/misc/get_dim.h"
+#include "hicma/util/omm_error_handler.h"
 #include "hicma/util/print.h"
 #include "hicma/util/timer.h"
 
 #include <algorithm>
 #include <cassert>
-#include <iostream>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -91,7 +91,7 @@ namespace hicma {
   }
 
   define_method(Dense, make_dense, (const Node& A)) {
-    std::cout << "Cannot create Dense from " << A.type() << "!" << std::endl;
+    omm_error_handler("make_dense", {A}, __FILE__, __LINE__);
     abort();
   }
 
@@ -112,7 +112,7 @@ namespace hicma {
     Dense, move_from_dense,
     (Node& A)
   ) {
-    std::cout << "Cannot move to Dense from " << A.type() << "!" << std::endl;
+    omm_error_handler("move_from_dense", {A}, __FILE__, __LINE__);
     abort();
   }
 

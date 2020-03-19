@@ -10,6 +10,7 @@
 #include "hicma/operations/randomized_factorizations.h"
 #include "hicma/operations/misc/get_dim.h"
 #include "hicma/operations/misc/transpose.h"
+#include "hicma/util/omm_error_handler.h"
 
 #include <algorithm>
 #include <cassert>
@@ -62,8 +63,7 @@ define_method(
   UniformHierarchical, move_from_uniform_hierarchical,
   (Node& A)
 ) {
-  std::cout << "Cannot move to UniformHierarchical from " << A.type() << "!";
-  std::cout << std::endl;
+  omm_error_handler("move_from_unifor_hierarchical", {A}, __FILE__, __LINE__);
   abort();
 }
 
@@ -368,7 +368,7 @@ define_method(
   void, set_col_basis_omm,
   (Node& A, [[maybe_unused]] std::shared_ptr<Dense> basis)
 ) {
-  std::cout << "Cannot set column basis on " << A.type() << "!" << std::endl;
+  omm_error_handler("set_col_basis", {A}, __FILE__, __LINE__);
   abort();
 }
 
@@ -405,7 +405,7 @@ define_method(
   void, set_row_basis_omm,
   (Node& A, [[maybe_unused]] std::shared_ptr<Dense> basis)
 ) {
-  std::cout << "Cannot set row basis on " << A.type() << "!" << std::endl;
+  omm_error_handler("set_row_basis", {A}, __FILE__, __LINE__);
   abort();
 }
 

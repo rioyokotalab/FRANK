@@ -36,7 +36,7 @@ declare_method(
     const char&, const char&, const char&, const char&,
     const double&
   )
-);
+)
 
 declare_method(
   void, trsm_omm,
@@ -86,8 +86,8 @@ declare_method(
   (virtual_<const Node&>, virtual_<const Node&>, virtual_<const Node&>, int&)
 )
 
-declare_method(void, zero_lowtri_omm, (virtual_<Node&>));
-declare_method(void, zero_whole_omm, (virtual_<Node&>));
+declare_method(void, zero_lowtri_omm, (virtual_<Node&>))
+declare_method(void, zero_whole_omm, (virtual_<Node&>))
 
 declare_method(
   void, rq_omm,

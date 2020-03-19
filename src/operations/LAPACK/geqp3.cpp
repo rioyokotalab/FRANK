@@ -3,11 +3,11 @@
 
 #include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
+#include "hicma/util/omm_error_handler.h"
 #include "hicma/util/timer.h"
 
 #include <algorithm>
 #include <cassert>
-#include <iostream>
 #include <vector>
 
 #ifdef USE_MKL
@@ -54,7 +54,7 @@ define_method(DenseIntVectorPair, geqp3_omm, (Dense& A)) {
 
 // Fallback default, abort with error message
 define_method(DenseIntVectorPair, geqp3_omm, (Node& A)) {
-  std::cerr << "geqp3(" << A.type() << ") undefined." << std::endl;
+  omm_error_handler("geqp3", {A}, __FILE__, __LINE__);
   abort();
 }
 

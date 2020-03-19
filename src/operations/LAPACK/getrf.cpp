@@ -6,9 +6,9 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/uniform_hierarchical.h"
 #include "hicma/operations/BLAS.h"
+#include "hicma/util/omm_error_handler.h"
 #include "hicma/util/timer.h"
 
-#include <iostream>
 #include <tuple>
 #include <utility>
 
@@ -97,7 +97,7 @@ define_method(NodePair, getrf_omm, (UniformHierarchical& A)) {
 }
 
 define_method(NodePair, getrf_omm, (Node& A)) {
-  std::cerr << "getrf(" << A.type() << ") undefined!" << std::endl;
+  omm_error_handler("getrf", {A}, __FILE__, __LINE__);
   abort();
 }
 

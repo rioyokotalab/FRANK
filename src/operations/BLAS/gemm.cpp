@@ -11,13 +11,13 @@
 #include "hicma/classes/uniform_hierarchical.h"
 #include "hicma/operations/misc/addition.h"
 #include "hicma/operations/misc/get_dim.h"
+#include "hicma/util/omm_error_handler.h"
 #include "hicma/util/timer.h"
 #include "hicma/util/counter.h"
 #include "hicma/gpu_batch/batch.h"
 #include "hicma/operations/misc/get_dim.h"
 
 #include <cassert>
-#include <iostream>
 
 #ifdef USE_MKL
 #include <mkl.h>
@@ -91,9 +91,7 @@ define_method(
     [[maybe_unused]] double alpha, [[maybe_unused]] double beta
   )
 ) {
-  std::cerr << "gemm_trans(";
-  std::cerr << A.type() << "," << B.type() << "," << C.type();
-  std::cerr << ") undefined." << std::endl;
+  omm_error_handler("gemm_trans", {A, B, C}, __FILE__, __LINE__);
   abort();
 }
 
@@ -551,9 +549,7 @@ define_method(
     [[maybe_unused]] double alpha, [[maybe_unused]] double beta
   )
 ) {
-  std::cerr << "gemm_regular_only(";
-  std::cerr << A.type() << "," << B.type() << "," << C.type();
-  std::cerr << ") undefined." << std::endl;
+  omm_error_handler("gemm_regular_only", {A, B, C}, __FILE__, __LINE__);
   abort();
 }
 
@@ -613,9 +609,7 @@ define_method(
     [[maybe_unused]] double alpha, [[maybe_unused]] double beta
   )
 ) {
-  std::cerr << "gemm_shared_only(";
-  std::cerr << A.type() << "," << B.type() << "," << C.type();
-  std::cerr << ") undefined." << std::endl;
+  omm_error_handler("gemm_shared_only", {A, B, C}, __FILE__, __LINE__);
   abort();
 }
 
@@ -670,9 +664,7 @@ define_method(
     [[maybe_unused]] double alpha, [[maybe_unused]] double beta
   )
 ) {
-  std::cerr << "gemm(";
-  std::cerr << A.type() << "," << B.type() << "," << C.type();
-  std::cerr << ") undefined." << std::endl;
+  omm_error_handler("gemm", {A, B, C}, __FILE__, __LINE__);
   abort();
 }
 

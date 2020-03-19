@@ -6,9 +6,9 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/operations/BLAS.h"
+#include "hicma/util/omm_error_handler.h"
 
 #include <algorithm>
-#include <iostream>
 
 #ifdef USE_MKL
 #include <mkl.h>
@@ -61,9 +61,7 @@ define_method(
 
 // Fallback default, abort with error message
 define_method(void, tpqrt_omm, (Node& A, Node& B, Node& T)) {
-  std::cerr << "tpqrt(";
-  std::cerr << A.type() << "," << B.type() << "," << T.type();
-  std::cerr << ") undefined." << std::endl;
+  omm_error_handler("tpqrt", {A, B, T}, __FILE__, __LINE__);
   abort();
 }
 

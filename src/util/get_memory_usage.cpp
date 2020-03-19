@@ -7,11 +7,11 @@
 #include "hicma/classes/low_rank_shared.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/uniform_hierarchical.h"
+#include "hicma/util/omm_error_handler.h"
 #include "hicma/util/print.h"
 
 #include "yorel/yomm2/cute.hpp"
 
-#include <iostream>
 #include <memory>
 
 
@@ -107,9 +107,7 @@ define_method(
   unsigned long, get_memory_usage_omm,
   (const Node& A, [[maybe_unused]] bool include_structure)
 ) {
-  std::cerr << "get_memory_usage(";
-  std::cerr << A.type();
-  std::cerr << ") undefined." << std::endl;
+  omm_error_handler("get_memor_usage", {A}, __FILE__, __LINE__);
   abort();
 }
 

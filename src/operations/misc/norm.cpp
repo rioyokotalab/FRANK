@@ -4,11 +4,10 @@
 #include "hicma/classes/dense.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/hierarchical.h"
+#include "hicma/util/omm_error_handler.h"
 #include "hicma/util/timer.h"
 
 #include "yorel/yomm2/cute.hpp"
-
-#include <iostream>
 
 
 namespace hicma
@@ -45,9 +44,7 @@ define_method(double, norm_omm, (const Hierarchical& A)) {
 }
 
 define_method(double, norm_omm, (const Node& A)) {
-  std::cerr << "norm(";
-  std::cerr << A.type();
-  std::cerr << ") undefined." << std::endl;
+  omm_error_handler("norm", {A}, __FILE__, __LINE__);
   abort();
 }
 

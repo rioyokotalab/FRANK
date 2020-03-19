@@ -7,10 +7,10 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/functions.h"
 #include "hicma/operations/BLAS.h"
+#include "hicma/util/omm_error_handler.h"
 
 #include <algorithm>
 #include <cassert>
-#include <iostream>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -81,7 +81,7 @@ define_method(
   DenseIntVectorPair, one_sided_id_omm,
   (Node& A, [[maybe_unused]] int k)
 ) {
-  std::cerr << "id(" << A.type() << ") undefined." << std::endl;
+  omm_error_handler("id", {A}, __FILE__, __LINE__);
   abort();
 }
 
@@ -122,7 +122,7 @@ define_method(
   DenseTriplet, id_omm,
   (Node& A, [[maybe_unused]] int k)
 ) {
-  std::cerr << "id(" << A.type() << ") undefined." << std::endl;
+  omm_error_handler("id", {A}, __FILE__, __LINE__);
   abort();
 }
 

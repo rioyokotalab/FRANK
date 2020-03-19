@@ -3,6 +3,7 @@ add_library(util OBJECT
     experiment_setup.cpp
     get_memory_usage.cpp
     l2_error.cpp
+    omm_error_handler.cpp
     print.cpp
     timer.cpp
 )

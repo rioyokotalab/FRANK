@@ -8,12 +8,12 @@
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/LAPACK.h"
 #include "hicma/util/counter.h"
+#include "hicma/util/omm_error_handler.h"
 #include "hicma/util/timer.h"
 
 #include "yorel/yomm2/cute.hpp"
 
 #include <cassert>
-#include <iostream>
 #include <tuple>
 #include <utility>
 
@@ -202,8 +202,7 @@ define_method(void, addition_omm, (LowRank& A, const LowRank& B)) {
 }
 
 define_method(void, addition_omm, (Node& A, const Node& B)) {
-  std::cerr << A.type() << " += " << B.type();
-  std::cerr << " undefined." << std::endl;
+  omm_error_handler("operator+=", {A, B}, __FILE__, __LINE__);
   abort();
 }
 

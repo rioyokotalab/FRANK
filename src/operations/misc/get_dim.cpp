@@ -5,10 +5,9 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/low_rank_shared.h"
 #include "hicma/classes/hierarchical.h"
+#include "hicma/util/omm_error_handler.h"
 
 #include "yorel/yomm2/cute.hpp"
-
-#include <iostream>
 
 
 namespace hicma
@@ -39,9 +38,7 @@ define_method(int, get_n_rows_omm, (const Hierarchical& A)) {
 }
 
 define_method(int, get_n_rows_omm, (const Node& A)) {
-  std::cerr << "get_n_rows(";
-  std::cerr << A.type();
-  std::cerr << ") undefined." << std::endl;
+  omm_error_handler("get_n_rows", {A}, __FILE__, __LINE__);
   abort();
 }
 
@@ -71,9 +68,7 @@ define_method(int, get_n_cols_omm, (const Hierarchical& A)) {
 }
 
 define_method(int, get_n_cols_omm, (const Node& A)) {
-  std::cerr << "get_n_cols(";
-  std::cerr << A.type();
-  std::cerr << ") undefined." << std::endl;
+  omm_error_handler("get_n_cols", {A}, __FILE__, __LINE__);
   abort();
 }
 

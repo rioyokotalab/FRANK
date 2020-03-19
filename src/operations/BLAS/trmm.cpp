@@ -6,10 +6,10 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/operations/BLAS.h"
+#include "hicma/util/omm_error_handler.h"
 #include "hicma/util/timer.h"
 
 #include <cassert>
-#include <iostream>
 
 #ifdef USE_MKL
 #include <mkl.h>
@@ -123,13 +123,12 @@ namespace hicma
     void, trmm_omm,
     (
       const Node& A, Node& B,
-      const char& side, const char& uplo, const char& trans, const char& diag,
-      const double& alpha
+      [[maybe_unused]] const char& side, [[maybe_unused]] const char& uplo,
+      [[maybe_unused]] const char& trans, [[maybe_unused]] const char& diag,
+      [[maybe_unused]] const double& alpha
     )
   ) {
-    std::cerr << "trmm(";
-    std::cerr << A.type() << "," << B.type();
-    std::cerr << ") undefined." << std::endl;
+    omm_error_handler("trmm", {A, B}, __FILE__, __LINE__);
     abort();
   }
 

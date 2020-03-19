@@ -4,9 +4,7 @@
 #include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
-
-#include <cassert>
-#include <iostream>
+#include "hicma/util/omm_error_handler.h"
 
 #ifdef USE_MKL
 #include <mkl.h>
@@ -14,6 +12,9 @@
 #include <lapacke.h>
 #endif
 #include "yorel/yomm2/cute.hpp"
+
+#include <cassert>
+#include <iostream>
 
 
 namespace hicma
@@ -54,9 +55,7 @@ define_method(void, geqrt_omm, (Hierarchical& A, Hierarchical& T)) {
 
 // Fallback default, abort with error message
 define_method(void, geqrt_omm, (Node& A, Node& T)) {
-  std::cerr << "geqrt(";
-  std::cerr << A.type() << "," << T.type();
-  std::cerr << ") undefined." << std::endl;
+  omm_error_handler("geqrt", {A, T}, __FILE__, __LINE__);
   abort();
 }
 

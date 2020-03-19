@@ -8,9 +8,7 @@
 #include "hicma/functions.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/misc/transpose.h"
-
-#include <iostream>
-#include <vector>
+#include "hicma/util/omm_error_handler.h"
 
 #ifdef USE_MKL
 #include <mkl.h>
@@ -18,6 +16,9 @@
 #include <lapacke.h>
 #endif
 #include "yorel/yomm2/cute.hpp"
+
+#include <iostream>
+#include <vector>
 
 
 namespace hicma
@@ -235,9 +236,7 @@ define_method(
   void, tpmqrt_omm,
   (const Node& V, const Node& T, Node& A, Node& B, [[maybe_unused]] bool trans)
 ) {
-  std::cerr << "tpmqrt(";
-  std::cerr << V.type() << "," << T.type() << "," << A.type() << "," << B.type();
-  std::cerr << ") undefined." << std::endl;
+  omm_error_handler("tpmqrt", {V, T, A, B}, __FILE__, __LINE__);
   abort();
 }
 

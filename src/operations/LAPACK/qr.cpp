@@ -9,10 +9,10 @@
 #include "hicma/functions.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/misc/transpose.h"
+#include "hicma/util/omm_error_handler.h"
 #include "hicma/util/timer.h"
 
 #include <cassert>
-#include <iostream>
 #include <tuple>
 #include <utility>
 
@@ -127,9 +127,7 @@ namespace hicma
   }
 
   define_method(void, qr_omm, (Node& A, Node& Q, Node& R)) {
-    std::cerr << "qr(";
-    std::cerr << A.type() << "," << Q.type() << "," << R.type();
-    std::cerr << ") undefined." << std::endl;
+    omm_error_handler("qr", {A, Q, R}, __FILE__, __LINE__);
     abort();
   }
 
@@ -165,9 +163,7 @@ namespace hicma
   }
 
   define_method(DensePair, make_left_orthogonal_omm, (const Node& A)) {
-    std::cerr << "make_left_orthogonal(";
-    std::cerr << A.type();
-    std::cerr << ") undefined." << std::endl;
+    omm_error_handler("make_left_orthogonal", {A}, __FILE__, __LINE__);
     abort();
   }
 
@@ -236,9 +232,7 @@ namespace hicma
     NodeProxy, split_by_column_omm,
     (const Node& A, Node& storage, [[maybe_unused]] int& currentRow)
   ) {
-    std::cerr << "split_by_column(";
-    std::cerr << A.type() << "," << storage.type() << ",int";
-    std::cerr << ") undefined." << std::endl;
+    omm_error_handler("split_by_column", {A, storage}, __FILE__, __LINE__);
     abort();
   }
 
@@ -307,9 +301,7 @@ namespace hicma
       const Node& A, const Node& splitted, const Node& Q,
       [[maybe_unused]] int& currentRow)
     ) {
-    std::cerr << "concat_columns(";
-    std::cerr << A.type() << "," << splitted.type() << ",int," << Q.type();
-    std::cerr << ") undefined." << std::endl;
+    omm_error_handler("concat_columns", {A, splitted, Q}, __FILE__, __LINE__);
     abort();
   }
 
@@ -329,9 +321,7 @@ namespace hicma
   }
 
   define_method(void, zero_lowtri_omm, (Node& A)) {
-    std::cerr << "zero_lowtri_omm(";
-    std::cerr << A.type();
-    std::cerr << ") undefined." << std::endl;
+    omm_error_handler("zero_lowtri", {A}, __FILE__, __LINE__);
     abort();
   }
 
@@ -348,9 +338,7 @@ namespace hicma
   }
 
   define_method(void, zero_whole_omm, (Node& A)) {
-    std::cerr << "zero_whole_omm(";
-    std::cerr << A.type();
-    std::cerr << ") undefined." << std::endl;
+    omm_error_handler("zero_whole", {A}, __FILE__, __LINE__);
     abort();
   }
 

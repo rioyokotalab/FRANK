@@ -5,6 +5,7 @@
 #include "hicma/classes/low_rank_shared.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/operations/LAPACK.h"
+#include "hicma/util/omm_error_handler.h"
 
 #include <iostream>
 #include <string>
@@ -96,7 +97,7 @@ namespace hicma {
     void, fillXML_omm,
     (const Node& A, [[maybe_unused]] pt::ptree& tree)
   ) {
-    std::cerr << "WARNING: XML output not defined for " << A.type() << "!" << std::endl;
+    omm_error_handler("fillXML", {A}, __FILE__, __LINE__);
   }
 
   void printXML(const Node& A, std::string filename) {

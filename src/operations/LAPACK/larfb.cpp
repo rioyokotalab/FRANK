@@ -6,8 +6,7 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/operations/BLAS.h"
-
-#include <iostream>
+#include "hicma/util/omm_error_handler.h"
 
 #ifdef USE_MKL
 #include <mkl.h>
@@ -111,9 +110,7 @@ define_method(
   void, larfb_omm,
   (const Node& V, const Node& T, Node& C, [[maybe_unused]] bool trans)
 ) {
-  std::cerr << "larfb(";
-  std::cerr << V.type() << "," << T.type() << "," << C.type();
-  std::cerr << ") undefined." << std::endl;
+  omm_error_handler("larfb", {V, T, C}, __FILE__, __LINE__);
   abort();
 }
 
