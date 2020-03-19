@@ -6,6 +6,7 @@
 #include "hicma/classes/hierarchical.h"
 
 #include <cassert>
+#include <iostream>
 
 #ifdef USE_MKL
 #include <mkl.h>

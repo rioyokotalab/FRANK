@@ -13,6 +13,7 @@
 #include "yorel/yomm2/cute.hpp"
 
 #include <cassert>
+#include <iostream>
 #include <tuple>
 #include <utility>
 

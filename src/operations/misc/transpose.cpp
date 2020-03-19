@@ -7,7 +7,9 @@
 
 #include "yorel/yomm2/cute.hpp"
 
+#include <iostream>
 #include <utility>
+
 
 namespace hicma
 {

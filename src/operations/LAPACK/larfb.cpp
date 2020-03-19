@@ -7,6 +7,8 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/operations/BLAS.h"
 
+#include <iostream>
+
 #ifdef USE_MKL
 #include <mkl.h>
 #else
