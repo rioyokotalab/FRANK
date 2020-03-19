@@ -1,10 +1,12 @@
 #include "hicma/classes/index_range.h"
 
+#include <vector>
+
+
 namespace hicma
 {
 
-IndexRange::IndexRange(int start, int length)
-: start(start), length(length) {}
+IndexRange::IndexRange(int start, int length) : start(start), length(length) {}
 
 std::vector<IndexRange> IndexRange::split(int n_splits) {
   std::vector<IndexRange> children(n_splits);

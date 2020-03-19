@@ -1,23 +1,22 @@
 #include "hicma/util/l2_error.h"
 
-#include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
-#include "hicma/classes/low_rank.h"
 #include "hicma/classes/hierarchical.h"
+#include "hicma/classes/low_rank.h"
+#include "hicma/classes/node.h"
 #include "hicma/operations/misc/norm.h"
 #include "hicma/util/print.h"
 
+#include "yorel/yomm2/cute.hpp"
+
 #include <cmath>
 
-#include "yorel/yomm2/cute.hpp"
 
 namespace hicma
 {
 
 // TODO Inefficient! Avoid copies!
-double l2_error(const Node& A, const Node& B) {
-  return l2_error_omm(A, B);
-}
+double l2_error(const Node& A, const Node& B) { return l2_error_omm(A, B); }
 
 define_method(double, l2_error_omm, (const Dense& A, const Dense& B)) {
   double diff = norm(A - B);

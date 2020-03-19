@@ -3,10 +3,11 @@
 
 #include "hicma/classes/hierarchical.h"
 
+#include "yorel/yomm2/cute.hpp"
+
 #include <memory>
 #include <vector>
 
-#include "yorel/yomm2/cute.hpp"
 
 namespace hicma
 {
@@ -16,7 +17,7 @@ class Dense;
 class LowRankShared;
 
 class UniformHierarchical : public Hierarchical {
-private:
+ private:
   std::vector<std::shared_ptr<Dense>> col_basis, row_basis;
 
   Dense make_row_block(
@@ -50,7 +51,7 @@ private:
     int rank,
     int admis
   );
-public:
+ public:
   // Special member functions
   UniformHierarchical() = default;
 

@@ -1,9 +1,9 @@
 #include "hicma/operations/misc/norm.h"
 
-#include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
-#include "hicma/classes/low_rank.h"
 #include "hicma/classes/hierarchical.h"
+#include "hicma/classes/low_rank.h"
+#include "hicma/classes/node.h"
 #include "hicma/util/omm_error_handler.h"
 #include "hicma/util/timer.h"
 
@@ -13,9 +13,7 @@
 namespace hicma
 {
 
-double norm(const Node& A) {
-  return norm_omm(A);
-}
+double norm(const Node& A) { return norm_omm(A); }
 
 define_method(double, norm_omm, (const Dense& A)) {
   double l2 = 0;
@@ -29,9 +27,7 @@ define_method(double, norm_omm, (const Dense& A)) {
   return l2;
 }
 
-define_method(double, norm_omm, (const LowRank& A)) {
-  return norm(Dense(A));
-}
+define_method(double, norm_omm, (const LowRank& A)) { return norm(Dense(A)); }
 
 define_method(double, norm_omm, (const Hierarchical& A)) {
   double l2 = 0;

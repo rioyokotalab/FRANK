@@ -1,14 +1,10 @@
 #include "hicma/operations/LAPACK.h"
 #include "hicma/extension_headers/operations.h"
 
-#include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
+#include "hicma/classes/node.h"
 #include "hicma/util/omm_error_handler.h"
 #include "hicma/util/timer.h"
-
-#include <algorithm>
-#include <cassert>
-#include <vector>
 
 #ifdef USE_MKL
 #include <mkl.h>
@@ -17,13 +13,16 @@
 #endif
 #include "yorel/yomm2/cute.hpp"
 
+#include <algorithm>
+#include <tuple>
+#include <utility>
+#include <vector>
+
 
 namespace hicma
 {
 
-std::tuple<Dense, std::vector<int>> geqp3(Node& A) {
-  return geqp3_omm(A);
-}
+std::tuple<Dense, std::vector<int>> geqp3(Node& A) { return geqp3_omm(A); }
 
 // Fallback default, abort with error message
 define_method(DenseIntVectorPair, geqp3_omm, (Dense& A)) {

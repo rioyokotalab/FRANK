@@ -8,12 +8,11 @@
 #include <vector>
 #include <iostream>
 
-namespace hicma {
 
-void zeros(
-  Dense& A,
-  [[maybe_unused]] std::vector<double>& x
-) {
+namespace hicma
+{
+
+void zeros(Dense& A, [[maybe_unused]] std::vector<double>& x) {
   for (int i=0; i<A.dim[0]; i++) {
     for (int j=0; j<A.dim[1]; j++) {
       A(i, j) = 0;
@@ -21,10 +20,7 @@ void zeros(
   }
 }
 
-void identity(
-  Dense& A,
-  [[maybe_unused]] std::vector<double>& x
-) {
+void identity(Dense& A, [[maybe_unused]] std::vector<double>& x) {
   for (int i=0; i<A.dim[0]; i++) {
     for (int j=0; j<A.dim[1]; j++) {
       A(i, j) = A.row_range.start+i == A.col_range.start+j ? 1 : 0;
@@ -32,10 +28,7 @@ void identity(
   }
 }
 
-void random_normal(
-  Dense& A,
-  [[maybe_unused]] std::vector<double>& x
-) {
+void random_normal(Dense& A, [[maybe_unused]] std::vector<double>& x) {
   std::random_device rd;
   std::mt19937 gen(rd());
   // TODO Remove random seed when experiments end
@@ -48,10 +41,7 @@ void random_normal(
   }
 }
 
-void random_uniform(
-  Dense& A,
-  [[maybe_unused]] std::vector<double>& x
-) {
+void random_uniform(Dense& A, [[maybe_unused]] std::vector<double>& x) {
   std::random_device rd;
   std::mt19937 gen(rd());
   // TODO Remove random seed when experiments end
@@ -64,10 +54,7 @@ void random_uniform(
   }
 }
 
-void arange(
-  Dense& A,
-  [[maybe_unused]] std::vector<double>& x
-) {
+void arange(Dense& A, [[maybe_unused]] std::vector<double>& x) {
   for (int i=0; i<A.dim[0]; i++) {
     for (int j=0; j<A.dim[1]; j++) {
       A(i, j) = (double)(i*A.dim[1]+j);
@@ -75,13 +62,11 @@ void arange(
   }
 }
 
-void laplace1d(
-  Dense& A,
-  std::vector<double>& x
-) {
+void laplace1d(Dense& A, std::vector<double>& x) {
   for (int i=0; i<A.dim[0]; i++) {
     for (int j=0; j<A.dim[1]; j++) {
-      A(i, j) = 1 / (std::abs(x[i+A.row_range.start] - x[j+A.col_range.start]) + 1e-3);
+      A(i, j) = 1 / (
+        std::abs(x[i+A.row_range.start] - x[j+A.col_range.start]) + 1e-3);
     }
   }
 }

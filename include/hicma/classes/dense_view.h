@@ -7,56 +7,58 @@
 
 #include <memory>
 
-namespace hicma {
 
-  class Node;
+namespace hicma
+{
 
-  class DenseView : public Dense {
-  private:
-    double* data;
-    const double* const_data;
-  protected:
-    virtual double* get_pointer() override;
+class Node;
 
-    virtual const double* get_pointer() const override;
-  public:
-    // Special member functions
-    DenseView() = default;
+class DenseView : public Dense {
+ private:
+  double* data;
+  const double* const_data;
+ protected:
+  virtual double* get_pointer() override;
 
-    ~DenseView() = default;
+  virtual const double* get_pointer() const override;
+ public:
+  // Special member functions
+  DenseView() = default;
 
-    DenseView(const DenseView& A) = default;
+  ~DenseView() = default;
 
-    DenseView& operator=(const DenseView& A) = default;
+  DenseView(const DenseView& A) = default;
 
-    DenseView(DenseView&& A) = default;
+  DenseView& operator=(const DenseView& A) = default;
 
-    DenseView& operator=(DenseView&& A) = default;
+  DenseView(DenseView&& A) = default;
 
-    // Overridden functions from Node
-    std::unique_ptr<Node> clone() const override;
+  DenseView& operator=(DenseView&& A) = default;
 
-    std::unique_ptr<Node> move_clone() override;
+  // Overridden functions from Node
+  std::unique_ptr<Node> clone() const override;
 
-    const char* type() const override;
+  std::unique_ptr<Node> move_clone() override;
 
-    // Additional constructors
-    DenseView(const Node& node, Dense& A);
+  const char* type() const override;
 
-    DenseView(const Node& node, const Dense& A);
+  // Additional constructors
+  DenseView(const Node& node, Dense& A);
 
-    // Additional operators
-    DenseView& operator=(Dense& A);
+  DenseView(const Node& node, const Dense& A);
 
-    DenseView& operator=(const Dense& A);
+  // Additional operators
+  DenseView& operator=(Dense& A);
 
-    // Delete methods that cannot be used from Dense
-    void tranpose() = delete;
+  DenseView& operator=(const Dense& A);
 
-    void resize(int dim0, int dim1) = delete;
-  };
+  // Delete methods that cannot be used from Dense
+  void tranpose() = delete;
 
-  register_class(DenseView, Dense)
+  void resize(int dim0, int dim1) = delete;
+};
+
+register_class(DenseView, Dense)
 
 } // namespace hicma
 

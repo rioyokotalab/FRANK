@@ -1,13 +1,14 @@
 #ifndef hicma_extension_headers_operations_h
 #define hicma_extension_headers_operations_h
 
+#include "hicma/classes/dense.h"
 #include "hicma/classes/node.h"
 #include "hicma/classes/node_proxy.h"
-#include "hicma/classes/dense.h"
 
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
 
+#include <tuple>
 #include <vector>
 
 

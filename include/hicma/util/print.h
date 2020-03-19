@@ -3,26 +3,27 @@
 
 #include "hicma/classes/node.h"
 
-#include <string>
-
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
 
+#include <string>
 
-namespace hicma {
 
-  extern bool VERBOSE;
+namespace hicma
+{
 
-  void printXML(const Node& A, std::string filename = "matrix.xml");
+extern bool VERBOSE;
 
-  void print(const Node&);
+void printXML(const Node& A, std::string filename = "matrix.xml");
 
-  declare_method(void, print_omm, (virtual_<const Node&>))
+void print(const Node&);
 
-  void print(std::string s);
+declare_method(void, print_omm, (virtual_<const Node&>))
 
-  template<typename T>
-  void print(std::string s, T v, bool fixed=true);
+void print(std::string s);
+
+template<typename T>
+void print(std::string s, T v, bool fixed=true);
 
 }
 

@@ -1,9 +1,9 @@
 #include "hicma/hicma.h"
 
-#include <algorithm>
-#include <cmath>
-
 #include "yorel/yomm2/cute.hpp"
+
+#include <vector>
+
 
 using namespace hicma;
 
@@ -70,5 +70,3 @@ int main() {
   print("Rel. L2 Error", l2_error(_A, QR), false);
   return 0;
 }
-
-

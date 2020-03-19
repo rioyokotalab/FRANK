@@ -1,9 +1,9 @@
 #include "hicma/operations/LAPACK.h"
 #include "hicma/extension_headers/operations.h"
 
-#include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
+#include "hicma/classes/node.h"
 #include "hicma/util/omm_error_handler.h"
 
 #ifdef USE_MKL
@@ -20,9 +20,7 @@
 namespace hicma
 {
 
-void geqrt(Node& A, Node& T) {
-  geqrt_omm(A, T);
-}
+void geqrt(Node& A, Node& T) { geqrt_omm(A, T); }
 
 define_method(void, geqrt_omm, (Dense& A, Dense& T)) {
   assert(T.dim[0] == A.dim[1]);

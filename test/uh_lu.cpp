@@ -1,13 +1,10 @@
 #include "hicma/hicma.h"
 
-#include <algorithm>
-#include <cmath>
-#include <iostream>
-#include <memory>
+#include "yorel/yomm2/cute.hpp"
+
 #include <tuple>
 #include <vector>
 
-#include "yorel/yomm2/cute.hpp"
 
 using namespace hicma;
 
@@ -60,7 +57,6 @@ int main(int argc, char const *argv[])
   trsm(U, b,'u');
   print("UH Rel. L2 Error", l2_error(x, b), false);
   timing::stopAndPrint("Verification");
-
 
   return 0;
 }

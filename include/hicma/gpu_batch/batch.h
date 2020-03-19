@@ -3,7 +3,9 @@
 
 #include <vector>
 
-namespace hicma {
+
+namespace hicma
+{
 
   class NodeProxy;
   class Dense;

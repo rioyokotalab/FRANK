@@ -1,27 +1,29 @@
-#ifndef operations_misc_h
-#define operations_misc_h
+#ifndef hicma_operations_misc_misc_h
+#define hicma_operations_misc_misc_h
 
 #include <vector>
 
 
 namespace hicma
 {
-  class Dense;
 
-  double cond(Dense A);
+class Dense;
 
-  double diam(std::vector<double>& x, const int& n, const int& offset);
+double cond(Dense A);
 
-  double mean(std::vector<double>& x, const int& n, const int& offset);
+double diam(std::vector<double>& x, const int& n, const int& offset);
 
-  std::vector<int> getIndex(int dim, int mortonIndex);
+double mean(std::vector<double>& x, const int& n, const int& offset);
 
-  int getMortonIndex(std::vector<int> index, int level);
+std::vector<int> getIndex(int dim, int mortonIndex);
 
-  std::vector<double> equallySpacedVector(int N, double minVal, double maxVal);
+int getMortonIndex(std::vector<int> index, int level);
 
-  void getSubmatrix(const Dense& A, int ni, int nj, int i_begin, int j_begin, Dense& out);
+std::vector<double> equallySpacedVector(int N, double minVal, double maxVal);
+
+void getSubmatrix(
+  const Dense& A, int ni, int nj, int i_begin, int j_begin, Dense& out);
 
 } // namespace hicma
 
-#endif // operations_misc_h
+#endif // hicma_operations_misc_misc_h

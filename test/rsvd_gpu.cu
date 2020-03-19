@@ -1,15 +1,17 @@
 #include "hicma/hicma.h"
 
-#include <algorithm>
-#include <cublas_v2.h>
-#include <magma_v2.h>
+#include "cublas_v2.h"
+#include "magma_v2.h"
 #include "kblas.h"
 #include "testing_helper.h"
 #include "batch_rand.h"
 #include "batch_ara.h"
 
+#include <algorithm>
 #include <iostream>
 #include <fstream>
+#include <vector>
+
 
 using namespace hicma;
 

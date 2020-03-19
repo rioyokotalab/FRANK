@@ -1,10 +1,10 @@
 #include "hicma/operations/LAPACK.h"
 #include "hicma/extension_headers/operations.h"
 
-#include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
-#include "hicma/classes/low_rank.h"
 #include "hicma/classes/hierarchical.h"
+#include "hicma/classes/low_rank.h"
+#include "hicma/classes/node.h"
 #include "hicma/functions.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/misc/transpose.h"
@@ -24,10 +24,7 @@
 namespace hicma
 {
 
-void tpmqrt(
-  const Node& V, const Node& T, Node& A, Node& B,
-  bool trans
-) {
+void tpmqrt(const Node& V, const Node& T, Node& A, Node& B, bool trans) {
   tpmqrt_omm(V, T, A, B, trans);
 }
 

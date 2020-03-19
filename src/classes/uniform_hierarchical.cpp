@@ -1,26 +1,26 @@
 #include "hicma/classes/uniform_hierarchical.h"
 
-#include "hicma/classes/node.h"
-#include "hicma/classes/node_proxy.h"
 #include "hicma/classes/dense.h"
+#include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/low_rank_shared.h"
-#include "hicma/classes/hierarchical.h"
+#include "hicma/classes/node.h"
+#include "hicma/classes/node_proxy.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/randomized_factorizations.h"
 #include "hicma/operations/misc/get_dim.h"
 #include "hicma/operations/misc/transpose.h"
 #include "hicma/util/omm_error_handler.h"
 
-#include <algorithm>
+#include "yorel/yomm2/cute.hpp"
+using yorel::yomm2::virtual_;
+
 #include <cassert>
-#include <cmath>
 #include <memory>
 #include <tuple>
 #include <utility>
+#include <vector>
 
-#include "yorel/yomm2/cute.hpp"
-using yorel::yomm2::virtual_;
 
 namespace hicma
 {
@@ -59,10 +59,7 @@ define_method(
   return std::move(A);
 }
 
-define_method(
-  UniformHierarchical, move_from_uniform_hierarchical,
-  (Node& A)
-) {
+define_method(UniformHierarchical, move_from_uniform_hierarchical, (Node& A)) {
   omm_error_handler("move_from_unifor_hierarchical", {A}, __FILE__, __LINE__);
   abort();
 }

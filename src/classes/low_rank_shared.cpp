@@ -1,15 +1,16 @@
 #include "hicma/classes/low_rank_shared.h"
 
-#include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
 #include "hicma/classes/low_rank.h"
+#include "hicma/classes/node.h"
 #include "hicma/extension_headers/classes.h"
 #include "hicma/operations/BLAS.h"
+
+#include "yorel/yomm2/cute.hpp"
 
 #include <memory>
 #include <utility>
 
-#include "yorel/yomm2/cute.hpp"
 
 namespace hicma
 {
@@ -27,8 +28,7 @@ const char* LowRankShared::type() const { return "LowRankShared"; }
 LowRankShared::LowRankShared(
   const Node& node,
   const Dense& S, std::shared_ptr<Dense> U, std::shared_ptr<Dense> V
-) : Node(node), U(U), V(V), S(S), dim{U->dim[0], V->dim[1]}, rank(S.dim[0])
-{}
+) : Node(node), U(U), V(V), S(S), dim{U->dim[0], V->dim[1]}, rank(S.dim[0]) {}
 
 define_method(Dense, make_dense, (const LowRankShared& A)) {
   // TODO exactly the same as the LowRank method. Consider inheritance!

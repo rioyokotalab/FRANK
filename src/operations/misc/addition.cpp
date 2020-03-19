@@ -1,9 +1,9 @@
 #include "hicma/operations/misc/addition.h"
 
-#include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
-#include "hicma/classes/low_rank.h"
 #include "hicma/classes/hierarchical.h"
+#include "hicma/classes/low_rank.h"
+#include "hicma/classes/node.h"
 #include "hicma/classes/no_copy_split.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/LAPACK.h"
@@ -21,9 +21,7 @@
 namespace hicma
 {
 
-void operator+=(Node& A, const Node& B) {
-  addition_omm(A, B);
-}
+void operator+=(Node& A, const Node& B) { addition_omm(A, B); }
 
 define_method(void, addition_omm, (Dense& A, const LowRank& B)) {
   Dense UxS(B.dim[0], B.rank);

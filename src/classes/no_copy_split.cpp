@@ -1,19 +1,20 @@
 #include "hicma/classes/no_copy_split.h"
 #include "hicma/extension_headers/classes.h"
 
-#include "hicma/classes/node.h"
-#include "hicma/classes/node_proxy.h"
 #include "hicma/classes/dense.h"
 #include "hicma/classes/dense_view.h"
+#include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/low_rank_view.h"
-#include "hicma/classes/hierarchical.h"
+#include "hicma/classes/node.h"
+#include "hicma/classes/node_proxy.h"
 #include "hicma/util/omm_error_handler.h"
 
 #include "yorel/yomm2/cute.hpp"
 
 #include <memory>
 #include <utility>
+
 
 namespace hicma
 {
@@ -26,13 +27,10 @@ std::unique_ptr<Node> NoCopySplit::move_clone() {
   return std::make_unique<NoCopySplit>(std::move(*this));
 }
 
-const char* NoCopySplit::type() const {
-  return "NoCopySplit";
-}
+const char* NoCopySplit::type() const { return "NoCopySplit"; }
 
-NoCopySplit::NoCopySplit(
-  Node& A, int ni_level, int nj_level, bool node_only
-) : Hierarchical(A, ni_level, nj_level, true) {
+NoCopySplit::NoCopySplit(Node& A, int ni_level, int nj_level, bool node_only)
+: Hierarchical(A, ni_level, nj_level, true) {
   if (!node_only) {
     *this = make_no_copy_split(A, ni_level, nj_level);
   }

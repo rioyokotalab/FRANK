@@ -4,11 +4,13 @@
 #include <chrono>
 #include <map>
 #include <string>
-#include <tuple>
 #include <vector>
 
-namespace hicma {
-namespace timing {
+
+namespace hicma
+{
+namespace timing
+{
 
 class Timer;
 
@@ -29,7 +31,7 @@ unsigned int getNRuns(std::string event);
 
 // Interface of the Timer class if user wants to create own timers
 class Timer {
-public:
+ public:
   Timer();
 
   Timer(std::string name, Timer* parent=nullptr);
@@ -60,7 +62,7 @@ public:
 
   void print_to_depth(int depth) const;
 
-private:
+ private:
   using clock = std::chrono::high_resolution_clock;
   typedef std::chrono::time_point<std::chrono::high_resolution_clock> time_point;
   typedef std::chrono::duration<double> seconds;

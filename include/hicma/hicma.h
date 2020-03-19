@@ -1,6 +1,7 @@
 #ifndef hicma_h
 #define hicma_h
 
+
 #include "hicma/classes.h"
 #include "hicma/functions.h"
 #include "hicma/gpu_batch/batch.h"

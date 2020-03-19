@@ -1,14 +1,13 @@
 #include "hicma/hicma.h"
 
-#include <algorithm>
-#include <cmath>
-#include <iostream>
-#include <vector>
-#include <tuple>
-#include <utility>
-
 #include "gtest/gtest.h"
 #include "yorel/yomm2/cute.hpp"
+
+#include <algorithm>
+#include <tuple>
+#include <utility>
+#include <vector>
+
 
 using namespace hicma;
 

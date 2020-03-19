@@ -8,47 +8,49 @@
 
 #include <memory>
 
-namespace hicma {
 
-  class Node;
+namespace hicma
+{
 
-  class LowRankView : public LowRank {
-  private:
-    DenseView _U, _S, _V;
-  public:
-    // Special member functions
-    LowRankView() = default;
+class Node;
 
-    ~LowRankView() = default;
+class LowRankView : public LowRank {
+ private:
+  DenseView _U, _S, _V;
+ public:
+  // Special member functions
+  LowRankView() = default;
 
-    LowRankView(const LowRankView& A) = default;
+  ~LowRankView() = default;
 
-    LowRankView& operator=(const LowRankView& A) = default;
+  LowRankView(const LowRankView& A) = default;
 
-    LowRankView(LowRankView&& A) = default;
+  LowRankView& operator=(const LowRankView& A) = default;
 
-    LowRankView& operator=(LowRankView&& A) = default;
+  LowRankView(LowRankView&& A) = default;
 
-    // Overridden functions from Node
-    std::unique_ptr<Node> clone() const override;
+  LowRankView& operator=(LowRankView&& A) = default;
 
-    std::unique_ptr<Node> move_clone() override;
+  // Overridden functions from Node
+  std::unique_ptr<Node> clone() const override;
 
-    const char* type() const override;
+  std::unique_ptr<Node> move_clone() override;
 
-    DenseView& U() override;
-    const DenseView& U() const override;
+  const char* type() const override;
 
-    DenseView& S() override;
-    const DenseView& S() const override;
+  DenseView& U() override;
+  const DenseView& U() const override;
 
-    DenseView& V() override;
-    const DenseView& V() const override;
+  DenseView& S() override;
+  const DenseView& S() const override;
 
-    LowRankView(const Node& node, const LowRank& A);
-  };
+  DenseView& V() override;
+  const DenseView& V() const override;
 
-  register_class(LowRankView, LowRank)
+  LowRankView(const Node& node, const LowRank& A);
+};
+
+register_class(LowRankView, LowRank)
 
 } // namespace hicma
 

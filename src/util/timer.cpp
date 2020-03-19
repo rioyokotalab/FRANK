@@ -4,14 +4,16 @@
 
 #include <algorithm>
 #include <cassert>
-#include <chrono>
 #include <cmath>
 #include <map>
 #include <string>
 #include <vector>
 
-namespace hicma {
-namespace timing {
+
+namespace hicma
+{
+namespace timing
+{
 
 // Global recursive state machine
 Timer GlobalTimer;
@@ -33,9 +35,7 @@ double stop(std::string event) {
   return duration;
 }
 
-void clearTimers() {
-  GlobalTimer.clear();
-}
+void clearTimers() { GlobalTimer.clear(); }
 
 void stopAndPrint(std::string event, int depth) {
   stop(event);
@@ -101,9 +101,7 @@ std::string Timer::get_name() const { return name; }
 
 Timer* Timer::get_parent() const { return parent; }
 
-double Timer::get_total_time() const {
-  return total_time.count();
-}
+double Timer::get_total_time() const { return total_time.count(); }
 
 std::vector<double> Timer::get_times() const {
   std::vector<double> times_list;
@@ -113,9 +111,7 @@ std::vector<double> Timer::get_times() const {
   return times_list;
 }
 
-size_t Timer::get_n_runs() const {
-  return times.size();
-}
+size_t Timer::get_n_runs() const { return times.size(); }
 
 const std::map<std::string, double> Timer::get_subtimers() const {
   std::map<std::string, double> subtimer_list;

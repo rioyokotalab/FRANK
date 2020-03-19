@@ -1,14 +1,12 @@
 #include "hicma/operations/LAPACK.h"
 #include "hicma/extension_headers/operations.h"
 
-#include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
-#include "hicma/classes/low_rank.h"
 #include "hicma/classes/hierarchical.h"
+#include "hicma/classes/low_rank.h"
+#include "hicma/classes/node.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/util/omm_error_handler.h"
-
-#include <algorithm>
 
 #ifdef USE_MKL
 #include <mkl.h>
@@ -17,15 +15,13 @@
 #endif
 #include "yorel/yomm2/cute.hpp"
 
+#include <algorithm>
+
 
 namespace hicma
 {
 
-void tpqrt(
-  Node& A, Node& B, Node& T
-) {
-  tpqrt_omm(A, B, T);
-}
+void tpqrt(Node& A, Node& B, Node& T) { tpqrt_omm(A, B, T); }
 
 define_method(void, tpqrt_omm, (Dense& A, Dense& B, Dense& T)) {
   LAPACKE_dtpqrt2(

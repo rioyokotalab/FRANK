@@ -3,33 +3,33 @@
 #include "hicma/classes/node.h"
 
 #include <cassert>
-#include <iostream>
-#include <utility>
 
-namespace hicma {
 
-  // Reconsider these constructors. Performance testing needed!!
-  NodeProxy::NodeProxy(const NodeProxy& A) : ptr(A.ptr->clone()) {}
+namespace hicma
+{
 
-  NodeProxy& NodeProxy::operator=(const NodeProxy& A) {
-    ptr = A.ptr->clone();
-    return *this;
-  }
+// Reconsider these constructors. Performance testing needed!!
+NodeProxy::NodeProxy(const NodeProxy& A) : ptr(A.ptr->clone()) {}
 
-  NodeProxy::NodeProxy(const Node& A) : ptr(A.clone()) {}
+NodeProxy& NodeProxy::operator=(const NodeProxy& A) {
+  ptr = A.ptr->clone();
+  return *this;
+}
 
-  NodeProxy::NodeProxy(Node&& A) : ptr(A.move_clone()) {}
+NodeProxy::NodeProxy(const Node& A) : ptr(A.clone()) {}
 
-  NodeProxy::operator const Node&() const {
-    assert(ptr.get() != nullptr);
-    return *ptr;
-  }
+NodeProxy::NodeProxy(Node&& A) : ptr(A.move_clone()) {}
 
-  NodeProxy::operator Node&() {
-    assert(ptr.get() != nullptr);
-    return *ptr;
-  }
+NodeProxy::operator const Node&() const {
+  assert(ptr.get() != nullptr);
+  return *ptr;
+}
 
-  const char* NodeProxy::type() const { return ptr->type(); }
+NodeProxy::operator Node&() {
+  assert(ptr.get() != nullptr);
+  return *ptr;
+}
+
+const char* NodeProxy::type() const { return ptr->type(); }
 
 } // namespace hicma

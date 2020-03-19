@@ -1,16 +1,13 @@
 #include "hicma/operations/LAPACK.h"
 #include "hicma/extension_headers/operations.h"
 
-#include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
+#include "hicma/classes/node.h"
 #include "hicma/classes/uniform_hierarchical.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/util/omm_error_handler.h"
 #include "hicma/util/timer.h"
-
-#include <tuple>
-#include <utility>
 
 #ifdef USE_MKL
 #include <mkl.h>
@@ -19,13 +16,16 @@
 #endif
 #include "yorel/yomm2/cute.hpp"
 
+#include <algorithm>
+#include <tuple>
+#include <utility>
+#include <vector>
+
 
 namespace hicma
 {
 
-std::tuple<NodeProxy, NodeProxy> getrf(Node& A) {
-  return getrf_omm(A);
-}
+std::tuple<NodeProxy, NodeProxy> getrf(Node& A) { return getrf_omm(A); }
 
 define_method(NodePair, getrf_omm, (Hierarchical& A)) {
   Hierarchical L(A, A.dim[0], A.dim[1], true);

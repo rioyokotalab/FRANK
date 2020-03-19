@@ -1,6 +1,7 @@
 #ifndef hicma_util_h
 #define hicma_util_h
 
+
 #include "hicma/util/counter.h"
 #include "hicma/util/experiment_setup.h"
 #include "hicma/util/get_memory_usage.h"

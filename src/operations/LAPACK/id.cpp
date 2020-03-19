@@ -1,21 +1,21 @@
 #include "hicma/operations/LAPACK.h"
 #include "hicma/extension_headers/operations.h"
 
-#include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
-#include "hicma/classes/low_rank.h"
 #include "hicma/classes/hierarchical.h"
+#include "hicma/classes/low_rank.h"
+#include "hicma/classes/node.h"
 #include "hicma/functions.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/util/omm_error_handler.h"
+
+#include "yorel/yomm2/cute.hpp"
 
 #include <algorithm>
 #include <cassert>
 #include <tuple>
 #include <utility>
 #include <vector>
-
-#include "yorel/yomm2/cute.hpp"
 
 
 namespace hicma
@@ -86,9 +86,7 @@ define_method(
 }
 
 
-std::tuple<Dense, Dense, Dense> id(Node& A, int k) {
-  return id_omm(A, k);
-}
+std::tuple<Dense, Dense, Dense> id(Node& A, int k) { return id_omm(A, k); }
 
 Dense get_cols(const Dense& A, std::vector<int> Pr) {
   Dense B(A.dim[0], Pr.size());

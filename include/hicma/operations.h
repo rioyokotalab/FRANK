@@ -1,6 +1,7 @@
 #ifndef hicma_operations_h
 #define hicma_operations_h
 
+
 #include "hicma/operations/BLAS.h"
 
 #include "hicma/operations/LAPACK.h"

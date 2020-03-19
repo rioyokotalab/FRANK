@@ -1,10 +1,10 @@
 #include "hicma/operations/LAPACK.h"
 #include "hicma/extension_headers/operations.h"
 
-#include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
-#include "hicma/classes/low_rank.h"
 #include "hicma/classes/hierarchical.h"
+#include "hicma/classes/low_rank.h"
+#include "hicma/classes/node.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/util/omm_error_handler.h"
 
@@ -19,10 +19,7 @@
 namespace hicma
 {
 
-void larfb(
-  const Node& V, const Node& T, Node& C,
-  bool trans
-) {
+void larfb(const Node& V, const Node& T, Node& C, bool trans) {
   larfb_omm(V, T, C, trans);
 }
 

@@ -1,12 +1,10 @@
 #include "hicma/hicma.h"
 
-#include <algorithm>
-#include <cmath>
+#include "yorel/yomm2/cute.hpp"
+
 #include <tuple>
-#include <utility>
 #include <vector>
 
-#include "yorel/yomm2/cute.hpp"
 
 using namespace hicma;
 

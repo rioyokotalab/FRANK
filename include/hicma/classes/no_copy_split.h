@@ -3,9 +3,10 @@
 
 #include "hicma/classes/hierarchical.h"
 
+#include "yorel/yomm2/cute.hpp"
+
 #include <memory>
 
-#include "yorel/yomm2/cute.hpp"
 
 namespace hicma
 {
@@ -13,7 +14,7 @@ namespace hicma
 class Node;
 
 class NoCopySplit : public Hierarchical {
-public:
+ public:
   // Special member functions
   NoCopySplit() = default;
 

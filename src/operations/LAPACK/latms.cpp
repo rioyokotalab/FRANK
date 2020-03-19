@@ -8,7 +8,6 @@
 #include <lapacke.h>
 #endif
 
-#include <cassert>
 #include <vector>
 
 

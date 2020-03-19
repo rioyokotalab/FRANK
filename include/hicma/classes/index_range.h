@@ -3,11 +3,12 @@
 
 #include <vector>
 
+
 namespace hicma
 {
 
 class IndexRange {
-public:
+ public:
   int start = 0;
   int length = 0;
 

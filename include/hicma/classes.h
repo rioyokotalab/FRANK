@@ -1,6 +1,7 @@
 #ifndef hicma_classes_h
 #define hicma_classes_h
 
+
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/index_range.h"

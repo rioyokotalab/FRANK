@@ -1,10 +1,10 @@
 #include "hicma/hicma.h"
 
-#include <algorithm>
-#include <cmath>
-#include <iostream>
-
 #include "yorel/yomm2/cute.hpp"
+
+#include <iostream>
+#include <vector>
+
 
 using namespace hicma;
 
@@ -76,5 +76,3 @@ int main(int argc, char** argv) {
   print("Rel. L2 Orthogonality", l2_error(QtQ, Id), false);
   return 0;
 }
-
-

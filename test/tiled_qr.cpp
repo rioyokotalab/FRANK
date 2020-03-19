@@ -1,10 +1,10 @@
 #include "hicma/hicma.h"
 
-#include <algorithm>
-#include <cmath>
-#include <iostream>
-
 #include "yorel/yomm2/cute.hpp"
+
+#include <utility>
+#include <vector>
+
 
 using namespace hicma;
 
@@ -133,4 +133,3 @@ int main(int argc, char** argv) {
   print("Rel. Error (operator norm)", l2_error(QtQx, x), false);
   return 0;
 }
-

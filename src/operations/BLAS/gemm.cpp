@@ -1,23 +1,20 @@
 #include "hicma/operations/BLAS.h"
 #include "hicma/extension_headers/operations.h"
 
-#include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
+#include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/low_rank_shared.h"
 #include "hicma/classes/low_rank_view.h"
-#include "hicma/classes/hierarchical.h"
+#include "hicma/classes/node.h"
 #include "hicma/classes/no_copy_split.h"
 #include "hicma/classes/uniform_hierarchical.h"
+#include "hicma/gpu_batch/batch.h"
 #include "hicma/operations/misc/addition.h"
 #include "hicma/operations/misc/get_dim.h"
 #include "hicma/util/omm_error_handler.h"
-#include "hicma/util/timer.h"
 #include "hicma/util/counter.h"
-#include "hicma/gpu_batch/batch.h"
-#include "hicma/operations/misc/get_dim.h"
-
-#include <cassert>
+#include "hicma/util/timer.h"
 
 #ifdef USE_MKL
 #include <mkl.h>
@@ -25,6 +22,9 @@
 #include <cblas.h>
 #endif
 #include "yorel/yomm2/cute.hpp"
+
+#include <cassert>
+
 
 namespace hicma
 {

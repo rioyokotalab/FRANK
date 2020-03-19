@@ -1,22 +1,24 @@
 #ifndef hicma_classes_low_rank_shared_h
 #define hicma_classes_low_rank_shared_h
 
-#include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
-
-#include <memory>
+#include "hicma/classes/node.h"
 
 #include "yorel/yomm2/cute.hpp"
 
-namespace hicma {
+#include <memory>
+
+
+namespace hicma
+{
 
 class LowRankShared : public Node {
  public:
   // TODO Make these members private just like in LowRank
   class SharedBasis {
-  private:
+   private:
     std::shared_ptr<Dense> basis;
-  public:
+   public:
     // Special member functions
     SharedBasis() = default;
     ~SharedBasis() = default;

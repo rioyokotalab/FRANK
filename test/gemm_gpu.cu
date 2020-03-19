@@ -1,9 +1,14 @@
 #include "hicma/hicma.h"
 
-#include <cublas_v2.h>
-#include <magma_v2.h>
+#include "cublas_v2.h"
+#include "magma_v2.h"
 #include "kblas.h"
 #include "testing_helper.h"
+
+#include <algorithm>
+#include <cmath>
+#include <vector>
+
 
 using namespace hicma;
 
