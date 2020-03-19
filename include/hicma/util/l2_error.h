@@ -12,8 +12,9 @@ namespace hicma
 
 double l2_error(const Node&, const Node&);
 
+typedef std::tuple<double, double> DoublePair;
 declare_method(
-  double, l2_error_omm,
+  DoublePair, collect_diff_norm_omm,
   (virtual_<const Node&>, virtual_<const Node&>)
 )
 
