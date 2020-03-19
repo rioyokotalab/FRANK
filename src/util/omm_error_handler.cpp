@@ -18,7 +18,7 @@ void omm_error_handler(
   std::cerr << omm_name << "(";
   if (virtual_arguments.size() > 0) {
     std::cerr << virtual_arguments[0].get().type();
-    for (uint i=1; i<virtual_arguments.size(); ++i) {
+    for (unsigned int i=1; i<virtual_arguments.size(); ++i) {
       std::cerr << ", " << virtual_arguments[i].get().type();
     }
   }
