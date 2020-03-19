@@ -2,7 +2,7 @@
 
 #include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
-#include "hicma/operations/randomized/rsvd.h"
+#include "hicma/operations/randomized_factorizations.h"
 
 #include "yorel/yomm2/cute.hpp"
 

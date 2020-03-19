@@ -11,7 +11,6 @@
 #include "hicma/operations/misc/norm.h"
 #include "hicma/operations/misc/transpose.h"
 
-#include "hicma/operations/randomized/rid.h"
-#include "hicma/operations/randomized/rsvd.h"
+#include "hicma/operations/randomized_factorizations.h"
 
 #endif // hicma_operations_h

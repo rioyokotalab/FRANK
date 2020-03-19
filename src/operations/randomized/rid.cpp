@@ -1,4 +1,4 @@
-#include "hicma/operations/randomized/rid.h"
+#include "hicma/operations/randomized_factorizations.h"
 
 #include "hicma/classes/dense.h"
 #include "hicma/functions.h"
