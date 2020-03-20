@@ -75,7 +75,7 @@ UniformHierarchical::UniformHierarchical(
   row_basis.resize(nj_level);
 }
 
-Dense UniformHierarchical::make_row_block(
+Dense UniformHierarchical::make_block_row(
   int row,
   void (*func)(Dense& A, std::vector<double>& x),
   std::vector<double>& x,
@@ -85,37 +85,37 @@ Dense UniformHierarchical::make_row_block(
   int n_non_admissible_blocks = 0;
   for (int j_b=0; j_b<dim[1]; ++j_b)
     if (!is_admissible((*this)(row, j_b), admis)) n_non_admissible_blocks++;
-  Hierarchical row_block_h(1, n_non_admissible_blocks);
+  Hierarchical block_row_h(1, n_non_admissible_blocks);
   // Note the ins counter!
   // TODO j_b goes across entire matrix, outside of confines of *this.
   // Find way to combine this with create_children!
   for (int j_b=0, ins=0; j_b<dim[1]; ++j_b) {
     if (!is_admissible((*this)(row, j_b), admis)) {
-      row_block_h[ins++] = Dense((*this)(row, j_b), func, x);
+      block_row_h[ins++] = Dense((*this)(row, j_b), func, x);
     }
   }
-  return Dense(row_block_h);
+  return Dense(block_row_h);
 }
 
-Dense UniformHierarchical::make_col_block(
+Dense UniformHierarchical::make_block_col(
   int col,
   void (*func)(Dense& A, std::vector<double>& x),
   std::vector<double>& x,
   int admis
 ) {
-    // Create col block without admissible blocks
-    int n_non_admissible_blocks = 0;
-    for (int i_b=0; i_b<dim[0]; ++i_b) {
-      if (!is_admissible((*this)(i_b, col), admis)) n_non_admissible_blocks++;
+  // Create col block without admissible blocks
+  int n_non_admissible_blocks = 0;
+  for (int i_b=0; i_b<dim[0]; ++i_b) {
+    if (!is_admissible((*this)(i_b, col), admis)) n_non_admissible_blocks++;
+  }
+  Hierarchical block_col_h(n_non_admissible_blocks, 1);
+  // Note the ins counter!
+  for (int i_b=0, ins=0; i_b<dim[0]; ++i_b) {
+    if (!is_admissible((*this)(i_b, col), admis)) {
+      block_col_h[ins++] = Dense((*this)(i_b, col), func, x);
     }
-    Hierarchical col_block_h(n_non_admissible_blocks, 1);
-    // Note the ins counter!
-    for (int i_b=0, ins=0; i_b<dim[0]; ++i_b) {
-      if (!is_admissible((*this)(i_b, col), admis)) {
-        col_block_h[ins++] = Dense((*this)(i_b, col), func, x);
-      }
-    }
-    return Dense(col_block_h);
+  }
+  return Dense(block_col_h);
 }
 
 LowRankShared UniformHierarchical::construct_shared_block_id(
@@ -130,7 +130,7 @@ LowRankShared UniformHierarchical::construct_shared_block_id(
   int i, j;
   std::tie(i, j) = get_rel_pos_child(child);
   if (col_basis[i].get() == nullptr) {
-    Dense row_block = make_row_block(i, func, x, admis);
+    Dense row_block = make_block_row(i, func, x, admis);
     // Construct U using the ID and remember the selected rows
     Dense Ut;
     std::tie(Ut, selected_rows[i]) = one_sided_rid(
@@ -139,7 +139,7 @@ LowRankShared UniformHierarchical::construct_shared_block_id(
     col_basis[i] = std::make_shared<Dense>(std::move(Ut));
   }
   if (row_basis[j].get() == nullptr) {
-    Dense col_block = make_col_block(j, func, x, admis);
+    Dense col_block = make_block_col(j, func, x, admis);
     // Construct V using the ID and remember the selected cols
     Dense V;
     std::tie(V, selected_cols[j]) = one_sided_rid(
@@ -170,11 +170,11 @@ LowRankShared UniformHierarchical::construct_shared_block_svd(
   int i, j;
   std::tie(i, j) = get_rel_pos_child(child);
   if (col_basis[i].get() == nullptr) {
-    Dense row_block = make_row_block(i, func, x, admis);
+    Dense row_block = make_block_row(i, func, x, admis);
     col_basis[i] = std::make_shared<Dense>(LowRank(row_block, rank).U());
   }
   if (row_basis[j].get() == nullptr) {
-    Dense col_block = make_col_block(j, func, x, admis);
+    Dense col_block = make_block_col(j, func, x, admis);
     row_basis[j] = std::make_shared<Dense>(LowRank(col_block, rank).V());
   }
   Dense D(child, func, x);

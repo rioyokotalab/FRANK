@@ -48,7 +48,7 @@ class Dense : public Node {
   virtual const char* type() const override;
 
   // Explicit conversions using multiple-dispatch function.
-  explicit Dense(const Node& A, bool only_node=false);
+  explicit Dense(const Node& A, bool node_only=false);
 
   // Conversion constructors
   Dense(NodeProxy&&);

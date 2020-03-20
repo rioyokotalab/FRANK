@@ -20,14 +20,14 @@ class UniformHierarchical : public Hierarchical {
  private:
   std::vector<std::shared_ptr<Dense>> col_basis, row_basis;
 
-  Dense make_row_block(
+  Dense make_block_row(
     int row,
     void (*func)(Dense& A, std::vector<double>& x),
     std::vector<double>& x,
     int admis
   );
 
-  Dense make_col_block(
+  Dense make_block_col(
     int row,
     void (*func)(Dense& A, std::vector<double>& x),
     std::vector<double>& x,

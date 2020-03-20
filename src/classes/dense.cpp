@@ -45,9 +45,9 @@ std::unique_ptr<Node> Dense::move_clone() {
 
 const char* Dense::type() const { return "Dense"; }
 
-Dense::Dense(const Node& A, bool only_node)
+Dense::Dense(const Node& A, bool node_only)
 : Node(A), dim{A.row_range.length, A.col_range.length}, stride(dim[1]) {
-  if (!only_node) {
+  if (!node_only) {
     *this = make_dense(A);
   }
 }
