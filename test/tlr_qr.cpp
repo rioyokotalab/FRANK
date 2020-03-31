@@ -87,13 +87,14 @@ int main(int argc, char** argv) {
       Dense Tij(zeros, randpts[0], bj, bj);
       D(ic,jc) = Aij;
       T(ic,jc) = Tij;
+      Q(ic,jc) = Qij;
       if (std::abs(ic - jc) <= (int)admis) {
         A(ic,jc) = Aij;
-        Q(ic,jc) = Qij;
+        // Q(ic,jc) = Qij;
       }
       else {
         rsvd_push(A(ic,jc), Aij, rank);
-        rsvd_push(Q(ic,jc), Qij, rank);
+        // rsvd_push(Q(ic,jc), Qij, rank);
       }
     }
   }
@@ -163,6 +164,16 @@ int main(int argc, char** argv) {
   print("Residual");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
   //Orthogonality
+  // for(int i=0; i<Nc; i++)
+  //   for(int j=0; j<Nc; j++) {
+  //     if(i != j) {
+  //       Dense Qij(Q(i, j));
+  //       Dense S(std::min(Qij.dim[0], Qij.dim[1]));
+  //       Qij.svd(S);
+  //       std::cout <<"Q(" <<i <<"," <<j <<").S" <<std::endl;
+  //       S.print();
+  //     }
+  //   }
   Dense Qx(N);
   gemm(Q, x, Qx, 1, 1);
   Dense QtQx(N);
