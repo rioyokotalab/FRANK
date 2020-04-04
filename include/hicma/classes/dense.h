@@ -50,9 +50,6 @@ class Dense : public Node {
   // Explicit conversions using multiple-dispatch function.
   explicit Dense(const Node& A, bool node_only=false);
 
-  // Conversion constructors
-  Dense(NodeProxy&&);
-
   // Additional constructors
   Dense(
     int m, int n=1,

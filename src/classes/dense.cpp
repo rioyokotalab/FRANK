@@ -96,35 +96,8 @@ define_method(Dense, make_dense, (const Node& A)) {
   abort();
 }
 
-declare_method(Dense, move_from_dense, (virtual_<Node&>))
-
-Dense::Dense(NodeProxy&& A) {
-  *this = move_from_dense(A);
-}
-
-define_method(
-  Dense, move_from_dense,
-  (Dense& A)
-) {
-  return std::move(A);
-}
-
-define_method(
-  Dense, move_from_dense,
-  (Node& A)
-) {
-  omm_error_handler("move_from_dense", {A}, __FILE__, __LINE__);
-  abort();
-}
-
-Dense::Dense(
-  int m, int n,
-  int i_abs, int j_abs,
-  int level
-) : Dense(
-  Node(i_abs, j_abs, level, IndexRange(0, m), IndexRange(0, n)),
-  true
-) {
+Dense::Dense(int m, int n, int i_abs, int j_abs, int level)
+: Dense(Node(i_abs, j_abs, level, IndexRange(0, m), IndexRange(0, n)), true) {
   timing::start("Dense alloc");
   data.resize(dim[0]*dim[1], 0);
   timing::stop("Dense alloc");
