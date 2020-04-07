@@ -1,11 +1,13 @@
 #include "hicma/classes/low_rank_view.h"
 
 #include "hicma/classes/dense_view.h"
+#include "hicma/classes/index_range.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/node.h"
 
 #include "yorel/yomm2/cute.hpp"
 
+#include <cassert>
 #include <memory>
 #include <utility>
 
@@ -34,26 +36,26 @@ const DenseView& LowRankView::S() const { return _S; }
 DenseView& LowRankView::V() { return _V; }
 const DenseView& LowRankView::V() const { return _V; }
 
-LowRankView::LowRankView(const Node& node, const LowRank& A)
-: LowRank(node, A.rank, true) {
-  int rel_row_start = (
-    node.row_range.start-A.row_range.start + A.U().row_range.start);
-  U() = DenseView(Node(
-    0, 0, A.U().level+1,
-    IndexRange(rel_row_start, node.row_range.length),
-    IndexRange(0, A.rank)
-  ), A.U());
-  S() = DenseView(
-    Node(0, 0, A.S().level+1, IndexRange(0, A.rank), IndexRange(0, A.rank)),
-    A.S()
+LowRankView::LowRankView(const LowRank& A)
+: LowRankView(IndexRange(0, A.dim[0]), IndexRange(0, A.dim[1]), A) {}
+
+LowRankView::LowRankView(
+  const IndexRange& row_range, const IndexRange& col_range, const LowRank& A
+) {
+  assert(row_range.start+row_range.length <= A.dim[0]);
+  assert(col_range.start+col_range.length <= A.dim[1]);
+  dim[0] = row_range.length;
+  dim[1] = col_range.length;
+  rank = A.rank;
+  U() = DenseView(
+    IndexRange(row_range.start, row_range.length), IndexRange(0, A.rank),
+    A.U()
   );
-  int rel_col_start = (
-    node.col_range.start-A.col_range.start + A.V().col_range.start);
-  V() = DenseView(Node(
-    0, 0, A.V().level+1,
-    IndexRange(0, A.rank),
-    IndexRange(rel_col_start, node.col_range.length)
-  ), A.V());
+  S() = A.S();
+  V() = DenseView(
+    IndexRange(0, A.rank), IndexRange(col_range.start, col_range.length),
+    A.V()
+  );
 }
 
 } // namespace hicma

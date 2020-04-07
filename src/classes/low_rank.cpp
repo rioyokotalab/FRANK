@@ -1,8 +1,10 @@
 #include "hicma/classes/low_rank.h"
 
 #include "hicma/classes/dense.h"
+#include "hicma/classes/index_range.h"
 #include "hicma/classes/node.h"
 #include "hicma/operations/randomized_factorizations.h"
+#include "hicma/operations/misc/get_dim.h"
 
 #include "yorel/yomm2/cute.hpp"
 
@@ -15,6 +17,13 @@
 
 namespace hicma
 {
+
+LowRank::LowRank(const LowRank& A)
+: Node(A), _U(A.U()), _S(A.S()), _V(A.V()),
+  dim{A.dim[0], A.dim[1]}, rank(A.rank)
+{
+  // TODO Change LowRankView to make this unnecessary
+}
 
 std::unique_ptr<Node> LowRank::clone() const {
   return std::make_unique<LowRank>(*this);
@@ -35,17 +44,11 @@ const Dense& LowRank::S() const { return _S; }
 Dense& LowRank::V() { return _V; }
 const Dense& LowRank::V() const { return _V; }
 
-LowRank::LowRank(const Node& node, int k, bool node_only)
-: Node(node), dim{row_range.length, col_range.length}, rank(k) {
-  if (!node_only) {
-    U() = Dense(dim[0], k, i_abs, j_abs, level);
-    S() = Dense(k, k, i_abs, j_abs, level);
-    V() = Dense(k, dim[1], i_abs, j_abs, level);
-  }
+LowRank::LowRank(int m, int n, int k) : dim{m, n}, rank(k) {
+  U() = Dense(dim[0], k);
+  S() = Dense(k, k);
+  V() = Dense(k, dim[1]);
 }
-
-LowRank::LowRank(int m, int n, int k, int i_abs, int j_abs, int level)
-: LowRank(Node(i_abs, j_abs, level, IndexRange(0, m), IndexRange(0, n)), k) {}
 
 LowRank::LowRank(const Dense& A, int k) : Node(A), dim{A.dim[0], A.dim[1]} {
   // Rank with oversampling limited by dimensions
@@ -56,7 +59,6 @@ LowRank::LowRank(const Dense& A, int k) : Node(A), dim{A.dim[0], A.dim[1]} {
   V().resize(k, dim[1]);
   rank = k;
 }
-
 void LowRank::mergeU(const LowRank& A, const LowRank& B) {
   assert(rank == A.rank + B.rank);
   for (int i=0; i<dim[0]; i++) {
@@ -103,20 +105,21 @@ void LowRank::mergeV(const LowRank& A, const LowRank& B) {
   }
 }
 
-LowRank LowRank::get_part(const Node& node) const {
-  assert(is_child(node));
-  LowRank A(node, rank);
-  int rel_row_begin = A.row_range.start - row_range.start;
-  int rel_col_begin = A.col_range.start - col_range.start;
+LowRank LowRank::get_part(
+  const IndexRange& row_range, const IndexRange& col_range
+) const {
+  assert(row_range.start+row_range.length <= dim[0]);
+  assert(col_range.start+col_range.length <= dim[1]);
+  LowRank A(row_range.length, col_range.length, rank);
   for (int i=0; i<A.U().dim[0]; i++) {
     for (int k=0; k<A.U().dim[1]; k++) {
-      A.U()(i, k) = U()(i+rel_row_begin, k);
+      A.U()(i, k) = U()(i+row_range.start, k);
     }
   }
   A.S() = S();
   for (int k=0; k<A.V().dim[0]; k++) {
     for (int j=0; j<A.V().dim[1]; j++) {
-      A.V()(k, j) = V()(k, j+rel_col_begin);
+      A.V()(k, j) = V()(k, j+col_range.start);
     }
   }
   return A;

@@ -12,7 +12,10 @@
 namespace hicma
 {
 
-void zeros(Dense& A, [[maybe_unused]] std::vector<double>& x) {
+void zeros(
+  Dense& A, [[maybe_unused]] std::vector<double>& x,
+  [[maybe_unused]] int i_begin, [[maybe_unused]] int j_begin
+) {
   for (int i=0; i<A.dim[0]; i++) {
     for (int j=0; j<A.dim[1]; j++) {
       A(i, j) = 0;
@@ -20,15 +23,20 @@ void zeros(Dense& A, [[maybe_unused]] std::vector<double>& x) {
   }
 }
 
-void identity(Dense& A, [[maybe_unused]] std::vector<double>& x) {
+void identity(
+  Dense& A, [[maybe_unused]] std::vector<double>& x, int i_begin, int j_begin
+) {
   for (int i=0; i<A.dim[0]; i++) {
     for (int j=0; j<A.dim[1]; j++) {
-      A(i, j) = A.row_range.start+i == A.col_range.start+j ? 1 : 0;
+      A(i, j) = i_begin+i == j_begin+j ? 1 : 0;
     }
   }
 }
 
-void random_normal(Dense& A, [[maybe_unused]] std::vector<double>& x) {
+void random_normal(
+  Dense& A, [[maybe_unused]] std::vector<double>& x,
+  [[maybe_unused]] int i_begin, [[maybe_unused]] int j_begin
+) {
   std::random_device rd;
   std::mt19937 gen(rd());
   // TODO Remove random seed when experiments end
@@ -41,7 +49,10 @@ void random_normal(Dense& A, [[maybe_unused]] std::vector<double>& x) {
   }
 }
 
-void random_uniform(Dense& A, [[maybe_unused]] std::vector<double>& x) {
+void random_uniform(
+  Dense& A, [[maybe_unused]] std::vector<double>& x,
+  [[maybe_unused]] int i_begin, [[maybe_unused]] int j_begin
+) {
   std::random_device rd;
   std::mt19937 gen(rd());
   // TODO Remove random seed when experiments end
@@ -54,7 +65,10 @@ void random_uniform(Dense& A, [[maybe_unused]] std::vector<double>& x) {
   }
 }
 
-void arange(Dense& A, [[maybe_unused]] std::vector<double>& x) {
+void arange(
+  Dense& A, [[maybe_unused]] std::vector<double>& x,
+  [[maybe_unused]] int i_begin, [[maybe_unused]] int j_begin
+) {
   for (int i=0; i<A.dim[0]; i++) {
     for (int j=0; j<A.dim[1]; j++) {
       A(i, j) = (double)(i*A.dim[1]+j);
@@ -62,11 +76,13 @@ void arange(Dense& A, [[maybe_unused]] std::vector<double>& x) {
   }
 }
 
-void laplace1d(Dense& A, std::vector<double>& x) {
+void laplace1d(
+  Dense& A, std::vector<double>& x, int i_begin, int j_begin
+) {
   for (int i=0; i<A.dim[0]; i++) {
     for (int j=0; j<A.dim[1]; j++) {
       A(i, j) = 1 / (
-        std::abs(x[i+A.row_range.start] - x[j+A.col_range.start]) + 1e-3);
+        std::abs(x[i+i_begin] - x[j+j_begin]) + 1e-3);
     }
   }
 }

@@ -11,6 +11,7 @@
 namespace hicma
 {
 
+class IndexRange;
 class Node;
 
 class DenseView : public Dense {
@@ -43,14 +44,15 @@ class DenseView : public Dense {
   const char* type() const override;
 
   // Additional constructors
-  DenseView(const Node& node, Dense& A);
+  DenseView(Dense& A);
 
-  DenseView(const Node& node, const Dense& A);
+  DenseView(const Dense& A);
 
-  // Additional operators
-  DenseView& operator=(Dense& A);
+  DenseView(
+    const IndexRange& row_range, const IndexRange& col_range, Dense& A);
 
-  DenseView& operator=(const Dense& A);
+  DenseView(
+    const IndexRange& row_range, const IndexRange& col_range, const Dense& A);
 
   // Delete methods that cannot be used from Dense
   void tranpose() = delete;

@@ -51,19 +51,19 @@ int main(int argc, char** argv) {
     for(int jc = 0; jc < Nc; jc++) {
       Dense Aij;
       if(matCode == 0) {
-        Dense _Aij(laplacend, randpts, Nb, Nb, Nb*ic, Nb*jc, ic, jc, 1);
+        Dense _Aij(laplacend, randpts, Nb, Nb, Nb*ic, Nb*jc);
         Aij = std::move(_Aij);
       }
       else if(matCode == 1) {
-        Dense _Aij(helmholtznd, randpts, Nb, Nb, Nb*ic, Nb*jc, ic, jc, 1);
+        Dense _Aij(helmholtznd, randpts, Nb, Nb, Nb*ic, Nb*jc);
         Aij = std::move(_Aij);
       }
       else if(matCode == 2) {
-        Dense _Aij(cauchy2d, randpts, Nb, Nb, Nb*ic, Nb*jc, ic, jc, 1);
+        Dense _Aij(cauchy2d, randpts, Nb, Nb, Nb*ic, Nb*jc);
         Aij = std::move(_Aij);
       }
       else {
-        Dense _Aij(zeros, randpts[0], Nb, Nb, Nb*ic, Nb*jc, ic, jc, 1);
+        Dense _Aij(zeros, randpts[0], Nb, Nb, Nb*ic, Nb*jc);
         getSubmatrix(DA, Nb, Nb, Nb*ic, Nb*jc, _Aij);
         Aij = std::move(_Aij);
       }

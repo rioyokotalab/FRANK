@@ -26,9 +26,8 @@ std::unique_ptr<Node> LowRankShared::move_clone() {
 const char* LowRankShared::type() const { return "LowRankShared"; }
 
 LowRankShared::LowRankShared(
-  const Node& node,
   const Dense& S, std::shared_ptr<Dense> U, std::shared_ptr<Dense> V
-) : Node(node), U(U), V(V), S(S), dim{U->dim[0], V->dim[1]}, rank(S.dim[0]) {}
+) : U(U), V(V), S(S), dim{U->dim[0], V->dim[1]}, rank(S.dim[0]) {}
 
 define_method(Dense, make_dense, (const LowRankShared& A)) {
   // TODO exactly the same as the LowRank method. Consider inheritance!

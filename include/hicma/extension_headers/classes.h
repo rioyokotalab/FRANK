@@ -3,6 +3,7 @@
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
+#include "hicma/classes/index_range.h"
 #include "hicma/classes/node.h"
 #include "hicma/classes/no_copy_split.h"
 
@@ -14,15 +15,19 @@ namespace hicma
 {
 
 declare_method(
-  Hierarchical, make_hierarchical,
-  (virtual_<const Node &>, int, int)
+  void, fill_hierarchical_from,
+  (Hierarchical&, virtual_<const Node &>)
 )
 
 declare_method(NoCopySplit, make_no_copy_split, (virtual_<Node&>, int, int))
 
 declare_method(
-  NoCopySplit, make_no_copy_split_const,
-  (virtual_<const Node&>, int, int)
+  NodeProxy, make_view,
+  (const IndexRange&, const IndexRange&, virtual_<Node&>)
+)
+declare_method(
+  NodeProxy, make_view,
+  (const IndexRange&, const IndexRange&, virtual_<const Node&>)
 )
 
 declare_method(Dense, make_dense, (virtual_<const Node&>))

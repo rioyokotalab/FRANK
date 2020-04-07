@@ -12,6 +12,7 @@
 namespace hicma
 {
 
+class IndexRange;
 class Node;
 
 class LowRankView : public LowRank {
@@ -47,7 +48,11 @@ class LowRankView : public LowRank {
   DenseView& V() override;
   const DenseView& V() const override;
 
-  LowRankView(const Node& node, const LowRank& A);
+  // Constructors
+  LowRankView(const LowRank& A);
+
+  LowRankView(
+    const IndexRange& row_range, const IndexRange& col_range, const LowRank& A);
 };
 
 register_class(LowRankView, LowRank)

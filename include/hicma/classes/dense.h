@@ -12,9 +12,7 @@
 namespace hicma
 {
 
-class NodeProxy;
-class LowRank;
-class Hierarchical;
+class IndexRange;
 
 class Dense : public Node {
  private:
@@ -48,28 +46,26 @@ class Dense : public Node {
   virtual const char* type() const override;
 
   // Explicit conversions using multiple-dispatch function.
-  explicit Dense(const Node& A, bool node_only=false);
+  explicit Dense(const Node& A);
 
   // Additional constructors
   Dense(
-    int m, int n=1,
-    int i_abs=0, int j_abs=0,
-    int level=0
+    int m, int n=1
   );
 
   Dense(
-    const Node& node,
-    void (*func)(Dense& A, std::vector<double>& x),
-    std::vector<double>& x
+    const IndexRange& row_range,
+    const IndexRange& col_range,
+    void (*func)(Dense& A, std::vector<double>& x, int i_begin, int j_begin),
+    std::vector<double>& x,
+    int i_begin, int j_begin
   );
 
   Dense(
-    void (*func)(Dense& A, std::vector<double>& x),
+    void (*func)(Dense& A, std::vector<double>& x, int i_begin, int j_begin),
     std::vector<double>& x,
     int ni, int nj=1,
-    int i_begin=0, int j_begin=0,
-    int i_abs=0, int j_abs=0,
-    int level=0
+    int i_begin=0, int j_begin=0
   );
 
   Dense(
@@ -81,9 +77,7 @@ class Dense : public Node {
     ),
     std::vector<std::vector<double>>& x,
     const int ni, const int nj,
-    const int i_begin=0, const int j_begin=0,
-    const int i_abs=0, const int j_abs=0,
-    const int level=0
+    const int i_begin=0, const int j_begin=0
   );
 
   // Additional operators
@@ -121,7 +115,8 @@ class Dense : public Node {
   void transpose();
 
   // Get part of other Dense
-  Dense get_part(const Node& node) const;
+  Dense get_part(
+    const IndexRange& row_range, const IndexRange& col_range) const;
 };
 
 register_class(Dense, Node)

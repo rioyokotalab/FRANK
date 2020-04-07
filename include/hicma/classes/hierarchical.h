@@ -1,6 +1,7 @@
 #ifndef hicma_classes_hierarchical_h
 #define hicma_classes_hierarchical_h
 
+#include "hicma/classes/index_range.h"
 #include "hicma/classes/node.h"
 #include "hicma/classes/node_proxy.h"
 
@@ -15,12 +16,12 @@ namespace hicma
 {
 
 class Dense;
-class LowRank;
-
 class Hierarchical : public Node {
  private:
   std::vector<NodeProxy> data;
  public:
+  // TODO Remove these and make temporary only for construction?
+  IndexRange row_range, col_range;
   int dim[2] = {0, 0};
 
   // Special member functions
@@ -46,37 +47,32 @@ class Hierarchical : public Node {
   // Conversion constructors
   Hierarchical(NodeProxy&&);
 
-  Hierarchical(
-    const Node& node, int ni_level, int nj_level, bool node_only=false);
+  Hierarchical(const Node& node, int ni_level, int nj_level);
 
   // Additional constructors
-  Hierarchical(
-    int ni_level, int nj_level=1,
-    int i_abs=0, int j_abs=0,
-    int level=0
-  );
+  Hierarchical(int ni_level, int nj_level=1);
 
   Hierarchical(
-    const Node& node,
-    void (*func)(Dense& A, std::vector<double>& x),
+    IndexRange row_range, IndexRange col_range,
+    void (*func)(Dense& A, std::vector<double>& x, int i_begin, int j_begin),
     std::vector<double>& x,
     int rank,
     int nleaf,
     int admis=1,
-    int ni_level=2, int nj_level=2
+    int ni_level=2, int nj_level=2,
+    int i_begin=0, int j_begin=0,
+    int i_abs=0, int j_abs=0
   );
 
   Hierarchical(
-    void (*func)(Dense& A, std::vector<double>& x),
+    void (*func)(Dense& A, std::vector<double>& x, int i_begin, int j_begin),
     std::vector<double>& x,
     int ni, int nj,
     int rank,
     int nleaf,
     int admis=1,
     int ni_level=2, int nj_level=2,
-    int i_begin=0, int j_begin=0,
-    int i_abs=0, int j_abs=0,
-    int level=0
+    int i_begin=0, int j_begin=0
   );
 
   // Additional operators
@@ -108,11 +104,11 @@ class Hierarchical : public Node {
 
   void create_children();
 
-  bool is_admissible(const Node& node, int dist_to_diag);
+  bool is_admissible(
+    int i, int j, int i_abs, int j_abs, int dist_to_diag
+  );
 
-  bool is_leaf(const Node& node, int nleaf);
-
-  std::tuple<int, int> get_rel_pos_child(const Node& node);
+  bool is_leaf(int i, int j, int nleaf);
 };
 
 register_class(Hierarchical, Node)

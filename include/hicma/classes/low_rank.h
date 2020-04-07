@@ -12,6 +12,8 @@
 namespace hicma
 {
 
+class IndexRange;
+
 class LowRank : public Node {
  private:
   Dense _U, _S, _V;
@@ -24,7 +26,7 @@ class LowRank : public Node {
 
   virtual ~LowRank() = default;
 
-  LowRank(const LowRank& A) = default;
+  LowRank(const LowRank& A);
 
   LowRank& operator=(const LowRank& A) = default;
 
@@ -50,14 +52,7 @@ class LowRank : public Node {
   virtual const Dense& V() const;
 
   // Additional constructors
-  LowRank(const Node& node, int k, bool node_only=false);
-
-  LowRank(
-    int m, int n,
-    int k,
-    int i_abs=0, int j_abs=0,
-    int level=0
-  );
+  LowRank(int m, int n, int k);
 
   LowRank(const Dense& A, int k);
 
@@ -68,7 +63,8 @@ class LowRank : public Node {
 
   void mergeV(const LowRank& A, const LowRank& B);
 
-  LowRank get_part(const Node& node) const;
+  LowRank get_part(
+    const IndexRange& row_range, const IndexRange& col_range) const;
 };
 
 register_class(LowRank, Node)

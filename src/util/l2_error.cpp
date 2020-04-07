@@ -106,6 +106,18 @@ define_method(
 }
 
 define_method(
+  DoublePair, collect_diff_norm_omm, (const LowRank& A, const LowRankShared& B)
+) {
+  return collect_diff_norm_omm(Dense(A), Dense(B));
+}
+
+define_method(
+  DoublePair, collect_diff_norm_omm, (const LowRankShared& A, const LowRank& B)
+) {
+  return collect_diff_norm_omm(Dense(A), Dense(B));
+}
+
+define_method(
   DoublePair, collect_diff_norm_omm,
   (const LowRankShared& A, const LowRankShared& B)
 ) {

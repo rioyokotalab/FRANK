@@ -124,7 +124,7 @@ define_method(void, addition_omm, (LowRank& A, const LowRank& B)) {
       A = LowRank(Dense(A) + Dense(B), A.rank);
     }
     else {
-      LowRank C(A.dim[0], A.dim[1], A.rank+B.rank, A.i_abs, A.j_abs, A.level);
+      LowRank C(A.dim[0], A.dim[1], A.rank+B.rank);
       C.mergeU(A, B);
       C.mergeS(A, B);
       C.mergeV(A, B);
@@ -136,7 +136,7 @@ define_method(void, addition_omm, (LowRank& A, const LowRank& B)) {
   } else if(getCounter("LRA") == 1) {
     //Bebendorf HMatrix Book p16
     //Rounded Addition
-    LowRank C(A.dim[0], A.dim[1], A.rank+B.rank, A.i_abs, A.j_abs, A.level);
+    LowRank C(A.dim[0], A.dim[1], A.rank+B.rank);
     C.mergeU(A, B);
     C.mergeS(A, B);
     C.mergeV(A, B);

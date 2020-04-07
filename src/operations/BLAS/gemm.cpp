@@ -218,9 +218,8 @@ define_method(
   )
 ) {
   assert(A.rank == B.rank);
-  LowRankView AxB(A, A);
+  LowRankView AxB(A);
   AxB.V() = B.V();
-  AxB.col_range = B.col_range;
   AxB.dim[1] = B.dim[1];
   Dense S(A.rank, B.rank);
   gemm(A.V(), B.U(), S, 1, 0);
@@ -271,9 +270,8 @@ define_method(
     double alpha, double beta
   )
 ) {
-  LowRankView AxB(A, A);
+  LowRankView AxB(A);
   AxB.V() = B.V();
-  AxB.col_range = B.col_range;
   AxB.dim[1] = B.dim[1];
   Dense S(A.rank, B.rank);
   gemm(A.V(), B.U(), S, 1, 0);

@@ -8,6 +8,8 @@ namespace hicma
 {
 
 class IndexRange {
+ private:
+  std::vector<IndexRange> children;
  public:
   int start = 0;
   int length = 0;
@@ -28,8 +30,12 @@ class IndexRange {
   // Additional constructors
   IndexRange(int start, int length);
 
+  // Indexing
+  IndexRange& operator[](int i);
+  const IndexRange& operator[](int i) const;
+
   // Additional methods
-  std::vector<IndexRange> split(int n_splits);
+  void split(int n_splits);
 
   bool is_subrange(const IndexRange& range) const;
 };

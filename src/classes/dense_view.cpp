@@ -1,6 +1,7 @@
 #include "hicma/classes/dense_view.h"
 
 #include "hicma/classes/dense.h"
+#include "hicma/classes/index_range.h"
 
 #include <cassert>
 #include <memory>
@@ -20,34 +21,34 @@ std::unique_ptr<Node> DenseView::move_clone() {
 
 const char* DenseView::type() const { return "DenseView"; }
 
-DenseView::DenseView(const Node& node, Dense& A)
-: Dense(node, true) {
-  assert(A.is_child(node));
+DenseView::DenseView(Dense& A)
+: DenseView(IndexRange(0, A.dim[0]), IndexRange(0, A.dim[1]), A) {}
+
+DenseView::DenseView(const Dense& A)
+: DenseView(IndexRange(0, A.dim[0]), IndexRange(0, A.dim[1]), A) {}
+
+DenseView::DenseView(
+  const IndexRange& row_range, const IndexRange& col_range, Dense& A
+) {
+  assert(row_range.start+row_range.length <= A.dim[0]);
+  assert(col_range.start+col_range.length <= A.dim[1]);
+  dim[0] = row_range.length;
+  dim[1] = col_range.length;
   stride = A.stride;
-  int rel_row_begin = node.row_range.start - A.row_range.start;
-  int rel_col_begin = node.col_range.start - A.col_range.start;
-  data = &A(rel_row_begin, rel_col_begin);
-  const_data = &A(rel_row_begin, rel_col_begin);
+  data = &A(row_range.start, col_range.start);
+  const_data = &A(row_range.start, col_range.start);
 }
 
-DenseView::DenseView(const Node& node, const Dense& A)
-: Dense(node, true) {
-  assert(A.is_child(node));
+DenseView::DenseView(
+  const IndexRange& row_range, const IndexRange& col_range, const Dense& A
+) {
+  assert(row_range.start+row_range.length <= A.dim[0]);
+  assert(col_range.start+col_range.length <= A.dim[1]);
+  dim[0] = row_range.length;
+  dim[1] = col_range.length;
   stride = A.stride;
-  int rel_row_begin = node.row_range.start - A.row_range.start;
-  int rel_col_begin = node.col_range.start - A.col_range.start;
   data = nullptr;
-  const_data = &A(rel_row_begin, rel_col_begin);
-}
-
-DenseView& DenseView::operator=(Dense& A) {
-  *this = DenseView(A, A);
-  return *this;
-}
-
-DenseView& DenseView::operator=(const Dense& A) {
-  *this = DenseView(A, A);
-  return *this;
+  const_data = &A(row_range.start, col_range.start);
 }
 
 double* DenseView::get_pointer() {

@@ -28,7 +28,7 @@ namespace hicma
 std::tuple<NodeProxy, NodeProxy> getrf(Node& A) { return getrf_omm(A); }
 
 define_method(NodePair, getrf_omm, (Hierarchical& A)) {
-  Hierarchical L(A, A.dim[0], A.dim[1], true);
+  Hierarchical L(A.dim[0], A.dim[1]);
   for (int i=0; i<A.dim[0]; i++) {
     std::tie(L(i, i), A(i, i)) = getrf(A(i,i));
     for (int i_c=i+1; i_c<L.dim[0]; i_c++) {
@@ -69,7 +69,7 @@ define_method(NodePair, getrf_omm, (Dense& A)) {
 }
 
 define_method(NodePair, getrf_omm, (UniformHierarchical& A)) {
-  UniformHierarchical L(A, A.dim[0], A.dim[1]);
+  UniformHierarchical L(A.dim[0], A.dim[1]);
   // TODO This is a fairly instable way of copying the bases.
   // Later methods involvin LowRankShared will check for matching pointers to
   // make operations faster, and that might break depending on what happens

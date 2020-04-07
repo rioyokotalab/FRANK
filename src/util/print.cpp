@@ -25,15 +25,25 @@ bool VERBOSE = true;
 static const int stringLength = 30; //!< Length of formatted string
 static const int decimal = 7; //!< Decimal precision
 
-declare_method(void, fillXML_omm, (virtual_<const Node&>, pt::ptree&))
+declare_method(
+  void, fillXML_omm,
+  (virtual_<const Node&>, pt::ptree&, int, int, int)
+)
 
-void fillXML(const Node& A, pt::ptree& tree) { fillXML_omm(A, tree); }
+void fillXML(
+  const Node& A, pt::ptree& tree, int i_abs=0, int j_abs=0, int level=0
+) {
+  fillXML_omm(A, tree, i_abs, j_abs, level);
+}
 
-define_method(void, fillXML_omm, (const Hierarchical& A, pt::ptree& tree)) {
+define_method(
+  void, fillXML_omm,
+  (const Hierarchical& A, pt::ptree& tree, int i_abs, int j_abs, int level)
+) {
   for (int i=0; i<A.dim[0]; i++) {
     for (int j=0; j<A.dim[1]; j++) {
       pt::ptree el_subtree{};
-      fillXML(A(i, j), el_subtree);
+      fillXML(A(i, j), el_subtree, i_abs*A.dim[0]+i, j_abs*A.dim[1]+j, level+1);
       std::string el_name = "i" + std::to_string(i) + "j" + std::to_string(j);
       tree.add_child(el_name, el_subtree);
       tree.put(el_name + ".<xmlattr>.type", A(i, j).type());
@@ -42,12 +52,15 @@ define_method(void, fillXML_omm, (const Hierarchical& A, pt::ptree& tree)) {
   tree.put("<xmlattr>.type", A.type());
   tree.put("<xmlattr>.dim0", A.dim[0]);
   tree.put("<xmlattr>.dim1", A.dim[1]);
-  tree.put("<xmlattr>.i_abs", A.i_abs);
-  tree.put("<xmlattr>.j_abs", A.j_abs);
-  tree.put("<xmlattr>.level", A.level);
+  tree.put("<xmlattr>.i_abs", i_abs);
+  tree.put("<xmlattr>.j_abs", j_abs);
+  tree.put("<xmlattr>.level", level);
 }
 
-define_method(void, fillXML_omm, (const LowRank& A, pt::ptree& tree)) {
+define_method(
+  void, fillXML_omm,
+  (const LowRank& A, pt::ptree& tree, int i_abs, int j_abs, int level)
+) {
   Dense AD(A);
   Dense S = get_singular_values(AD);
   std::string singular_values = std::to_string(S[0]);
@@ -56,14 +69,17 @@ define_method(void, fillXML_omm, (const LowRank& A, pt::ptree& tree)) {
   tree.put("<xmlattr>.type", A.type());
   tree.put("<xmlattr>.dim0", A.dim[0]);
   tree.put("<xmlattr>.dim1", A.dim[1]);
-  tree.put("<xmlattr>.i_abs", A.i_abs);
-  tree.put("<xmlattr>.j_abs", A.j_abs);
-  tree.put("<xmlattr>.level", A.level);
+  tree.put("<xmlattr>.i_abs", i_abs);
+  tree.put("<xmlattr>.j_abs", j_abs);
+  tree.put("<xmlattr>.level", level);
   tree.put("<xmlattr>.rank", A.rank);
   tree.put("<xmlattr>.svalues", singular_values);
 }
 
-define_method(void, fillXML_omm, (const LowRankShared& A, pt::ptree& tree)) {
+define_method(
+  void, fillXML_omm,
+  (const LowRankShared& A, pt::ptree& tree, int i_abs, int j_abs, int level)
+) {
   Dense AD(A);
   Dense S = get_singular_values(AD);
   std::string singular_values = std::to_string(S[0]);
@@ -72,14 +88,17 @@ define_method(void, fillXML_omm, (const LowRankShared& A, pt::ptree& tree)) {
   tree.put("<xmlattr>.type", A.type());
   tree.put("<xmlattr>.dim0", A.dim[0]);
   tree.put("<xmlattr>.dim1", A.dim[1]);
-  tree.put("<xmlattr>.i_abs", A.i_abs);
-  tree.put("<xmlattr>.j_abs", A.j_abs);
-  tree.put("<xmlattr>.level", A.level);
+  tree.put("<xmlattr>.i_abs", i_abs);
+  tree.put("<xmlattr>.j_abs", j_abs);
+  tree.put("<xmlattr>.level", level);
   tree.put("<xmlattr>.rank", A.rank);
   tree.put("<xmlattr>.svalues", singular_values);
 }
 
-define_method(void, fillXML_omm, (const Dense& A, pt::ptree& tree)) {
+define_method(
+  void, fillXML_omm,
+  (const Dense& A, pt::ptree& tree, int i_abs, int j_abs, int level)
+) {
   Dense A_(A);
   Dense S = get_singular_values(A_);
   std::string singular_values = std::to_string(S[0]);
@@ -88,14 +107,19 @@ define_method(void, fillXML_omm, (const Dense& A, pt::ptree& tree)) {
   tree.put("<xmlattr>.type", A.type());
   tree.put("<xmlattr>.dim0", A.dim[0]);
   tree.put("<xmlattr>.dim1", A.dim[1]);
-  tree.put("<xmlattr>.i_abs", A.i_abs);
-  tree.put("<xmlattr>.j_abs", A.j_abs);
-  tree.put("<xmlattr>.level", A.level);
+  tree.put("<xmlattr>.i_abs", i_abs);
+  tree.put("<xmlattr>.j_abs", j_abs);
+  tree.put("<xmlattr>.level", level);
   tree.put("<xmlattr>.svalues", singular_values);
 }
 
 define_method(
-  void, fillXML_omm, (const Node& A, [[maybe_unused]] pt::ptree& tree)
+  void, fillXML_omm,
+  (
+    const Node& A, [[maybe_unused]] pt::ptree& tree,
+    [[maybe_unused]] int i_abs, [[maybe_unused]] int j_abs,
+    [[maybe_unused]] int level
+  )
 ) {
   omm_error_handler("fillXML", {A}, __FILE__, __LINE__);
 }

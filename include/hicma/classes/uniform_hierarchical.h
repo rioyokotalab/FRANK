@@ -12,44 +12,49 @@
 namespace hicma
 {
 
-class NodeProxy;
 class Dense;
+class IndexRange;
 class LowRankShared;
+class NodeProxy;
 
 class UniformHierarchical : public Hierarchical {
  private:
   std::vector<std::shared_ptr<Dense>> col_basis, row_basis;
 
   Dense make_block_row(
-    int row,
-    void (*func)(Dense& A, std::vector<double>& x),
+    int row, int i_abs, int j_abs,
+    void (*func)(Dense& A, std::vector<double>& x, int i_begin, int j_begin),
     std::vector<double>& x,
-    int admis
+    int admis,
+    int i_begin, int j_begin
   );
 
   Dense make_block_col(
-    int row,
-    void (*func)(Dense& A, std::vector<double>& x),
+    int col, int i_abs, int j_abs,
+    void (*func)(Dense& A, std::vector<double>& x, int i_begin, int j_begin),
     std::vector<double>& x,
-    int admis
+    int admis,
+    int i_begin, int j_begin
   );
 
   LowRankShared construct_shared_block_id(
-    NodeProxy& child,
+    int i, int j, int i_abs, int j_abs,
     std::vector<std::vector<int>>& selected_rows,
     std::vector<std::vector<int>>& selected_cols,
-    void (*func)(Dense& A, std::vector<double>& x),
+    void (*func)(Dense& A, std::vector<double>& x, int i_begin, int j_begin),
     std::vector<double>& x,
     int rank,
-    int admis
+    int admis,
+    int i_begin, int j_begin
   );
 
   LowRankShared construct_shared_block_svd(
-    NodeProxy& child,
-    void (*func)(Dense& A, std::vector<double>& x),
+    int i, int j, int i_abs, int j_abs,
+    void (*func)(Dense& A, std::vector<double>& x, int i_begin, int j_begin),
     std::vector<double>& x,
     int rank,
-    int admis
+    int admis,
+    int i_begin, int j_begin
   );
  public:
   // Special member functions
@@ -76,21 +81,23 @@ class UniformHierarchical : public Hierarchical {
   UniformHierarchical(NodeProxy&&);
 
   // Additional constructors
-  UniformHierarchical(const Node& node, int ni_level, int nj_level);
+  UniformHierarchical(int ni_level, int nj_level);
 
   UniformHierarchical(
-    const Node& node,
-    void (*func)(Dense& A, std::vector<double>& x),
+    IndexRange row_range, IndexRange col_range,
+    void (*func)(Dense& A, std::vector<double>& x, int i_begin, int j_begin),
     std::vector<double>& x,
     int rank,
     int nleaf,
     int admis=1,
     int ni_level=2, int nj_level=2,
-    bool use_svd=false
+    bool use_svd=false,
+    int i_begin=0, int j_begin=0,
+    int i_abs=0, int j_abs=0
   );
 
   UniformHierarchical(
-    void (*func)(Dense& A, std::vector<double>& x),
+    void (*func)(Dense& A, std::vector<double>& x, int i_begin, int j_begin),
     std::vector<double>& x,
     int ni, int nj,
     int rank,
@@ -99,8 +106,7 @@ class UniformHierarchical : public Hierarchical {
     int ni_level=2, int nj_level=2,
     bool use_svd=false,
     int i_begin=0, int j_begin=0,
-    int i_abs=0, int j_abs=0,
-    int level=0
+    int i_abs=0, int j_abs=0
   );
 
   // Additional indexing methods

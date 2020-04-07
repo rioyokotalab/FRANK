@@ -2,6 +2,7 @@
 #include "hicma/extension_headers/classes.h"
 
 #include "hicma/classes/hierarchical.h"
+#include "hicma/classes/index_range.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/node.h"
 #include "hicma/classes/node_proxy.h"
@@ -45,11 +46,9 @@ std::unique_ptr<Node> Dense::move_clone() {
 
 const char* Dense::type() const { return "Dense"; }
 
-Dense::Dense(const Node& A, bool node_only)
-: Node(A), dim{A.row_range.length, A.col_range.length}, stride(dim[1]) {
-  if (!node_only) {
-    *this = make_dense(A);
-  }
+Dense::Dense(const Node& A)
+: Node(A), dim{get_n_rows(A), get_n_cols(A)}, stride(dim[1]) {
+  *this = make_dense(A);
 }
 
 define_method(Dense, make_dense, (const Hierarchical& A)) {
@@ -96,33 +95,31 @@ define_method(Dense, make_dense, (const Node& A)) {
   abort();
 }
 
-Dense::Dense(int m, int n, int i_abs, int j_abs, int level)
-: Dense(Node(i_abs, j_abs, level, IndexRange(0, m), IndexRange(0, n)), true) {
+Dense::Dense(int m, int n)
+: dim{m, n}, stride(n) {
   timing::start("Dense alloc");
   data.resize(dim[0]*dim[1], 0);
   timing::stop("Dense alloc");
 }
 
 Dense::Dense(
-  const Node& node,
-  void (*func)(Dense& A, std::vector<double>& x),
-  std::vector<double>& x
-) : Node(node), dim{node.row_range.length, node.col_range.length}, stride(dim[1]) {
+  const IndexRange& row_range, const IndexRange& col_range,
+  void (*func)(Dense& A, std::vector<double>& x, int i_begin, int j_begin),
+  std::vector<double>& x,
+  int i_begin, int j_begin
+) : dim{row_range.length, col_range.length}, stride(dim[1]) {
+  // TODO This function is still aware of hierarchical matrix idea. Change?
+  // Related to making helper class for construction.
   data.resize(dim[0]*dim[1]);
-  func(*this, x);
+  func(*this, x, i_begin, j_begin);
 }
 
 Dense::Dense(
-  void (*func)(Dense& A, std::vector<double>& x),
+  void (*func)(Dense& A, std::vector<double>& x, int i_begin, int j_begin),
   std::vector<double>& x,
   int ni, int nj,
-  int i_begin, int j_begin,
-  int i_abs, int j_abs,
-  int level
-) : Dense(
-  Node(i_abs, j_abs, level, IndexRange(i_begin, ni), IndexRange(j_begin, nj)),
-  func, x
-) {}
+  int i_begin, int j_begin
+) : Dense(IndexRange(0, ni), IndexRange(0, nj), func, x, i_begin, j_begin) {}
 
 Dense::Dense(
   void (*func)(
@@ -133,10 +130,8 @@ Dense::Dense(
   ),
   std::vector<std::vector<double>>& x,
   const int ni, const int nj,
-  const int i_begin, const int j_begin,
-  const int i_abs, const int j_abs,
-  const int level
-) : Node(i_abs,j_abs,level), dim{ni, nj}, stride(nj) {
+  const int i_begin, const int j_begin
+) : dim{ni, nj}, stride(nj) {
   data.resize(dim[0]*dim[1]);
   func(data, x, ni, nj, i_begin, j_begin);
 }
@@ -259,8 +254,6 @@ void Dense::resize(int dim0, int dim1) {
       data[i*dim1+j] = (*this)(i, j);
     }
   }
-  row_range.length = dim0;
-  col_range.length = dim1;
   dim[0] = dim0;
   dim[1] = dim1;
   stride = dim[1];
@@ -269,7 +262,7 @@ void Dense::resize(int dim0, int dim1) {
 }
 
 Dense Dense::transpose() const {
-  Dense A(dim[1], dim[0], i_abs, j_abs, level);
+  Dense A(dim[1], dim[0]);
   for (int i=0; i<dim[0]; i++) {
     for (int j=0; j<dim[1]; j++) {
       A(j,i) = (*this)(i,j);
@@ -283,7 +276,6 @@ void Dense::transpose() {
   Dense Copy(*this);
   std::swap(dim[0], dim[1]);
   stride = dim[1];
-  std::swap(row_range, col_range);
   for(int i=0; i<dim[0]; i++) {
     for(int j=0; j<dim[1]; j++) {
       (*this)(i, j) = Copy(j, i);
@@ -291,15 +283,15 @@ void Dense::transpose() {
   }
 }
 
-Dense Dense::get_part(const Node& node) const {
-  assert(is_child(node));
-  Dense A(node, true);
-  A.data.resize(A.dim[0]*A.dim[1]);
-  int rel_row_begin = A.row_range.start - row_range.start;
-  int rel_col_begin = A.col_range.start - col_range.start;
+Dense Dense::get_part(
+  const IndexRange& row_range, const IndexRange& col_range
+) const {
+  assert(row_range.start+row_range.length <= dim[0]);
+  assert(col_range.start+col_range.length <= dim[1]);
+  Dense A(row_range.length, col_range.length);
   for (int i=0; i<A.dim[0]; i++) {
     for (int j=0; j<A.dim[1]; j++) {
-      A(i, j) = (*this)(i+rel_row_begin, j+rel_col_begin);
+      A(i, j) = (*this)(i+row_range.start, j+col_range.start);
     }
   }
   return A;

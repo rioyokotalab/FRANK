@@ -9,17 +9,17 @@ namespace hicma
 
 class Dense;
 
-void zeros(Dense& A, std::vector<double>& x);
+void zeros(Dense& A, std::vector<double>& x, int i_begin, int j_begin);
 
-void identity(Dense& A, std::vector<double>& x);
+void identity(Dense& A, std::vector<double>& x, int i_begin, int j_begin);
 
-void random_normal(Dense& A, std::vector<double>& x);
+void random_normal(Dense& A, std::vector<double>& x, int i_begin, int j_begin);
 
-void random_uniform(Dense& A, std::vector<double>& x);
+void random_uniform(Dense& A, std::vector<double>& x, int i_begin, int j_begin);
 
-void arange(Dense& A, std::vector<double>& x);
+void arange(Dense& A, std::vector<double>& x, int i_begin, int j_begin);
 
-void laplace1d(Dense& A, std::vector<double>& x);
+void laplace1d(Dense& A, std::vector<double>& x, int i_begin, int j_begin);
 
 void cauchy2d(
   std::vector<double>& data,
