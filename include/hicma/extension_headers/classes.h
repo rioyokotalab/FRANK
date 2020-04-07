@@ -30,7 +30,7 @@ declare_method(
   (const IndexRange&, const IndexRange&, virtual_<const Node&>)
 )
 
-declare_method(Dense, make_dense, (virtual_<const Node&>))
+declare_method(void, fill_dense_from, (virtual_<const Node&>, virtual_<Node&>))
 
 } // namespace hicma
 

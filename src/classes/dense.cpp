@@ -26,6 +26,7 @@ namespace hicma
 
 Dense::Dense(const Dense& A)
 : Node(A), dim{A.dim[0], A.dim[1]}, stride(A.dim[1]) {
+  // TODO Make this unnecessary by changing DenseView (sibling not child?).
   timing::start("Dense cctor");
   data.resize(dim[0]*dim[1], 0);
   for (int i=0; i<dim[0]; i++) {
@@ -48,50 +49,42 @@ const char* Dense::type() const { return "Dense"; }
 
 Dense::Dense(const Node& A)
 : Node(A), dim{get_n_rows(A), get_n_cols(A)}, stride(dim[1]) {
-  *this = make_dense(A);
+  data.resize(dim[0]*dim[1], 0);
+  fill_dense_from(A, *this);
 }
 
-define_method(Dense, make_dense, (const Hierarchical& A)) {
+define_method(void, fill_dense_from, (const Hierarchical& A, Dense& B)) {
   timing::start("make_dense(H)");
-  Dense B(get_n_rows(A), get_n_cols(A));
-  // TODO This loop copies the data multiple times
-  int i_begin = 0;
+  NoCopySplit BH(B, A.dim[0], A.dim[1]);
   for (int i=0; i<A.dim[0]; i++) {
-    int j_begin = 0;
     for (int j=0; j<A.dim[1]; j++) {
-      Dense AD = Dense(A(i,j));
-      for (int ic=0; ic<AD.dim[0]; ic++) {
-        for (int jc=0; jc<AD.dim[1]; jc++) {
-          B(ic+i_begin, jc+j_begin) = AD(ic,jc);
-        }
-      }
-      j_begin += AD.dim[1];
+      fill_dense_from(A(i, j), BH(i, j));
     }
-    i_begin += get_n_rows(A(i, 0));
   }
   timing::stop("make_dense(H)");
-  // TODO Consider return with std::move. Test if the copy is elided!!
-  return B;
 }
 
-define_method(Dense, make_dense, (const LowRank& A)) {
+define_method(void, fill_dense_from, (const LowRank& A, Dense& B)) {
   timing::start("make_dense(LR)");
-  Dense B(A.dim[0], A.dim[1]);
   Dense UxS(A.dim[0], A.rank);
   gemm(A.U(), A.S(), UxS, 1, 0);
   gemm(UxS, A.V(), B, 1, 0);
   // TODO Consider return with std::move. Test if the copy is elided!!
   timing::stop("make_dense(LR)");
-  return B;
 }
 
-define_method(Dense, make_dense, (const Dense& A)) {
-  // TODO Consider return with std::move. Test if the copy is elided!!
-  return Dense(A);
+define_method(void, fill_dense_from, (const Dense& A, Dense& B)) {
+  assert(A.dim[0] == B.dim[0]);
+  assert(A.dim[1] == B.dim[1]);
+  for (int i=0; i<A.dim[0]; i++) {
+    for (int j=0; j<A.dim[1]; j++) {
+      B(i, j) = A(i, j);
+    }
+  }
 }
 
-define_method(Dense, make_dense, (const Node& A)) {
-  omm_error_handler("make_dense", {A}, __FILE__, __LINE__);
+define_method(void, fill_dense_from, (const Node& A, Node& B)) {
+  omm_error_handler("fill_dense_from", {A, B}, __FILE__, __LINE__);
   abort();
 }
 

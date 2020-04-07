@@ -29,13 +29,11 @@ LowRankShared::LowRankShared(
   const Dense& S, std::shared_ptr<Dense> U, std::shared_ptr<Dense> V
 ) : U(U), V(V), S(S), dim{U->dim[0], V->dim[1]}, rank(S.dim[0]) {}
 
-define_method(Dense, make_dense, (const LowRankShared& A)) {
+define_method(void, fill_dense_from, (const LowRankShared& A, Dense& B)) {
   // TODO exactly the same as the LowRank method. Consider inheritance!
-  Dense B(A.dim[0], A.dim[1]);
   Dense UxS(A.dim[0], A.rank);
   gemm(A.U, A.S, UxS, 1, 0);
   gemm(UxS, A.V, B, 1, 0);
-  return B;
 }
 
 } // namespace hicma
