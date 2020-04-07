@@ -42,6 +42,18 @@ void gemm(
   bool TransA, bool TransB,
   double alpha, double beta
 ) {
+  assert(
+    (TransA ? get_n_cols(A) : get_n_rows(A))
+    == TransB ? get_n_cols(C) : get_n_rows(C)
+  );
+  assert(
+    (TransA ? get_n_rows(A) : get_n_cols(A))
+    == TransB ? get_n_cols(B) : get_n_rows(B)
+  );
+  assert(
+    (TransA ? get_n_rows(B) : get_n_cols(B))
+    == TransB ? get_n_rows(C) : get_n_cols(C)
+  );
   gemm_trans_omm(A, B, C, TransA, TransB, alpha, beta);
 }
 
@@ -99,6 +111,9 @@ void gemm(
   const Node& A, const Node& B, Node& C,
   double alpha, double beta
 ) {
+  assert(get_n_rows(A) == get_n_rows(C));
+  assert(get_n_cols(A) == get_n_rows(B));
+  assert(get_n_cols(B) == get_n_cols(C));
   gemm_omm(A, B, C, alpha, beta);
 }
 
@@ -109,9 +124,6 @@ define_method(
     double alpha, double beta
   )
 ) {
-  assert(C.dim[0] == A.dim[0]);
-  assert(A.dim[1] == B.dim[0]);
-  assert(C.dim[1] == B.dim[1]);
   if (alpha == 1 && beta == 1) {
     gemm_push(A, B, C);
   }
@@ -173,9 +185,6 @@ define_method(
     double alpha, double beta
   )
 ) {
-  assert(C.dim[0] == A.dim[0]);
-  assert(A.dim[1] == B.dim[0]);
-  assert(C.dim[1] == B.dim[1]);
   Dense AB(C.dim[0], C.dim[1]);
   gemm(A, B, AB, alpha, 0);
   C.S() *= beta;
