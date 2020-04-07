@@ -14,7 +14,7 @@ int main(int argc, char const *argv[])
   int N = argc > 1 ? atoi(argv[1]) : 256;
   int nblocks = argc > 2 ? atoi(argv[2]) : 2;
   int rank = argc > 3 ? atoi(argv[3]) : 8;
-  int admis = argc > 4 ? atoi(argv[4]) : 0;
+  int admis = 0;
   int nleaf = N/nblocks;
   std::vector<double> randx = get_sorted_random_vector(N);
   timing::start("Init matrix");
