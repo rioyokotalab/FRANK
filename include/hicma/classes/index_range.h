@@ -36,8 +36,6 @@ class IndexRange {
 
   // Additional methods
   void split(int n_splits);
-
-  bool is_subrange(const IndexRange& range) const;
 };
 
 } // namespace hicma

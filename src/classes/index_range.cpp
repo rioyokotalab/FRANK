@@ -4,8 +4,6 @@
 #include <vector>
 
 
-#include <iostream>
-
 namespace hicma
 {
 
@@ -33,13 +31,6 @@ void IndexRange::split(int n_splits) {
     int start_child = length/n_splits * i;
     children.push_back(IndexRange(start_child, length_child));
   }
-}
-
-bool IndexRange::is_subrange(const IndexRange& range) const {
-  bool out = range.start >= start;
-  out &= range.start < start + length;
-  out &= range.start + range.length <= start + length;
-  return out;
 }
 
 } // namespace hicma
