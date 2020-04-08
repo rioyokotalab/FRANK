@@ -1,12 +1,15 @@
-#include "hicma/operations/misc/addition.h"
+#include "hicma/operations/arithmetic.h"
+#include "hicma/extension_headers/operations.h"
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/node.h"
+#include "hicma/classes/node_proxy.h"
 #include "hicma/classes/no_copy_split.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/LAPACK.h"
+#include "hicma/operations/misc/get_dim.h"
 #include "hicma/util/counter.h"
 #include "hicma/util/omm_error_handler.h"
 #include "hicma/util/timer.h"
@@ -21,21 +24,32 @@
 namespace hicma
 {
 
-void operator+=(Node& A, const Node& B) { addition_omm(A, B); }
+Node& operator+=(Node& A, const Node& B) { return addition_omm(A, B); }
 
-define_method(void, addition_omm, (Dense& A, const LowRank& B)) {
+define_method(Node&, addition_omm, (Dense& A, const Dense& B)) {
+  for (int i=0; i<A.dim[0]; i++) {
+    for (int j=0; j<A.dim[1]; j++) {
+      A(i, j) += B(i, j);
+    }
+  }
+  return A;
+}
+
+define_method(Node&, addition_omm, (Dense& A, const LowRank& B)) {
   Dense UxS(B.dim[0], B.rank);
   gemm(B.U(), B.S(), UxS, 1, 0);
   gemm(UxS, B.V(), A, 1, 1);
+  return A;
 }
 
-define_method(void, addition_omm, (Hierarchical& A, const LowRank& B)) {
+define_method(Node&, addition_omm, (Hierarchical& A, const LowRank& B)) {
   NoCopySplit BH(B, A.dim[0], A.dim[1]);
   for (int i=0; i<A.dim[0]; i++) {
     for (int j=0; j<A.dim[1]; j++) {
       A(i, j) += BH(i, j);
     }
   }
+  return A;
 }
 
 
@@ -113,7 +127,7 @@ std::tuple<Dense, Dense, Dense> merge_S(
   return {std::move(Uhat), std::move(Shat), std::move(Vhat)};
 }
 
-define_method(void, addition_omm, (LowRank& A, const LowRank& B)) {
+define_method(Node&, addition_omm, (LowRank& A, const LowRank& B)) {
   assert(A.dim[0] == B.dim[0]);
   assert(A.dim[1] == B.dim[1]);
   assert(A.rank == B.rank);
@@ -197,9 +211,10 @@ define_method(void, addition_omm, (LowRank& A, const LowRank& B)) {
 
     timing::stop("LR += LR");
   }
+  return A;
 }
 
-define_method(void, addition_omm, (Node& A, const Node& B)) {
+define_method(Node&, addition_omm, (Node& A, const Node& B)) {
   omm_error_handler("operator+=", {A, B}, __FILE__, __LINE__);
   abort();
 }

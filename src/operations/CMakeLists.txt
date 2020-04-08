@@ -1,4 +1,5 @@
 add_library(operations OBJECT
+    arithmetic/addition.cpp
     BLAS/gemm.cpp
     BLAS/trmm.cpp
     BLAS/trsm.cpp
@@ -12,7 +13,6 @@ add_library(operations OBJECT
     LAPACK/svd.cpp
     LAPACK/tpmqrt.cpp
     LAPACK/tpqrt.cpp
-    misc/addition.cpp
     misc/get_dim.cpp
     misc/misc.cpp
     misc/norm.cpp

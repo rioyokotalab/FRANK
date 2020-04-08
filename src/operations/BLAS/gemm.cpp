@@ -10,7 +10,7 @@
 #include "hicma/classes/no_copy_split.h"
 #include "hicma/classes/uniform_hierarchical.h"
 #include "hicma/gpu_batch/batch.h"
-#include "hicma/operations/misc/addition.h"
+#include "hicma/operations/arithmetic.h"
 #include "hicma/operations/misc/get_dim.h"
 #include "hicma/util/omm_error_handler.h"
 #include "hicma/util/counter.h"

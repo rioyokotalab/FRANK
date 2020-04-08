@@ -2,11 +2,12 @@
 #define hicma_operations_h
 
 
+#include "hicma/operations/arithmetic.h"
+
 #include "hicma/operations/BLAS.h"
 
 #include "hicma/operations/LAPACK.h"
 
-#include "hicma/operations/misc/addition.h"
 #include "hicma/operations/misc/get_dim.h"
 #include "hicma/operations/misc/misc.h"
 #include "hicma/operations/misc/norm.h"

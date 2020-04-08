@@ -22,6 +22,13 @@ typedef std::tuple<Dense, Dense> DensePair;
 typedef std::tuple<Dense, Dense, Dense> DenseTriplet;
 typedef std::tuple<Dense, std::vector<int>> DenseIntVectorPair;
 
+// Arithmetic
+declare_method(
+  Node&, addition_omm,
+  (virtual_<Node&>, virtual_<const Node&>)
+)
+
+// BLAS
 declare_method(
   void, gemm_omm,
   (
@@ -44,6 +51,7 @@ declare_method(
   (virtual_<const Node&>, virtual_<Node&>, int, int)
 )
 
+// LAPACK
 declare_method(DenseIntVectorPair, geqp3_omm, (virtual_<Node&>))
 
 declare_method(

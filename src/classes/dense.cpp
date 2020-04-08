@@ -6,6 +6,7 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/node.h"
 #include "hicma/classes/node_proxy.h"
+#include "hicma/operations/arithmetic.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/misc/get_dim.h"
 #include "hicma/util/omm_error_handler.h"
@@ -150,19 +151,6 @@ Dense Dense::operator-(const Dense& A) const {
   B -= A;
   timing::stop("Dense - Dense");
   return B;
-}
-
-const Dense& Dense::operator+=(const Dense& A) {
-  assert(dim[0] == A.dim[0]);
-  assert(dim[1] == A.dim[1]);
-  timing::start("Dense -= Dense");
-  for (int i=0; i<dim[0]; i++) {
-    for (int j=0; j<dim[1]; j++) {
-      (*this)(i, j) += A(i, j);
-    }
-  }
-  timing::stop("Dense -= Dense");
-  return *this;
 }
 
 const Dense& Dense::operator-=(const Dense& A) {
