@@ -16,6 +16,9 @@ Node& operator+=(Node&, const Node&);
 
 NodeProxy operator+(const Node&, const Node&);
 
+// Multiplication
+Node& operator*=(Node&, double);
+
 } // namespace hicma
 
 #endif // hicma_operations_arithmetic_h

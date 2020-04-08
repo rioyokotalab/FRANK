@@ -33,6 +33,11 @@ declare_method(
   (virtual_<const Node&>, virtual_<const Node&>)
 )
 
+declare_method(
+  Node&, multiplication_omm,
+  (virtual_<Node&>, double)
+)
+
 // BLAS
 declare_method(
   void, gemm_omm,

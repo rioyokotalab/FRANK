@@ -87,8 +87,6 @@ class Dense : public Node {
 
   const Dense& operator-=(const Dense& A);
 
-  const Dense& operator*=(const double);
-
   double& operator[](int i);
 
   const double& operator[](int i) const;
