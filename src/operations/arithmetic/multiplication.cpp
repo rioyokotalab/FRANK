@@ -10,7 +10,6 @@ namespace hicma
 {
 
 Node& operator*=(Node& A, double b) {
-  std::cout << "operator*=" << std::endl;
   return multiplication_omm(A, b);
 }
 
