@@ -139,23 +139,14 @@ const Dense& Dense::operator=(const double a) {
 
 Dense Dense::operator-(const Dense& A) const {
   timing::start("Dense - Dense");
-  Dense B(*this);
-  B -= A;
-  timing::stop("Dense - Dense");
-  return B;
-}
-
-const Dense& Dense::operator-=(const Dense& A) {
-  assert(dim[0] == A.dim[0]);
-  assert(dim[1] == A.dim[1]);
-  timing::start("Dense += Dense");
+  Dense B(dim[0], dim[1]);
   for (int i=0; i<dim[0]; i++) {
     for (int j=0; j<dim[1]; j++) {
-      (*this)(i, j) -= A(i, j);
+      B(i, j) = (*this)(i, j) - A(i, j);
     }
   }
-  timing::stop("Dense += Dense");
-  return *this;
+  timing::stop("Dense - Dense");
+  return B;
 }
 
 double* Dense::get_pointer() { return &data[0]; }

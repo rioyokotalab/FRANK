@@ -49,9 +49,7 @@ class Dense : public Node {
   explicit Dense(const Node& A);
 
   // Additional constructors
-  Dense(
-    int m, int n=1
-  );
+  Dense(int m, int n=1);
 
   Dense(
     const IndexRange& row_range,
@@ -84,8 +82,6 @@ class Dense : public Node {
   const Dense& operator=(const double a);
 
   Dense operator-(const Dense& A) const;
-
-  const Dense& operator-=(const Dense& A);
 
   double& operator[](int i);
 
