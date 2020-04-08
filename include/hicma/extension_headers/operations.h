@@ -28,6 +28,11 @@ declare_method(
   (virtual_<Node&>, virtual_<const Node&>)
 )
 
+declare_method(
+  NodeProxy, addition_omm,
+  (virtual_<const Node&>, virtual_<const Node&>)
+)
+
 // BLAS
 declare_method(
   void, gemm_omm,

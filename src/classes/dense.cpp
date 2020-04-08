@@ -6,7 +6,6 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/node.h"
 #include "hicma/classes/node_proxy.h"
-#include "hicma/operations/arithmetic.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/misc/get_dim.h"
 #include "hicma/util/omm_error_handler.h"
@@ -125,8 +124,7 @@ Dense::Dense(
   std::vector<std::vector<double>>& x,
   const int ni, const int nj,
   const int i_begin, const int j_begin
-) : dim{ni, nj}, stride(nj) {
-  data.resize(dim[0]*dim[1]);
+) : dim{ni, nj}, stride(nj), data(dim[0]*dim[1]) {
   func(data, x, ni, nj, i_begin, j_begin);
 }
 
@@ -137,12 +135,6 @@ const Dense& Dense::operator=(const double a) {
     }
   }
   return *this;
-}
-
-Dense Dense::operator+(const Dense& A) const {
-  Dense B(*this);
-  B += A;
-  return B;
 }
 
 Dense Dense::operator-(const Dense& A) const {

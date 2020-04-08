@@ -14,6 +14,8 @@ namespace hicma
 // Addition
 Node& operator+=(Node&, const Node&);
 
+NodeProxy operator+(const Node&, const Node&);
+
 } // namespace hicma
 
 #endif // hicma_operations_arithmetic_h

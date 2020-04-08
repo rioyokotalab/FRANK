@@ -219,4 +219,27 @@ define_method(Node&, addition_omm, (Node& A, const Node& B)) {
   abort();
 }
 
+NodeProxy operator+(const Node& A, const Node& B) {
+  assert(get_n_rows(A) == get_n_rows(B));
+  assert(get_n_cols(A) == get_n_cols(B));
+  return addition_omm(A, B);
+}
+
+define_method(
+  NodeProxy, addition_omm, (const Dense& A, const Dense& B)
+) {
+  Dense out(A.dim[0], A.dim[1]);
+  for (int i=0; i<A.dim[0]; i++) {
+    for (int j=0; j<A.dim[1]; j++) {
+      out(i, j) = A(i, j) + B(i, j);
+    }
+  }
+  return A;
+}
+
+define_method(NodeProxy, addition_omm, (const Node& A, const Node& B)) {
+  omm_error_handler("operator+", {A, B}, __FILE__, __LINE__);
+  abort();
+}
+
 } // namespace hicma
