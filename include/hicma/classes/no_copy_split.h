@@ -36,9 +36,13 @@ class NoCopySplit : public Hierarchical {
   const char* type() const override;
 
   // Additional constructors
-  NoCopySplit(Node&, int ni_level, int nj_level);
+  NoCopySplit(Node& A, int ni_level, int nj_level);
 
-  NoCopySplit(const Node&, int ni_level, int nj_level);
+  NoCopySplit(const Node& A, int ni_level, int nj_level);
+
+  NoCopySplit(Node& A, const Hierarchical& like);
+
+  NoCopySplit(const Node& A, const Hierarchical& like);
 };
 
 register_class(NoCopySplit, Hierarchical)

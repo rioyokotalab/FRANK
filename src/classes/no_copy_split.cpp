@@ -43,6 +43,26 @@ NoCopySplit::NoCopySplit(Node& A, int ni_level, int nj_level) {
   }
 }
 
+NoCopySplit::NoCopySplit(Node& A, const Hierarchical& like) {
+  dim[0] = like.dim[0]; dim[1] = like.dim[1];
+  row_range = IndexRange(0, get_n_rows(A));
+  col_range = IndexRange(0, get_n_cols(A));
+  create_children();
+  int row_begin = 0;
+  for (int i=0; i<dim[0]; ++i) {
+    int col_begin = 0;
+    for (int j=0; j<dim[1]; ++j) {
+      (*this)(i, j) = make_view(
+        IndexRange(row_begin, get_n_rows(like(i, j))),
+        IndexRange(col_begin, get_n_cols(like(i, j))),
+        A
+      );
+      col_begin += get_n_cols(like(i, j));
+    }
+    row_begin += get_n_rows(like(i, 0));
+  }
+}
+
 define_method(
   NodeProxy, make_view,
   (const IndexRange& row_range, const IndexRange& col_range, Dense& A)
@@ -77,6 +97,26 @@ NoCopySplit::NoCopySplit(const Node& A, int ni_level, int nj_level) {
     for (int j=0; j<dim[1]; ++j) {
       (*this)(i, j) = make_view(row_range[i], col_range[j], A);
     }
+  }
+}
+
+NoCopySplit::NoCopySplit(const Node& A, const Hierarchical& like) {
+  dim[0] = like.dim[0]; dim[1] = like.dim[1];
+  row_range = IndexRange(0, get_n_rows(A));
+  col_range = IndexRange(0, get_n_cols(A));
+  create_children();
+  int row_begin = 0;
+  for (int i=0; i<dim[0]; ++i) {
+    int col_begin = 0;
+    for (int j=0; j<dim[1]; ++j) {
+      (*this)(i, j) = make_view(
+        IndexRange(row_begin, get_n_rows(like(i, j))),
+        IndexRange(col_begin, get_n_cols(like(i, j))),
+        A
+      );
+      col_begin += get_n_cols(like(i, j));
+    }
+    row_begin += get_n_rows(like(i, 0));
   }
 }
 

@@ -55,7 +55,7 @@ Dense::Dense(const Node& A)
 
 define_method(void, fill_dense_from, (const Hierarchical& A, Dense& B)) {
   timing::start("make_dense(H)");
-  NoCopySplit BH(B, A.dim[0], A.dim[1]);
+  NoCopySplit BH(B, A);
   for (int i=0; i<A.dim[0]; i++) {
     for (int j=0; j<A.dim[1]; j++) {
       fill_dense_from(A(i, j), BH(i, j));
