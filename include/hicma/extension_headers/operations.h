@@ -34,6 +34,11 @@ declare_method(
 )
 
 declare_method(
+  NodeProxy, subtraction_omm,
+  (virtual_<const Node&>, virtual_<const Node&>)
+)
+
+declare_method(
   Node&, multiplication_omm,
   (virtual_<Node&>, double)
 )

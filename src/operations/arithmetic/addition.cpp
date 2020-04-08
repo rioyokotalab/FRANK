@@ -9,6 +9,7 @@
 #include "hicma/classes/no_copy_split.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/LAPACK.h"
+#include "hicma/operations/arithmetic.h"
 #include "hicma/operations/misc/get_dim.h"
 #include "hicma/util/counter.h"
 #include "hicma/util/omm_error_handler.h"
@@ -214,32 +215,14 @@ define_method(Node&, addition_omm, (LowRank& A, const LowRank& B)) {
   return A;
 }
 
-define_method(Node&, addition_omm, (Node& A, const Node& B)) {
-  omm_error_handler("operator+=", {A, B}, __FILE__, __LINE__);
-  abort();
-}
-
-NodeProxy operator+(const Node& A, const Node& B) {
-  assert(get_n_rows(A) == get_n_rows(B));
-  assert(get_n_cols(A) == get_n_cols(B));
-  return addition_omm(A, B);
-}
-
-define_method(
-  NodeProxy, addition_omm, (const Dense& A, const Dense& B)
-) {
+Dense operator+(const Dense& A, const Dense& B) {
   Dense out(A.dim[0], A.dim[1]);
   for (int i=0; i<A.dim[0]; i++) {
     for (int j=0; j<A.dim[1]; j++) {
       out(i, j) = A(i, j) + B(i, j);
     }
   }
-  return A;
-}
-
-define_method(NodeProxy, addition_omm, (const Node& A, const Node& B)) {
-  omm_error_handler("operator+", {A, B}, __FILE__, __LINE__);
-  abort();
+  return out;
 }
 
 } // namespace hicma

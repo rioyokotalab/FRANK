@@ -6,6 +6,7 @@
 #include "hicma/classes/low_rank_shared.h"
 #include "hicma/classes/node.h"
 #include "hicma/classes/no_copy_split.h"
+#include "hicma/operations/arithmetic.h"
 #include "hicma/operations/misc/norm.h"
 #include "hicma/operations/misc/get_dim.h"
 #include "hicma/util/omm_error_handler.h"

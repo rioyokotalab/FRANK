@@ -1,6 +1,7 @@
 add_library(operations OBJECT
     arithmetic/addition.cpp
     arithmetic/multiplication.cpp
+    arithmetic/subtraction.cpp
     BLAS/gemm.cpp
     BLAS/trmm.cpp
     BLAS/trsm.cpp
