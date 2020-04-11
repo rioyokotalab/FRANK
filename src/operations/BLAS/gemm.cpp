@@ -675,4 +675,35 @@ define_method(
   abort();
 }
 
+NodeProxy gemm(
+  const Node& A, const Node& B, double alpha, bool TransA, bool TransB
+) {
+  assert(
+    (TransA ? get_n_rows(A) : get_n_cols(A))
+    == TransB ? get_n_cols(B) : get_n_rows(B)
+  );
+  return gemm_omm(A, B, alpha, TransA, TransB);
+}
+
+define_method(
+  NodeProxy, gemm_omm,
+  (const Dense& A, const Dense& B, double alpha, bool TransA,  bool TransB)
+) {
+  Dense out(A.dim[TransA ? 1 : 0], B.dim[TransB ? 0 : 1]);
+  gemm(A, B, out, TransA, TransB, alpha, 0);
+  return out;
+}
+
+define_method(
+  NodeProxy, gemm_omm,
+  (
+    const Node& A, const Node& B,
+    [[maybe_unused]] double alpha,
+    [[maybe_unused]] bool TransA, [[maybe_unused]] bool TransB
+  )
+) {
+  omm_error_handler("gemm", {A, B}, __FILE__, __LINE__);
+  abort();
+}
+
 } // namespace hicma

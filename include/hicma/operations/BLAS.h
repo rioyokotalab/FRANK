@@ -1,6 +1,8 @@
 #ifndef hicma_operations_BLAS_h
 #define hicma_operations_BLAS_h
 
+#include "hicma/classes/node_proxy.h"
+
 
 namespace hicma
 {
@@ -15,6 +17,15 @@ void gemm(
   double alpha, double beta
 );
 
+NodeProxy gemm(
+  const Node& A, const Node& B,
+  double alpha=1,
+  bool TransA=false, bool TransB=false
+);
+
+enum { TRSM_UPPER, TRSM_LOWER };
+enum { TRSM_LEFT, TRSM_RIGHT };
+
 void trmm(
   const Node& A, Node& B,
   const char& side, const char& uplo, const char& trans, const char& diag,
@@ -26,9 +37,6 @@ void trmm(
   const char& side, const char& uplo,
   const double& alpha
 );
-
-enum { TRSM_UPPER, TRSM_LOWER };
-enum { TRSM_LEFT, TRSM_RIGHT };
 
 void trsm(const Node&, Node&, int uplo, int lr=TRSM_LEFT);
 

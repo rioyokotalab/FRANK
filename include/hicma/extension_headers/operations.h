@@ -53,6 +53,14 @@ declare_method(
 )
 
 declare_method(
+  NodeProxy, gemm_omm,
+  (
+    virtual_<const Node&>, virtual_<const Node&>,
+    double, bool, bool
+  )
+)
+
+declare_method(
   void, trmm_omm,
   (
     virtual_<const Node&>, virtual_<Node&>,
