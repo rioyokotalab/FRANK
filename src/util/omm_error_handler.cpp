@@ -23,6 +23,8 @@ void omm_error_handler(
     }
   }
   std::cerr << ") undefined! (" << file << ":" << line << ")" << std::endl;
+  std::cerr << "Note that type information here relies on overriding the ";
+  std::cerr << "Node.type() function in any participating class!" << std::endl;
 }
 
 } // namespace hicma

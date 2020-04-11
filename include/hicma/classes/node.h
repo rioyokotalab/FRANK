@@ -30,11 +30,11 @@ class Node {
   // TODO Consider moving these three into multi-methods.
   // That would make inheritance a pure formality (which is good)
   // TODO Or consider making them protected members!
-  virtual std::unique_ptr<Node> clone() const;
+  virtual std::unique_ptr<Node> clone() const = 0;
 
-  virtual std::unique_ptr<Node> move_clone();
+  virtual std::unique_ptr<Node> move_clone() = 0;
 
-  virtual const char* type() const;
+  virtual const char* type() const = 0;
 };
 
 register_class(Node)

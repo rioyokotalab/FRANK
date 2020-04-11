@@ -1,6 +1,5 @@
 add_library(classes OBJECT
     index_range.cpp
-    node.cpp
     node_proxy.cpp
     dense.cpp
     dense_view.cpp
