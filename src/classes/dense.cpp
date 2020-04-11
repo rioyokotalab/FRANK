@@ -88,6 +88,19 @@ define_method(void, fill_dense_from, (const Node& A, Node& B)) {
   abort();
 }
 
+declare_method(Dense&&, move_from_dense, (virtual_<Node&>))
+
+Dense::Dense(NodeProxy&& A) : Dense(move_from_dense(A)) {}
+
+define_method(Dense&&, move_from_dense, (Dense& A)) {
+  return std::move(A);
+}
+
+define_method(Dense&&, move_from_dense, (Node& A)) {
+  omm_error_handler("move_from_dense", {A}, __FILE__, __LINE__);
+  abort();
+}
+
 Dense::Dense(int m, int n)
 : dim{m, n}, stride(n) {
   timing::start("Dense alloc");

@@ -38,15 +38,16 @@ std::unique_ptr<Node> Hierarchical::move_clone() {
 
 const char* Hierarchical::type() const { return "Hierarchical"; }
 
-declare_method(Hierarchical, move_from_hierarchical, (virtual_<Node&>))
+declare_method(Hierarchical&&, move_from_hierarchical, (virtual_<Node&>))
 
-Hierarchical::Hierarchical(NodeProxy&& A) { *this = move_from_hierarchical(A); }
+Hierarchical::Hierarchical(NodeProxy&& A)
+: Hierarchical(move_from_hierarchical(A)) {}
 
-define_method(Hierarchical, move_from_hierarchical, (Hierarchical& A)) {
+define_method(Hierarchical&&, move_from_hierarchical, (Hierarchical& A)) {
   return std::move(A);
 }
 
-define_method(Hierarchical, move_from_hierarchical, (Node& A)) {
+define_method(Hierarchical&&, move_from_hierarchical, (Node& A)) {
   omm_error_handler("move_from_hierarchical", {A}, __FILE__, __LINE__);
   abort();
 }
