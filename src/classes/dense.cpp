@@ -66,10 +66,7 @@ define_method(void, fill_dense_from, (const Hierarchical& A, Dense& B)) {
 
 define_method(void, fill_dense_from, (const LowRank& A, Dense& B)) {
   timing::start("make_dense(LR)");
-  Dense UxS(A.dim[0], A.rank);
-  gemm(A.U(), A.S(), UxS, 1, 0);
-  gemm(UxS, A.V(), B, 1, 0);
-  // TODO Consider return with std::move. Test if the copy is elided!!
+  gemm(gemm(A.U(), A.S()), A.V(), B, 1, 0);
   timing::stop("make_dense(LR)");
 }
 

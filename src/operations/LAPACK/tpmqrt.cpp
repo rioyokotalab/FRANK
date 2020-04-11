@@ -97,8 +97,7 @@ define_method(
   gemm(Vt, B, AH, 1, 1); // AH = A + Vt*B
   if(trans) transpose(T_upper_tri);
   gemm(T_upper_tri, AH, A, -1, 1); // A = A - (T or Tt)*AH
-  Dense VTt(V.dim[0], T_upper_tri.dim[1]);
-  gemm(V, T_upper_tri, VTt, 1, 0);
+  Dense VTt = gemm(V, T_upper_tri);
   gemm(VTt, AH, B, -1, 1); // B = B - V*(T or Tt)*AH
 }
 

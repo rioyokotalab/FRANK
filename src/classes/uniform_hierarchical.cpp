@@ -201,10 +201,8 @@ LowRankShared UniformHierarchical::construct_shared_block_svd(
     row_range[i], col_range[j], func, x,
     i_begin+row_range[i].start, j_begin+col_range[j].start
   );
-  Dense S(rank, rank);
-  Dense UD(col_basis[i]->dim[1], D.dim[1]);
-  gemm(*col_basis[i], D, UD, true, false, 1, 0);
-  gemm(UD, *row_basis[j], S, false, true, 1, 0);
+  Dense S = gemm(
+    gemm(*col_basis[i], D, 1, true, false), *row_basis[j], 1, false ,true);
   return LowRankShared(
     S,
     col_basis[i], row_basis[j]

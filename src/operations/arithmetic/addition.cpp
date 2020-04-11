@@ -37,9 +37,7 @@ define_method(Node&, addition_omm, (Dense& A, const Dense& B)) {
 }
 
 define_method(Node&, addition_omm, (Dense& A, const LowRank& B)) {
-  Dense UxS(B.dim[0], B.rank);
-  gemm(B.U(), B.S(), UxS, 1, 0);
-  gemm(UxS, B.V(), A, 1, 1);
+  gemm(gemm(B.U(), B.S()), B.V(), A, 1, 1);
   return A;
 }
 
@@ -106,8 +104,7 @@ std::tuple<Dense, Dense, Dense> merge_S(
   assert(S.dim[0] == S.dim[1]);
   int rank = S.dim[0];
 
-  Dense InnerUAS(InnerU.dim[0], AS.dim[1]);
-  gemm(InnerU, AS, InnerUAS, 1, 0);
+  Dense InnerUAS = gemm(InnerU, AS);
 
   // TODO Consider using move for S if possible!
   Dense M(rank*2, rank*2);
@@ -156,8 +153,7 @@ define_method(Node&, addition_omm, (LowRank& A, const LowRank& B)) {
     C.mergeS(A, B);
     C.mergeV(A, B);
 
-    Dense CU_copy(C.U());
-    gemm(CU_copy, C.S(), C.U(), 1, 0);
+    C.U() = gemm(C.U(), C.S());
 
     Dense Qu(C.U().dim[0], C.U().dim[1]);
     Dense Ru(C.U().dim[1], C.U().dim[1]);
@@ -168,8 +164,7 @@ define_method(Node&, addition_omm, (LowRank& A, const LowRank& B)) {
     Dense Rv(C.V().dim[1], C.V().dim[1]);
     qr(C.V(), Qv, Rv);
 
-    Dense RuRvT(Ru.dim[0], Rv.dim[0]);
-    gemm(Ru, Rv, RuRvT, false, true, 1, 0);
+    Dense RuRvT = gemm(Ru, Rv, 1, false, true);
 
     Dense RRU, RRS, RRV;
     std::tie(RRU, RRS, RRV) = svd(RuRvT);
@@ -204,6 +199,8 @@ define_method(Node&, addition_omm, (LowRank& A, const LowRank& B)) {
     std::tie(Uhat, A.S(), Vhat) = merge_S(A.S(), B.S(), InnerU, InnerVt);
     timing::stop("Merge S");
 
+    // Restore moved-from U and V and finalize basis
+    // TODO Find a way to use more convenient D=gemm(D, D) here?
     // Restore moved-from U and V and finalize basis
     A.U() = Dense(A.dim[0], A.rank);
     A.V() = Dense(A.rank, A.dim[1]);

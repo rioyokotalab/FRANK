@@ -79,8 +79,7 @@ int main(int argc, char** argv) {
 
   // For residual measurement
   Dense x(N); x = 1.0;
-  Dense Ax(N);
-  gemm(A, x, Ax, 1, 0);
+  Dense Ax = gemm(A, x);
   print("Time");
   timing::start("QR decomposition");
   for(int k = 0; k < Nc; k++) {
@@ -117,18 +116,14 @@ int main(int argc, char** argv) {
     }
   }
   //Residual
-  Dense Rx(N);
-  gemm(A, x, Rx, 1, 0);
-  Dense QRx(N);
-  gemm(Q, Rx, QRx, 1, 0);
+  Dense Rx = gemm(A, x);
+  Dense QRx = gemm(Q, Rx);
   print("Accuracy");
   print("Rel. Error (operator norm)", l2_error(QRx, Ax), false);
   //Orthogonality
-  Dense Qx(N);
-  gemm(Q, x, Qx, 1, 0);
-  Dense QtQx(N);
+  Dense Qx = gemm(Q, x);
   transpose(Q);
-  gemm(Q, Qx, QtQx, 1, 0);
+  Dense QtQx = gemm(Q, Qx);
   print("Orthogonality");
   print("Rel. Error (operator norm)", l2_error(QtQx, x), false);
   return 0;

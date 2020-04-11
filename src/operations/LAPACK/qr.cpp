@@ -201,10 +201,8 @@ define_method(
   Dense Qu(_A.U().dim[0], _A.U().dim[1]);
   Dense Ru(_A.U().dim[1], _A.U().dim[1]);
   qr(_A.U(), Qu, Ru);
-  Dense RS(Ru.dim[0], _A.S().dim[1]);
-  gemm(Ru, _A.S(), RS, 1, 0);
-  Dense RSV(RS.dim[0], _A.V().dim[1]);
-  gemm(RS, _A.V(), RSV, 1, 0);
+  Dense RS = gemm(Ru, _A.S());
+  Dense RSV = gemm(RS, _A.V());
   //Split R*S*V
   Hierarchical splitted(RSV, 1, storage.dim[1]);
   for(int i=0; i<storage.dim[1]; i++) {

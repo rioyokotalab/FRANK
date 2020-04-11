@@ -30,18 +30,14 @@ int main() {
   Dense Dwork(D);
   std::tie(U, S, V) = id(Dwork, rank);
   timing::stopAndPrint("ID", 2);
-  Dense US(U.dim[0], S.dim[1]);
-  Dense test(U.dim[0], V.dim[1]);
-  gemm(U, S, US, 1, 0);
-  gemm(US, V, test, 1, 0);
+  Dense test = gemm(gemm(U, S), V);
   print("Rel. L2 Error", l2_error(D, test), false);
 
   print("RID");
   timing::start("Randomized ID");
   std::tie(U, S, V) = rid(D, rank+5, rank);
   timing::stopAndPrint("Randomized ID", 2);
-  gemm(U, S, US, 1, 0);
-  gemm(US, V, test, 1, 0);
+  test = gemm(gemm(U, S), V);
   print("Rel. L2 Error", l2_error(D, test), false);
   return 0;
 }

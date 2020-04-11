@@ -114,6 +114,7 @@ void gemm(
   assert(get_n_rows(A) == get_n_rows(C));
   assert(get_n_cols(A) == get_n_rows(B));
   assert(get_n_cols(B) == get_n_cols(C));
+  // TODO Define special cases for beta=0, beta=1, alpha=1?
   gemm_omm(A, B, C, alpha, beta);
 }
 
@@ -139,10 +140,7 @@ define_method(
     double alpha, double beta
   )
 ) {
-  Dense VxB(A.rank, B.dim[1]);
-  gemm(A.V(), B, VxB, 1, 0);
-  Dense SxVxB(A.rank, B.dim[1]);
-  gemm(A.S(), VxB, SxVxB, 1, 0);
+  Dense SxVxB = gemm(A.S(), gemm(A.V(), B));
   gemm(A.U(), SxVxB, C, alpha, beta);
 }
 
@@ -153,10 +151,7 @@ define_method(
     double alpha, double beta
   )
 ) {
-  Dense AxU(C.dim[0], B.rank);
-  gemm(A, B.U(), AxU, 1, 0);
-  Dense AxUxS(C.dim[0], B.rank);
-  gemm(AxU, B.S(), AxUxS, 1, 0);
+  Dense AxUxS = gemm(gemm(A, B.U()), B.S());
   gemm(AxUxS, B.V(), C, alpha, beta);
 }
 
@@ -167,14 +162,7 @@ define_method(
     double alpha, double beta
   )
 ) {
-  Dense VxU(A.rank, B.rank);
-  gemm(A.V(), B.U(), VxU, 1, 0);
-  Dense SxVxU(A.rank, B.rank);
-  gemm(A.S(), VxU, SxVxU, 1, 0);
-  Dense SxVxUxS(A.rank, B.rank);
-  gemm(SxVxU, B.S(), SxVxUxS, 1, 0);
-  Dense UxSxVxUxS(A.dim[0], B.rank);
-  gemm(A.U(), SxVxUxS, UxSxVxUxS, 1, 0);
+  Dense UxSxVxUxS = gemm(A.U(), gemm(gemm(A.S(), gemm(A.V(), B.U())), B.S()));
   gemm(UxSxVxUxS, B.V(), C, alpha, beta);
 }
 
@@ -185,10 +173,8 @@ define_method(
     double alpha, double beta
   )
 ) {
-  Dense AB(C.dim[0], C.dim[1]);
-  gemm(A, B, AB, alpha, 0);
   C.S() *= beta;
-  C += LowRank(AB, C.rank);
+  C += LowRank(gemm(A, B, alpha), C.rank);
 }
 
 define_method(
@@ -222,6 +208,55 @@ define_method(
 define_method(
   void, gemm_omm,
   (
+    const Hierarchical& A, const LowRank& B, LowRank& C,
+    double alpha, double beta
+  )
+) {
+  // TODO could be optimized to copy less with LowRankView!
+  LowRank B_copy(B);
+  gemm(A, B.U(), B_copy.U(), 1, 0);
+  B_copy.S() *= alpha;
+  C.S() *= beta;
+  C += B_copy;
+}
+
+define_method(
+  void, gemm_omm,
+  (
+    const LowRank& A, const Hierarchical& B, LowRank& C,
+    double alpha, double beta
+  )
+) {
+  // TODO could be optimized to copy less with LowRankView!
+  LowRank A_copy(A);
+  gemm(A.V(), B, A_copy.V(), 1, 0);
+  A_copy.S() *= alpha;
+  C.S() *= beta;
+  C += A_copy;
+}
+
+define_method(
+  void, gemm_omm,
+  (
+    const Hierarchical& A, const Hierarchical& B, LowRank& C,
+    double alpha, double beta
+  )
+) {
+  /*
+    Making a Hierarchical out of C might be better
+    But LowRank(Hierarchical, rank) constructor is needed
+    Hierarchical CH(C);
+      gemm(A, B, CH, alpha, beta);
+    C = LowRank(CH, rank);
+  */
+  Dense CD(C);
+  gemm(A, B, CD, alpha, beta);
+  C = LowRank(CD, C.rank);
+}
+
+define_method(
+  void, gemm_omm,
+  (
     const LowRank& A, const LowRank& B, LowRank& C,
     double alpha, double beta
   )
@@ -230,12 +265,8 @@ define_method(
   LowRankView AxB(A);
   AxB.V() = B.V();
   AxB.dim[1] = B.dim[1];
-  Dense S(A.rank, B.rank);
-  gemm(A.V(), B.U(), S, 1, 0);
-  Dense SxVxU(A.rank, B.rank);
-  gemm(A.S(), S, SxVxU, 1, 0);
-  gemm(SxVxU, B.S(), S, alpha, 0);
-  AxB.S() = S;
+  Dense SxVxUxS = gemm(gemm(A.S(), gemm(A.V(), B.U())), B.S(), alpha);
+  AxB.S() = SxVxUxS;
   C.S() *= beta;
   C += AxB;
 }
@@ -282,12 +313,8 @@ define_method(
   LowRankView AxB(A);
   AxB.V() = B.V();
   AxB.dim[1] = B.dim[1];
-  Dense S(A.rank, B.rank);
-  gemm(A.V(), B.U(), S, 1, 0);
-  Dense SxVxU(A.rank, B.rank);
-  gemm(A.S(), S, SxVxU, 1, 0);
-  gemm(SxVxU, B.S(), S, alpha, 0);
-  AxB.S() = S;
+  Dense SxVxUxS = gemm(gemm(A.S(), gemm(A.V(), B.U())), B.S(), alpha);
+  AxB.S() = SxVxUxS;
   AxB.S() *= beta;
   C += AxB;
 }
@@ -338,55 +365,6 @@ define_method(
   assert(B.dim[1] == C.dim[1]);
   NoCopySplit AH(A, C.dim[0], B.dim[0]);
   gemm(AH, B, C, alpha, beta);
-}
-
-define_method(
-  void, gemm_omm,
-  (
-    const Hierarchical& A, const LowRank& B, LowRank& C,
-    double alpha, double beta
-  )
-) {
-  // TODO could be optimized to copy less with LowRankView!
-  LowRank B_copy(B);
-  gemm(A, B.U(), B_copy.U(), 1, 0);
-  B_copy.S() *= alpha;
-  C.S() *= beta;
-  C += B_copy;
-}
-
-define_method(
-  void, gemm_omm,
-  (
-    const LowRank& A, const Hierarchical& B, LowRank& C,
-    double alpha, double beta
-  )
-) {
-  // TODO could be optimized to copy less with LowRankView!
-  LowRank A_copy(A);
-  gemm(A.V(), B, A_copy.V(), 1, 0);
-  A_copy.S() *= alpha;
-  C.S() *= beta;
-  C += A_copy;
-}
-
-define_method(
-  void, gemm_omm,
-  (
-    const Hierarchical& A, const Hierarchical& B, LowRank& C,
-    double alpha, double beta
-  )
-) {
-  /*
-    Making a Hierarchical out of C might be better
-    But LowRank(Hierarchical, rank) constructor is needed
-    Hierarchical CH(C);
-      gemm(A, B, CH, alpha, beta);
-    C = LowRank(CH, rank);
-  */
-  Dense CD(C);
-  gemm(A, B, CD, alpha, beta);
-  C = LowRank(CD, C.rank);
 }
 
 define_method(
@@ -444,10 +422,7 @@ define_method(
     double alpha, double beta
   )
 ) {
-  Dense VxB(A.rank, B.dim[1]);
-  gemm(A.V, B, VxB, 1, 0);
-  Dense SxVxB(A.rank, B.dim[1]);
-  gemm(A.S, VxB, SxVxB, 1, 0);
+  Dense SxVxB = gemm(A.S, gemm(A.V, B));
   gemm(A.U, SxVxB, C, alpha, beta);
 }
 
@@ -459,14 +434,7 @@ define_method(
   )
 ) {
   // TODO Exactly the same as gemm(LR, LR, D)! Consider making LRS a child of LR
-  Dense VxU(A.rank, B.rank);
-  gemm(A.V, B.U, VxU, 1, 0);
-  Dense SxVxU(A.rank, B.rank);
-  gemm(A.S, VxU, SxVxU, 1, 0);
-  Dense SxVxUxS(A.rank, B.rank);
-  gemm(SxVxU, B.S, SxVxUxS, 1, 0);
-  Dense UxSxVxUxS(A.dim[0], B.rank);
-  gemm(A.U, SxVxUxS, UxSxVxUxS, 1, 0);
+  Dense UxSxVxUxS = gemm(A.U, gemm(gemm(A.S, gemm(A.V, B.U)), B.S));
   gemm(UxSxVxUxS, B.V, C, alpha, beta);
 }
 
@@ -479,10 +447,7 @@ define_method(
 ) {
   assert(C.U == A.U);
   assert(C.V == B.V);
-  Dense VxU(A.rank, B.rank);
-  gemm(A.V, B.U, VxU, 1, 0);
-  Dense SxVxU(A.rank, B.rank);
-  gemm(A.S, VxU, SxVxU, 1, 0);
+  Dense SxVxU = gemm(A.S, gemm(A.V, B.U));
   gemm(SxVxU, B.S, C.S, alpha, beta);
 }
 
@@ -633,11 +598,6 @@ define_method(
   // This function causes the recursion
   gemm_regular_only(A, BH, CH, alpha, 1);
   Hierarchical RowBasisB(1, A.dim[1]);
-  for (int k=0; k<A.dim[1]; k++) {
-    // TODO Need max rank here? Case for differing ranks not dealt with!
-    // Find more elegant way to initialize (SplitDenseReference class?)
-    RowBasisB[k] = Dense(get_n_rows(A.get_row_basis(0)), B.dim[1]);
-  }
   // Loop over columns of output
   // Put together shared RowBasis and column of B once
   // Use result multiple times (faster) to get column of C
@@ -647,7 +607,7 @@ define_method(
     // This loop is main reason for speed-up: multiplication with BH only here,
     // rest is smaller stuff with rank as one of dimensios
     for (int k=0; k<A.dim[1]; k++) {
-      gemm(A.get_row_basis(k), BH(k, j), RowBasisB[k], 1, 0);
+      RowBasisB[k] = gemm(A.get_row_basis(k), BH(k, j));
     }
     for (int i=0; i<CH.dim[0]; i++) {
       Hierarchical SRowBasisB(1, RowBasisB.dim[1]);

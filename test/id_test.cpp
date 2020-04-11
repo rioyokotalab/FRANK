@@ -34,8 +34,7 @@ TEST(IDTest, Precision) {
 
 
   timing::start("Verification");
-  Dense Atest(M, N);
-  gemm(Acols, V, Atest, 1, 0);
+  Dense Atest = gemm(Acols, V);
   print("Compression Accuracy");
   print("Rel. L2 Error", l2_error(A, Atest), false);
   timing::stopAndPrint("Verification");
@@ -47,9 +46,7 @@ TEST(IDTest, Precision) {
   timing::stopAndPrint("ID", 1);
 
   timing::start("Verification");
-  Dense US(M, k);
-  gemm(U, S, US, 1, 0);
-  gemm(US, V, Atest, 1, 0);
+  Atest = gemm(gemm(U, S), V);
   print("Compression Accuracy");
   print("Rel. L2 Error", l2_error(A, Atest), false);
   timing::stopAndPrint("Verification");
