@@ -53,7 +53,7 @@ declare_method(
 )
 
 declare_method(
-  NodeProxy, gemm_omm,
+  Dense, gemm_omm,
   (
     virtual_<const Node&>, virtual_<const Node&>,
     double, bool, bool

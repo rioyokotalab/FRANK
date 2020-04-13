@@ -184,11 +184,11 @@ define_method(
     double alpha, double beta
   )
 ) {
-  // TODO could be optimized to copy less with LowRankView!
-  LowRank AVxB(A);
-  gemm(A.V(), B, AVxB.V(), alpha, 0);
+  LowRankView AxB(A);
+  Dense AVxB = gemm(A.V(), B, alpha);
+  AxB.V() = AVxB;
   C.S() *= beta;
-  C += AVxB;
+  C += AxB;
 }
 
 define_method(
@@ -198,26 +198,11 @@ define_method(
     double alpha, double beta
   )
 ) {
-  // TODO could be optimized to copy less with LowRankView!
-  LowRank AxBU(B);
-  gemm(A, B.U(), AxBU.U(), alpha, 0);
+  LowRankView AxB(B);
+  Dense AxBU = gemm(A, B.U(), alpha);
+  AxB.U() = AxBU;
   C.S() *= beta;
-  C += AxBU;
-}
-
-define_method(
-  void, gemm_omm,
-  (
-    const Hierarchical& A, const LowRank& B, LowRank& C,
-    double alpha, double beta
-  )
-) {
-  // TODO could be optimized to copy less with LowRankView!
-  LowRank B_copy(B);
-  gemm(A, B.U(), B_copy.U(), 1, 0);
-  B_copy.S() *= alpha;
-  C.S() *= beta;
-  C += B_copy;
+  C += AxB;
 }
 
 define_method(
@@ -227,12 +212,25 @@ define_method(
     double alpha, double beta
   )
 ) {
-  // TODO could be optimized to copy less with LowRankView!
-  LowRank A_copy(A);
-  gemm(A.V(), B, A_copy.V(), 1, 0);
-  A_copy.S() *= alpha;
+  LowRankView AxB(A);
+  Dense AVxB = gemm(A.V(), B, alpha);
+  AxB.V() = AVxB;
   C.S() *= beta;
-  C += A_copy;
+  C += AxB;
+}
+
+define_method(
+  void, gemm_omm,
+  (
+    const Hierarchical& A, const LowRank& B, LowRank& C,
+    double alpha, double beta
+  )
+) {
+  LowRankView AxB(B);
+  Dense AxBU = gemm(A, B.U(), alpha);
+  AxB.U() = AxBU;
+  C.S() *= beta;
+  C += AxB;
 }
 
 define_method(
@@ -635,7 +633,7 @@ define_method(
   abort();
 }
 
-NodeProxy gemm(
+Dense gemm(
   const Node& A, const Node& B, double alpha, bool TransA, bool TransB
 ) {
   assert(
@@ -646,8 +644,11 @@ NodeProxy gemm(
 }
 
 define_method(
-  NodeProxy, gemm_omm,
-  (const Dense& A, const Dense& B, double alpha, bool TransA,  bool TransB)
+  Dense, gemm_omm,
+  (
+    const Dense& A, const Dense& B,
+    double alpha, bool TransA,  bool TransB
+  )
 ) {
   Dense out(A.dim[TransA ? 1 : 0], B.dim[TransB ? 0 : 1]);
   gemm(A, B, out, TransA, TransB, alpha, 0);
@@ -655,7 +656,41 @@ define_method(
 }
 
 define_method(
-  NodeProxy, gemm_omm,
+  Dense, gemm_omm,
+  (
+    const Hierarchical& A, const Dense& B,
+    double alpha, bool TransA,  bool TransB
+  )
+) {
+  // TODO Implement with transposed allowed
+  assert(TransA == false);
+  assert(TransB == false);
+  Dense out(get_n_rows(A), B.dim[1]);
+  NoCopySplit outH(out, A.dim[0], 1);
+  NoCopySplit BH(B, A.dim[1], 1);
+  gemm(A, BH, outH, alpha, 0);
+  return out;
+}
+
+define_method(
+  Dense, gemm_omm,
+  (
+    const Dense& A, const Hierarchical& B,
+    double alpha, bool TransA,  bool TransB
+  )
+) {
+  // TODO Implement with transposed allowed
+  assert(TransA == false);
+  assert(TransB == false);
+  Dense out(A.dim[0], get_n_cols(B));
+  NoCopySplit outH(out, 1, B.dim[1]);
+  NoCopySplit AH(A, 1, B.dim[0]);
+  gemm(AH, B, outH, alpha, 0);
+  return out;
+}
+
+define_method(
+  Dense, gemm_omm,
   (
     const Node& A, const Node& B,
     [[maybe_unused]] double alpha,

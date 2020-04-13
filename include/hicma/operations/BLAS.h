@@ -1,7 +1,7 @@
 #ifndef hicma_operations_BLAS_h
 #define hicma_operations_BLAS_h
 
-#include "hicma/classes/node_proxy.h"
+#include "hicma/classes/dense.h"
 
 
 namespace hicma
@@ -17,7 +17,7 @@ void gemm(
   double alpha, double beta
 );
 
-NodeProxy gemm(
+Dense gemm(
   const Node& A, const Node& B,
   double alpha=1,
   bool TransA=false, bool TransB=false
