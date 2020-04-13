@@ -2,6 +2,8 @@
 #include "hicma/extension_headers/operations.h"
 
 #include "hicma/classes/dense.h"
+#include "hicma/classes/hierarchical.h"
+#include "hicma/classes/low_rank.h"
 #include "hicma/classes/node.h"
 #include "hicma/util/omm_error_handler.h"
 
@@ -15,6 +17,24 @@ Node& operator*=(Node& A, double b) {
 
 define_method(
   Node&, multiplication_omm, (Dense& A, double b)
+) {
+  for (int i=0; i<A.dim[0]; i++) {
+    for (int j=0; j<A.dim[1]; j++) {
+      A(i, j) *= b;
+    }
+  }
+  return A;
+}
+
+define_method(
+  Node&, multiplication_omm, (LowRank& A, double b)
+) {
+  A.S() *= b;
+  return A;
+}
+
+define_method(
+  Node&, multiplication_omm, (Hierarchical& A, double b)
 ) {
   for (int i=0; i<A.dim[0]; i++) {
     for (int j=0; j<A.dim[1]; j++) {

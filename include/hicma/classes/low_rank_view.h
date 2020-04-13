@@ -53,6 +53,8 @@ class LowRankView : public LowRank {
 
   LowRankView(
     const IndexRange& row_range, const IndexRange& col_range, const LowRank& A);
+
+  LowRankView(const Dense& U, const Dense& S, const Dense& V);
 };
 
 register_class(LowRankView, LowRank)

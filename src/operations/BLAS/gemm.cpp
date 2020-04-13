@@ -184,9 +184,8 @@ define_method(
     double alpha, double beta
   )
 ) {
-  LowRankView AxB(A);
   Dense AVxB = gemm(A.V(), B, alpha);
-  AxB.V() = AVxB;
+  LowRankView AxB(A.U(), A.S(), AVxB);
   C.S() *= beta;
   C += AxB;
 }
@@ -198,9 +197,8 @@ define_method(
     double alpha, double beta
   )
 ) {
-  LowRankView AxB(B);
   Dense AxBU = gemm(A, B.U(), alpha);
-  AxB.U() = AxBU;
+  LowRankView AxB(AxBU, B.S(), B.V());
   C.S() *= beta;
   C += AxB;
 }
@@ -212,9 +210,8 @@ define_method(
     double alpha, double beta
   )
 ) {
-  LowRankView AxB(A);
   Dense AVxB = gemm(A.V(), B, alpha);
-  AxB.V() = AVxB;
+  LowRankView AxB(A.U(), A.S(), AVxB);
   C.S() *= beta;
   C += AxB;
 }
@@ -226,9 +223,8 @@ define_method(
     double alpha, double beta
   )
 ) {
-  LowRankView AxB(B);
   Dense AxBU = gemm(A, B.U(), alpha);
-  AxB.U() = AxBU;
+  LowRankView AxB(AxBU, B.S(), B.V());
   C.S() *= beta;
   C += AxB;
 }
@@ -260,11 +256,8 @@ define_method(
   )
 ) {
   assert(A.rank == B.rank);
-  LowRankView AxB(A);
-  AxB.V() = B.V();
-  AxB.dim[1] = B.dim[1];
   Dense SxVxUxS = gemm(gemm(A.S(), gemm(A.V(), B.U())), B.S(), alpha);
-  AxB.S() = SxVxUxS;
+  LowRankView AxB(A.U(), SxVxUxS, B.V());
   C.S() *= beta;
   C += AxB;
 }
@@ -308,12 +301,9 @@ define_method(
     double alpha, double beta
   )
 ) {
-  LowRankView AxB(A);
-  AxB.V() = B.V();
-  AxB.dim[1] = B.dim[1];
   Dense SxVxUxS = gemm(gemm(A.S(), gemm(A.V(), B.U())), B.S(), alpha);
-  AxB.S() = SxVxUxS;
-  AxB.S() *= beta;
+  LowRankView AxB(A.U(), SxVxUxS, B.V());
+  C *= beta;
   C += AxB;
 }
 

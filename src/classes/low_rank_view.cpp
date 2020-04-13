@@ -58,4 +58,12 @@ LowRankView::LowRankView(
   );
 }
 
+LowRankView::LowRankView(
+  const Dense& U, const Dense& S, const Dense& V
+) : _U(U), _S(S), _V(V) {
+  dim[0] = U.dim[0];
+  dim[1] = V.dim[1];
+  rank = S.dim[0];
+}
+
 } // namespace hicma
