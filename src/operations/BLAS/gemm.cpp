@@ -5,7 +5,6 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/low_rank_shared.h"
-#include "hicma/classes/low_rank_view.h"
 #include "hicma/classes/node.h"
 #include "hicma/classes/no_copy_split.h"
 #include "hicma/classes/uniform_hierarchical.h"
@@ -185,7 +184,7 @@ define_method(
   )
 ) {
   Dense AVxB = gemm(A.V(), B, alpha);
-  LowRankView AxB(A.U(), A.S(), AVxB);
+  LowRank AxB(A.U(), A.S(), AVxB);
   C.S() *= beta;
   C += AxB;
 }
@@ -198,7 +197,7 @@ define_method(
   )
 ) {
   Dense AxBU = gemm(A, B.U(), alpha);
-  LowRankView AxB(AxBU, B.S(), B.V());
+  LowRank AxB(AxBU, B.S(), B.V());
   C.S() *= beta;
   C += AxB;
 }
@@ -211,7 +210,7 @@ define_method(
   )
 ) {
   Dense AVxB = gemm(A.V(), B, alpha);
-  LowRankView AxB(A.U(), A.S(), AVxB);
+  LowRank AxB(A.U(), A.S(), AVxB);
   C.S() *= beta;
   C += AxB;
 }
@@ -224,7 +223,7 @@ define_method(
   )
 ) {
   Dense AxBU = gemm(A, B.U(), alpha);
-  LowRankView AxB(AxBU, B.S(), B.V());
+  LowRank AxB(AxBU, B.S(), B.V());
   C.S() *= beta;
   C += AxB;
 }
@@ -257,7 +256,7 @@ define_method(
 ) {
   assert(A.rank == B.rank);
   Dense SxVxUxS = gemm(gemm(A.S(), gemm(A.V(), B.U())), B.S(), alpha);
-  LowRankView AxB(A.U(), SxVxUxS, B.V());
+  LowRank AxB(A.U(), SxVxUxS, B.V());
   C.S() *= beta;
   C += AxB;
 }
@@ -302,7 +301,7 @@ define_method(
   )
 ) {
   Dense SxVxUxS = gemm(gemm(A.S(), gemm(A.V(), B.U())), B.S(), alpha);
-  LowRankView AxB(A.U(), SxVxUxS, B.V());
+  LowRank AxB(A.U(), SxVxUxS, B.V());
   C *= beta;
   C += AxB;
 }

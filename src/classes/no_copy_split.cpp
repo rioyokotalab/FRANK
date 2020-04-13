@@ -5,7 +5,6 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/index_range.h"
 #include "hicma/classes/low_rank.h"
-#include "hicma/classes/low_rank_view.h"
 #include "hicma/classes/node.h"
 #include "hicma/classes/node_proxy.h"
 #include "hicma/operations/misc/get_dim.h"
@@ -71,13 +70,6 @@ define_method(
 
 define_method(
   NodeProxy, make_view,
-  (const IndexRange& row_range, const IndexRange& col_range, LowRank& A)
-) {
-  return LowRankView(row_range, col_range, A);
-}
-
-define_method(
-  NodeProxy, make_view,
   (
     [[maybe_unused]] const IndexRange&, [[maybe_unused]] const IndexRange&,
     Node& A
@@ -130,7 +122,7 @@ define_method(
   NodeProxy, make_view,
   (const IndexRange& row_range, const IndexRange& col_range, const LowRank& A)
 ) {
-  return LowRankView(row_range, col_range, A);
+  return LowRank(row_range, col_range, A);
 }
 
 define_method(

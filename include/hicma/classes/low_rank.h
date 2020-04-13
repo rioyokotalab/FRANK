@@ -26,7 +26,7 @@ class LowRank : public Node {
 
   virtual ~LowRank() = default;
 
-  LowRank(const LowRank& A);
+  LowRank(const LowRank& A) = default;
 
   LowRank& operator=(const LowRank& A) = default;
 
@@ -65,6 +65,11 @@ class LowRank : public Node {
 
   LowRank get_part(
     const IndexRange& row_range, const IndexRange& col_range) const;
+
+  LowRank(
+    const IndexRange& row_range, const IndexRange& col_range, const LowRank& A);
+
+  LowRank(const Dense& U, const Dense& S, const Dense& V);
 };
 
 register_class(LowRank, Node)

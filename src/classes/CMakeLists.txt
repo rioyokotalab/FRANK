@@ -4,7 +4,6 @@ add_library(classes OBJECT
     dense.cpp
     low_rank.cpp
     low_rank_shared.cpp
-    low_rank_view.cpp
     hierarchical.cpp
     no_copy_split.cpp
     uniform_hierarchical.cpp

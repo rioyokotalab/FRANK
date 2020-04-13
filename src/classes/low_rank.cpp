@@ -18,13 +18,6 @@
 namespace hicma
 {
 
-LowRank::LowRank(const LowRank& A)
-: Node(A), _U(A.U()), _S(A.S()), _V(A.V()),
-  dim{A.dim[0], A.dim[1]}, rank(A.rank)
-{
-  // TODO Change LowRankView to make this unnecessary
-}
-
 std::unique_ptr<Node> LowRank::clone() const {
   return std::make_unique<LowRank>(*this);
 }
@@ -123,6 +116,31 @@ LowRank LowRank::get_part(
     }
   }
   return A;
+}
+
+LowRank::LowRank(
+  const IndexRange& row_range, const IndexRange& col_range, const LowRank& A
+) : dim{row_range.length, col_range.length}, rank(A.rank) {
+  assert(row_range.start+row_range.length <= A.dim[0]);
+  assert(col_range.start+col_range.length <= A.dim[1]);
+  U() = Dense(
+    IndexRange(row_range.start, row_range.length), IndexRange(0, A.rank),
+    A.U()
+  );
+  S() = Dense(IndexRange(0, A.rank), IndexRange(0, A.rank), A.S());
+  V() = Dense(
+    IndexRange(0, A.rank), IndexRange(col_range.start, col_range.length),
+    A.V()
+  );
+}
+
+LowRank::LowRank(
+  const Dense& U, const Dense& S, const Dense& V
+) : _U(IndexRange(0, U.dim[0]), IndexRange(0, U.dim[1]), U),
+    _S(IndexRange(0, S.dim[0]), IndexRange(0, S.dim[1]), S),
+    _V(IndexRange(0, V.dim[0]), IndexRange(0, V.dim[1]), V),
+    dim{U.dim[0], V.dim[1]}, rank(S.dim[0])
+{
 }
 
 } // namespace hicma
