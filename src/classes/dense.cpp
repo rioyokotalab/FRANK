@@ -25,16 +25,45 @@ namespace hicma
 {
 
 Dense::Dense(const Dense& A)
-: Node(A), dim{A.dim[0], A.dim[1]}, stride(A.dim[1]) {
-  // TODO Make this unnecessary by changing DenseView (sibling not child?).
+: Node(A),
+  data_ptr(nullptr), const_data_ptr(nullptr), owning(true),
+  dim{A.dim[0], A.dim[1]}, stride(A.dim[1])
+{
   timing::start("Dense cctor");
-  data.resize(dim[0]*dim[1], 0);
-  for (int i=0; i<dim[0]; i++) {
-    for (int j=0; j<dim[1]; j++) {
-      (*this)(i, j) = A(i, j);
+  if (A.owning) {
+    data = A.data;
+  } else {
+    data.resize(dim[0]*dim[1], 0);
+    for (int i=0; i<dim[0]; i++) {
+      for (int j=0; j<dim[1]; j++) {
+        (*this)(i, j) = A(i, j);
+      }
     }
   }
   timing::stop("Dense cctor");
+}
+
+Dense& Dense::operator=(const Dense& A) {
+  timing::start("Dense copy assignment");
+  static_cast<Node&>(*this) = A;
+  data_ptr = nullptr;
+  const_data_ptr = nullptr;
+  owning = true;
+  dim[0] = A.dim[0];
+  dim[1] = A.dim[1];
+  stride = A.stride;
+  if (A.owning) {
+    data = A.data;
+  } else {
+    data.resize(dim[0]*dim[1], 0);
+    for (int i=0; i<dim[0]; i++) {
+      for (int j=0; j<dim[1]; j++) {
+        (*this)(i, j) = A(i, j);
+      }
+    }
+  }
+  timing::stop("Dense copy assignment");
+  return *this;
 }
 
 std::unique_ptr<Node> Dense::clone() const {
@@ -48,7 +77,10 @@ std::unique_ptr<Node> Dense::move_clone() {
 const char* Dense::type() const { return "Dense"; }
 
 Dense::Dense(const Node& A)
-: Node(A), dim{get_n_rows(A), get_n_cols(A)}, stride(dim[1]) {
+: Node(A),
+  data_ptr(nullptr), const_data_ptr(nullptr), owning(true),
+  dim{get_n_rows(A), get_n_cols(A)}, stride(dim[1])
+{
   data.resize(dim[0]*dim[1], 0);
   fill_dense_from(A, *this);
 }
@@ -86,7 +118,10 @@ define_method(void, fill_dense_from, (const Node& A, Node& B)) {
 }
 
 Dense::Dense(int m, int n)
-: dim{m, n}, stride(n) {
+: Node(),
+  data_ptr(nullptr), const_data_ptr(nullptr), owning(true),
+  dim{m, n}, stride(n)
+{
   timing::start("Dense alloc");
   data.resize(dim[0]*dim[1], 0);
   timing::stop("Dense alloc");
@@ -97,7 +132,10 @@ Dense::Dense(
   void (*func)(Dense& A, std::vector<double>& x, int i_begin, int j_begin),
   std::vector<double>& x,
   int i_begin, int j_begin
-) : dim{row_range.length, col_range.length}, stride(dim[1]) {
+) : Node(),
+  data_ptr(nullptr), const_data_ptr(nullptr), owning(true),
+  dim{row_range.length, col_range.length}, stride(dim[1])
+{
   // TODO This function is still aware of hierarchical matrix idea. Change?
   // Related to making helper class for construction.
   data.resize(dim[0]*dim[1]);
@@ -121,7 +159,10 @@ Dense::Dense(
   std::vector<std::vector<double>>& x,
   const int ni, const int nj,
   const int i_begin, const int j_begin
-) : dim{ni, nj}, stride(nj), data(dim[0]*dim[1]) {
+) :
+  data_ptr(nullptr), const_data_ptr(nullptr), owning(true),
+  dim{ni, nj}, stride(dim[1]), data(dim[0]*dim[1])
+{
   func(data, x, ni, nj, i_begin, j_begin);
 }
 
@@ -134,9 +175,49 @@ const Dense& Dense::operator=(const double a) {
   return *this;
 }
 
-double* Dense::get_pointer() { return &data[0]; }
+Dense::Dense(
+  const IndexRange& row_range, const IndexRange& col_range, Dense& A
+) : Node(),
+    owning(false), dim{row_range.length, col_range.length}, stride(A.stride)
+{
+  assert(row_range.start+row_range.length <= A.dim[0]);
+  assert(col_range.start+col_range.length <= A.dim[1]);
+  data_ptr = &A(row_range.start, col_range.start);
+  const_data_ptr = &A(row_range.start, col_range.start);
+}
 
-const double* Dense::get_pointer() const { return &data[0]; }
+Dense::Dense(
+  const IndexRange& row_range, const IndexRange& col_range, const Dense& A
+) : Node(),
+    owning(false), dim{row_range.length, col_range.length}, stride(A.stride)
+{
+  assert(row_range.start+row_range.length <= A.dim[0]);
+  assert(col_range.start+col_range.length <= A.dim[1]);
+  data_ptr = nullptr;
+  const_data_ptr = &A(row_range.start, col_range.start);
+}
+
+double* Dense::get_pointer() {
+  double* ptr;
+  if (owning) {
+    ptr = &data[0];
+  } else {
+    assert(data_ptr != nullptr);
+    ptr = data_ptr;
+  }
+  return ptr;
+}
+
+const double* Dense::get_pointer() const {
+  const double* ptr;
+  if (owning) {
+    ptr = &data[0];
+  } else {
+    assert(data_ptr != nullptr || const_data_ptr != nullptr);
+    ptr = data_ptr!=nullptr ? data_ptr : const_data_ptr;
+  }
+  return ptr;
+}
 
 double& Dense::operator[](int i) {
   assert(dim[0] == 1 || dim[1] == 1);
@@ -212,7 +293,8 @@ Dense Dense::transpose() const {
 }
 
 void Dense::transpose() {
-  assert(stride = dim[1]);
+  assert(owning);
+  assert(stride == dim[1]);
   Dense Copy(*this);
   std::swap(dim[0], dim[1]);
   stride = dim[1];

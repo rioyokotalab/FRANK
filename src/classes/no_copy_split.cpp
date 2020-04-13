@@ -2,7 +2,6 @@
 #include "hicma/extension_headers/classes.h"
 
 #include "hicma/classes/dense.h"
-#include "hicma/classes/dense_view.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/index_range.h"
 #include "hicma/classes/low_rank.h"
@@ -67,7 +66,7 @@ define_method(
   NodeProxy, make_view,
   (const IndexRange& row_range, const IndexRange& col_range, Dense& A)
 ) {
-  return DenseView(row_range, col_range, A);
+  return Dense(row_range, col_range, A);
 }
 
 define_method(
@@ -124,7 +123,7 @@ define_method(
   NodeProxy, make_view,
   (const IndexRange& row_range, const IndexRange& col_range, const Dense& A)
 ) {
-  return DenseView(row_range, col_range, A);
+  return Dense(row_range, col_range, A);
 }
 
 define_method(

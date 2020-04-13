@@ -1,7 +1,7 @@
 #ifndef hicma_classes_low_rank_view_h
 #define hicma_classes_low_rank_view_h
 
-#include "hicma/classes/dense_view.h"
+#include "hicma/classes/dense.h"
 #include "hicma/classes/low_rank.h"
 
 #include "yorel/yomm2/cute.hpp"
@@ -17,7 +17,7 @@ class Node;
 
 class LowRankView : public LowRank {
  private:
-  DenseView _U, _S, _V;
+  Dense _U, _S, _V;
  public:
   // Special member functions
   LowRankView() = default;
@@ -39,14 +39,14 @@ class LowRankView : public LowRank {
 
   const char* type() const override;
 
-  DenseView& U() override;
-  const DenseView& U() const override;
+  Dense& U() override;
+  const Dense& U() const override;
 
-  DenseView& S() override;
-  const DenseView& S() const override;
+  Dense& S() override;
+  const Dense& S() const override;
 
-  DenseView& V() override;
-  const DenseView& V() const override;
+  Dense& V() override;
+  const Dense& V() const override;
 
   // Constructors
   LowRankView(const LowRank& A);

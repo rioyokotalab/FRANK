@@ -18,6 +18,9 @@ class NodeProxy;
 class Dense : public Node {
  private:
   std::vector<double> data;
+  double* data_ptr = nullptr;
+  const double* const_data_ptr = nullptr;
+  bool owning = true;
  protected:
   virtual double* get_pointer();
 
@@ -33,7 +36,7 @@ class Dense : public Node {
 
   Dense(const Dense& A);
 
-  Dense& operator=(const Dense& A) = default;
+  Dense& operator=(const Dense& A);
 
   Dense(Dense&& A) = default;
 
@@ -78,6 +81,11 @@ class Dense : public Node {
     const int ni, const int nj,
     const int i_begin=0, const int j_begin=0
   );
+
+  Dense(const IndexRange& row_range, const IndexRange& col_range, Dense& A);
+
+  Dense(
+    const IndexRange& row_range, const IndexRange& col_range, const Dense& A);
 
   // Additional operators
   const Dense& operator=(const double a);

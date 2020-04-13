@@ -2,7 +2,6 @@ add_library(classes OBJECT
     index_range.cpp
     node_proxy.cpp
     dense.cpp
-    dense_view.cpp
     low_rank.cpp
     low_rank_shared.cpp
     low_rank_view.cpp
