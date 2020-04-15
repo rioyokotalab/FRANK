@@ -45,7 +45,7 @@ Dense::Dense(const Dense& A)
 
 Dense& Dense::operator=(const Dense& A) {
   timing::start("Dense copy assignment");
-  static_cast<Node&>(*this) = A;
+  Node::operator=(A);
   data_ptr = nullptr;
   const_data_ptr = nullptr;
   owning = true;
