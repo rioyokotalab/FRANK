@@ -10,6 +10,8 @@
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
 
+#include <cstdint>
+
 
 namespace hicma
 {
@@ -19,7 +21,9 @@ declare_method(
   (Hierarchical&, virtual_<const Node &>)
 )
 
-declare_method(NoCopySplit, make_no_copy_split, (virtual_<Node&>, int, int))
+declare_method(
+  NoCopySplit, make_no_copy_split, (virtual_<Node&>, int64_t, int64_t)
+)
 
 declare_method(
   NodeProxy, make_view,

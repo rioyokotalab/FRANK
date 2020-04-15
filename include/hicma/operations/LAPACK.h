@@ -1,6 +1,7 @@
 #ifndef hicma_operations_LAPACK_h
 #define hicma_operations_LAPACK_h
 
+#include <cstdint>
 #include <tuple>
 #include <vector>
 
@@ -12,7 +13,7 @@ class Node;
 class NodeProxy;
 class Dense;
 
-std::tuple<Dense, std::vector<int>> geqp3(Node& A);
+std::tuple<Dense, std::vector<int64_t>> geqp3(Node& A);
 
 void geqrt(Node&, Node&);
 
@@ -20,12 +21,12 @@ void geqrt2(Dense&, Dense&);
 
 std::tuple<NodeProxy, NodeProxy> getrf(Node&);
 
-std::tuple<Dense, std::vector<int>> one_sided_id(Node& A, int k);
+std::tuple<Dense, std::vector<int64_t>> one_sided_id(Node& A, int64_t k);
 
 // TODO Does this need to be in the header?
-Dense get_cols(const Dense& A, std::vector<int> P);
+Dense get_cols(const Dense& A, std::vector<int64_t> P);
 
-std::tuple<Dense, Dense, Dense> id(Node& A, int k);
+std::tuple<Dense, Dense, Dense> id(Node& A, int64_t k);
 
 void larfb(const Node&, const Node&, Node&, bool);
 
@@ -51,13 +52,13 @@ bool need_split(const Node&);
 std::tuple<Dense, Dense> make_left_orthogonal(const Node&);
 
 // TODO Does this need to be in the header?
-void update_splitted_size(const Node&, int&, int&);
+void update_splitted_size(const Node&, int64_t&, int64_t&);
 
 // TODO Does this need to be in the header?
-NodeProxy split_by_column(const Node&, Node&, int&);
+NodeProxy split_by_column(const Node&, Node&, int64_t&);
 
 // TODO Does this need to be in the header?
-NodeProxy concat_columns(const Node&, const Node&, const Node&, int&);
+NodeProxy concat_columns(const Node&, const Node&, const Node&, int64_t&);
 
 void zero_lowtri(Node&);
 

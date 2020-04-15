@@ -5,6 +5,7 @@
 
 #include "yorel/yomm2/cute.hpp"
 
+#include <cstdint>
 #include <memory>
 
 
@@ -36,9 +37,9 @@ class NoCopySplit : public Hierarchical {
   const char* type() const override;
 
   // Additional constructors
-  NoCopySplit(Node& A, int ni_level, int nj_level);
+  NoCopySplit(Node& A, int64_t ni_level, int64_t nj_level);
 
-  NoCopySplit(const Node& A, int ni_level, int nj_level);
+  NoCopySplit(const Node& A, int64_t ni_level, int64_t nj_level);
 
   NoCopySplit(Node& A, const Hierarchical& like);
 

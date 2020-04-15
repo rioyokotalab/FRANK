@@ -6,6 +6,8 @@
 
 #include "yorel/yomm2/cute.hpp"
 
+#include <array>
+#include <cstdint>
 #include <memory>
 
 
@@ -50,8 +52,8 @@ class LowRankShared : public Node {
     }
   } U, V;
   Dense S;
-  int dim[2] = {0, 0};
-  int rank = 0;
+  std::array<int64_t, 2> dim = {0, 0};
+  int64_t rank = 0;
 
   // Special member functions
   LowRankShared() = default;

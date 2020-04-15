@@ -15,8 +15,9 @@
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
 
-#include <cmath>
 #include <cassert>
+#include <cmath>
+#include <cstdint>
 
 
 namespace hicma
@@ -80,8 +81,8 @@ define_method(
 ) {
   if (A.dim[0] == B.dim[0] && A.dim[1] == B.dim[1]) {
     double total_diff = 0, total_norm = 0;
-    for (int i=0; i<A.dim[0]; ++i) {
-      for (int j=0; j<A.dim[1]; ++j) {
+    for (int64_t i=0; i<A.dim[0]; ++i) {
+      for (int64_t j=0; j<A.dim[1]; ++j) {
         double diff, mat_norm;
         std::tie(diff, mat_norm) = collect_diff_norm_omm(A(i, j), B(i, j));
         total_diff += diff;

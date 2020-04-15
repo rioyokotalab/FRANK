@@ -26,7 +26,7 @@ namespace hicma
 void trmm(
   const Node& A, Node& B,
   const char& side, const char& uplo, const char& trans, const char& diag,
-  const double& alpha
+  double alpha
 ) {
   trmm_omm(A, B, side, uplo, trans, diag, alpha);
 }
@@ -34,7 +34,7 @@ void trmm(
 void trmm(
   const Node& A, Node& B,
   const char& side, const char& uplo,
-  const double& alpha
+  double alpha
 ) {
   trmm_omm(A, B, side, uplo, 'n', 'n', alpha);
 }
@@ -44,7 +44,7 @@ define_method(
   (
     const Dense& A, Dense& B,
     const char& side, const char& uplo, const char& trans, const char& diag,
-    const double& alpha
+    double alpha
   )
 ) {
   assert(A.dim[0] == A.dim[1]);
@@ -64,7 +64,7 @@ define_method(
   (
     const Dense& A, LowRank& B,
     const char& side, const char& uplo,  const char& trans, const char& diag,
-    const double& alpha
+    double alpha
   )
 ) {
   assert(A.dim[0] == A.dim[1]);
@@ -80,7 +80,7 @@ define_method(
   (
     const Hierarchical& A, Hierarchical& B,
     const char& side, const char& uplo, const char& trans, const char& diag,
-    const double& alpha
+    double alpha
   )
 ) {
   assert(A.dim[0] == A.dim[1]);
@@ -89,9 +89,9 @@ define_method(
   Hierarchical B_copy(B);
   if(uplo == 'u') {
     if(side == 'l') {
-      for(int i=0; i<A.dim[0]; i++) {
-        for(int j=0; j<B.dim[1]; j++) {
-          for(int k=i; k<A.dim[1]; k++) {
+      for(int64_t i=0; i<A.dim[0]; i++) {
+        for(int64_t j=0; j<B.dim[1]; j++) {
+          for(int64_t k=i; k<A.dim[1]; k++) {
             if(k == i) {
               trmm(A(i, k), B(k, j), side, uplo, trans, diag, alpha);
             }
@@ -103,9 +103,9 @@ define_method(
       }
     }
     else if(side == 'r') {
-      for(int i=0; i<B.dim[0]; i++) {
-        for(int j=0; j<A.dim[1]; j++) {
-          for(int k=j; k>=0; k--) {
+      for(int64_t i=0; i<B.dim[0]; i++) {
+        for(int64_t j=0; j<A.dim[1]; j++) {
+          for(int64_t k=j; k>=0; k--) {
             if(k == j) {
               trmm(A(k, j), B(i, k), side, uplo, trans, diag, alpha);
             }
@@ -126,7 +126,7 @@ define_method(
     const Node& A, Node& B,
     [[maybe_unused]] const char& side, [[maybe_unused]] const char& uplo,
     [[maybe_unused]] const char& trans, [[maybe_unused]] const char& diag,
-    [[maybe_unused]] const double& alpha
+    [[maybe_unused]] double alpha
   )
 ) {
   omm_error_handler("trmm", {A, B}, __FILE__, __LINE__);

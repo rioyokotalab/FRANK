@@ -17,7 +17,7 @@
 #endif
 #include "yorel/yomm2/cute.hpp"
 
-#include <iostream>
+#include <cstdint>
 #include <vector>
 
 
@@ -90,8 +90,8 @@ define_method(
   Dense Vt(V);
   transpose(Vt);
   Dense T_upper_tri(T);
-  for(int i=0; i<T_upper_tri.dim[0]; i++)
-    for(int j=0; j<i; j++)
+  for(int64_t i=0; i<T_upper_tri.dim[0]; i++)
+    for(int64_t j=0; j<i; j++)
       T_upper_tri(i, j) = 0.0;
   Hierarchical AH(A);
   gemm(Vt, B, AH, 1, 1); // AH = A + Vt*B
@@ -177,8 +177,8 @@ define_method(
   Dense Vt(V);
   transpose(Vt);
   Dense T_upper_tri(T);
-  for(int i=0; i<T_upper_tri.dim[0]; i++)
-    for(int j=0; j<i; j++)
+  for(int64_t i=0; i<T_upper_tri.dim[0]; i++)
+    for(int64_t j=0; j<i; j++)
       T_upper_tri(i, j) = 0.0;
   gemm(Vt, B, C, 1, 1); // C = A + Y^t*B
   if(trans) transpose(T_upper_tri);
@@ -208,18 +208,18 @@ define_method(
   )
 ) {
   if(trans) {
-    for(int i = 0; i < B.dim[0]; i++) {
-      for(int j = 0; j < B.dim[1]; j++) {
-        for(int k = 0; k < B.dim[1]; k++) {
+    for(int64_t i = 0; i < B.dim[0]; i++) {
+      for(int64_t j = 0; j < B.dim[1]; j++) {
+        for(int64_t k = 0; k < B.dim[1]; k++) {
           tpmqrt(V(i, j), T(i, j), A(j, k), B(i, k), trans);
         }
       }
     }
   }
   else {
-    for(int i = B.dim[0]-1; i >= 0; i--) {
-      for(int j = B.dim[1]-1; j >= 0; j--) {
-        for(int k = B.dim[1]-1; k >= 0; k--) {
+    for(int64_t i = B.dim[0]-1; i >= 0; i--) {
+      for(int64_t j = B.dim[1]-1; j >= 0; j--) {
+        for(int64_t k = B.dim[1]-1; k >= 0; k--) {
           tpmqrt(V(i, j), T(i, j), A(j, k), B(i, k), trans);
         }
       }

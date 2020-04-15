@@ -12,6 +12,7 @@
 
 #include "yorel/yomm2/cute.hpp"
 
+#include <cstddef>
 #include <memory>
 #include <utility>
 
@@ -29,27 +30,27 @@ std::unique_ptr<Node> NoCopySplit::move_clone() {
 
 const char* NoCopySplit::type() const { return "NoCopySplit"; }
 
-NoCopySplit::NoCopySplit(Node& A, int ni_level, int nj_level) {
-  dim[0] = ni_level; dim[1] = nj_level;
+NoCopySplit::NoCopySplit(Node& A, int64_t ni_level, int64_t nj_level) {
+  dim = {ni_level, nj_level};
   row_range = IndexRange(0, get_n_rows(A));
   col_range = IndexRange(0, get_n_cols(A));
   create_children();
-  for (int i=0; i<dim[0]; ++i) {
-    for (int j=0; j<dim[1]; ++j) {
+  for (int64_t i=0; i<dim[0]; ++i) {
+    for (int64_t j=0; j<dim[1]; ++j) {
       (*this)(i, j) = make_view(row_range[i], col_range[j], A);
     }
   }
 }
 
 NoCopySplit::NoCopySplit(Node& A, const Hierarchical& like) {
-  dim[0] = like.dim[0]; dim[1] = like.dim[1];
+  dim = like.dim;
   row_range = IndexRange(0, get_n_rows(A));
   col_range = IndexRange(0, get_n_cols(A));
   create_children();
-  int row_begin = 0;
-  for (int i=0; i<dim[0]; ++i) {
-    int col_begin = 0;
-    for (int j=0; j<dim[1]; ++j) {
+  int64_t row_begin = 0;
+  for (int64_t i=0; i<dim[0]; ++i) {
+    int64_t col_begin = 0;
+    for (int64_t j=0; j<dim[1]; ++j) {
       (*this)(i, j) = make_view(
         IndexRange(row_begin, get_n_rows(like(i, j))),
         IndexRange(col_begin, get_n_cols(like(i, j))),
@@ -79,27 +80,27 @@ define_method(
   abort();
 }
 
-NoCopySplit::NoCopySplit(const Node& A, int ni_level, int nj_level) {
-  dim[0] = ni_level; dim[1] = nj_level;
+NoCopySplit::NoCopySplit(const Node& A, int64_t ni_level, int64_t nj_level) {
+  dim = {ni_level, nj_level};
   row_range = IndexRange(0, get_n_rows(A));
   col_range = IndexRange(0, get_n_cols(A));
   create_children();
-  for (int i=0; i<dim[0]; ++i) {
-    for (int j=0; j<dim[1]; ++j) {
+  for (int64_t i=0; i<dim[0]; ++i) {
+    for (int64_t j=0; j<dim[1]; ++j) {
       (*this)(i, j) = make_view(row_range[i], col_range[j], A);
     }
   }
 }
 
 NoCopySplit::NoCopySplit(const Node& A, const Hierarchical& like) {
-  dim[0] = like.dim[0]; dim[1] = like.dim[1];
+  dim = like.dim;
   row_range = IndexRange(0, get_n_rows(A));
   col_range = IndexRange(0, get_n_cols(A));
   create_children();
-  int row_begin = 0;
-  for (int i=0; i<dim[0]; ++i) {
-    int col_begin = 0;
-    for (int j=0; j<dim[1]; ++j) {
+  int64_t row_begin = 0;
+  for (int64_t i=0; i<dim[0]; ++i) {
+    int64_t col_begin = 0;
+    for (int64_t j=0; j<dim[1]; ++j) {
       (*this)(i, j) = make_view(
         IndexRange(row_begin, get_n_rows(like(i, j))),
         IndexRange(col_begin, get_n_cols(like(i, j))),

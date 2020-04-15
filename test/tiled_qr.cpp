@@ -2,6 +2,7 @@
 
 #include "yorel/yomm2/cute.hpp"
 
+#include <cstdint>
 #include <utility>
 #include <vector>
 
@@ -10,11 +11,11 @@ using namespace hicma;
 
 int main(int argc, char** argv) {
   yorel::yomm2::update_methods();
-  int N = argc > 1 ? atoi(argv[1]) : 256;
-  int Nb = argc > 2 ? atoi(argv[2]) : 32;
-  int matCode = argc > 3 ? atoi(argv[3]) : 0;
+  int64_t N = argc > 1 ? atoi(argv[1]) : 256;
+  int64_t Nb = argc > 2 ? atoi(argv[2]) : 32;
+  int64_t matCode = argc > 3 ? atoi(argv[3]) : 0;
   double conditionNumber = argc > 4 ? atof(argv[4]) : 1e+0;
-  int Nc = N / Nb;
+  int64_t Nc = N / Nb;
   std::vector<std::vector<double>> randpts;
   Dense DA;
 
@@ -31,12 +32,12 @@ int main(int argc, char** argv) {
     std::vector<int> iseed{ 1, 23, 456, 789 };
     char sym = 'N'; //Generate symmetric matrix
     double dmax = 1.0;
-    int kl = N-1;
-    int ku = N-1;
+    int64_t kl = N-1;
+    int64_t ku = N-1;
     char pack = 'N';
 
     std::vector<double> d(N, 0.0); //Singular values to be used
-    int mode = 1; //See docs
+    int64_t mode = 1; //See docs
     Dense _DA(N, N);
     latms(dist, iseed, sym, d, mode, conditionNumber, dmax, kl, ku, pack, _DA);
     DA = std::move(_DA);
@@ -47,8 +48,8 @@ int main(int argc, char** argv) {
   Hierarchical A(Nc, Nc);
   Hierarchical T(Nc, Nc);
   Hierarchical Q(Nc, Nc);
-  for(int ic = 0; ic < Nc; ic++) {
-    for(int jc = 0; jc < Nc; jc++) {
+  for(int64_t ic = 0; ic < Nc; ic++) {
+    for(int64_t jc = 0; jc < Nc; jc++) {
       Dense Aij;
       if(matCode == 0) {
         Dense _Aij(laplacend, randpts, Nb, Nb, Nb*ic, Nb*jc);
@@ -82,33 +83,33 @@ int main(int argc, char** argv) {
   Dense Ax = gemm(A, x);
   print("Time");
   timing::start("QR decomposition");
-  for(int k = 0; k < Nc; k++) {
+  for(int64_t k = 0; k < Nc; k++) {
     geqrt(A(k, k), T(k, k));
-    for(int j = k+1; j < Nc; j++) {
+    for(int64_t j = k+1; j < Nc; j++) {
       larfb(A(k, k), T(k, k), A(k, j), true);
     }
-    for(int i = k+1; i < Nc; i++) {
+    for(int64_t i = k+1; i < Nc; i++) {
       tpqrt(A(k, k), A(i, k), T(i, k));
-      for(int j = k+1; j < Nc; j++) {
+      for(int64_t j = k+1; j < Nc; j++) {
         tpmqrt(A(i, k), T(i, k), A(k, j), A(i, j), true);
       }
     }
   }
   timing::stopAndPrint("QR decomposition");
   //Build Q: Apply Q to Id
-  for(int k = Nc-1; k >= 0; k--) {
-    for(int i = Nc-1; i > k; i--) {
-      for(int j = k; j < Nc; j++) {
+  for(int64_t k = Nc-1; k >= 0; k--) {
+    for(int64_t i = Nc-1; i > k; i--) {
+      for(int64_t j = k; j < Nc; j++) {
         tpmqrt(A(i, k), T(i, k), Q(k, j), Q(i, j), false);
       }
     }
-    for(int j = k; j < Nc; j++) {
+    for(int64_t j = k; j < Nc; j++) {
       larfb(A(k, k), T(k, k), Q(k, j), false);
     }
   }
   //Build R: Take upper triangular part of modified A
-  for(int i=0; i<A.dim[0]; i++) {
-    for(int j=0; j<=i; j++) {
+  for(int64_t i=0; i<A.dim[0]; i++) {
+    for(int64_t j=0; j<=i; j++) {
       if(i == j)
         zero_lowtri(A(i, j));
       else

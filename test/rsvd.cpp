@@ -2,6 +2,7 @@
 
 #include "yorel/yomm2/cute.hpp"
 
+#include <cstdint>
 #include <tuple>
 #include <vector>
 
@@ -10,8 +11,8 @@ using namespace hicma;
 
 int main() {
   yorel::yomm2::update_methods();
-  int N = 2048;
-  int rank = 16;
+  int64_t N = 2048;
+  int64_t rank = 16;
 
   timing::start("Init matrix");
   std::vector<double> randx = get_sorted_random_vector(2*N);

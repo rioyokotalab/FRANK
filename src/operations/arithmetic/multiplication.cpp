@@ -7,6 +7,8 @@
 #include "hicma/classes/node.h"
 #include "hicma/util/omm_error_handler.h"
 
+#include <cstdint>
+
 
 namespace hicma
 {
@@ -18,8 +20,8 @@ Node& operator*=(Node& A, double b) {
 define_method(
   Node&, multiplication_omm, (Dense& A, double b)
 ) {
-  for (int i=0; i<A.dim[0]; i++) {
-    for (int j=0; j<A.dim[1]; j++) {
+  for (int64_t i=0; i<A.dim[0]; i++) {
+    for (int64_t j=0; j<A.dim[1]; j++) {
       A(i, j) *= b;
     }
   }
@@ -36,8 +38,8 @@ define_method(
 define_method(
   Node&, multiplication_omm, (Hierarchical& A, double b)
 ) {
-  for (int i=0; i<A.dim[0]; i++) {
-    for (int j=0; j<A.dim[1]; j++) {
+  for (int64_t i=0; i<A.dim[0]; i++) {
+    for (int64_t j=0; j<A.dim[1]; j++) {
       A(i, j) *= b;
     }
   }

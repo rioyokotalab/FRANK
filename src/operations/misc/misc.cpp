@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <cstdint>
 #include <numeric>
 
 
@@ -14,24 +15,24 @@ namespace hicma
 {
 
 double cond(Dense A) {
-  int k = std::min(A.dim[0], A.dim[1]);
+  int64_t k = std::min(A.dim[0], A.dim[1]);
   Dense S = get_singular_values(A);
   return (S[0] / S[k-1]);
 }
 
-double diam(std::vector<double>& x, const int& n, const int& offset) {
+double diam(std::vector<double>& x, int64_t n, int64_t offset) {
   double xmax = *std::max_element(x.begin()+offset, x.begin()+offset+n);
   double xmin = *std::min_element(x.begin()+offset, x.begin()+offset+n);
   return std::abs(xmax-xmin);
 }
 
-double mean(std::vector<double>& x, const int& n, const int& offset) {
+double mean(std::vector<double>& x, int64_t n, int64_t offset) {
   return std::accumulate(x.begin()+offset, x.begin()+offset+n, 0.0)/n;
 }
 
-std::vector<int> getIndex(int dim, int mortonIndex) {
-  std::vector<int> index(dim, 0);
-  int d = 0, level = 0;
+std::vector<int64_t> getIndex(int64_t dim, int64_t mortonIndex) {
+  std::vector<int64_t> index(dim, 0);
+  int64_t d = 0, level = 0;
   while (mortonIndex != 0) {
     index[d] += (mortonIndex % 2) * (1 << level);
     mortonIndex >>= 1;
@@ -41,10 +42,10 @@ std::vector<int> getIndex(int dim, int mortonIndex) {
   return index;
 }
 
-int getMortonIndex(std::vector<int> index, int level) {
-  int mortonIndex = 0;
-  for(int lev=0; lev<level; lev++) {
-    for(int d=0; d<(int)index.size(); d++) {
+int64_t getMortonIndex(std::vector<int64_t> index, int64_t level) {
+  int64_t mortonIndex = 0;
+  for(int64_t lev=0; lev<level; lev++) {
+    for(size_t d=0; d<index.size(); d++) {
       mortonIndex += index[d] % 2 << (index.size() * lev + d);
       index[d] >>= 1;
     }
@@ -52,20 +53,24 @@ int getMortonIndex(std::vector<int> index, int level) {
   return mortonIndex;
 }
 
-std::vector<double> equallySpacedVector(int N, double minVal, double maxVal) {
+std::vector<double> equallySpacedVector(int64_t N, double minVal, double maxVal) {
   std::vector<double> res(N, 0.0);
   double rnge = maxVal - minVal;
-  for(int i=0; i<N; i++) {
+  for(int64_t i=0; i<N; i++) {
     res[i] = minVal + ((double)i/(double)rnge);
   }
   return res;
 }
 
-void getSubmatrix(const Dense& A, int ni, int nj, int i_begin, int j_begin, Dense& out) {
+void getSubmatrix(
+  const Dense& A,
+  int64_t ni, int64_t nj, int64_t i_begin, int64_t j_begin,
+  Dense& out
+) {
   assert(out.dim[0] == ni);
   assert(out.dim[1] == nj);
-  for(int i=0; i<ni; i++)
-    for(int j=0; j<nj; j++) {
+  for(int64_t i=0; i<ni; i++)
+    for(int64_t j=0; j<nj; j++) {
       out(i, j) = A(i+i_begin, j+j_begin);
     }
 }

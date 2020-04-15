@@ -5,6 +5,7 @@
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/LAPACK.h"
 
+#include <cstdint>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -13,7 +14,7 @@
 namespace hicma
 {
 
-std::tuple<Dense, Dense, Dense> rsvd(const Dense& A, int sample_size) {
+std::tuple<Dense, Dense, Dense> rsvd(const Dense& A, int64_t sample_size) {
   std::vector<double> x;
   Dense RN(random_uniform, x, A.dim[1], sample_size);
   Dense Y = gemm(A, RN);
@@ -28,7 +29,7 @@ std::tuple<Dense, Dense, Dense> rsvd(const Dense& A, int sample_size) {
   return {std::move(U), std::move(S), std::move(V)};
 }
 
-std::tuple<Dense, Dense, Dense> old_rsvd(const Dense& A, int sample_size) {
+std::tuple<Dense, Dense, Dense> old_rsvd(const Dense& A, int64_t sample_size) {
   std::vector<double> x;
   Dense RN(random_uniform, x, A.dim[1], sample_size);
   Dense Y = gemm(A, RN);

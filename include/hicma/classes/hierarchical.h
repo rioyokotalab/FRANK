@@ -7,6 +7,8 @@
 
 #include "yorel/yomm2/cute.hpp"
 
+#include <array>
+#include <cstdint>
 #include <memory>
 #include <tuple>
 #include <vector>
@@ -22,7 +24,7 @@ class Hierarchical : public Node {
  public:
   // TODO Remove these and make temporary only for construction?
   IndexRange row_range, col_range;
-  int dim[2] = {0, 0};
+  std::array<int64_t, 2> dim = {0, 0};
 
   // Special member functions
   Hierarchical() = default;
@@ -47,42 +49,46 @@ class Hierarchical : public Node {
   // Conversion constructors
   Hierarchical(NodeProxy&&);
 
-  Hierarchical(const Node& node, int ni_level, int nj_level);
+  Hierarchical(const Node& node, int64_t ni_level, int64_t nj_level);
 
   // Additional constructors
-  Hierarchical(int ni_level, int nj_level=1);
+  Hierarchical(int64_t ni_level, int64_t nj_level=1);
 
   Hierarchical(
     IndexRange row_range, IndexRange col_range,
-    void (*func)(Dense& A, std::vector<double>& x, int i_begin, int j_begin),
+    void (*func)(
+      Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
+    ),
     std::vector<double>& x,
-    int rank,
-    int nleaf,
-    int admis=1,
-    int ni_level=2, int nj_level=2,
-    int i_begin=0, int j_begin=0,
-    int i_abs=0, int j_abs=0
+    int64_t rank,
+    int64_t nleaf,
+    int64_t admis=1,
+    int64_t ni_level=2, int64_t nj_level=2,
+    int64_t i_begin=0, int64_t j_begin=0,
+    int64_t i_abs=0, int64_t j_abs=0
   );
 
   Hierarchical(
-    void (*func)(Dense& A, std::vector<double>& x, int i_begin, int j_begin),
+    void (*func)(
+      Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
+    ),
     std::vector<double>& x,
-    int ni, int nj,
-    int rank,
-    int nleaf,
-    int admis=1,
-    int ni_level=2, int nj_level=2,
-    int i_begin=0, int j_begin=0
+    int64_t ni, int64_t nj,
+    int64_t rank,
+    int64_t nleaf,
+    int64_t admis=1,
+    int64_t ni_level=2, int64_t nj_level=2,
+    int64_t i_begin=0, int64_t j_begin=0
   );
 
   // Additional operators
-  const NodeProxy& operator[](int i) const;
+  const NodeProxy& operator[](int64_t i) const;
 
-  NodeProxy& operator[](int i);
+  NodeProxy& operator[](int64_t i);
 
-  const NodeProxy& operator()(int i, int j) const;
+  const NodeProxy& operator()(int64_t i, int64_t j) const;
 
-  NodeProxy& operator()(int i, int j);
+  NodeProxy& operator()(int64_t i, int64_t j);
 
   // Make class usable as range
   std::vector<NodeProxy>::iterator begin();
@@ -100,15 +106,15 @@ class Hierarchical : public Node {
 
   void restore_col(const Hierarchical& Sp, const Hierarchical& QL);
 
-  void col_qr(int j, Hierarchical& Q, Hierarchical &R);
+  void col_qr(int64_t j, Hierarchical& Q, Hierarchical &R);
 
   void create_children();
 
   bool is_admissible(
-    int i, int j, int i_abs, int j_abs, int dist_to_diag
+    int64_t i, int64_t j, int64_t i_abs, int64_t j_abs, int64_t dist_to_diag
   );
 
-  bool is_leaf(int i, int j, int nleaf);
+  bool is_leaf(int64_t i, int64_t j, int64_t nleaf);
 };
 
 register_class(Hierarchical, Node)

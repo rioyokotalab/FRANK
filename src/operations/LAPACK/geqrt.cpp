@@ -14,6 +14,7 @@
 #include "yorel/yomm2/cute.hpp"
 
 #include <cassert>
+#include <cstdint>
 #include <iostream>
 
 
@@ -35,16 +36,16 @@ define_method(void, geqrt_omm, (Dense& A, Dense& T)) {
 
 define_method(void, geqrt_omm, (Hierarchical& A, Hierarchical& T)) {
   std::cerr << "Possibly not fully implemented yet. Read code!!!" << std::endl;
-  for(int k = 0; k < A.dim[1]; k++) {
+  for(int64_t k = 0; k < A.dim[1]; k++) {
     geqrt(A(k, k), T(k, k));
-    for(int j = k+1; j < A.dim[1]; j++) {
+    for(int64_t j = k+1; j < A.dim[1]; j++) {
       larfb(A(k, k), T(k, k), A(k, j), true);
     }
-    int dim0 = -1;
-    int dim1 = -1;
-    for(int i = k+1; i < A.dim[0]; i++) {
+    int64_t dim0 = -1;
+    int64_t dim1 = -1;
+    for(int64_t i = k+1; i < A.dim[0]; i++) {
       tpqrt(A(k, k), A(i, k), T(i, k));
-      for(int j = k+1; j < A.dim[1]; j++) {
+      for(int64_t j = k+1; j < A.dim[1]; j++) {
         tpmqrt(A(i, k), T(i, k), A(k, j), A(i, j), true);
       }
     }

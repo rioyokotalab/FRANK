@@ -6,6 +6,8 @@
 
 #include "yorel/yomm2/cute.hpp"
 
+#include <array>
+#include <cstdint>
 #include <memory>
 
 
@@ -18,8 +20,8 @@ class LowRank : public Node {
  private:
   Dense _U, _S, _V;
  public:
-  int dim[2] = {0, 0};
-  int rank = 0;
+  std::array<int64_t, 2> dim = {0, 0};
+  int64_t rank = 0;
 
   // Special member functions
   LowRank() = default;
@@ -52,9 +54,9 @@ class LowRank : public Node {
   virtual const Dense& V() const;
 
   // Additional constructors
-  LowRank(int m, int n, int k);
+  LowRank(int64_t m, int64_t n, int64_t k);
 
-  LowRank(const Dense& A, int k);
+  LowRank(const Dense& A, int64_t k);
 
   // Utility methods
   void mergeU(const LowRank& A, const LowRank& B);

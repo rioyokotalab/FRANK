@@ -4,6 +4,7 @@
 #include "yorel/yomm2/cute.hpp"
 
 #include <algorithm>
+#include <cstdint>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -14,9 +15,9 @@ using namespace hicma;
 TEST(IDTest, Precision) {
   yorel::yomm2::update_methods();
   // Check whether the Dense(Hierarchical) constructor works correctly.
-  int M = 4096;
-  int N = 512;
-  int k = 32;
+  int64_t M = 4096;
+  int64_t N = 512;
+  int64_t k = 32;
 
   timing::start("Initialization");
   std::vector<double> randx = get_sorted_random_vector(std::max(2*M, 2*N));
@@ -27,7 +28,7 @@ TEST(IDTest, Precision) {
   timing::stopAndPrint("Initialization");
 
   timing::start("One-sided ID");
-  std::vector<int> Pr;
+  std::vector<int64_t> Pr;
   std::tie(V, Pr) = one_sided_id(Awork, k);
   Dense Acols = get_cols(A, Pr);
   timing::stopAndPrint("One-sided ID", 1);

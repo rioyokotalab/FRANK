@@ -12,6 +12,7 @@
 
 #include "yorel/yomm2/cute.hpp"
 
+#include <cstdint>
 #include <memory>
 
 
@@ -65,8 +66,8 @@ define_method(
   (const Hierarchical& A, bool include_structure)
 ) {
   unsigned long memory_usage = 0;
-  for (int i=0; i<A.dim[0]; ++i) {
-    for (int j=0; j<A.dim[1]; ++j) {
+  for (int64_t i=0; i<A.dim[0]; ++i) {
+    for (int64_t j=0; j<A.dim[1]; ++j) {
       memory_usage += get_memory_usage(A(i, j), include_structure);
     }
   }
@@ -82,15 +83,15 @@ define_method(
   (const UniformHierarchical& A, bool include_structure)
 ) {
   unsigned long memory_usage = 0;
-  for (int i=0; i<A.dim[0]; ++i) {
-    for (int j=0; j<A.dim[1]; ++j) {
+  for (int64_t i=0; i<A.dim[0]; ++i) {
+    for (int64_t j=0; j<A.dim[1]; ++j) {
       memory_usage += get_memory_usage(A(i, j), include_structure);
     }
   }
-  for (int i=0; i<A.dim[0]; ++i) {
+  for (int64_t i=0; i<A.dim[0]; ++i) {
     memory_usage += get_memory_usage(A.get_row_basis(i), include_structure);
   }
-  for (int j=0; j<A.dim[1]; ++j) {
+  for (int64_t j=0; j<A.dim[1]; ++j) {
     memory_usage += get_memory_usage(A.get_col_basis(j), include_structure);
   }
   // TODO consider moving these calculations to a class fuction!

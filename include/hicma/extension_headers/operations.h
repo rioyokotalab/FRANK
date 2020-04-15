@@ -8,6 +8,7 @@
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
 
+#include <cstdint>
 #include <tuple>
 #include <vector>
 
@@ -20,7 +21,7 @@ namespace hicma
 typedef std::tuple<NodeProxy, NodeProxy> NodePair;
 typedef std::tuple<Dense, Dense> DensePair;
 typedef std::tuple<Dense, Dense, Dense> DenseTriplet;
-typedef std::tuple<Dense, std::vector<int>> DenseIntVectorPair;
+typedef std::tuple<Dense, std::vector<int64_t>> DenseIndexSetPair;
 
 // Arithmetic
 declare_method(
@@ -65,7 +66,7 @@ declare_method(
   (
     virtual_<const Node&>, virtual_<Node&>,
     const char&, const char&, const char&, const char&,
-    const double&
+    double
   )
 )
 
@@ -75,7 +76,7 @@ declare_method(
 )
 
 // LAPACK
-declare_method(DenseIntVectorPair, geqp3_omm, (virtual_<Node&>))
+declare_method(DenseIndexSetPair, geqp3_omm, (virtual_<Node&>))
 
 declare_method(
   void, geqrt_omm,
@@ -87,9 +88,9 @@ declare_method(
   (virtual_<Node&>)
 )
 
-declare_method(DenseIntVectorPair, one_sided_id_omm, (virtual_<Node&>, int))
+declare_method(DenseIndexSetPair, one_sided_id_omm, (virtual_<Node&>, int64_t))
 
-declare_method(DenseTriplet, id_omm, (virtual_<Node&>, int))
+declare_method(DenseTriplet, id_omm, (virtual_<Node&>, int64_t))
 
 declare_method(
   void, larfb_omm,
@@ -107,15 +108,15 @@ declare_method(
 )
 declare_method(
   void, update_splitted_size_omm,
-  (virtual_<const Node&>, int&, int&)
+  (virtual_<const Node&>, int64_t&, int64_t&)
 )
 declare_method(
   NodeProxy, split_by_column_omm,
-  (virtual_<const Node&>, virtual_<Node&>, int&)
+  (virtual_<const Node&>, virtual_<Node&>, int64_t&)
 )
 declare_method(
   NodeProxy, concat_columns_omm,
-  (virtual_<const Node&>, virtual_<const Node&>, virtual_<const Node&>, int&)
+  (virtual_<const Node&>, virtual_<const Node&>, virtual_<const Node&>, int64_t&)
 )
 
 declare_method(void, zero_lowtri_omm, (virtual_<Node&>))

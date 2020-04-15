@@ -9,6 +9,8 @@
 
 #include "yorel/yomm2/cute.hpp"
 
+#include <cstdint>
+
 
 namespace hicma
 {
@@ -18,8 +20,8 @@ double norm(const Node& A) { return norm_omm(A); }
 define_method(double, norm_omm, (const Dense& A)) {
   double l2 = 0;
   timing::start("Norm(Dense)");
-  for (int i=0; i<A.dim[0]; i++) {
-    for (int j=0; j<A.dim[1]; j++) {
+  for (int64_t i=0; i<A.dim[0]; i++) {
+    for (int64_t j=0; j<A.dim[1]; j++) {
       l2 += A(i, j) * A(i, j);
     }
   }
@@ -31,8 +33,8 @@ define_method(double, norm_omm, (const LowRank& A)) { return norm(Dense(A)); }
 
 define_method(double, norm_omm, (const Hierarchical& A)) {
   double l2 = 0;
-  for (int i=0; i<A.dim[0]; i++) {
-    for (int j=0; j<A.dim[1]; j++) {
+  for (int64_t i=0; i<A.dim[0]; i++) {
+    for (int64_t j=0; j<A.dim[1]; j++) {
       l2 += norm(A(i, j));
     }
   }

@@ -20,6 +20,7 @@ using yorel::yomm2::virtual_;
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <cstdint>
 #include <memory>
 #include <tuple>
 #include <utility>
@@ -52,7 +53,7 @@ define_method(Hierarchical&&, move_from_hierarchical, (Node& A)) {
   abort();
 }
 
-Hierarchical::Hierarchical(const Node& node, int ni_level, int nj_level)
+Hierarchical::Hierarchical(const Node& node, int64_t ni_level, int64_t nj_level)
 : row_range(0, get_n_rows(node)), col_range(0, get_n_cols(node)),
   dim{ni_level, nj_level}
 {
@@ -64,8 +65,8 @@ define_method(
   void, fill_hierarchical_from, (Hierarchical& H, const Dense& A)
 ) {
   timing::start("fill_hierarchical_from(D)");
-  for (int i=0; i<H.dim[0]; ++i) {
-    for (int j=0; j<H.dim[1]; ++j) {
+  for (int64_t i=0; i<H.dim[0]; ++i) {
+    for (int64_t j=0; j<H.dim[1]; ++j) {
       H(i, j) = A.get_part(H.row_range[i], H.col_range[j]);
     }
   }
@@ -76,8 +77,8 @@ define_method(
   void, fill_hierarchical_from, (Hierarchical& H, const LowRank& A)
 ) {
   timing::start("fill_hierarchical_from(LR)");
-  for (int i=0; i<H.dim[0]; ++i) {
-    for (int j=0; j<H.dim[1]; ++j) {
+  for (int64_t i=0; i<H.dim[0]; ++i) {
+    for (int64_t j=0; j<H.dim[1]; ++j) {
       H(i, j) = A.get_part(H.row_range[i], H.col_range[j]);
     }
   }
@@ -91,30 +92,32 @@ define_method(
   abort();
 }
 
-Hierarchical::Hierarchical(int ni_level, int nj_level)
+Hierarchical::Hierarchical(int64_t ni_level, int64_t nj_level)
 : dim{ni_level, nj_level} {
   create_children();
 }
 
 Hierarchical::Hierarchical(
   IndexRange row_range_, IndexRange col_range_,
-  void (*func)(Dense& A, std::vector<double>& x, int i_begin, int j_begin),
+  void (*func)(
+    Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
+  ),
   std::vector<double>& x,
-  int rank,
-  int nleaf,
-  int admis,
-  int ni_level, int nj_level,
-  int i_begin, int j_begin,
-  int i_abs, int j_abs
+  int64_t rank,
+  int64_t nleaf,
+  int64_t admis,
+  int64_t ni_level, int64_t nj_level,
+  int64_t i_begin, int64_t j_begin,
+  int64_t i_abs, int64_t j_abs
 ) : row_range(row_range_), col_range(col_range_) {
   dim[0] = std::min(ni_level, row_range.length);
   dim[1] = std::min(nj_level, col_range.length);
   create_children();
-  for (int i=0; i<dim[0]; ++i) {
-    for (int j=0; j<dim[1]; ++j) {
+  for (int64_t i=0; i<dim[0]; ++i) {
+    for (int64_t j=0; j<dim[1]; ++j) {
       // TODO Move into contsructor-helper-class?
-      int i_abs_child = i_abs*dim[0]+i;
-      int j_abs_child = j_abs*dim[1]+j;
+      int64_t i_abs_child = i_abs*dim[0]+i;
+      int64_t j_abs_child = j_abs*dim[1]+j;
       if (is_admissible(i, j, i_abs_child, j_abs_child, admis)) {
         if (is_leaf(i, j, nleaf)) {
           (*this)(i, j) = Dense(
@@ -143,38 +146,40 @@ Hierarchical::Hierarchical(
 }
 
 Hierarchical::Hierarchical(
-  void (*func)(Dense& A, std::vector<double>& x, int i_begin, int j_begin),
+  void (*func)(
+    Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
+  ),
   std::vector<double>& x,
-  int ni, int nj,
-  int rank,
-  int nleaf,
-  int admis,
-  int ni_level, int nj_level,
-  int i_begin, int j_begin
+  int64_t ni, int64_t nj,
+  int64_t rank,
+  int64_t nleaf,
+  int64_t admis,
+  int64_t ni_level, int64_t nj_level,
+  int64_t i_begin, int64_t j_begin
 ) : Hierarchical(
   IndexRange(0, ni), IndexRange(0, nj),
   func, x, rank, nleaf, admis, ni_level, nj_level, i_begin, j_begin
 ) {}
 
-const NodeProxy& Hierarchical::operator[](int i) const {
+const NodeProxy& Hierarchical::operator[](int64_t i) const {
   assert(dim[0] == 1 || dim[1] == 1);
   assert(i < (dim[0] != 1 ? dim[0] : dim[1]));
   return data[i];
 }
 
-NodeProxy& Hierarchical::operator[](int i) {
+NodeProxy& Hierarchical::operator[](int64_t i) {
   assert(dim[0] == 1 || dim[1] == 1);
   assert(i < (dim[0] != 1 ? dim[0] : dim[1]));
   return data[i];
 }
 
-const NodeProxy& Hierarchical::operator()(int i, int j) const {
+const NodeProxy& Hierarchical::operator()(int64_t i, int64_t j) const {
   assert(i < dim[0]);
   assert(j < dim[1]);
   return data[i*dim[1]+j];
 }
 
-NodeProxy& Hierarchical::operator()(int i, int j) {
+NodeProxy& Hierarchical::operator()(int64_t i, int64_t j) {
   assert(i < dim[0]);
   assert(j < dim[1]);
   return data[i*dim[1]+j];
@@ -200,7 +205,7 @@ void Hierarchical::blr_col_qr(Hierarchical& Q, Hierarchical& R) {
   assert(R.dim[1] == 1);
   Hierarchical Qu(dim[0], 1);
   Hierarchical B(dim[0], 1);
-  for(int i=0; i<dim[0]; i++) {
+  for(int64_t i=0; i<dim[0]; i++) {
     std::tie(Qu(i, 0), B(i, 0)) = make_left_orthogonal((*this)(i, 0));
   }
   Dense DB(B);
@@ -210,12 +215,12 @@ void Hierarchical::blr_col_qr(Hierarchical& Q, Hierarchical& R) {
   R(0, 0) = std::move(Rb);
   //Slice Qb based on B
   Hierarchical HQb(B.dim[0], B.dim[1]);
-  int rowOffset = 0;
-  for(int i=0; i<HQb.dim[0]; i++) {
-    int dim_Bi[2]{get_n_rows(B(i, 0)), get_n_cols(B(i, 0))};
+  int64_t rowOffset = 0;
+  for(int64_t i=0; i<HQb.dim[0]; i++) {
+    int64_t dim_Bi[2]{get_n_rows(B(i, 0)), get_n_cols(B(i, 0))};
     Dense Qbi(dim_Bi[0], dim_Bi[1]);
-    for(int row=0; row<dim_Bi[0]; row++) {
-      for(int col=0; col<dim_Bi[1]; col++) {
+    for(int64_t row=0; row<dim_Bi[0]; row++) {
+      for(int64_t col=0; col<dim_Bi[1]; col++) {
         Qbi(row, col) = Qb(rowOffset + row, col);
       }
     }
@@ -223,7 +228,7 @@ void Hierarchical::blr_col_qr(Hierarchical& Q, Hierarchical& R) {
     HQb(i, 0) = std::move(Qbi);
     rowOffset += dim_Bi[0];
   }
-  for(int i=0; i<dim[0]; i++) {
+  for(int64_t i=0; i<dim[0]; i++) {
     gemm(Qu(i, 0), HQb(i, 0), Q(i, 0), 1, 0);
   }
 }
@@ -232,14 +237,14 @@ void Hierarchical::split_col(Hierarchical& QL) {
   assert(dim[1] == 1);
   assert(QL.dim[0] == dim[0]);
   assert(QL.dim[1] == 1);
-  int rows = 0;
-  int cols = 1;
-  for(int i=0; i<dim[0]; i++) {
+  int64_t rows = 0;
+  int64_t cols = 1;
+  for(int64_t i=0; i<dim[0]; i++) {
     update_splitted_size((*this)(i, 0), rows, cols);
   }
   Hierarchical spA(rows, cols);
-  int curRow = 0;
-  for(int i=0; i<dim[0]; i++) {
+  int64_t curRow = 0;
+  for(int64_t i=0; i<dim[0]; i++) {
     QL(i, 0) = split_by_column((*this)(i, 0), spA, curRow);
   }
   *this = std::move(spA);
@@ -252,21 +257,21 @@ void Hierarchical::restore_col(
   assert(dim[0] == QL.dim[0]);
   assert(QL.dim[1] == 1);
   Hierarchical restoredA(dim[0], dim[1]);
-  int curSpRow = 0;
-  for(int i=0; i<dim[0]; i++) {
+  int64_t curSpRow = 0;
+  for(int64_t i=0; i<dim[0]; i++) {
     restoredA(i, 0) = concat_columns((*this)(i, 0), Sp, QL(i, 0), curSpRow);
   }
   *this = std::move(restoredA);
 }
 
-void Hierarchical::col_qr(int j, Hierarchical& Q, Hierarchical &R) {
+void Hierarchical::col_qr(int64_t j, Hierarchical& Q, Hierarchical &R) {
   assert(Q.dim[0] == dim[0]);
   assert(Q.dim[1] == 1);
   assert(R.dim[0] == 1);
   assert(R.dim[1] == 1);
   bool split = false;
   Hierarchical Aj(dim[0], 1);
-  for(int i=0; i<dim[0]; i++) {
+  for(int64_t i=0; i<dim[0]; i++) {
     Aj(i, 0) = (*this)(i, j);
     split |= need_split(Aj(i, 0));
   }
@@ -289,7 +294,7 @@ void Hierarchical::create_children() {
 }
 
 bool Hierarchical::is_admissible(
-  int i, int j, int i_abs, int j_abs, int dist_to_diag
+  int64_t i, int64_t j, int64_t i_abs, int64_t j_abs, int64_t dist_to_diag
 ) {
   bool admissible = false;
   // Main admissibility condition
@@ -299,7 +304,7 @@ bool Hierarchical::is_admissible(
   return admissible;
 }
 
-bool Hierarchical::is_leaf(int i, int j, int nleaf) {
+bool Hierarchical::is_leaf(int64_t i, int64_t j, int64_t nleaf) {
   bool leaf = true;
   leaf &= (row_range[i].length/dim[0] < nleaf);
   leaf &= (col_range[j].length/dim[1] < nleaf);

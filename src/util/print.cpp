@@ -14,6 +14,7 @@ namespace pt = boost::property_tree;
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
 
+#include <cstdint>
 #include <iostream>
 #include <string>
 
@@ -22,26 +23,29 @@ namespace hicma
 {
 
 bool VERBOSE = true;
-static const int stringLength = 30; //!< Length of formatted string
+static const int stringLength = 35; //!< Length of formatted string
 static const int decimal = 7; //!< Decimal precision
 
 declare_method(
   void, fillXML_omm,
-  (virtual_<const Node&>, pt::ptree&, int, int, int)
+  (virtual_<const Node&>, pt::ptree&, int64_t, int64_t, int64_t)
 )
 
 void fillXML(
-  const Node& A, pt::ptree& tree, int i_abs=0, int j_abs=0, int level=0
+  const Node& A, pt::ptree& tree, int64_t i_abs=0, int64_t j_abs=0, int64_t level=0
 ) {
   fillXML_omm(A, tree, i_abs, j_abs, level);
 }
 
 define_method(
   void, fillXML_omm,
-  (const Hierarchical& A, pt::ptree& tree, int i_abs, int j_abs, int level)
+  (
+    const Hierarchical& A, pt::ptree& tree,
+    int64_t i_abs, int64_t j_abs, int64_t level
+  )
 ) {
-  for (int i=0; i<A.dim[0]; i++) {
-    for (int j=0; j<A.dim[1]; j++) {
+  for (int64_t i=0; i<A.dim[0]; i++) {
+    for (int64_t j=0; j<A.dim[1]; j++) {
       pt::ptree el_subtree{};
       fillXML(A(i, j), el_subtree, i_abs*A.dim[0]+i, j_abs*A.dim[1]+j, level+1);
       std::string el_name = "i" + std::to_string(i) + "j" + std::to_string(j);
@@ -59,12 +63,12 @@ define_method(
 
 define_method(
   void, fillXML_omm,
-  (const LowRank& A, pt::ptree& tree, int i_abs, int j_abs, int level)
+  (const LowRank& A, pt::ptree& tree, int64_t i_abs, int64_t j_abs, int64_t level)
 ) {
   Dense AD(A);
   Dense S = get_singular_values(AD);
   std::string singular_values = std::to_string(S[0]);
-  for (int i=1; i<A.dim[0]; ++i)
+  for (int64_t i=1; i<A.dim[0]; ++i)
     singular_values += std::string(",") + std::to_string(S[i]);
   tree.put("<xmlattr>.type", A.type());
   tree.put("<xmlattr>.dim0", A.dim[0]);
@@ -78,12 +82,12 @@ define_method(
 
 define_method(
   void, fillXML_omm,
-  (const LowRankShared& A, pt::ptree& tree, int i_abs, int j_abs, int level)
+  (const LowRankShared& A, pt::ptree& tree, int64_t i_abs, int64_t j_abs, int64_t level)
 ) {
   Dense AD(A);
   Dense S = get_singular_values(AD);
   std::string singular_values = std::to_string(S[0]);
-  for (int i=1; i<A.dim[0]; ++i)
+  for (int64_t i=1; i<A.dim[0]; ++i)
     singular_values += std::string(",") + std::to_string(S[i]);
   tree.put("<xmlattr>.type", A.type());
   tree.put("<xmlattr>.dim0", A.dim[0]);
@@ -97,12 +101,12 @@ define_method(
 
 define_method(
   void, fillXML_omm,
-  (const Dense& A, pt::ptree& tree, int i_abs, int j_abs, int level)
+  (const Dense& A, pt::ptree& tree, int64_t i_abs, int64_t j_abs, int64_t level)
 ) {
   Dense A_(A);
   Dense S = get_singular_values(A_);
   std::string singular_values = std::to_string(S[0]);
-  for (int i=1; i<A.dim[0]; ++i)
+  for (int64_t i=1; i<A.dim[0]; ++i)
     singular_values += std::string(",") + std::to_string(S[i]);
   tree.put("<xmlattr>.type", A.type());
   tree.put("<xmlattr>.dim0", A.dim[0]);
@@ -117,8 +121,8 @@ define_method(
   void, fillXML_omm,
   (
     const Node& A, [[maybe_unused]] pt::ptree& tree,
-    [[maybe_unused]] int i_abs, [[maybe_unused]] int j_abs,
-    [[maybe_unused]] int level
+    [[maybe_unused]] int64_t i_abs, [[maybe_unused]] int64_t j_abs,
+    [[maybe_unused]] int64_t level
   )
 ) {
   omm_error_handler("fillXML", {A}, __FILE__, __LINE__);
@@ -146,8 +150,8 @@ define_method(void, print_omm, (const Node& A)) {
 }
 
 define_method(void, print_omm, (const Dense& A)) {
-  for (int i=0; i<A.dim[0]; i++) {
-    for (int j=0; j<A.dim[1]; j++) {
+  for (int64_t i=0; i<A.dim[0]; i++) {
+    for (int64_t j=0; j<A.dim[1]; j++) {
       std::cout << std::setw(20) << std::setprecision(15) << A(i, j) << ' ';
     }
     std::cout << std::endl;
@@ -166,8 +170,8 @@ define_method(void, print_omm, (const LowRank& A)) {
 }
 
 define_method(void, print_omm, (const Hierarchical& A)) {
-  for (int i=0; i<A.dim[0]; i++) {
-    for (int j=0; j<A.dim[1]; j++) {
+  for (int64_t i=0; i<A.dim[0]; i++) {
+    for (int64_t j=0; j<A.dim[1]; j++) {
       std::cout << A(i, j).type() << " (" << i << "," << j << ")" << std::endl;
       print(A(i,j));
     }
@@ -196,7 +200,7 @@ void print(std::string s, T v, bool fixed) {
 }
 
 template void print<int>(std::string s, int v, bool fixed=true);
-template void print<size_t>(std::string s, size_t v, bool fixed=true);
+template void print<int64_t>(std::string s, int64_t v, bool fixed=true);
 template void print<float>(std::string s, float v, bool fixed=true);
 template void print<double>(std::string s, double v, bool fixed=true);
 

@@ -17,6 +17,7 @@
 #include "yorel/yomm2/cute.hpp"
 
 #include <cassert>
+#include <cstdint>
 
 
 namespace hicma
@@ -37,8 +38,8 @@ define_method(
     switch (lr) {
     case TRSM_LEFT:
       if (B.dim[1] == 1) {
-        for (int i=B.dim[0]-1; i>=0; i--) {
-          for (int j=B.dim[0]-1; j>i; j--) {
+        for (int64_t i=B.dim[0]-1; i>=0; i--) {
+          for (int64_t j=B.dim[0]-1; j>i; j--) {
             gemm(A(i,j), B[j], B[i], -1, 1);
           }
           trsm(A(i,i), B[i], TRSM_UPPER, TRSM_LEFT);
@@ -50,9 +51,9 @@ define_method(
       }
       break;
     case TRSM_RIGHT:
-      for (int i=0; i<B.dim[0]; i++) {
-        for (int j=0; j<B.dim[1]; j++) {
-          for (int k=0; k<j; k++) {
+      for (int64_t i=0; i<B.dim[0]; i++) {
+        for (int64_t j=0; j<B.dim[1]; j++) {
+          for (int64_t k=0; k<j; k++) {
             gemm(B(i,k), A(k,j), B(i,j), -1, 1);
           }
           trsm(A(j,j), B(i,j), TRSM_UPPER, TRSM_RIGHT);
@@ -63,9 +64,9 @@ define_method(
   case TRSM_LOWER:
     switch (lr) {
     case TRSM_LEFT:
-      for (int j=0; j<B.dim[1]; j++) {
-        for (int i=0; i<B.dim[0]; i++) {
-          for (int k=0; k<i; k++) {
+      for (int64_t j=0; j<B.dim[1]; j++) {
+        for (int64_t i=0; i<B.dim[0]; i++) {
+          for (int64_t k=0; k<i; k++) {
             gemm(A(i,k), B(k,j), B(i,j), -1, 1);
           }
           trsm(A(i,i), B(i,j), TRSM_LOWER, TRSM_LEFT);

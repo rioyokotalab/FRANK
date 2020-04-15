@@ -2,6 +2,7 @@
 
 #include "yorel/yomm2/cute.hpp"
 
+#include <cstdint>
 #include <tuple>
 #include <vector>
 
@@ -11,11 +12,11 @@ using namespace hicma;
 int main(int argc, char const *argv[])
 {
   yorel::yomm2::update_methods();
-  int N = argc > 1 ? atoi(argv[1]) : 256;
-  int nblocks = argc > 2 ? atoi(argv[2]) : 2;
-  int rank = argc > 3 ? atoi(argv[3]) : 8;
-  int admis = 0;
-  int nleaf = N/nblocks;
+  int64_t N = argc > 1 ? atoi(argv[1]) : 256;
+  int64_t nblocks = argc > 2 ? atoi(argv[2]) : 2;
+  int64_t rank = argc > 3 ? atoi(argv[3]) : 8;
+  int64_t admis = 0;
+  int64_t nleaf = N/nblocks;
   std::vector<double> randx = get_sorted_random_vector(N);
   timing::start("Init matrix");
   UniformHierarchical A(

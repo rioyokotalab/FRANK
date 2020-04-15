@@ -8,6 +8,7 @@
 
 #include "yorel/yomm2/cute.hpp"
 
+#include <cstdint>
 #include <utility>
 
 
@@ -34,8 +35,8 @@ define_method(void, transpose_omm, (LowRank& A)) {
 define_method(void, transpose_omm, (Hierarchical& A)) {
   using std::swap;
   Hierarchical A_trans(A.dim[1], A.dim[0]);
-  for(int i=0; i<A.dim[0]; i++) {
-    for(int j=0; j<A.dim[1]; j++) {
+  for(int64_t i=0; i<A.dim[0]; i++) {
+    for(int64_t j=0; j<A.dim[1]; j++) {
       swap(A(i, j), A_trans(j, i));
       transpose(A_trans(j, i));
     }

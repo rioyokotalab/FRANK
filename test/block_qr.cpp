@@ -2,6 +2,7 @@
 
 #include "yorel/yomm2/cute.hpp"
 
+#include <cstdint>
 #include <vector>
 
 
@@ -9,17 +10,17 @@ using namespace hicma;
 
 int main() {
   yorel::yomm2::update_methods();
-  int N = 64;
-  int Nb = 16;
-  int Nc = N / Nb;
+  int64_t N = 64;
+  int64_t Nb = 16;
+  int64_t Nc = N / Nb;
   std::vector<double> randx = get_sorted_random_vector(N);
   Hierarchical A(Nc, Nc);
   Hierarchical Q(Nc, Nc);
   Hierarchical R(Nc, Nc);
   print("Time");
   timing::start("Init matrix");
-  for(int ic = 0; ic < Nc; ic++) {
-    for(int jc = 0; jc < Nc; jc++) {
+  for(int64_t ic = 0; ic < Nc; ic++) {
+    for(int64_t jc = 0; jc < Nc; jc++) {
       Dense Aij(laplace1d, randx, Nb, Nb, Nb*ic, Nb*jc);
       A(ic, jc) = Aij;
       //Fill R with zeros
@@ -30,9 +31,9 @@ int main() {
   timing::stopAndPrint("Init matrix");
   Hierarchical _A(A); //Copy of A
   timing::start("QR decomposition");
-  for(int j = 0; j < Nc; j++) {
+  for(int64_t j = 0; j < Nc; j++) {
     Hierarchical HAsj(Nc, 1);
-    for(int i = 0; i < Nc; i++) {
+    for(int64_t i = 0; i < Nc; i++) {
       HAsj(i, 0) = A(i, j);
     }
     Dense DAsj(HAsj);
@@ -42,14 +43,14 @@ int main() {
     R(j, j) = Rjj;
     //Copy Dense Qsj to Hierarchical Q
     Hierarchical HQsj(DQsj, Nc, 1);
-    for(int i = 0; i < Nc; i++) {
+    for(int64_t i = 0; i < Nc; i++) {
       Q(i, j) = HQsj(i, 0);
     }
     //Process next columns
-    for(int k = j + 1; k < Nc; k++) {
+    for(int64_t k = j + 1; k < Nc; k++) {
       //Take k-th column
       Hierarchical HAsk(Nc, 1);
-      for(int i = 0; i < Nc; i++) {
+      for(int64_t i = 0; i < Nc; i++) {
         HAsk(i, 0) = A(i, k);
       }
       Dense DAsk(HAsk);
@@ -58,7 +59,7 @@ int main() {
       R(j, k) = DRjk;
       gemm(DQsj, DRjk, DAsk, -1, 1); //A*k = A*k - Q*j x Rjk
       Hierarchical _HAsk(DAsk, Nc, 1);
-      for(int i = 0; i < Nc; i++) {
+      for(int64_t i = 0; i < Nc; i++) {
         A(i, k) = _HAsk(i, 0);
       }
     }

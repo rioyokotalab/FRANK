@@ -5,6 +5,7 @@
 
 #include "yorel/yomm2/cute.hpp"
 
+#include <cstdint>
 #include <memory>
 #include <vector>
 
@@ -22,39 +23,47 @@ class UniformHierarchical : public Hierarchical {
   std::vector<std::shared_ptr<Dense>> col_basis, row_basis;
 
   Dense make_block_row(
-    int row, int i_abs, int j_abs,
-    void (*func)(Dense& A, std::vector<double>& x, int i_begin, int j_begin),
+    int64_t row, int64_t i_abs, int64_t j_abs,
+    void (*func)(
+      Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
+      ),
     std::vector<double>& x,
-    int admis,
-    int i_begin, int j_begin
+    int64_t admis,
+    int64_t i_begin, int64_t j_begin
   );
 
   Dense make_block_col(
-    int col, int i_abs, int j_abs,
-    void (*func)(Dense& A, std::vector<double>& x, int i_begin, int j_begin),
+    int64_t col, int64_t i_abs, int64_t j_abs,
+    void (*func)(
+      Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
+    ),
     std::vector<double>& x,
-    int admis,
-    int i_begin, int j_begin
+    int64_t admis,
+    int64_t i_begin, int64_t j_begin
   );
 
   LowRankShared construct_shared_block_id(
-    int i, int j, int i_abs, int j_abs,
-    std::vector<std::vector<int>>& selected_rows,
-    std::vector<std::vector<int>>& selected_cols,
-    void (*func)(Dense& A, std::vector<double>& x, int i_begin, int j_begin),
+    int64_t i, int64_t j, int64_t i_abs, int64_t j_abs,
+    std::vector<std::vector<int64_t>>& selected_rows,
+    std::vector<std::vector<int64_t>>& selected_cols,
+    void (*func)(
+      Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
+    ),
     std::vector<double>& x,
-    int rank,
-    int admis,
-    int i_begin, int j_begin
+    int64_t rank,
+    int64_t admis,
+    int64_t i_begin, int64_t j_begin
   );
 
   LowRankShared construct_shared_block_svd(
-    int i, int j, int i_abs, int j_abs,
-    void (*func)(Dense& A, std::vector<double>& x, int i_begin, int j_begin),
+    int64_t i, int64_t j, int64_t i_abs, int64_t j_abs,
+    void (*func)(
+      Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
+    ),
     std::vector<double>& x,
-    int rank,
-    int admis,
-    int i_begin, int j_begin
+    int64_t rank,
+    int64_t admis,
+    int64_t i_begin, int64_t j_begin
   );
  public:
   // Special member functions
@@ -81,51 +90,55 @@ class UniformHierarchical : public Hierarchical {
   UniformHierarchical(NodeProxy&&);
 
   // Additional constructors
-  UniformHierarchical(int ni_level, int nj_level);
+  UniformHierarchical(int64_t ni_level, int64_t nj_level);
 
   UniformHierarchical(
     IndexRange row_range, IndexRange col_range,
-    void (*func)(Dense& A, std::vector<double>& x, int i_begin, int j_begin),
+    void (*func)(
+      Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
+    ),
     std::vector<double>& x,
-    int rank,
-    int nleaf,
-    int admis=1,
-    int ni_level=2, int nj_level=2,
+    int64_t rank,
+    int64_t nleaf,
+    int64_t admis=1,
+    int64_t ni_level=2, int64_t nj_level=2,
     bool use_svd=false,
-    int i_begin=0, int j_begin=0,
-    int i_abs=0, int j_abs=0
+    int64_t i_begin=0, int64_t j_begin=0,
+    int64_t i_abs=0, int64_t j_abs=0
   );
 
   UniformHierarchical(
-    void (*func)(Dense& A, std::vector<double>& x, int i_begin, int j_begin),
+    void (*func)(
+      Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
+    ),
     std::vector<double>& x,
-    int ni, int nj,
-    int rank,
-    int nleaf,
-    int admis=1,
-    int ni_level=2, int nj_level=2,
+    int64_t ni, int64_t nj,
+    int64_t rank,
+    int64_t nleaf,
+    int64_t admis=1,
+    int64_t ni_level=2, int64_t nj_level=2,
     bool use_svd=false,
-    int i_begin=0, int j_begin=0,
-    int i_abs=0, int j_abs=0
+    int64_t i_begin=0, int64_t j_begin=0,
+    int64_t i_abs=0, int64_t j_abs=0
   );
 
   // Additional indexing methods
-  Dense& get_row_basis(int i);
+  Dense& get_row_basis(int64_t i);
 
-  const Dense& get_row_basis(int i) const;
+  const Dense& get_row_basis(int64_t i) const;
 
-  Dense& get_col_basis(int j);
+  Dense& get_col_basis(int64_t j);
 
-  const Dense& get_col_basis(int j) const;
+  const Dense& get_col_basis(int64_t j) const;
 
   // Utiliry methods
   void copy_col_basis(const UniformHierarchical& A);
 
   void copy_row_basis(const UniformHierarchical& A);
 
-  void set_col_basis(int i, int j);
+  void set_col_basis(int64_t i, int64_t j);
 
-  void set_row_basis(int i, int j);
+  void set_row_basis(int64_t i, int64_t j);
 };
 
 register_class(UniformHierarchical, Hierarchical)

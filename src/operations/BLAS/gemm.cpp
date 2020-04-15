@@ -23,6 +23,7 @@
 #include "yorel/yomm2/cute.hpp"
 
 #include <cassert>
+#include <cstdint>
 
 
 namespace hicma
@@ -78,7 +79,7 @@ define_method(
     );
   }
   else {
-    int k = TransA ? A.dim[0] : A.dim[1];
+    int64_t k = TransA ? A.dim[0] : A.dim[1];
     cblas_dgemm(
       CblasRowMajor,
       TransA?CblasTrans:CblasNoTrans, TransB?CblasTrans:CblasNoTrans,
@@ -271,10 +272,10 @@ define_method(
   assert(C.dim[0] == A.dim[0]);
   assert(C.dim[1] == B.dim[1]);
   assert(A.dim[1] == B.dim[0]);
-  for (int i=0; i<C.dim[0]; i++) {
-    for (int j=0; j<C.dim[1]; j++) {
+  for (int64_t i=0; i<C.dim[0]; i++) {
+    for (int64_t j=0; j<C.dim[1]; j++) {
       gemm(A(i,0), B(0,j), C(i,j), alpha, beta);
-      for (int k=1; k<A.dim[1]; k++) {
+      for (int64_t k=1; k<A.dim[1]; k++) {
         gemm(A(i,k), B(k,j), C(i,j), alpha, 1);
       }
     }
@@ -481,10 +482,10 @@ define_method(
     double alpha, double beta
   )
 ) {
-  for (int i=0; i<C.dim[0]; i++) {
-    for (int j=0; j<C.dim[1]; j++) {
+  for (int64_t i=0; i<C.dim[0]; i++) {
+    for (int64_t j=0; j<C.dim[1]; j++) {
       gemm_regular_only(A(i,0), B(0, j), C(i, j), alpha, beta);
-      for (int k=1; k<A.dim[1]; k++) {
+      for (int64_t k=1; k<A.dim[1]; k++) {
         gemm_regular_only(A(i, k), B(k, j), C(i, j), alpha, 1);
       }
     }
@@ -600,17 +601,17 @@ define_method(
   // Loop over columns of output
   // Put together shared RowBasis and column of B once
   // Use result multiple times (faster) to get column of C
-  for (int j=0; j<CH.dim[1]; j++) {
+  for (int64_t j=0; j<CH.dim[1]; j++) {
     // TODO Create RowColBasis class and define interactions for it.
     // The following loop really should be handled in those interactions.
     // This loop is main reason for speed-up: multiplication with BH only here,
     // rest is smaller stuff with rank as one of dimensios
-    for (int k=0; k<A.dim[1]; k++) {
+    for (int64_t k=0; k<A.dim[1]; k++) {
       RowBasisB[k] = gemm(A.get_row_basis(k), BH(k, j));
     }
-    for (int i=0; i<CH.dim[0]; i++) {
+    for (int64_t i=0; i<CH.dim[0]; i++) {
       Hierarchical SRowBasisB(1, RowBasisB.dim[1]);
-      for (int k=0; k<A.dim[1]; k++) {
+      for (int64_t k=0; k<A.dim[1]; k++) {
         SRowBasisB[k] = Dense(get_n_cols(A.get_col_basis(i)), get_n_cols(RowBasisB[k]));
         // Returns whether an operations took place (false when Dense/UH)
         bool shared = gemm_shared_only(A(i, k), RowBasisB[k], SRowBasisB[k], 1, 0);

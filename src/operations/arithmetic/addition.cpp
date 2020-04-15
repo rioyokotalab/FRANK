@@ -18,6 +18,7 @@
 #include "yorel/yomm2/cute.hpp"
 
 #include <cassert>
+#include <cstdint>
 #include <tuple>
 #include <utility>
 
@@ -28,8 +29,8 @@ namespace hicma
 Node& operator+=(Node& A, const Node& B) { return addition_omm(A, B); }
 
 define_method(Node&, addition_omm, (Dense& A, const Dense& B)) {
-  for (int i=0; i<A.dim[0]; i++) {
-    for (int j=0; j<A.dim[1]; j++) {
+  for (int64_t i=0; i<A.dim[0]; i++) {
+    for (int64_t j=0; j<A.dim[1]; j++) {
       A(i, j) += B(i, j);
     }
   }
@@ -43,8 +44,8 @@ define_method(Node&, addition_omm, (Dense& A, const LowRank& B)) {
 
 define_method(Node&, addition_omm, (Hierarchical& A, const LowRank& B)) {
   NoCopySplit BH(B, A.dim[0], A.dim[1]);
-  for (int i=0; i<A.dim[0]; i++) {
-    for (int j=0; j<A.dim[1]; j++) {
+  for (int64_t i=0; i<A.dim[0]; i++) {
+    for (int64_t j=0; j<A.dim[1]; j++) {
       A(i, j) += BH(i, j);
     }
   }
@@ -56,8 +57,8 @@ std::tuple<Dense, Dense> merge_col_basis(
   const Dense& U, const Dense& Au
 ) {
   assert(U.dim[0] == Au.dim[0]);
-  int Arank = U.dim[1];
-  int Brank = Au.dim[1];
+  int64_t Arank = U.dim[1];
+  int64_t Brank = Au.dim[1];
   assert(Arank == Brank);
 
   Dense InnerU(Arank+Brank, Brank);
@@ -78,8 +79,8 @@ std::tuple<Dense, Dense> merge_row_basis(
   const Dense& V, const Dense& Av
 ) {
   assert(V.dim[1] == Av.dim[1]);
-  int Arank = V.dim[0];
-  int Brank = Av.dim[0];
+  int64_t Arank = V.dim[0];
+  int64_t Brank = Av.dim[0];
   assert(Arank == Brank);
 
   Dense InnerV(Brank, Arank+Brank);
@@ -102,14 +103,14 @@ std::tuple<Dense, Dense, Dense> merge_S(
   const Dense& InnerU, const Dense& InnerV
 ) {
   assert(S.dim[0] == S.dim[1]);
-  int rank = S.dim[0];
+  int64_t rank = S.dim[0];
 
   Dense InnerUAS = gemm(InnerU, AS);
 
   // TODO Consider using move for S if possible!
   Dense M(rank*2, rank*2);
-  for (int i=0; i<rank; i++) {
-    for (int j=0; j<rank; j++) {
+  for (int64_t i=0; i<rank; i++) {
+    for (int64_t j=0; j<rank; j++) {
       M(i, j) = S(i, j);
     }
   }
@@ -214,8 +215,8 @@ define_method(Node&, addition_omm, (LowRank& A, const LowRank& B)) {
 
 Dense operator+(const Dense& A, const Dense& B) {
   Dense out(A.dim[0], A.dim[1]);
-  for (int i=0; i<A.dim[0]; i++) {
-    for (int j=0; j<A.dim[1]; j++) {
+  for (int64_t i=0; i<A.dim[0]; i++) {
+    for (int64_t j=0; j<A.dim[1]; j++) {
       out(i, j) = A(i, j) + B(i, j);
     }
   }

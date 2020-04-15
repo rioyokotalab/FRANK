@@ -1,6 +1,7 @@
 #include "hicma/util/experiment_setup.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <random>
 #include <vector>
 
@@ -8,7 +9,7 @@
 namespace hicma
 {
 
-std::vector<double> get_sorted_random_vector(unsigned int N) {
+std::vector<double> get_sorted_random_vector(int64_t N) {
   std::vector<double> randx(N);
   std::random_device rd;
   std::mt19937 gen(rd());

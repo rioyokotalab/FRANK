@@ -10,6 +10,7 @@
 #endif
 
 #include <algorithm>
+#include <cstdint>
 #include <tuple>
 #include <utility>
 
@@ -19,7 +20,7 @@ namespace hicma
 
 std::tuple<Dense, Dense, Dense> svd(Dense& A) {
   timing::start("DGESVD");
-  int dim_min = std::min(A.dim[0], A.dim[1]);
+  int64_t dim_min = std::min(A.dim[0], A.dim[1]);
   Dense Sdiag(dim_min, 1);
   Dense work(dim_min-1, 1);
   Dense U(A.dim[0], dim_min);
@@ -35,7 +36,7 @@ std::tuple<Dense, Dense, Dense> svd(Dense& A) {
     &work
   );
   Dense S(dim_min, dim_min);
-  for(int i=0; i<dim_min; i++){
+  for(int64_t i=0; i<dim_min; i++){
     S(i, i) = Sdiag[i];
   }
   timing::stop("DGESVD");
@@ -44,7 +45,7 @@ std::tuple<Dense, Dense, Dense> svd(Dense& A) {
 
 std::tuple<Dense, Dense, Dense> sdd(Dense& A) {
   timing::start("DGESDD");
-  int dim_min = std::min(A.dim[0], A.dim[1]);
+  int64_t dim_min = std::min(A.dim[0], A.dim[1]);
   Dense Sdiag(dim_min, 1);
   Dense work(dim_min-1, 1);
   Dense U(A.dim[0], dim_min);
@@ -60,7 +61,7 @@ std::tuple<Dense, Dense, Dense> sdd(Dense& A) {
     &V, V.stride
   );
   Dense S(dim_min, dim_min);
-  for(int i=0; i<dim_min; i++){
+  for(int64_t i=0; i<dim_min; i++){
     S(i, i) = Sdiag[i];
   }
   timing::stop("DGESDD");

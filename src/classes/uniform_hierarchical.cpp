@@ -17,6 +17,7 @@
 using yorel::yomm2::virtual_;
 
 #include <cassert>
+#include <cstdint>
 #include <memory>
 #include <tuple>
 #include <utility>
@@ -32,8 +33,8 @@ UniformHierarchical::UniformHierarchical(const UniformHierarchical& A)
   copy_col_basis(A);
   row_basis.resize(A.dim[1]);
   copy_row_basis(A);
-  for (int i=0; i<dim[0]; i++) {
-    for (int j=0; j<dim[1]; j++) {
+  for (int64_t i=0; i<dim[0]; i++) {
+    for (int64_t j=0; j<dim[1]; j++) {
       set_col_basis(i, j);
       set_row_basis(i, j);
     }
@@ -70,23 +71,25 @@ UniformHierarchical::UniformHierarchical(NodeProxy&& A) {
 }
 
 UniformHierarchical::UniformHierarchical(
-  int ni_level, int nj_level
+  int64_t ni_level, int64_t nj_level
 ) : Hierarchical(ni_level, nj_level) {
   col_basis.resize(ni_level);
   row_basis.resize(nj_level);
 }
 
 Dense UniformHierarchical::make_block_row(
-  int row, int i_abs, int j_abs,
-  void (*func)(Dense& A, std::vector<double>& x, int i_begin, int j_begin),
+  int64_t row, int64_t i_abs, int64_t j_abs,
+  void (*func)(
+    Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
+  ),
   std::vector<double>& x,
-  int admis,
-  int i_begin, int j_begin
+  int64_t admis,
+  int64_t i_begin, int64_t j_begin
 ) {
   // Create row block without admissible blocks
-  int n_non_admissible_blocks = 0;
-  int row_abs = i_abs*dim[0]+row;
-  for (int j_b=0; j_b<dim[1]; ++j_b) {
+  int64_t n_non_admissible_blocks = 0;
+  int64_t row_abs = i_abs*dim[0]+row;
+  for (int64_t j_b=0; j_b<dim[1]; ++j_b) {
     if (!is_admissible(row, j_b, row_abs, j_abs*dim[1]+j_b, admis)) {
       n_non_admissible_blocks++;
     }
@@ -95,7 +98,7 @@ Dense UniformHierarchical::make_block_row(
   // Note the ins counter!
   // TODO j_b goes across entire matrix, outside of confines of *this.
   // Find way to combine this with create_children!
-  for (int j_b=0, ins=0; j_b<dim[1]; ++j_b) {
+  for (int64_t j_b=0, ins=0; j_b<dim[1]; ++j_b) {
     if (!is_admissible(row, j_b, row_abs, j_abs*dim[1]+j_b, admis)) {
       block_row_h[ins++] = Dense(
         row_range[row], col_range[j_b], func, x,
@@ -107,23 +110,25 @@ Dense UniformHierarchical::make_block_row(
 }
 
 Dense UniformHierarchical::make_block_col(
-  int col, int i_abs, int j_abs,
-  void (*func)(Dense& A, std::vector<double>& x, int i_begin, int j_begin),
+  int64_t col, int64_t i_abs, int64_t j_abs,
+  void (*func)(
+    Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
+  ),
   std::vector<double>& x,
-  int admis,
-  int i_begin, int j_begin
+  int64_t admis,
+  int64_t i_begin, int64_t j_begin
 ) {
   // Create col block without admissible blocks
-  int n_non_admissible_blocks = 0;
-  int col_abs = j_abs*dim[1]+col;
-  for (int i_b=0; i_b<dim[0]; ++i_b) {
+  int64_t n_non_admissible_blocks = 0;
+  int64_t col_abs = j_abs*dim[1]+col;
+  for (int64_t i_b=0; i_b<dim[0]; ++i_b) {
     if (!is_admissible(i_b, col, i_abs*dim[0]+i_b, col_abs, admis)) {
       n_non_admissible_blocks++;
     }
   }
   Hierarchical block_col_h(n_non_admissible_blocks, 1);
   // Note the ins counter!
-  for (int i_b=0, ins=0; i_b<dim[0]; ++i_b) {
+  for (int64_t i_b=0, ins=0; i_b<dim[0]; ++i_b) {
     if (!is_admissible(i_b, col, i_abs*dim[0]+i_b, col_abs, admis)) {
       block_col_h[ins++] = Dense(
         row_range[i_b], col_range[col], func, x,
@@ -135,14 +140,16 @@ Dense UniformHierarchical::make_block_col(
 }
 
 LowRankShared UniformHierarchical::construct_shared_block_id(
-  int i, int j, int i_abs, int j_abs,
-  std::vector<std::vector<int>>& selected_rows,
-  std::vector<std::vector<int>>& selected_cols,
-  void (*func)(Dense& A, std::vector<double>& x, int i_begin, int j_begin),
+  int64_t i, int64_t j, int64_t i_abs, int64_t j_abs,
+  std::vector<std::vector<int64_t>>& selected_rows,
+  std::vector<std::vector<int64_t>>& selected_cols,
+  void (*func)(
+    Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
+  ),
   std::vector<double>& x,
-  int rank,
-  int admis,
-  int i_begin, int j_begin
+  int64_t rank,
+  int64_t admis,
+  int64_t i_begin, int64_t j_begin
 ) {
   if (col_basis[i].get() == nullptr) {
     Dense row_block = make_block_row(
@@ -168,8 +175,8 @@ LowRankShared UniformHierarchical::construct_shared_block_id(
     i_begin+row_range[i].start, j_begin+col_range[j].start
   );
   Dense S(rank, rank);
-  for (int ic=0; ic<rank; ++ic) {
-    for (int jc=0; jc<rank; ++jc) {
+  for (int64_t ic=0; ic<rank; ++ic) {
+    for (int64_t jc=0; jc<rank; ++jc) {
       S(ic, jc) = D(selected_rows[i][ic], selected_cols[j][jc]);
     }
   }
@@ -180,12 +187,14 @@ LowRankShared UniformHierarchical::construct_shared_block_id(
 }
 
 LowRankShared UniformHierarchical::construct_shared_block_svd(
-  int i, int j, int i_abs, int j_abs,
-  void (*func)(Dense& A, std::vector<double>& x, int i_begin, int j_begin),
+  int64_t i, int64_t j, int64_t i_abs, int64_t j_abs,
+  void (*func)(
+    Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
+  ),
   std::vector<double>& x,
-  int rank,
-  int admis,
-  int i_begin, int j_begin
+  int64_t rank,
+  int64_t admis,
+  int64_t i_begin, int64_t j_begin
 ) {
   if (col_basis[i].get() == nullptr) {
     Dense row_block = make_block_row(
@@ -211,15 +220,17 @@ LowRankShared UniformHierarchical::construct_shared_block_svd(
 
 UniformHierarchical::UniformHierarchical(
   IndexRange row_range_, IndexRange col_range_,
-  void (*func)(Dense& A, std::vector<double>& x, int i_begin, int j_begin),
+  void (*func)(
+    Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
+  ),
   std::vector<double>& x,
-  int rank,
-  int nleaf,
-  int admis,
-  int ni_level, int nj_level,
+  int64_t rank,
+  int64_t nleaf,
+  int64_t admis,
+  int64_t ni_level, int64_t nj_level,
   bool use_svd,
-  int i_begin, int j_begin,
-  int i_abs, int j_abs
+  int64_t i_begin, int64_t j_begin,
+  int64_t i_abs, int64_t j_abs
 ) : Hierarchical(ni_level, nj_level) {
   // TODO All dense UH not allowed for now!
   assert(dim[0] > admis + 1 && dim[1] > admis+1);
@@ -235,14 +246,14 @@ UniformHierarchical::UniformHierarchical(
   col_range = col_range_;
   col_basis.resize(dim[0]);
   row_basis.resize(dim[1]);
-  std::vector<std::vector<int>> selected_rows(dim[0]);
-  std::vector<std::vector<int>> selected_cols(dim[1]);
+  std::vector<std::vector<int64_t>> selected_rows(dim[0]);
+  std::vector<std::vector<int64_t>> selected_cols(dim[1]);
   create_children();
-  for (int i=0; i<dim[0]; ++i) {
-    for (int j=0; j<dim[1]; ++j) {
+  for (int64_t i=0; i<dim[0]; ++i) {
+    for (int64_t j=0; j<dim[1]; ++j) {
       // TODO Move into contsructor-helper-class?
-      int i_abs_child = i_abs*dim[0]+i;
-      int j_abs_child = j_abs*dim[1]+j;
+      int64_t i_abs_child = i_abs*dim[0]+i;
+      int64_t j_abs_child = j_abs*dim[1]+j;
       if (is_admissible(i, j, i_abs_child, j_abs_child, admis)) {
         if (is_leaf(i, j, nleaf)) {
           (*this)(i, j) = Dense(
@@ -274,16 +285,18 @@ UniformHierarchical::UniformHierarchical(
 }
 
 UniformHierarchical::UniformHierarchical(
-  void (*func)(Dense& A, std::vector<double>& x, int i_begin, int j_begin),
+  void (*func)(
+    Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
+  ),
   std::vector<double>& x,
-  int ni, int nj,
-  int rank,
-  int nleaf,
-  int admis,
-  int ni_level, int nj_level,
+  int64_t ni, int64_t nj,
+  int64_t rank,
+  int64_t nleaf,
+  int64_t admis,
+  int64_t ni_level, int64_t nj_level,
   bool use_svd,
-  int i_begin, int j_begin,
-  int i_abs, int j_abs
+  int64_t i_begin, int64_t j_begin,
+  int64_t i_abs, int64_t j_abs
 ) : UniformHierarchical(
   IndexRange(0, ni), IndexRange(0, nj),
   func, x, rank, nleaf, admis, ni_level, nj_level, use_svd,
@@ -307,8 +320,8 @@ UniformHierarchical::UniformHierarchical(
 
 //   std::vector<std::shared_ptr<Dense>> new_col_basis(dim[0]), new_row_basis(dim[1]);
 
-//   for (int i=0; i<dim[0]; i++) {
-//     for (int j=0; j<dim[1]; j++) {
+//   for (int64_t i=0; i<dim[0]; i++) {
+//     for (int64_t j=0; j<dim[1]; j++) {
 //       // Use LR merge on row and column basis to get Inner and Outers.
 //       // Create stack of InnerUxSxInnerV for block column of *this.
 //       // Compute SVD on the stack and use the row basis as shared InnerV.
@@ -318,13 +331,13 @@ UniformHierarchical::UniformHierarchical(
 //       // and column bases.
 
 //       // if (is_LowRankShared((*this)(i, j))) {
-//       //   int n_non_admissible_blocks = 0;
-//       //   for (int i_b=0; i_b<dim[0]; ++i_b) {
+//       //   int64_t n_non_admissible_blocks = 0;
+//       //   for (int64_t i_b=0; i_b<dim[0]; ++i_b) {
 //       //     if (is_LowRankShared((*this)(i_b, j))) n_non_admissible_blocks++;
 //       //   }
 //       //   Hierarchical col_block_h(n_non_admissible_blocks, 1);
 //       //   // Note the ins counter!
-//       //   for (int i_b=0, ins=0; i_b<dim[0]; ++i_b) {
+//       //   for (int64_t i_b=0, ins=0; i_b<dim[0]; ++i_b) {
 //       //     if (is_LowRankShared((*this)(i_b, j)))
 //       //       col_block_h[ins++] = Dense();
 //       //   }
@@ -337,36 +350,36 @@ UniformHierarchical::UniformHierarchical(
 //   return *this;
 // }
 
-Dense& UniformHierarchical::get_row_basis(int i) {
+Dense& UniformHierarchical::get_row_basis(int64_t i) {
   assert(i < dim[0]);
   return *row_basis[i];
 }
 
-const Dense& UniformHierarchical::get_row_basis(int i) const {
+const Dense& UniformHierarchical::get_row_basis(int64_t i) const {
   assert(i < dim[0]);
   return *row_basis[i];
 }
 
-Dense& UniformHierarchical::get_col_basis(int j) {
+Dense& UniformHierarchical::get_col_basis(int64_t j) {
   assert(j < dim[1]);
   return *col_basis[j];
 }
 
-const Dense& UniformHierarchical::get_col_basis(int j) const {
+const Dense& UniformHierarchical::get_col_basis(int64_t j) const {
   assert(j < dim[0]);
   return *col_basis[j];
 }
 
 void UniformHierarchical::copy_col_basis(const UniformHierarchical& A) {
   assert(dim[0] == A.dim[0]);
-  for (int i=0; i<dim[1]; i++) {
+  for (int64_t i=0; i<dim[1]; i++) {
     col_basis[i] = std::make_shared<Dense>(A.get_col_basis(i));
   }
 }
 
 void UniformHierarchical::copy_row_basis(const UniformHierarchical& A) {
   assert(dim[1] == A.dim[1]);
-  for (int j=0; j<dim[1]; j++) {
+  for (int64_t j=0; j<dim[1]; j++) {
     row_basis[j] = std::make_shared<Dense>(A.get_row_basis(j));
   }
 }
@@ -446,11 +459,11 @@ define_method(
   abort();
 }
 
-void UniformHierarchical::set_col_basis(int i, int j) {
+void UniformHierarchical::set_col_basis(int64_t i, int64_t j) {
   hicma::set_col_basis_omm((*this)(i, j), col_basis[i]);
 }
 
-void UniformHierarchical::set_row_basis(int i, int j) {
+void UniformHierarchical::set_row_basis(int64_t i, int64_t j) {
   hicma::set_row_basis_omm((*this)(i, j), row_basis[j]);
 }
 

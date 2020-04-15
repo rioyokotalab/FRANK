@@ -1,6 +1,7 @@
 #ifndef hicma_batch_h
 #define hicma_batch_h
 
+#include <cstdint>
 #include <vector>
 
 
@@ -15,7 +16,7 @@ namespace hicma
   extern std::vector<Dense*> vecC;
   extern std::vector<NodeProxy*> vecLR;
 
-  void rsvd_push(NodeProxy& A, Dense& Aij, int rank);
+  void rsvd_push(NodeProxy& A, Dense& Aij, int64_t rank);
 
   void gemm_push(const Dense& A, const Dense& B, Dense& C);
 

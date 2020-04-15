@@ -29,13 +29,13 @@ enum { TRSM_LEFT, TRSM_RIGHT };
 void trmm(
   const Node& A, Node& B,
   const char& side, const char& uplo, const char& trans, const char& diag,
-  const double& alpha
+  double alpha
 );
 
 void trmm(
   const Node& A, Node& B,
   const char& side, const char& uplo,
-  const double& alpha
+  double alpha
 );
 
 void trsm(const Node&, Node&, int uplo, int lr=TRSM_LEFT);

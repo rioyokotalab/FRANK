@@ -2,6 +2,7 @@
 
 #include "yorel/yomm2/cute.hpp"
 
+#include <cstdint>
 #include <iostream>
 #include <vector>
 
@@ -10,12 +11,12 @@ using namespace hicma;
 
 int main(int argc, char** argv) {
   yorel::yomm2::update_methods();
-  int N = 128;
-  int nleaf = 16;
-  int rank = 8;
+  int64_t N = 128;
+  int64_t nleaf = 16;
+  int64_t rank = 8;
   std::vector<double> randx = get_sorted_random_vector(N);
   timing::start("Init matrix");
-  int nblocks=0, admis=0;
+  int64_t nblocks=0, admis=0;
   if(argc < 2) {
     std::cout <<"Argument(s) needed" <<std::endl;
     exit(1);

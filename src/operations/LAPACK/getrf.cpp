@@ -17,6 +17,7 @@
 #include "yorel/yomm2/cute.hpp"
 
 #include <algorithm>
+#include <cstdint>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -29,17 +30,17 @@ std::tuple<NodeProxy, NodeProxy> getrf(Node& A) { return getrf_omm(A); }
 
 define_method(NodePair, getrf_omm, (Hierarchical& A)) {
   Hierarchical L(A.dim[0], A.dim[1]);
-  for (int i=0; i<A.dim[0]; i++) {
+  for (int64_t i=0; i<A.dim[0]; i++) {
     std::tie(L(i, i), A(i, i)) = getrf(A(i,i));
-    for (int i_c=i+1; i_c<L.dim[0]; i_c++) {
+    for (int64_t i_c=i+1; i_c<L.dim[0]; i_c++) {
       L(i_c, i) = std::move(A(i_c, i));
       trsm(A(i,i), L(i_c,i), TRSM_UPPER, TRSM_RIGHT);
     }
-    for (int j=i+1; j<A.dim[1]; j++) {
+    for (int64_t j=i+1; j<A.dim[1]; j++) {
       trsm(L(i,i), A(i,j), TRSM_LOWER);
     }
-    for (int i_c=i+1; i_c<L.dim[0]; i_c++) {
-      for (int k=i+1; k<A.dim[1]; k++) {
+    for (int64_t i_c=i+1; i_c<L.dim[0]; i_c++) {
+      for (int64_t k=i+1; k<A.dim[1]; k++) {
         gemm(L(i_c,i), A(i,k), A(i_c,k), -1, 1);
       }
     }
@@ -57,8 +58,8 @@ define_method(NodePair, getrf_omm, (Dense& A)) {
     &ipiv[0]
   );
   Dense L(A.dim[0], A.dim[1]);
-  for (int i=0; i<A.dim[0]; i++) {
-    for (int j=0; j<i; j++) {
+  for (int64_t i=0; i<A.dim[0]; i++) {
+    for (int64_t j=0; j<i; j++) {
       L(i, j) = A(i, j);
       A(i, j) = 0;
     }
@@ -78,16 +79,16 @@ define_method(NodePair, getrf_omm, (UniformHierarchical& A)) {
   L.copy_row_basis(A);
   // TODO Assuming that no LowRankShared are on diagonal! Otherwise more
   // set_basis necessary.
-  for (int i=0; i<A.dim[0]; i++) {
+  for (int64_t i=0; i<A.dim[0]; i++) {
     std::tie(L(i, i), A(i, i)) = getrf(A(i,i));
     trsm(A(i, i), L.get_row_basis(i), TRSM_UPPER, TRSM_RIGHT);
     trsm(L(i, i), A.get_col_basis(i), TRSM_LOWER);
-    for (int i_c=i+1; i_c<L.dim[0]; i_c++) {
+    for (int64_t i_c=i+1; i_c<L.dim[0]; i_c++) {
       L(i_c, i) = std::move(A(i_c, i));
       L.set_row_basis(i_c, i);
     }
-    for (int i_c=i+1; i_c<L.dim[0]; i_c++) {
-      for (int k=i+1; k<A.dim[1]; k++) {
+    for (int64_t i_c=i+1; i_c<L.dim[0]; i_c++) {
+      for (int64_t k=i+1; k<A.dim[1]; k++) {
         gemm(L(i_c,i), A(i,k), A(i_c,k), -1, 1);
       }
       L.set_col_basis(i_c, i);

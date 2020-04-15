@@ -1,6 +1,7 @@
 #ifndef hicma_classes_index_range_h
 #define hicma_classes_index_range_h
 
+#include <cstdint>
 #include <vector>
 
 
@@ -11,8 +12,8 @@ class IndexRange {
  private:
   std::vector<IndexRange> children;
  public:
-  int start = 0;
-  int length = 0;
+  int64_t start = 0;
+  int64_t length = 0;
 
   // Special member functions
   IndexRange() = default;
@@ -28,14 +29,14 @@ class IndexRange {
   IndexRange& operator=(IndexRange&&) = default;
 
   // Additional constructors
-  IndexRange(int start, int length);
+  IndexRange(int64_t start, int64_t length);
 
   // Indexing
-  IndexRange& operator[](int i);
-  const IndexRange& operator[](int i) const;
+  IndexRange& operator[](int64_t i);
+  const IndexRange& operator[](int64_t i) const;
 
   // Additional methods
-  void split(int n_splits);
+  void split(int64_t n_splits);
 };
 
 } // namespace hicma

@@ -20,6 +20,7 @@
 #include "yorel/yomm2/cute.hpp"
 
 #include <cassert>
+#include <cstdint>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -41,16 +42,16 @@ std::tuple<Dense, Dense> make_left_orthogonal(const Node& A) {
   return make_left_orthogonal_omm(A);
 }
 
-void update_splitted_size(const Node& A, int& rows, int& cols) {
+void update_splitted_size(const Node& A, int64_t& rows, int64_t& cols) {
   update_splitted_size_omm(A, rows, cols);
 }
 
-NodeProxy split_by_column(const Node& A, Node& storage, int &currentRow) {
+NodeProxy split_by_column(const Node& A, Node& storage, int64_t &currentRow) {
   return split_by_column_omm(A, storage, currentRow);
 }
 
 NodeProxy concat_columns(
-  const Node& A, const Node& splitted, const Node& Q, int& currentRow
+  const Node& A, const Node& splitted, const Node& Q, int64_t& currentRow
 ) {
   return concat_columns_omm(A, splitted, Q, currentRow);
 }
@@ -63,16 +64,16 @@ define_method(void, qr_omm, (Dense& A, Dense& Q, Dense& R)) {
   assert(R.dim[1] == A.dim[1]);
   timing::start("QR");
   timing::start("DGEQRF");
-  int k = std::min(A.dim[0], A.dim[1]);
+  int64_t k = std::min(A.dim[0], A.dim[1]);
   std::vector<double> tau(k);
-  for(int i=0; i<std::min(Q.dim[0], Q.dim[1]); i++) Q(i, i) = 1.0;
+  for(int64_t i=0; i<std::min(Q.dim[0], Q.dim[1]); i++) Q(i, i) = 1.0;
   LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, A.dim[0], A.dim[1], &A, A.stride, &tau[0]);
   timing::stop("DGEQRF");
   timing::start("DORGQR");
   // TODO Consider using A for the dorgqr and moving to Q afterwards! That
   // also simplify this loop.
-  for(int i=0; i<A.dim[0]; i++) {
-    for(int j=0; j<A.dim[1]; j++) {
+  for(int64_t i=0; i<A.dim[0]; i++) {
+    for(int64_t j=0; j<A.dim[1]; j++) {
       if(j>=i)
         R(i, j) = A(i, j);
       else
@@ -96,24 +97,24 @@ define_method(
   assert(Q.dim[1] == A.dim[1]);
   assert(R.dim[0] == A.dim[1]);
   assert(R.dim[1] == A.dim[1]);
-  for (int j=0; j<A.dim[1]; j++) {
+  for (int64_t j=0; j<A.dim[1]; j++) {
     Hierarchical Qj(A.dim[0], 1);
-    for (int i = 0; i < A.dim[0]; i++) {
+    for (int64_t i = 0; i < A.dim[0]; i++) {
       Qj(i, 0) = Q(i, j);
     }
     Hierarchical Rjj(1, 1);
     Rjj(0, 0) = R(j, j);
     A.col_qr(j, Qj, Rjj);
     R(j, j) = Rjj(0, 0);
-    for (int i=0; i<A.dim[0]; i++) {
+    for (int64_t i=0; i<A.dim[0]; i++) {
       Q(i, j) = Qj(i, 0);
     }
     Hierarchical TrQj(Qj);
     transpose(TrQj);
-    for (int k=j+1; k<A.dim[1]; k++) {
+    for (int64_t k=j+1; k<A.dim[1]; k++) {
       //Take k-th column
       Hierarchical Ak(A.dim[0], 1);
-      for (int i=0; i<A.dim[0]; i++) {
+      for (int64_t i=0; i<A.dim[0]; i++) {
         Ak(i, 0) = A(i, k);
       }
       Hierarchical Rjk(1, 1);
@@ -121,7 +122,7 @@ define_method(
       gemm(TrQj, Ak, Rjk, 1, 1); //Rjk = Q*j^T x A*k
       R(j, k) = Rjk(0, 0);
       gemm(Qj, Rjk, Ak, -1, 1); //A*k = A*k - Q*j x Rjk
-      for (int i=0; i<A.dim[0]; i++) {
+      for (int64_t i=0; i<A.dim[0]; i++) {
         A(i, k) = Ak(i, 0);
       }
     }
@@ -169,14 +170,14 @@ define_method(DensePair, make_left_orthogonal_omm, (const Node& A)) {
 
 define_method(
   void, update_splitted_size_omm,
-  (const Hierarchical& A, int& rows, int& cols)
+  (const Hierarchical& A, int64_t& rows, int64_t& cols)
 ) {
   rows += A.dim[0];
   cols = A.dim[1];
 }
 
 define_method(
-  void, update_splitted_size_omm, (const Node& A, int& rows, int& cols)
+  void, update_splitted_size_omm, (const Node& A, int64_t& rows, int64_t& cols)
 ) {
   rows++;
 }
@@ -184,10 +185,10 @@ define_method(
 
 define_method(
   NodeProxy, split_by_column_omm,
-  (const Dense& A, Hierarchical& storage, int& currentRow)
+  (const Dense& A, Hierarchical& storage, int64_t& currentRow)
 ) {
   Hierarchical splitted(A, 1, storage.dim[1]);
-  for(int i=0; i<storage.dim[1]; i++)
+  for(int64_t i=0; i<storage.dim[1]; i++)
     storage(currentRow, i) = splitted(0, i);
   currentRow++;
   return Dense(0, 0);
@@ -195,7 +196,7 @@ define_method(
 
 define_method(
   NodeProxy, split_by_column_omm,
-  (const LowRank& A, Hierarchical& storage, int& currentRow)
+  (const LowRank& A, Hierarchical& storage, int64_t& currentRow)
 ) {
   LowRank _A(A);
   Dense Qu(_A.U().dim[0], _A.U().dim[1]);
@@ -205,7 +206,7 @@ define_method(
   Dense RSV = gemm(RS, _A.V());
   //Split R*S*V
   Hierarchical splitted(RSV, 1, storage.dim[1]);
-  for(int i=0; i<storage.dim[1]; i++) {
+  for(int64_t i=0; i<storage.dim[1]; i++) {
     storage(currentRow, i) = splitted(0, i);
   }
   currentRow++;
@@ -214,10 +215,10 @@ define_method(
 
 define_method(
   NodeProxy, split_by_column_omm,
-  (const Hierarchical& A, Hierarchical& storage, int& currentRow)
+  (const Hierarchical& A, Hierarchical& storage, int64_t& currentRow)
 ) {
-  for(int i=0; i<A.dim[0]; i++) {
-    for(int j=0; j<A.dim[1]; j++) {
+  for(int64_t i=0; i<A.dim[0]; i++) {
+    for(int64_t j=0; j<A.dim[1]; j++) {
       storage(currentRow, j) = A(i, j);
     }
     currentRow++;
@@ -227,7 +228,7 @@ define_method(
 
 define_method(
   NodeProxy, split_by_column_omm,
-  (const Node& A, Node& storage, [[maybe_unused]] int& currentRow)
+  (const Node& A, Node& storage, [[maybe_unused]] int64_t& currentRow)
 ) {
   omm_error_handler("split_by_column", {A, storage}, __FILE__, __LINE__);
   abort();
@@ -238,12 +239,12 @@ define_method(
   NodeProxy, concat_columns_omm,
   (
     const Dense& A, const Hierarchical& splitted, const Dense& Q,
-    int& currentRow
+    int64_t& currentRow
   )
 ) {
   // In case of dense, combine the split dense matrices into one dense matrix
   Hierarchical SpCurRow(1, splitted.dim[1]);
-  for(int i=0; i<splitted.dim[1]; i++) {
+  for(int64_t i=0; i<splitted.dim[1]; i++) {
     SpCurRow(0, i) = splitted(currentRow, i);
   }
   Dense concatenatedRow(SpCurRow);
@@ -257,14 +258,14 @@ define_method(
   NodeProxy, concat_columns_omm,
   (
     const LowRank& A, const Hierarchical& splitted, const Dense& Q,
-    int& currentRow
+    int64_t& currentRow
   )
 ) {
   // In case of lowrank, combine split dense matrices into single dense matrix
   // Then form a lowrank matrix with the stored Q
   std::vector<double> x;
   Hierarchical SpCurRow(1, splitted.dim[1]);
-  for(int i=0; i<splitted.dim[1]; i++) {
+  for(int64_t i=0; i<splitted.dim[1]; i++) {
     SpCurRow(0, i) = splitted(currentRow, i);
   }
   Dense concatenatedRow(SpCurRow);
@@ -284,13 +285,13 @@ define_method(
   NodeProxy, concat_columns_omm,
   (
     const Hierarchical& A, const Hierarchical& splitted, const Dense& Q,
-    int& currentRow)
+    int64_t& currentRow)
   ) {
   //In case of hierarchical, just put element in respective cells
   assert(splitted.dim[1] == A.dim[1]);
   Hierarchical concatenatedRow(A.dim[0], A.dim[1]);
-  for(int i=0; i<A.dim[0]; i++) {
-    for(int j=0; j<A.dim[1]; j++) {
+  for(int64_t i=0; i<A.dim[0]; i++) {
+    for(int64_t j=0; j<A.dim[1]; j++) {
       concatenatedRow(i, j) = splitted(currentRow, j);
     }
     currentRow++;
@@ -302,8 +303,9 @@ define_method(
   NodeProxy, concat_columns_omm,
   (
     const Node& A, const Node& splitted, const Node& Q,
-    [[maybe_unused]] int& currentRow)
-  ) {
+    [[maybe_unused]] int64_t& currentRow
+  )
+) {
   omm_error_handler("concat_columns", {A, splitted, Q}, __FILE__, __LINE__);
   abort();
 }
@@ -317,8 +319,8 @@ void zero_whole(Node& A) {
 }
 
 define_method(void, zero_lowtri_omm, (Dense& A)) {
-  for(int i=0; i<A.dim[0]; i++)
-    for(int j=0; j<i; j++)
+  for(int64_t i=0; i<A.dim[0]; i++)
+    for(int64_t j=0; j<i; j++)
       A(i,j) = 0.0;
 }
 
@@ -333,10 +335,12 @@ define_method(void, zero_whole_omm, (Dense& A)) {
 
 define_method(void, zero_whole_omm, (LowRank& A)) {
   A.U() = 0.0;
-  for(int i=0; i<std::min(A.U().dim[0], A.U().dim[1]); i++) A.U()(i, i) = 1.0;
+  for(int64_t i=0; i<std::min(A.U().dim[0], A.U().dim[1]); i++)
+    A.U()(i, i) = 1.0;
   A.S() = 0.0;
   A.V() = 0.0;
-  for(int i=0; i<std::min(A.V().dim[0], A.V().dim[1]); i++) A.V()(i, i) = 1.0;
+  for(int64_t i=0; i<std::min(A.V().dim[0], A.V().dim[1]); i++)
+    A.V()(i, i) = 1.0;
 }
 
 define_method(void, zero_whole_omm, (Node& A)) {
@@ -360,8 +364,8 @@ define_method(void, rq_omm, (Dense& A, Dense& R, Dense& Q)) {
   // Alternatively, create Dense deriative that remains in elementary reflector
   // form, uses dormqr instead of gemm and can be transformed to Dense via
   // dorgqr!
-  for (int i=0; i<R.dim[0]; i++) {
-    for (int j=0; j<R.dim[1]; j++) {
+  for (int64_t i=0; i<R.dim[0]; i++) {
+    for (int64_t j=0; j<R.dim[1]; j++) {
       if (j>=i) R(i, j) = A(i, A.dim[1]-R.dim[1]+j);
     }
   }

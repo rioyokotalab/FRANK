@@ -5,8 +5,10 @@
 
 #include "yorel/yomm2/cute.hpp"
 
-#include <vector>
+#include <array>
+#include <cstdint>
 #include <memory>
+#include <vector>
 
 
 namespace hicma
@@ -26,8 +28,8 @@ class Dense : public Node {
 
   virtual const double* get_pointer() const;
  public:
-  int dim[2] = {0, 0};
-  int stride = 0;
+  std::array<int64_t, 2> dim = {0, 0};
+  int64_t stride = 0;
 
   // Special member functions
   Dense() = default;
@@ -53,33 +55,33 @@ class Dense : public Node {
   explicit Dense(const Node& A);
 
   // Additional constructors
-  Dense(int m, int n=1);
+  Dense(int64_t m, int64_t n=1);
 
   Dense(
     const IndexRange& row_range,
     const IndexRange& col_range,
-    void (*func)(Dense& A, std::vector<double>& x, int i_begin, int j_begin),
+    void (*func)(Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin),
     std::vector<double>& x,
-    int i_begin, int j_begin
+    int64_t i_begin, int64_t j_begin
   );
 
   Dense(
-    void (*func)(Dense& A, std::vector<double>& x, int i_begin, int j_begin),
+    void (*func)(Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin),
     std::vector<double>& x,
-    int ni, int nj=1,
-    int i_begin=0, int j_begin=0
+    int64_t ni, int64_t nj=1,
+    int64_t i_begin=0, int64_t j_begin=0
   );
 
   Dense(
     void (*func)(
       std::vector<double>& data,
       std::vector<std::vector<double>>& x,
-      const int& ni, const int& nj,
-      const int& i_begin, const int& j_begin
+      int64_t ni, int64_t nj,
+      int64_t i_begin, int64_t j_begin
     ),
     std::vector<std::vector<double>>& x,
-    const int ni, const int nj,
-    const int i_begin=0, const int j_begin=0
+    const int64_t ni, const int64_t nj,
+    const int64_t i_begin=0, const int64_t j_begin=0
   );
 
   Dense(const IndexRange& row_range, const IndexRange& col_range, Dense& A);
@@ -90,22 +92,22 @@ class Dense : public Node {
   // Additional operators
   const Dense& operator=(const double a);
 
-  double& operator[](int i);
+  double& operator[](int64_t i);
 
-  const double& operator[](int i) const;
+  const double& operator[](int64_t i) const;
 
-  double& operator()(int i, int j);
+  double& operator()(int64_t i, int64_t j);
 
-  const double& operator()(int i, int j) const;
+  const double& operator()(int64_t i, int64_t j) const;
 
   double* operator&();
 
   const double* operator&() const;
 
   // Utility methods
-  int size() const;
+  int64_t size() const;
 
-  void resize(int dim0, int dim1);
+  void resize(int64_t dim0, int64_t dim1);
 
   Dense transpose() const;
 

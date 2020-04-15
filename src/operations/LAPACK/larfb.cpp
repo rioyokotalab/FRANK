@@ -15,6 +15,8 @@
 #endif
 #include "yorel/yomm2/cute.hpp"
 
+#include <cstdint>
+
 
 namespace hicma
 {
@@ -58,8 +60,8 @@ define_method(
   (const Dense& V, const Dense& T, Hierarchical& C, bool trans)
 ) {
   Dense V_lower_tri(V);
-  for(int i = 0; i < V_lower_tri.dim[0]; i++) {
-    for(int j = i; j < V_lower_tri.dim[1]; j++) {
+  for(int64_t i = 0; i < V_lower_tri.dim[0]; i++) {
+    for(int64_t j = i; j < V_lower_tri.dim[1]; j++) {
       if(i == j) V_lower_tri(i, j) = 1.0;
       else V_lower_tri(i, j) = 0.0;
     }
@@ -77,25 +79,25 @@ define_method(
   (const Hierarchical& V, const Hierarchical& T, Hierarchical& C, bool trans)
 ) {
   if(trans) {
-    for(int k = 0; k < C.dim[1]; k++) {
-      for(int j = k; j < C.dim[1]; j++) {
+    for(int64_t k = 0; k < C.dim[1]; k++) {
+      for(int64_t j = k; j < C.dim[1]; j++) {
         larfb(V(k, k), T(k, k), C(k, j), trans);
       }
-      for(int i = k+1; i < C.dim[0]; i++) {
-        for(int j = k; j < C.dim[1]; j++) {
+      for(int64_t i = k+1; i < C.dim[0]; i++) {
+        for(int64_t j = k; j < C.dim[1]; j++) {
           tpmqrt(V(i, k), T(i, k), C(k, j), C(i, j), trans);
         }
       }
     }
   }
   else {
-    for(int k = C.dim[1]-1; k >= 0; k--) {
-      for(int i = C.dim[0]-1; i > k; i--) {
-        for(int j = k; j < C.dim[1]; j++) {
+    for(int64_t k = C.dim[1]-1; k >= 0; k--) {
+      for(int64_t i = C.dim[0]-1; i > k; i--) {
+        for(int64_t j = k; j < C.dim[1]; j++) {
           tpmqrt(V(i, k), T(i, k), C(k, j), C(i, j), trans);
         }
       }
-      for(int j = k; j < C.dim[1]; j++) {
+      for(int64_t j = k; j < C.dim[1]; j++) {
         larfb(V(k, k), T(k, k), C(k, j), trans);
       }
     }

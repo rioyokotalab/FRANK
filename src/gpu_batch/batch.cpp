@@ -5,6 +5,7 @@
 #include "hicma/classes/node_proxy.h"
 #include "hicma/operations/BLAS.h"
 
+#include <cstdint>
 #include <vector>
 
 
@@ -16,7 +17,7 @@ std::vector<Dense> vecB;
 std::vector<Dense*> vecC;
 std::vector<NodeProxy*> vecLR;
 
-void rsvd_push(NodeProxy& A, Dense& Aij, int rank) {
+void rsvd_push(NodeProxy& A, Dense& Aij, int64_t rank) {
   A = LowRank(Aij, rank);
 }
 
