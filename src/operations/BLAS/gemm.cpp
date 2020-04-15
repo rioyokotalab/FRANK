@@ -381,6 +381,18 @@ define_method(
 define_method(
   void, gemm_omm,
   (
+    const Hierarchical& A, const LowRank& B, Dense& C,
+    double alpha, double beta
+  )
+) {
+  NoCopySplit BH(B, A.dim[1], 1);
+  NoCopySplit CH(C, A.dim[0], 1);
+  gemm(A, BH, CH, alpha, beta);
+}
+
+define_method(
+  void, gemm_omm,
+  (
     const LowRank& A, const Hierarchical& B, Dense& C,
     double alpha, double beta
   )
