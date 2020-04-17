@@ -264,6 +264,7 @@ const double* Dense::operator&() const { return get_pointer(); }
 int64_t Dense::size() const { return dim[0] * dim[1]; }
 
 void Dense::resize(int64_t dim0, int64_t dim1) {
+  assert(owning);
   assert(dim0 <= dim[0]);
   assert(dim1 <= dim[1]);
   timing::start("Dense resize");
