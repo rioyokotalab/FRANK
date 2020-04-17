@@ -31,3 +31,23 @@ TEST(DenseTest, ContructorHierarchical) {
     }
   }
 }
+
+TEST(DenseTest, resize) {
+  timing::start("Init");
+  yorel::yomm2::update_methods();
+  int64_t N = 4092;
+  std::vector<double> vec;
+  Dense D(random_normal, vec, N, N);
+  Dense D_compare(D);
+  timing::stopAndPrint("Init");
+  timing::start("Resize");
+  D.resize(N-N/8, N-N/8);
+  timing::stopAndPrint("Resize");
+  timing::start("Check results");
+  for (int64_t i=0; i<N-N/8; ++i) {
+    for (int64_t j=0; j<N-N/8; ++j) {
+      ASSERT_EQ(D(i, j), D_compare(i, j));
+    }
+  }
+  timing::stopAndPrint("Check results");
+}
