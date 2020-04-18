@@ -14,7 +14,7 @@
 namespace hicma
 {
 
-class IndexRange;
+class ClusterTree;
 
 class LowRank : public Node {
  private:
@@ -58,18 +58,25 @@ class LowRank : public Node {
 
   LowRank(const Dense& A, int64_t k);
 
-  // Utility methods
+  LowRank(
+    const ClusterTree& node,
+    void (*func)(
+      Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
+    ),
+    std::vector<double>& x,
+    int64_t k
+  );
+
   void mergeU(const LowRank& A, const LowRank& B);
 
   void mergeS(const LowRank& A, const LowRank& B);
 
   void mergeV(const LowRank& A, const LowRank& B);
 
-  LowRank get_part(
-    const IndexRange& row_range, const IndexRange& col_range) const;
+  // Utility methods
+  LowRank get_part(const ClusterTree& node) const;
 
-  LowRank(
-    const IndexRange& row_range, const IndexRange& col_range, const LowRank& A);
+  LowRank(const ClusterTree& node, const LowRank& A);
 
   LowRank(const Dense& U, const Dense& S, const Dense& V);
 };

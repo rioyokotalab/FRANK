@@ -2,11 +2,11 @@
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
-#include "hicma/classes/index_range.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/low_rank_shared.h"
 #include "hicma/classes/node.h"
 #include "hicma/classes/node_proxy.h"
+#include "hicma/classes/intitialization_helpers/cluster_tree.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/randomized_factorizations.h"
 #include "hicma/operations/misc/get_dim.h"
@@ -78,148 +78,136 @@ UniformHierarchical::UniformHierarchical(
 }
 
 Dense UniformHierarchical::make_block_row(
-  int64_t row, int64_t i_abs, int64_t j_abs,
+  const ClusterTree& node,
   void (*func)(
     Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
   ),
   std::vector<double>& x,
-  int64_t admis,
-  int64_t i_begin, int64_t j_begin
+  int64_t admis
 ) {
   // Create row block without admissible blocks
-  int64_t n_non_admissible_blocks = 0;
-  int64_t row_abs = i_abs*dim[0]+row;
-  for (int64_t j_b=0; j_b<dim[1]; ++j_b) {
-    if (!is_admissible(row, j_b, row_abs, j_abs*dim[1]+j_b, admis)) {
-      n_non_admissible_blocks++;
+  int64_t n_cols = 0;
+  std::vector<const ClusterTree*> admissible_blocks;
+  for (const ClusterTree* block : node.get_block_row()) {
+    if (is_admissible(*block, admis)) {
+      admissible_blocks.emplace_back(block);
+      n_cols += block->dim[1];
     }
   }
-  Hierarchical block_row_h(1, n_non_admissible_blocks);
-  // Note the ins counter!
-  // TODO j_b goes across entire matrix, outside of confines of *this.
-  // Find way to combine this with create_children!
-  for (int64_t j_b=0, ins=0; j_b<dim[1]; ++j_b) {
-    if (!is_admissible(row, j_b, row_abs, j_abs*dim[1]+j_b, admis)) {
-      block_row_h[ins++] = Dense(
-        row_range[row], col_range[j_b], func, x,
-        i_begin+row_range[row].start, j_begin+col_range[j_b].start
-      );
-    }
+  Dense block_row(node.dim[0], n_cols);
+  int64_t col_begin = 0;
+  for (const ClusterTree* block : admissible_blocks) {
+    Dense part(
+      ClusterTree(block->dim[0], block->dim[1], 0, col_begin), block_row);
+    func(part, x, block->begin[0], block->begin[1]);
+    col_begin += block->dim[1];
   }
-  return Dense(block_row_h);
+  return block_row;
 }
 
 Dense UniformHierarchical::make_block_col(
-  int64_t col, int64_t i_abs, int64_t j_abs,
+  const ClusterTree& node,
   void (*func)(
     Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
   ),
   std::vector<double>& x,
-  int64_t admis,
-  int64_t i_begin, int64_t j_begin
+  int64_t admis
 ) {
   // Create col block without admissible blocks
-  int64_t n_non_admissible_blocks = 0;
-  int64_t col_abs = j_abs*dim[1]+col;
-  for (int64_t i_b=0; i_b<dim[0]; ++i_b) {
-    if (!is_admissible(i_b, col, i_abs*dim[0]+i_b, col_abs, admis)) {
-      n_non_admissible_blocks++;
+  int64_t n_rows = 0;
+  std::vector<const ClusterTree*> admissible_blocks;
+  for (const ClusterTree* block : node.get_block_col()) {
+    if (is_admissible(*block, admis)) {
+      admissible_blocks.emplace_back(block);
+      n_rows += block->dim[0];
     }
   }
-  Hierarchical block_col_h(n_non_admissible_blocks, 1);
-  // Note the ins counter!
-  for (int64_t i_b=0, ins=0; i_b<dim[0]; ++i_b) {
-    if (!is_admissible(i_b, col, i_abs*dim[0]+i_b, col_abs, admis)) {
-      block_col_h[ins++] = Dense(
-        row_range[i_b], col_range[col], func, x,
-        i_begin+row_range[i_b].start, j_begin+col_range[col].start
-      );
-    }
+  Dense block_col(n_rows, node.dim[1]);
+  int64_t row_begin = 0;
+  for (const ClusterTree* block : admissible_blocks) {
+    Dense part(
+      ClusterTree(block->dim[0], block->dim[1], row_begin, 0), block_col);
+    func(part, x, block->begin[0], block->begin[1]);
+    row_begin += block->dim[0];
   }
-  return Dense(block_col_h);
+  return block_col;
 }
 
 LowRankShared UniformHierarchical::construct_shared_block_id(
-  int64_t i, int64_t j, int64_t i_abs, int64_t j_abs,
-  std::vector<std::vector<int64_t>>& selected_rows,
-  std::vector<std::vector<int64_t>>& selected_cols,
+  const ClusterTree& node,
   void (*func)(
     Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
   ),
   std::vector<double>& x,
+  std::vector<std::vector<int64_t>>& selected_rows,
+  std::vector<std::vector<int64_t>>& selected_cols,
   int64_t rank,
-  int64_t admis,
-  int64_t i_begin, int64_t j_begin
+  int64_t admis
 ) {
-  if (col_basis[i].get() == nullptr) {
-    Dense row_block = make_block_row(
-      i, i_abs, j_abs, func, x, admis, i_begin, j_begin);
+  if (col_basis[node.rel_pos[0]].get() == nullptr) {
+    Dense row_block = make_block_row(node, func, x, admis);
     // Construct U using the ID and remember the selected rows
     Dense Ut;
-    std::tie(Ut, selected_rows[i]) = one_sided_rid(
+    std::tie(Ut, selected_rows[node.rel_pos[0]]) = one_sided_rid(
       row_block, rank+5, rank, true);
     transpose(Ut);
-    col_basis[i] = std::make_shared<Dense>(std::move(Ut));
+    col_basis[node.rel_pos[0]] = std::make_shared<Dense>(std::move(Ut));
   }
-  if (row_basis[j].get() == nullptr) {
-    Dense col_block = make_block_col(
-      j, i_abs, j_abs, func, x, admis, i_begin, j_begin);
+  if (row_basis[node.rel_pos[1]].get() == nullptr) {
+    Dense col_block = make_block_col(node, func, x, admis);
     // Construct V using the ID and remember the selected cols
     Dense V;
-    std::tie(V, selected_cols[j]) = one_sided_rid(
+    std::tie(V, selected_cols[node.rel_pos[1]]) = one_sided_rid(
       col_block, rank+5, rank);
-    row_basis[j] = std::make_shared<Dense>(std::move(V));
+    row_basis[node.rel_pos[1]] = std::make_shared<Dense>(std::move(V));
   }
-  Dense D(
-    row_range[i], col_range[j], func, x,
-    i_begin+row_range[i].start, j_begin+col_range[j].start
-  );
+  Dense D(node, func, x);
   Dense S(rank, rank);
   for (int64_t ic=0; ic<rank; ++ic) {
     for (int64_t jc=0; jc<rank; ++jc) {
-      S(ic, jc) = D(selected_rows[i][ic], selected_cols[j][jc]);
+      S(ic, jc) = D(
+        selected_rows[node.rel_pos[0]][ic], selected_cols[node.rel_pos[1]][jc]);
     }
   }
   return LowRankShared(
     S,
-    col_basis[i], row_basis[j]
+    col_basis[node.rel_pos[0]], row_basis[node.rel_pos[1]]
   );
 }
 
 LowRankShared UniformHierarchical::construct_shared_block_svd(
-  int64_t i, int64_t j, int64_t i_abs, int64_t j_abs,
+  const ClusterTree& node,
   void (*func)(
     Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
   ),
   std::vector<double>& x,
   int64_t rank,
-  int64_t admis,
-  int64_t i_begin, int64_t j_begin
+  int64_t admis
 ) {
-  if (col_basis[i].get() == nullptr) {
-    Dense row_block = make_block_row(
-      i, i_abs, j_abs, func, x, admis, i_begin, j_begin);
-    col_basis[i] = std::make_shared<Dense>(LowRank(row_block, rank).U());
+  if (col_basis[node.rel_pos[0]].get() == nullptr) {
+    Dense row_block = make_block_row(node, func, x, admis);
+    col_basis[node.rel_pos[0]] = std::make_shared<Dense>(
+      LowRank(row_block, rank).U());
   }
-  if (row_basis[j].get() == nullptr) {
-    Dense col_block = make_block_col(
-      j, i_abs, j_abs, func, x, admis, i_begin, j_begin);
-    row_basis[j] = std::make_shared<Dense>(LowRank(col_block, rank).V());
+  if (row_basis[node.rel_pos[1]].get() == nullptr) {
+    Dense col_block = make_block_col(node, func, x, admis);
+    row_basis[node.rel_pos[1]] = std::make_shared<Dense>(LowRank(
+      col_block, rank).V());
   }
-  Dense D(
-    row_range[i], col_range[j], func, x,
-    i_begin+row_range[i].start, j_begin+col_range[j].start
-  );
+  Dense D(node, func, x);
   Dense S = gemm(
-    gemm(*col_basis[i], D, 1, true, false), *row_basis[j], 1, false ,true);
+    gemm(*col_basis[node.rel_pos[0]], D, 1, true, false),
+    *row_basis[node.rel_pos[1]],
+    1, false ,true
+  );
   return LowRankShared(
     S,
-    col_basis[i], row_basis[j]
+    col_basis[node.rel_pos[0]], row_basis[node.rel_pos[1]]
   );
 }
 
 UniformHierarchical::UniformHierarchical(
-  IndexRange row_range_, IndexRange col_range_,
+  ClusterTree& node,
   void (*func)(
     Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
   ),
@@ -228,57 +216,38 @@ UniformHierarchical::UniformHierarchical(
   int64_t nleaf,
   int64_t admis,
   int64_t ni_level, int64_t nj_level,
-  bool use_svd,
-  int64_t i_begin, int64_t j_begin,
-  int64_t i_abs, int64_t j_abs
+  bool use_svd
 ) : Hierarchical(ni_level, nj_level) {
   // TODO All dense UH not allowed for now!
   assert(dim[0] > admis + 1 && dim[1] > admis+1);
   // TODO Only single leve allowed for now. Constructions and some operations
   // work for more levels, but LU does not yet (LR+=LR issue).
-  assert(row_range.length/ni_level <= nleaf);
-  assert(col_range.length/nj_level <= nleaf);
+  assert(node.dim[0]/ni_level <= nleaf);
+  assert(node.dim[1]/nj_level <= nleaf);
   assert(rank <= nleaf);
   // TODO For now only admis 0! gemm(D, LR, LR) and gemm(LR, D, LR) needed for
   // more.
   assert(admis == 0);
-  row_range = row_range_;
-  col_range = col_range_;
   col_basis.resize(dim[0]);
   row_basis.resize(dim[1]);
   std::vector<std::vector<int64_t>> selected_rows(dim[0]);
   std::vector<std::vector<int64_t>> selected_cols(dim[1]);
-  create_children();
-  for (int64_t i=0; i<dim[0]; ++i) {
-    for (int64_t j=0; j<dim[1]; ++j) {
-      // TODO Move into contsructor-helper-class?
-      int64_t i_abs_child = i_abs*dim[0]+i;
-      int64_t j_abs_child = j_abs*dim[1]+j;
-      if (is_admissible(i, j, i_abs_child, j_abs_child, admis)) {
-        if (is_leaf(i, j, nleaf)) {
-          (*this)(i, j) = Dense(
-            row_range[i], col_range[j], func, x,
-            i_begin+row_range[i].start, j_begin+col_range[j].start
-          );
-        } else {
-          (*this)(i, j) = UniformHierarchical(
-            row_range[i], col_range[j],
-            func, x, rank, nleaf, admis, ni_level, nj_level, use_svd,
-            i_begin+row_range[i].start, j_begin+col_range[j].start,
-            i_abs_child, j_abs_child
-          );
-        }
+  node.split(dim[0], dim[1]);
+  for (ClusterTree& child_node : node.children) {
+    if (is_admissible(child_node, admis)) {
+      if (use_svd) {
+        (*this)[child_node.rel_pos] = construct_shared_block_svd(
+          child_node, func, x, rank, admis);
       } else {
-        if (use_svd) {
-          (*this)(i, j) = construct_shared_block_svd(
-            i, j, i_abs, j_abs, func, x, rank, admis, i_begin, j_begin
-          );
-        } else {
-          (*this)(i, j) = construct_shared_block_id(
-            i, j, i_abs, j_abs,
-            selected_rows, selected_cols, func, x, rank, admis, i_begin, j_begin
-          );
-        }
+        (*this)[child_node.rel_pos] = construct_shared_block_id(
+          child_node, func, x, selected_rows, selected_cols, rank, admis);
+      }
+    } else {
+      if (is_leaf(child_node, nleaf)) {
+        (*this)[child_node.rel_pos] = Dense(child_node, func, x);
+      } else {
+        (*this)[child_node.rel_pos] = UniformHierarchical(
+          child_node, func, x, rank, nleaf, admis, ni_level, nj_level);
       }
     }
   }
@@ -295,13 +264,12 @@ UniformHierarchical::UniformHierarchical(
   int64_t admis,
   int64_t ni_level, int64_t nj_level,
   bool use_svd,
-  int64_t i_begin, int64_t j_begin,
-  int64_t i_abs, int64_t j_abs
-) : UniformHierarchical(
-  IndexRange(0, ni), IndexRange(0, nj),
-  func, x, rank, nleaf, admis, ni_level, nj_level, use_svd,
-  i_begin, j_begin, i_abs, j_abs
-) {}
+  int64_t i_begin, int64_t j_begin
+) {
+  ClusterTree node(ni, nj, i_begin, j_begin);
+  *this = UniformHierarchical(
+    node, func, x, rank, nleaf, admis, ni_level, nj_level, use_svd);
+}
 
 // declare_method(bool, is_LowRankShared, (virtual_<const Node&>));
 

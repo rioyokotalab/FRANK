@@ -1,7 +1,6 @@
 #ifndef hicma_classes_hierarchical_h
 #define hicma_classes_hierarchical_h
 
-#include "hicma/classes/index_range.h"
 #include "hicma/classes/node.h"
 #include "hicma/classes/node_proxy.h"
 
@@ -18,12 +17,12 @@ namespace hicma
 {
 
 class Dense;
+class ClusterTree;
+
 class Hierarchical : public Node {
  private:
   std::vector<NodeProxy> data;
  public:
-  // TODO Remove these and make temporary only for construction?
-  IndexRange row_range, col_range;
   std::array<int64_t, 2> dim = {0, 0};
 
   // Special member functions
@@ -49,23 +48,21 @@ class Hierarchical : public Node {
   // Conversion constructors
   Hierarchical(NodeProxy&&);
 
-  Hierarchical(const Node& node, int64_t ni_level, int64_t nj_level);
+  Hierarchical(const Node& A, int64_t ni_level, int64_t nj_level);
 
   // Additional constructors
   Hierarchical(int64_t ni_level, int64_t nj_level=1);
 
   Hierarchical(
-    IndexRange row_range, IndexRange col_range,
+    ClusterTree& node,
     void (*func)(
       Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
     ),
     std::vector<double>& x,
     int64_t rank,
     int64_t nleaf,
-    int64_t admis=1,
-    int64_t ni_level=2, int64_t nj_level=2,
-    int64_t i_begin=0, int64_t j_begin=0,
-    int64_t i_abs=0, int64_t j_abs=0
+    int64_t admis,
+    int64_t ni_level, int64_t nj_level
   );
 
   Hierarchical(
@@ -85,6 +82,10 @@ class Hierarchical : public Node {
   const NodeProxy& operator[](int64_t i) const;
 
   NodeProxy& operator[](int64_t i);
+
+  const NodeProxy& operator[](std::array<int64_t, 2> pos) const;
+
+  NodeProxy& operator[](std::array<int64_t, 2> pos);
 
   const NodeProxy& operator()(int64_t i, int64_t j) const;
 
@@ -108,13 +109,9 @@ class Hierarchical : public Node {
 
   void col_qr(int64_t j, Hierarchical& Q, Hierarchical &R);
 
-  void create_children();
+  bool is_admissible(const ClusterTree& node, int64_t dist_to_diag);
 
-  bool is_admissible(
-    int64_t i, int64_t j, int64_t i_abs, int64_t j_abs, int64_t dist_to_diag
-  );
-
-  bool is_leaf(int64_t i, int64_t j, int64_t nleaf);
+  bool is_leaf(const ClusterTree& node, int64_t nleaf);
 };
 
 register_class(Hierarchical, Node)

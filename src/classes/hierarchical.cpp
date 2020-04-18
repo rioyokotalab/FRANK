@@ -2,10 +2,10 @@
 #include "hicma/extension_headers/classes.h"
 
 #include "hicma/classes/dense.h"
-#include "hicma/classes/index_range.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/node.h"
 #include "hicma/classes/node_proxy.h"
+#include "hicma/classes/intitialization_helpers/cluster_tree.h"
 #include "hicma/functions.h"
 #include "hicma/gpu_batch/batch.h"
 #include "hicma/operations/BLAS.h"
@@ -53,40 +53,40 @@ define_method(Hierarchical&&, move_from_hierarchical, (Node& A)) {
   abort();
 }
 
-Hierarchical::Hierarchical(const Node& node, int64_t ni_level, int64_t nj_level)
-: row_range(0, get_n_rows(node)), col_range(0, get_n_cols(node)),
-  dim{ni_level, nj_level}
+Hierarchical::Hierarchical(const Node& A, int64_t ni_level, int64_t nj_level)
+: dim{ni_level, nj_level}
 {
-  create_children();
-  fill_hierarchical_from(*this, node);
+  data.resize(dim[0]*dim[1]);
+  ClusterTree node(get_n_rows(A), get_n_cols(A));
+  node.split(dim[0], dim[1]);
+  fill_hierarchical_from(*this, A, node);
 }
 
 define_method(
-  void, fill_hierarchical_from, (Hierarchical& H, const Dense& A)
+  void, fill_hierarchical_from,
+  (Hierarchical& H, const Dense& A, const ClusterTree& node)
 ) {
   timing::start("fill_hierarchical_from(D)");
-  for (int64_t i=0; i<H.dim[0]; ++i) {
-    for (int64_t j=0; j<H.dim[1]; ++j) {
-      H(i, j) = A.get_part(H.row_range[i], H.col_range[j]);
-    }
+  for (const ClusterTree& child_node : node.children) {
+    H[child_node.rel_pos] = A.get_part(child_node);
   }
   timing::stop("fill_hierarchical_from(D)");
 }
 
 define_method(
-  void, fill_hierarchical_from, (Hierarchical& H, const LowRank& A)
+  void, fill_hierarchical_from,
+  (Hierarchical& H, const LowRank& A, const ClusterTree& node)
 ) {
   timing::start("fill_hierarchical_from(LR)");
-  for (int64_t i=0; i<H.dim[0]; ++i) {
-    for (int64_t j=0; j<H.dim[1]; ++j) {
-      H(i, j) = A.get_part(H.row_range[i], H.col_range[j]);
-    }
+  for (const ClusterTree& child_node : node.children) {
+    H[child_node.rel_pos] = A.get_part(child_node);
   }
   timing::stop("fill_hierarchical_from(LR)");
 }
 
 define_method(
-  void, fill_hierarchical_from, (Hierarchical& H, const Node& A)
+  void, fill_hierarchical_from,
+  (Hierarchical& H, const Node& A, [[maybe_unused]] const ClusterTree& node)
 ) {
   omm_error_handler("fill_hierarchical_from", {H, A}, __FILE__, __LINE__);
   abort();
@@ -94,11 +94,11 @@ define_method(
 
 Hierarchical::Hierarchical(int64_t ni_level, int64_t nj_level)
 : dim{ni_level, nj_level} {
-  create_children();
+  data.resize(dim[0]*dim[1]);
 }
 
 Hierarchical::Hierarchical(
-  IndexRange row_range_, IndexRange col_range_,
+  ClusterTree& node,
   void (*func)(
     Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
   ),
@@ -106,40 +106,21 @@ Hierarchical::Hierarchical(
   int64_t rank,
   int64_t nleaf,
   int64_t admis,
-  int64_t ni_level, int64_t nj_level,
-  int64_t i_begin, int64_t j_begin,
-  int64_t i_abs, int64_t j_abs
-) : row_range(row_range_), col_range(col_range_) {
-  dim[0] = std::min(ni_level, row_range.length);
-  dim[1] = std::min(nj_level, col_range.length);
-  create_children();
-  for (int64_t i=0; i<dim[0]; ++i) {
-    for (int64_t j=0; j<dim[1]; ++j) {
-      // TODO Move into contsructor-helper-class?
-      int64_t i_abs_child = i_abs*dim[0]+i;
-      int64_t j_abs_child = j_abs*dim[1]+j;
-      if (is_admissible(i, j, i_abs_child, j_abs_child, admis)) {
-        if (is_leaf(i, j, nleaf)) {
-          (*this)(i, j) = Dense(
-            row_range[i], col_range[j], func, x,
-            i_begin+row_range[i].start, j_begin+col_range[j].start
-          );
-        } else {
-          (*this)(i, j) = Hierarchical(
-            row_range[i], col_range[j],
-            func, x, rank, nleaf, admis, ni_level, nj_level,
-            i_begin+row_range[i].start, j_begin+col_range[j].start,
-            i_abs_child, j_abs_child
-          );
-        }
+  int64_t ni_level, int64_t nj_level
+) {
+  dim[0] = std::min(ni_level, node.dim[0]);
+  dim[1] = std::min(nj_level, node.dim[1]);
+  data.resize(dim[0]*dim[1]);
+  node.split(dim[0], dim[1]);
+  for (ClusterTree& child_node : node.children) {
+    if (is_admissible(child_node, admis)) {
+      (*this)[child_node.rel_pos] = LowRank(child_node, func, x, rank);
+    } else {
+      if (is_leaf(child_node, nleaf)) {
+        (*this)[child_node.rel_pos] = Dense(child_node, func, x);
       } else {
-        (*this)(i, j) = LowRank(
-          Dense(
-            row_range[i], col_range[j], func, x,
-            i_begin+row_range[i].start, j_begin+col_range[j].start
-          ),
-          rank
-        );
+        (*this)[child_node.rel_pos] = Hierarchical(
+          child_node, func, x, rank, nleaf, admis, ni_level, nj_level);
       }
     }
   }
@@ -156,10 +137,18 @@ Hierarchical::Hierarchical(
   int64_t admis,
   int64_t ni_level, int64_t nj_level,
   int64_t i_begin, int64_t j_begin
-) : Hierarchical(
-  IndexRange(0, ni), IndexRange(0, nj),
-  func, x, rank, nleaf, admis, ni_level, nj_level, i_begin, j_begin
-) {}
+) {
+  ClusterTree root(ni, nj, i_begin, j_begin);
+  *this = Hierarchical(root, func, x, rank, nleaf, admis, ni_level, nj_level);
+}
+
+const NodeProxy& Hierarchical::operator[](std::array<int64_t, 2> pos) const {
+  return (*this)(pos[0], pos[1]);
+}
+
+NodeProxy& Hierarchical::operator[](std::array<int64_t, 2> pos) {
+  return (*this)(pos[0], pos[1]);
+}
 
 const NodeProxy& Hierarchical::operator[](int64_t i) const {
   assert(dim[0] == 1 || dim[1] == 1);
@@ -287,27 +276,21 @@ void Hierarchical::col_qr(int64_t j, Hierarchical& Q, Hierarchical &R) {
   }
 }
 
-void Hierarchical::create_children() {
-  row_range.split(dim[0]);
-  col_range.split(dim[1]);
-  data.resize(dim[0]*dim[1]);
-}
-
 bool Hierarchical::is_admissible(
-  int64_t i, int64_t j, int64_t i_abs, int64_t j_abs, int64_t dist_to_diag
+  const ClusterTree& node, int64_t dist_to_diag
 ) {
-  bool admissible = false;
+  bool admissible = true;
   // Main admissibility condition
-  admissible |= (std::abs(i_abs - j_abs) <= dist_to_diag);
+  admissible &= (std::abs(node.abs_pos[0] - node.abs_pos[1]) > dist_to_diag);
   // Vectors are never admissible
-  admissible |= (row_range[i].length == 1 || col_range[j].length == 1);
+  admissible &= (node.dim[0] > 1 && node.dim[1] > 1);
   return admissible;
 }
 
-bool Hierarchical::is_leaf(int64_t i, int64_t j, int64_t nleaf) {
+bool Hierarchical::is_leaf(const ClusterTree& node, int64_t nleaf) {
   bool leaf = true;
-  leaf &= (row_range[i].length/dim[0] < nleaf);
-  leaf &= (col_range[j].length/dim[1] < nleaf);
+  leaf &= (node.dim[0] <= nleaf);
+  leaf &= (node.dim[1] <= nleaf);
   return leaf;
 }
 

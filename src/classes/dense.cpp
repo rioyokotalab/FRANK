@@ -2,10 +2,10 @@
 #include "hicma/extension_headers/classes.h"
 
 #include "hicma/classes/hierarchical.h"
-#include "hicma/classes/index_range.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/node.h"
 #include "hicma/classes/node_proxy.h"
+#include "hicma/classes/intitialization_helpers/cluster_tree.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/misc/get_dim.h"
 #include "hicma/util/omm_error_handler.h"
@@ -128,20 +128,19 @@ Dense::Dense(int64_t m, int64_t n)
 }
 
 Dense::Dense(
-  const IndexRange& row_range, const IndexRange& col_range,
+  const ClusterTree& node,
   void (*func)(
     Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
   ),
-  std::vector<double>& x,
-  int64_t i_begin, int64_t j_begin
+  std::vector<double>& x
 ) : Node(),
   data_ptr(nullptr), const_data_ptr(nullptr), owning(true),
-  dim{row_range.length, col_range.length}, stride(dim[1])
+  dim{node.dim}, stride(dim[1])
 {
   // TODO This function is still aware of hierarchical matrix idea. Change?
   // Related to making helper class for construction.
   data.resize(dim[0]*dim[1]);
-  func(*this, x, i_begin, j_begin);
+  func(*this, x, node.begin[0], node.begin[1]);
 }
 
 Dense::Dense(
@@ -151,7 +150,7 @@ Dense::Dense(
   std::vector<double>& x,
   int64_t ni, int64_t nj,
   int64_t i_begin, int64_t j_begin
-) : Dense(IndexRange(0, ni), IndexRange(0, nj), func, x, i_begin, j_begin) {}
+) : Dense(ClusterTree(ni, nj, i_begin, j_begin), func, x) {}
 
 Dense::Dense(
   void (*func)(
@@ -179,26 +178,23 @@ const Dense& Dense::operator=(const double a) {
   return *this;
 }
 
-Dense::Dense(
-  const IndexRange& row_range, const IndexRange& col_range, Dense& A
-) : Node(),
-    owning(false), dim{row_range.length, col_range.length}, stride(A.stride)
+Dense::Dense(const ClusterTree& node, Dense& A)
+: Node(), owning(false), dim(node.dim), stride(A.stride)
 {
-  assert(row_range.start+row_range.length <= A.dim[0]);
-  assert(col_range.start+col_range.length <= A.dim[1]);
-  data_ptr = &A(row_range.start, col_range.start);
-  const_data_ptr = &A(row_range.start, col_range.start);
+  assert(node.begin[0]+node.dim[0] <= A.dim[0]);
+  assert(node.begin[1]+node.dim[1] <= A.dim[1]);
+  data_ptr = &A[node.begin];
+  const_data_ptr = &A[node.begin];
 }
 
-Dense::Dense(
-  const IndexRange& row_range, const IndexRange& col_range, const Dense& A
-) : Node(),
-    owning(false), dim{row_range.length, col_range.length}, stride(A.stride)
+
+Dense::Dense(const ClusterTree& node, const Dense& A)
+: Node(), owning(false), dim(node.dim), stride(A.stride)
 {
-  assert(row_range.start+row_range.length <= A.dim[0]);
-  assert(col_range.start+col_range.length <= A.dim[1]);
+  assert(node.begin[0]+node.dim[0] <= A.dim[0]);
+  assert(node.begin[1]+node.dim[1] <= A.dim[1]);
   data_ptr = nullptr;
-  const_data_ptr = &A(row_range.start, col_range.start);
+  const_data_ptr = &A[node.begin];
 }
 
 double* Dense::get_pointer() {
@@ -243,6 +239,14 @@ const double& Dense::operator[](int64_t i) const {
     assert(i < dim[0]);
     return get_pointer()[i*stride];
   }
+}
+
+double& Dense::operator[](std::array<int64_t, 2> pos) {
+  return (*this)(pos[0], pos[1]);
+}
+
+const double& Dense::operator[](std::array<int64_t, 2> pos) const {
+  return (*this)(pos[0], pos[1]);
 }
 
 double& Dense::operator()(int64_t i, int64_t j) {
@@ -309,15 +313,13 @@ void Dense::transpose() {
   }
 }
 
-Dense Dense::get_part(
-  const IndexRange& row_range, const IndexRange& col_range
-) const {
-  assert(row_range.start+row_range.length <= dim[0]);
-  assert(col_range.start+col_range.length <= dim[1]);
-  Dense A(row_range.length, col_range.length);
+Dense Dense::get_part(const ClusterTree& node) const {
+  assert(node.begin[0]+node.dim[0] <= dim[0]);
+  assert(node.begin[1]+node.dim[1] <= dim[1]);
+  Dense A(node.dim[0], node.dim[1]);
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {
-      A(i, j) = (*this)(i+row_range.start, j+col_range.start);
+      A(i, j) = (*this)(i+node.begin[0], j+node.begin[1]);
     }
   }
   return A;

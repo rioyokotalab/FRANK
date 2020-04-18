@@ -14,7 +14,8 @@
 namespace hicma
 {
 
-class IndexRange;
+// TODO Remove awareness of ClusterTree?
+class ClusterTree;
 class NodeProxy;
 
 class Dense : public Node {
@@ -58,15 +59,15 @@ class Dense : public Node {
   Dense(int64_t m, int64_t n=1);
 
   Dense(
-    const IndexRange& row_range,
-    const IndexRange& col_range,
-    void (*func)(Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin),
-    std::vector<double>& x,
-    int64_t i_begin, int64_t j_begin
+    const ClusterTree& node,
+    void (*func)(
+      Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin),
+    std::vector<double>& x
   );
 
   Dense(
-    void (*func)(Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin),
+    void (*func)(
+      Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin),
     std::vector<double>& x,
     int64_t ni, int64_t nj=1,
     int64_t i_begin=0, int64_t j_begin=0
@@ -84,10 +85,9 @@ class Dense : public Node {
     const int64_t i_begin=0, const int64_t j_begin=0
   );
 
-  Dense(const IndexRange& row_range, const IndexRange& col_range, Dense& A);
+  Dense(const ClusterTree& node, Dense& A);
 
-  Dense(
-    const IndexRange& row_range, const IndexRange& col_range, const Dense& A);
+  Dense(const ClusterTree& node, const Dense& A);
 
   // Additional operators
   const Dense& operator=(const double a);
@@ -95,6 +95,10 @@ class Dense : public Node {
   double& operator[](int64_t i);
 
   const double& operator[](int64_t i) const;
+
+  double& operator[](std::array<int64_t, 2> pos);
+
+  const double& operator[](std::array<int64_t, 2> pos) const;
 
   double& operator()(int64_t i, int64_t j);
 
@@ -114,8 +118,7 @@ class Dense : public Node {
   void transpose();
 
   // Get part of other Dense
-  Dense get_part(
-    const IndexRange& row_range, const IndexRange& col_range) const;
+  Dense get_part(const ClusterTree& node) const;
 };
 
 register_class(Dense, Node)

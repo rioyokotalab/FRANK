@@ -1,12 +1,12 @@
 add_library(classes OBJECT
-    index_range.cpp
     node_proxy.cpp
     dense.cpp
+    hierarchical.cpp
     low_rank.cpp
     low_rank_shared.cpp
-    hierarchical.cpp
     no_copy_split.cpp
     uniform_hierarchical.cpp
+    initialization_helpers/cluster_tree.cpp
 )
 target_include_directories(classes
 PUBLIC

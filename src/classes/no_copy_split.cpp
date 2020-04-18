@@ -3,15 +3,16 @@
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
-#include "hicma/classes/index_range.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/node.h"
 #include "hicma/classes/node_proxy.h"
+#include "hicma/classes/intitialization_helpers/cluster_tree.h"
 #include "hicma/operations/misc/get_dim.h"
 #include "hicma/util/omm_error_handler.h"
 
 #include "yorel/yomm2/cute.hpp"
 
+#include <cassert>
 #include <cstddef>
 #include <memory>
 #include <utility>
@@ -30,108 +31,69 @@ std::unique_ptr<Node> NoCopySplit::move_clone() {
 
 const char* NoCopySplit::type() const { return "NoCopySplit"; }
 
-NoCopySplit::NoCopySplit(Node& A, int64_t ni_level, int64_t nj_level) {
-  dim = {ni_level, nj_level};
-  row_range = IndexRange(0, get_n_rows(A));
-  col_range = IndexRange(0, get_n_cols(A));
-  create_children();
-  for (int64_t i=0; i<dim[0]; ++i) {
-    for (int64_t j=0; j<dim[1]; ++j) {
-      (*this)(i, j) = make_view(row_range[i], col_range[j], A);
-    }
+NoCopySplit::NoCopySplit(Node& A, int64_t ni_level, int64_t nj_level)
+: Hierarchical(ni_level, nj_level) {
+  ClusterTree node(get_n_rows(A), get_n_cols(A));
+  node.split(dim[0], dim[1]);
+  for (ClusterTree& child_node : node.children) {
+    (*this)[child_node.rel_pos] = make_view(child_node, A);
   }
 }
 
-NoCopySplit::NoCopySplit(Node& A, const Hierarchical& like) {
-  dim = like.dim;
-  row_range = IndexRange(0, get_n_rows(A));
-  col_range = IndexRange(0, get_n_cols(A));
-  create_children();
-  int64_t row_begin = 0;
-  for (int64_t i=0; i<dim[0]; ++i) {
-    int64_t col_begin = 0;
-    for (int64_t j=0; j<dim[1]; ++j) {
-      (*this)(i, j) = make_view(
-        IndexRange(row_begin, get_n_rows(like(i, j))),
-        IndexRange(col_begin, get_n_cols(like(i, j))),
-        A
-      );
-      col_begin += get_n_cols(like(i, j));
-    }
-    row_begin += get_n_rows(like(i, 0));
+NoCopySplit::NoCopySplit(Node& A, const Hierarchical& like)
+: Hierarchical(like.dim[0], like.dim[1]) {
+  assert(get_n_rows(A) == get_n_rows(like));
+  assert(get_n_cols(A) == get_n_cols(like));
+  ClusterTree node(get_n_rows(A), get_n_cols(A));
+  node.split(like);
+  for (ClusterTree& child_node : node.children) {
+    (*this)[child_node.rel_pos] = make_view(child_node, A);
   }
 }
 
-define_method(
-  NodeProxy, make_view,
-  (const IndexRange& row_range, const IndexRange& col_range, Dense& A)
-) {
-  return Dense(row_range, col_range, A);
+define_method(NodeProxy, make_view, (const ClusterTree& node, Dense& A)) {
+  return Dense(node, A);
 }
 
 define_method(
-  NodeProxy, make_view,
-  (
-    [[maybe_unused]] const IndexRange&, [[maybe_unused]] const IndexRange&,
-    Node& A
-  )
+  NodeProxy, make_view, ([[maybe_unused]] const ClusterTree&, Node& A)
 ) {
   omm_error_handler("make_view", {A}, __FILE__, __LINE__);
   abort();
 }
 
-NoCopySplit::NoCopySplit(const Node& A, int64_t ni_level, int64_t nj_level) {
-  dim = {ni_level, nj_level};
-  row_range = IndexRange(0, get_n_rows(A));
-  col_range = IndexRange(0, get_n_cols(A));
-  create_children();
-  for (int64_t i=0; i<dim[0]; ++i) {
-    for (int64_t j=0; j<dim[1]; ++j) {
-      (*this)(i, j) = make_view(row_range[i], col_range[j], A);
-    }
+NoCopySplit::NoCopySplit(const Node& A, int64_t ni_level, int64_t nj_level)
+: Hierarchical(ni_level, nj_level) {
+  ClusterTree node(get_n_rows(A), get_n_cols(A));
+  node.split(dim[0], dim[1]);
+  for (ClusterTree& child_node : node.children) {
+    (*this)[child_node.rel_pos] = make_view(child_node, A);
   }
 }
 
-NoCopySplit::NoCopySplit(const Node& A, const Hierarchical& like) {
-  dim = like.dim;
-  row_range = IndexRange(0, get_n_rows(A));
-  col_range = IndexRange(0, get_n_cols(A));
-  create_children();
-  int64_t row_begin = 0;
-  for (int64_t i=0; i<dim[0]; ++i) {
-    int64_t col_begin = 0;
-    for (int64_t j=0; j<dim[1]; ++j) {
-      (*this)(i, j) = make_view(
-        IndexRange(row_begin, get_n_rows(like(i, j))),
-        IndexRange(col_begin, get_n_cols(like(i, j))),
-        A
-      );
-      col_begin += get_n_cols(like(i, j));
-    }
-    row_begin += get_n_rows(like(i, 0));
+NoCopySplit::NoCopySplit(const Node& A, const Hierarchical& like)
+: Hierarchical(like.dim[0], like.dim[1]) {
+  assert(get_n_rows(A) == get_n_rows(like));
+  assert(get_n_cols(A) == get_n_cols(like));
+  ClusterTree node(get_n_rows(A), get_n_cols(A));
+  node.split(like);
+  for (ClusterTree& child_node : node.children) {
+    (*this)[child_node.rel_pos] = make_view(child_node, A);
   }
 }
 
-define_method(
-  NodeProxy, make_view,
-  (const IndexRange& row_range, const IndexRange& col_range, const Dense& A)
-) {
-  return Dense(row_range, col_range, A);
+define_method(NodeProxy, make_view, (const ClusterTree& node, const Dense& A)) {
+  return Dense(node, A);
 }
 
 define_method(
-  NodeProxy, make_view,
-  (const IndexRange& row_range, const IndexRange& col_range, const LowRank& A)
+  NodeProxy, make_view, (const ClusterTree& node, const LowRank& A)
 ) {
-  return LowRank(row_range, col_range, A);
+  return LowRank(node, A);
 }
 
 define_method(
-  NodeProxy, make_view,
-  (
-    [[maybe_unused]] const IndexRange&, [[maybe_unused]] const IndexRange&,
-    const Node& A
-  )
+  NodeProxy, make_view, ([[maybe_unused]] const ClusterTree&, const Node& A)
 ) {
   omm_error_handler("make_view (const)", {A}, __FILE__, __LINE__);
   abort();
