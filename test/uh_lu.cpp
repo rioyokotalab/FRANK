@@ -16,7 +16,7 @@ int main(int argc, char const *argv[])
   int64_t nblocks = argc > 2 ? atoi(argv[2]) : 2;
   int64_t rank = argc > 3 ? atoi(argv[3]) : 8;
   int64_t admis = 0;
-  int64_t nleaf = N/nblocks;
+  int64_t nleaf = (N+nblocks-1)/nblocks;
   std::vector<double> randx = get_sorted_random_vector(N);
   timing::start("Init matrix");
   UniformHierarchical A(
