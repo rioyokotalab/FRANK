@@ -1,8 +1,6 @@
 #ifndef hicma_classes_node_h
 #define hicma_classes_node_h
 
-#include "hicma/classes/index_range.h"
-
 #include "yorel/yomm2/cute.hpp"
 
 #include <memory>
