@@ -166,13 +166,6 @@ BEGIN_SPECIALIZATION(
   const LowRank& V, const Dense& T, LowRank& A, LowRank& B,
   const bool trans
 ) {
-  //With conversion to dense
-  // Dense DA(A);
-  // Dense DB(B);
-  // tpmqrt(V, T, DA, DB, trans);
-  // A = LowRank(DA, A.rank);
-  // B = LowRank(DB, B.rank);
-  //Without conversion to dense
   std::vector<double> x;
   LowRank C(A);
   LowRank Vt(V);
