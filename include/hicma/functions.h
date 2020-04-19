@@ -84,18 +84,6 @@ namespace hicma {
                  const int& j_begin
                  );
 
-  double diam(
-              std::vector<double>& x,
-              const int& n,
-              const int& offset
-              );
-
-  double mean(
-              std::vector<double>& x,
-              const int& n,
-              const int& offset
-              );
-
   bool is_admissible_nd(
                         std::vector<std::vector<double>>& x,
                         const int& ni,
