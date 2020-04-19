@@ -19,71 +19,45 @@ using namespace hicma;
 
 int main(int argc, char** argv) {
   yorel::multi_methods::initialize();
-  updateCounter("LR_ADDITION_COUNTER", 1); //Enable LR addition counter
   int N = argc > 1 ? atoi(argv[1]) : 256;
   int Nb = argc > 2 ? atoi(argv[2]) : 32;
   int rank = argc > 3 ? atoi(argv[3]) : 16;
   double admis = argc > 4 ? atof(argv[4]) : 0;
   int matCode = argc > 5 ? atoi(argv[5]) : 0;
-  int lra = argc > 6 ? atoi(argv[6]) : 1; updateCounter("LRA", lra);
+  int lra = argc > 6 ? atoi(argv[6]) : 2; updateCounter("LRA", lra);
   int Nc = N / Nb;
   std::vector<std::vector<double>> randpts;
-  Dense DA;
+  updateCounter("LR_ADDITION_COUNTER", 1); //Enable LR addition counter
 
   if(matCode == 0 || matCode == 1) { //Laplace1D or Helmholtz1D
     randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
   }
-  else if(matCode == 2) { //Ill-conditioned Cauchy2D (Matrix A3 From HODLR Paper)
-    randpts.push_back(equallySpacedVector(N, -4.25, 998.25));
-    randpts.push_back(equallySpacedVector(N, -2.15, 999.45));
-  }
-  else { //Ill-conditioned generated from DLATMS
-    //Configurations
-    char dist = 'U'; //Uses uniform distribution when generating random SV
-    std::vector<int> iseed{ 1, 23, 456, 789 };
-    char sym = 'N'; //Generate symmetric matrix
-    double dmax = 1.0;
-    int kl = N-1;
-    int ku = N-1;
-    char pack = 'N';
-
-    std::vector<double> d(N, 0.0); //Singular values to be used
-    int mode = 1; //See docs
-    double _cond = 1e+12; //Condition number of generated matrix
-    Dense _DA(N, N);
-    latms(N, N, dist, iseed, sym, d, mode, _cond, dmax, kl, ku, pack, _DA);
-    DA = std::move(_DA);
-
-    randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
+  else { //Ill-conditioned Cauchy2D (Matrix A3 From HODLR Paper)
+    randpts.push_back(equallySpacedVector(N, -1.25, 998.25));
+    randpts.push_back(equallySpacedVector(N, -0.15, 999.45));
   }
 
+  Dense DA;
   Hierarchical A(Nc, Nc);
   Hierarchical D(Nc, Nc);
   Hierarchical Q(Nc, Nc);
   Hierarchical R(Nc, Nc);
   for (int ic=0; ic<Nc; ic++) {
     for (int jc=0; jc<Nc; jc++) {
-      int bi = Nb + ((ic == (Nc-1)) ? N % Nb : 0);
-      int bj = Nb + ((jc == (Nc-1)) ? N % Nb : 0);
       Dense Aij;
       if(matCode == 0) {
-        Dense _Aij(laplacend, randpts, bi, bj, Nb*ic, Nb*jc, ic, jc, 1);
+        Dense _Aij(laplacend, randpts, Nb, Nb, Nb*ic, Nb*jc, ic, jc, 1);
         Aij = std::move(_Aij);
       }
       else if(matCode == 1) {
-        Dense _Aij(helmholtznd, randpts, bi, bj, Nb*ic, Nb*jc, ic, jc, 1);
+        Dense _Aij(helmholtznd, randpts, Nb, Nb, Nb*ic, Nb*jc, ic, jc, 1);
         Aij = std::move(_Aij);
       }
       else if(matCode == 2) {
-        Dense _Aij(cauchy2d, randpts, bi, bj, Nb*ic, Nb*jc, ic, jc, 1);
+        Dense _Aij(cauchy2d, randpts, Nb, Nb, Nb*ic, Nb*jc, ic, jc, 1);
         Aij = std::move(_Aij);
       }
-      else {
-        Dense _Aij(zeros, randpts[0], bi, bj, Nb*ic, Nb*jc, ic, jc, 1);
-        getSubmatrix(DA, bi, bj, Nb*ic, Nb*jc, _Aij);
-        Aij = std::move(_Aij);
-      }
-      Dense Rij(zeros, randpts[0], bi, bj, Nb*ic, Nb*jc, ic, jc, 1);
+      Dense Rij(zeros, randpts[0], Nb, Nb, Nb*ic, Nb*jc, ic, jc, 1);
       D(ic,jc) = Aij;
       if (std::abs(ic - jc) <= (int)admis) {
         A(ic,jc) = Aij;
@@ -97,14 +71,11 @@ int main(int argc, char** argv) {
   }
   rsvd_batch();
 
-  //Compute condition number of A
-  // print("Cond(A)", cond(Dense(D)), false);
-
   //For residual measurement
   Dense x(N);
   x = 1.0;
   Dense Ax(N);
-  gemm(A, x, Ax, 1, 1);
+  gemm(A, x, Ax, 1, 0);
   //Approximation error
   double diff, norm;
   diff = (Dense(A) - Dense(D)).norm();
@@ -147,29 +118,27 @@ int main(int argc, char** argv) {
     }
   }
   stop("BLR QR decomposition");
-
   printCounter("LR-addition");
 
   //Residual
   Dense Rx(N);
-  gemm(R, x, Rx, 1, 1);
+  gemm(R, x, Rx, 1, 0);
   Dense QRx(N);
-  gemm(Q, Rx, QRx, 1, 1);
+  gemm(Q, Rx, QRx, 1, 0);
   diff = (Ax - QRx).norm();
   norm = Ax.norm();
   print("Residual");
-  print("Rel. L2 Error", std::sqrt(diff/norm), false);
+  print("Rel. Error (operator norm)", std::sqrt(diff/norm), false);
   //Orthogonality
   Dense Qx(N);
-  gemm(Q, x, Qx, 1, 1);
+  gemm(Q, x, Qx, 1, 0);
   Dense QtQx(N);
   Q.transpose();
-  gemm(Q, Qx, QtQx, 1, 1);
+  gemm(Q, Qx, QtQx, 1, 0);
   diff = (QtQx - x).norm();
   norm = (double)N;
   print("Orthogonality");
-  print("Rel. L2 Orthogonality", std::sqrt(diff/norm), false);
+  print("Rel. Error (operator norm)", std::sqrt(diff/norm), false);
   return 0;
 }
-
 

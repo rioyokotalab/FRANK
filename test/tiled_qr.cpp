@@ -18,7 +18,8 @@ int main(int argc, char** argv) {
   yorel::multi_methods::initialize();
   int N = argc > 1 ? atoi(argv[1]) : 256;
   int Nb = argc > 2 ? atoi(argv[2]) : 32;
-  int matCode = argc > 5 ? atoi(argv[5]) : 0;
+  int matCode = argc > 3 ? atoi(argv[3]) : 0;
+  double conditionNumber = argc > 4 ? atof(argv[4]) : 1e+0;
   int Nc = N / Nb;
   std::vector<std::vector<double>> randpts;
   Dense DA;
@@ -27,8 +28,8 @@ int main(int argc, char** argv) {
     randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
   }
   else if(matCode == 2) { //Ill-conditioned Cauchy2D (Matrix A3 From HODLR Paper)
-    randpts.push_back(equallySpacedVector(N, -4.25, 998.25));
-    randpts.push_back(equallySpacedVector(N, -2.15, 999.45));
+    randpts.push_back(equallySpacedVector(N, -1.25, 998.25));
+    randpts.push_back(equallySpacedVector(N, -0.15, 999.45));
   }
   else { //Ill-conditioned generated from DLATMS
     //Configurations
@@ -42,9 +43,8 @@ int main(int argc, char** argv) {
 
     std::vector<double> d(N, 0.0); //Singular values to be used
     int mode = 1; //See docs
-    double _cond = 1e+12; //Condition number of generated matrix
     Dense _DA(N, N);
-    latms(N, N, dist, iseed, sym, d, mode, _cond, dmax, kl, ku, pack, _DA);
+    latms(N, N, dist, iseed, sym, d, mode, conditionNumber, dmax, kl, ku, pack, _DA);
     DA = std::move(_DA);
 
     randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
   double diff, norm;
   Dense x(N); x = 1.0;
   Dense Ax(N);
-  gemm(A, x, Ax, 1, 1);
+  gemm(A, x, Ax, 1, 0);
 
   print("Time");
   start("QR decomposition");
@@ -118,7 +118,7 @@ int main(int argc, char** argv) {
   //Build R: Take upper triangular part of modified A
   for(int i=0; i<A.dim[0]; i++) {
     for(int j=0; j<=i; j++) {
-      if(i == j) //Must be dense, zero lower-triangular part
+      if(i == j)
         zero_lowtri(A(i, j));
       else
         zero_whole(A(i, j));
@@ -126,34 +126,23 @@ int main(int argc, char** argv) {
   }
   //Residual
   Dense Rx(N);
-  gemm(A, x, Rx, 1, 1);
+  gemm(A, x, Rx, 1, 0);
   Dense QRx(N);
-  gemm(Q, Rx, QRx, 1, 1);
+  gemm(Q, Rx, QRx, 1, 0);
   diff = (Ax - QRx).norm();
   norm = Ax.norm();
   print("Accuracy");
-  print("Rel. L2 Error", std::sqrt(diff/norm), false);
+  print("Rel. Error (operator norm)", std::sqrt(diff/norm), false);
   //Orthogonality
-  for(int i=0; i<Nc; i++)
-    for(int j=0; j<Nc; j++) {
-      if(i != j) {
-        Dense Qij(Q(i, j));
-        Dense S(std::min(Qij.dim[0], Qij.dim[1]));
-        Qij.svd(S);
-        std::cout <<"Q(" <<i <<"," <<j <<").S" <<std::endl;
-        S.print();
-      }
-    }
   Dense Qx(N);
-  gemm(Q, x, Qx, 1, 1);
+  gemm(Q, x, Qx, 1, 0);
   Dense QtQx(N);
   Q.transpose();
-  gemm(Q, Qx, QtQx, 1, 1);
+  gemm(Q, Qx, QtQx, 1, 0);
   diff = (QtQx - x).norm();
   norm = (double)N;
   print("Orthogonality");
-  print("Rel. L2 Error", std::sqrt(diff/norm), false);
+  print("Rel. Error (operator norm)", std::sqrt(diff/norm), false);
   return 0;
 }
-
 
