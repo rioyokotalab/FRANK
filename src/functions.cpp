@@ -7,10 +7,10 @@
 #include <cmath>
 #include <random>
 #include <vector>
-#include <algorithm>
 #include <iostream>
 
 namespace hicma {
+
   void zeros(
             std::vector<double>& data,
             std::vector<double>& x,
@@ -126,7 +126,7 @@ namespace hicma {
   }
 
   void helmholtznd(
-                   std::vector<double>& data,
+                   std::vector< double>& data,
                    std::vector<std::vector<double>>& x,
                    const int& ni,
                    const int& nj,
@@ -142,24 +142,6 @@ namespace hicma {
         data[i*nj+j] = std::exp(-1.0 * rij) / (std::sqrt(rij) + 1e-3);
       }
     }
-  }
-
-  double diam(
-              std::vector<double>& x,
-              const int& n,
-              const int& offset
-              ) {
-    double xmax = *std::max_element(x.begin()+offset, x.begin()+offset+n);
-    double xmin = *std::min_element(x.begin()+offset, x.begin()+offset+n);
-    return std::abs(xmax-xmin);
-  }
-
-  double mean(
-              std::vector<double>& x,
-              const int& n,
-              const int& offset
-              ) {
-    return std::accumulate(x.begin()+offset, x.begin()+offset+n, 0.0)/n;
   }
 
   bool is_admissible_nd(

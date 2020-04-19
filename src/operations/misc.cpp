@@ -3,6 +3,9 @@
 #include "hicma/node.h"
 #include "hicma/dense.h"
 #include <iostream>
+#include <cmath>
+#include <random>
+#include <algorithm>
 #include <utility>
 #include <cassert>
 
@@ -10,6 +13,24 @@
 
 namespace hicma
 {
+
+  double cond(Dense A) {
+    int k = std::min(A.dim[0], A.dim[1]);
+    Dense S(k);
+    A.svd(S);
+    return (S(0, 0) / S(k-1, 0));
+  }
+
+  double diam(std::vector<double>& x, const int& n, const int& offset) {
+    double xmax = *std::max_element(x.begin()+offset, x.begin()+offset+n);
+    double xmin = *std::min_element(x.begin()+offset, x.begin()+offset+n);
+    return std::abs(xmax-xmin);
+  }
+
+  double mean(std::vector<double>& x, const int& n, const int& offset) {
+    return std::accumulate(x.begin()+offset, x.begin()+offset+n, 0.0)/n;
+  }
+
   std::vector<int> getIndex(int dim, int mortonIndex) {
     std::vector<int> index(dim, 0);
     int d = 0, level = 0;
@@ -40,13 +61,6 @@ namespace hicma
       res[i] = minVal + ((double)i/(double)rnge);
     }
     return res;
-  }
-
-  double cond(Dense A) {
-    int k = std::min(A.dim[0], A.dim[1]);
-    Dense S(k);
-    A.svd(S);
-    return (S(0, 0) / S(k-1, 0));
   }
 
   void getSubmatrix(const Dense& A, int ni, int nj, int i_begin, int j_begin, Dense& out) {
