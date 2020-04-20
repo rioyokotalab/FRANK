@@ -136,13 +136,13 @@ namespace hicma {
       Dense BU_copy(B.U);
       gemm(BU_copy, B.S, B.U, 1, 0);
 
-      Dense Qu(B.U.dim[0], B.U.dim[0]);
-      Dense Ru(B.U.dim[0], B.U.dim[1]);
+      Dense Qu(B.U.dim[0], B.U.dim[1]);
+      Dense Ru(B.U.dim[1], B.U.dim[1]);
       qr(B.U, Qu, Ru);
 
       B.V.transpose();
-      Dense Qv(B.V.dim[0], B.V.dim[0]);
-      Dense Rv(B.V.dim[0], B.V.dim[1]);
+      Dense Qv(B.V.dim[0], B.V.dim[1]);
+      Dense Rv(B.V.dim[1], B.V.dim[1]);
       qr(B.V, Qv, Rv);
 
       Dense RuRvT(Ru.dim[0], Rv.dim[0]);
