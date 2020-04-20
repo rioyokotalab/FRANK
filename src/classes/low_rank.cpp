@@ -2,7 +2,6 @@
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/node.h"
-#include "hicma/classes/intitialization_helpers/cluster_tree.h"
 #include "hicma/operations/randomized_factorizations.h"
 #include "hicma/operations/misc/get_dim.h"
 
@@ -38,7 +37,9 @@ const Dense& LowRank::S() const { return _S; }
 Dense& LowRank::V() { return _V; }
 const Dense& LowRank::V() const { return _V; }
 
-LowRank::LowRank(int64_t m, int64_t n, int64_t k) : dim{m, n}, rank(k) {
+LowRank::LowRank(int64_t n_rows, int64_t n_cols, int64_t k)
+: dim{n_rows, n_cols}, rank(k)
+{
   U() = Dense(dim[0], k);
   S() = Dense(k, k);
   V() = Dense(k, dim[1]);
@@ -100,49 +101,52 @@ void LowRank::mergeV(const LowRank& A, const LowRank& B) {
 }
 
 LowRank::LowRank(
-  const ClusterTree& node,
   void (*func)(
-    Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
+    Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
   ),
   std::vector<double>& x,
-  int64_t k
-) : LowRank(Dense(node, func, x), k) {}
+  int64_t k,
+  int64_t n_rows, int64_t n_cols,
+  int64_t row_start, int64_t col_start
+) : LowRank(Dense(func, x, n_rows, n_cols, row_start, col_start), k) {}
 
-LowRank LowRank::get_part(const ClusterTree& node) const {
-  assert(node.start[0]+node.dim[0] <= dim[0]);
-  assert(node.start[1]+node.dim[1] <= dim[1]);
-  LowRank A(node.dim[0], node.dim[1], rank);
+LowRank::LowRank(
+  const Dense& U, const Dense& S, const Dense& V
+) : _U(U.dim[0], U.dim[1], 0, 0, U),
+    _S(S.dim[0], S.dim[1], 0, 0, S),
+    _V(V.dim[0], V.dim[1], 0, 0, V),
+    dim{U.dim[0], V.dim[1]}, rank(S.dim[0])
+{}
+
+LowRank::LowRank(
+  int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start,
+  const LowRank& A
+) : dim{n_rows, n_cols}, rank(A.rank) {
+  assert(row_start+n_rows <= A.dim[0]);
+  assert(col_start+n_cols <= A.dim[1]);
+  U() = Dense(n_rows, A.rank, row_start, 0, A.U());
+  S() = Dense(A.rank, A.rank, 0, 0, A.S());
+  V() = Dense(A.rank, n_cols, 0, col_start, A.V());
+}
+
+LowRank LowRank::get_part(
+  int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start
+) const {
+  assert(row_start+n_rows <= dim[0]);
+  assert(col_start+n_cols <= dim[1]);
+  LowRank A(n_rows, n_cols, rank);
   for (int64_t i=0; i<A.U().dim[0]; i++) {
     for (int64_t k=0; k<A.U().dim[1]; k++) {
-      A.U()(i, k) = U()(i+node.start[0], k);
+      A.U()(i, k) = U()(i+row_start, k);
     }
   }
   A.S() = S();
   for (int64_t k=0; k<A.V().dim[0]; k++) {
     for (int64_t j=0; j<A.V().dim[1]; j++) {
-      A.V()(k, j) = V()(k, j+node.start[1]);
+      A.V()(k, j) = V()(k, j+col_start);
     }
   }
   return A;
-}
-
-LowRank::LowRank(const ClusterTree& node, const LowRank& A)
-: dim(node.dim), rank(A.rank)
-{
-  assert(node.start[0]+node.dim[0] <= A.dim[0]);
-  assert(node.start[1]+node.dim[1] <= A.dim[1]);
-  U() = Dense(ClusterTree(node.dim[0], A.rank, node.start[0], 0),A.U());
-  S() = Dense(ClusterTree(A.rank, A.rank), A.S());
-  V() = Dense(ClusterTree(A.rank, node.dim[1], 0, node.start[1]), A.V());
-}
-
-LowRank::LowRank(
-  const Dense& U, const Dense& S, const Dense& V
-) : _U(ClusterTree(U.dim[0], U.dim[1]), U),
-    _S(ClusterTree(S.dim[0], S.dim[1]), S),
-    _V(ClusterTree(V.dim[0], V.dim[1]), V),
-    dim{U.dim[0], V.dim[1]}, rank(S.dim[0])
-{
 }
 
 } // namespace hicma

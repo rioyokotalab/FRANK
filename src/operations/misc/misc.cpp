@@ -64,14 +64,14 @@ std::vector<double> equallySpacedVector(int64_t N, double minVal, double maxVal)
 
 void getSubmatrix(
   const Dense& A,
-  int64_t ni, int64_t nj, int64_t i_begin, int64_t j_begin,
+  int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start,
   Dense& out
 ) {
-  assert(out.dim[0] == ni);
-  assert(out.dim[1] == nj);
-  for(int64_t i=0; i<ni; i++)
-    for(int64_t j=0; j<nj; j++) {
-      out(i, j) = A(i+i_begin, j+j_begin);
+  assert(out.dim[0] == n_rows);
+  assert(out.dim[1] == n_cols);
+  for(int64_t i=0; i<n_rows; i++)
+    for(int64_t j=0; j<n_cols; j++) {
+      out(i, j) = A(i+row_start, j+col_start);
     }
 }
 

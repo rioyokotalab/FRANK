@@ -25,8 +25,8 @@ std::vector<double> equallySpacedVector(
 
 void getSubmatrix(
   const Dense& A,
-  int64_t ni, int64_t nj,
-  int64_t i_begin, int64_t j_begin,
+  int64_t n_rows, int64_t n_cols,
+  int64_t row_start, int64_t col_start,
   Dense& out
 );
 

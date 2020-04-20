@@ -18,8 +18,8 @@
 using yorel::yomm2::virtual_;
 
 #include <algorithm>
+#include <array>
 #include <cassert>
-#include <cmath>
 #include <cstdint>
 #include <memory>
 #include <tuple>
@@ -53,10 +53,10 @@ define_method(Hierarchical&&, move_from_hierarchical, (Node& A)) {
   abort();
 }
 
-Hierarchical::Hierarchical(const Node& A, int64_t ni_level, int64_t nj_level)
-: dim{ni_level, nj_level}
+Hierarchical::Hierarchical(
+  const Node& A, int64_t n_row_blocks, int64_t n_col_blocks
+) : dim{n_row_blocks, n_col_blocks}, data(dim[0]*dim[1])
 {
-  data.resize(dim[0]*dim[1]);
   ClusterTree node(get_n_rows(A), get_n_cols(A));
   node.split(dim[0], dim[1]);
   fill_hierarchical_from(*this, A, node);
@@ -67,8 +67,9 @@ define_method(
   (Hierarchical& H, const Dense& A, const ClusterTree& node)
 ) {
   timing::start("fill_hierarchical_from(D)");
-  for (const ClusterTree& child_node : node) {
-    H[child_node] = A.get_part(child_node);
+  for (const ClusterTree& child : node) {
+    H[child] = A.get_part(
+      child.dim[0], child.dim[1], child.start[0], child.start[1]);
   }
   timing::stop("fill_hierarchical_from(D)");
 }
@@ -78,8 +79,9 @@ define_method(
   (Hierarchical& H, const LowRank& A, const ClusterTree& node)
 ) {
   timing::start("fill_hierarchical_from(LR)");
-  for (const ClusterTree& child_node : node) {
-    H[child_node] = A.get_part(child_node);
+  for (const ClusterTree& child : node) {
+    H[child] = A.get_part(
+      child.dim[0], child.dim[1], child.start[0], child.start[1]);
   }
   timing::stop("fill_hierarchical_from(LR)");
 }
@@ -92,30 +94,34 @@ define_method(
   abort();
 }
 
-Hierarchical::Hierarchical(int64_t ni_level, int64_t nj_level)
-: dim{ni_level, nj_level}, data(dim[0]*dim[1]) {}
+Hierarchical::Hierarchical(int64_t n_row_blocks, int64_t n_col_blocks)
+: dim{n_row_blocks, n_col_blocks}, data(dim[0]*dim[1]) {}
 
 Hierarchical::Hierarchical(
   ClusterTree& node,
   void (*func)(
-    Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
+    Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
   ),
   std::vector<double>& x,
   int64_t rank,
   int64_t nleaf,
   int64_t admis,
-  int64_t ni_level, int64_t nj_level
-) : dim{ni_level, nj_level}, data(dim[0]*dim[1]) {
+  int64_t n_row_blocks, int64_t n_col_blocks
+) : dim{n_row_blocks, n_col_blocks}, data(dim[0]*dim[1]) {
   node.split(dim[0], dim[1]);
-  for (ClusterTree& child_node : node) {
-    if (is_admissible(child_node, admis)) {
-      (*this)[child_node] = LowRank(child_node, func, x, rank);
+  for (ClusterTree& child : node) {
+    if (is_admissible(child, admis)) {
+      (*this)[child] = LowRank(
+        func, x, rank,
+        child.dim[0], child.dim[1], child.start[0], child.start[1]
+      );
     } else {
-      if (is_leaf(child_node, nleaf)) {
-        (*this)[child_node] = Dense(child_node, func, x);
+      if (is_leaf(child, nleaf)) {
+        (*this)[child] = Dense(
+          func, x, child.dim[0], child.dim[1], child.start[0], child.start[1]);
       } else {
-        (*this)[child_node] = Hierarchical(
-          child_node, func, x, rank, nleaf, admis, ni_level, nj_level);
+        (*this)[child] = Hierarchical(
+          child, func, x, rank, nleaf, admis, n_row_blocks, n_col_blocks);
       }
     }
   }
@@ -123,18 +129,19 @@ Hierarchical::Hierarchical(
 
 Hierarchical::Hierarchical(
   void (*func)(
-    Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
+    Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
   ),
   std::vector<double>& x,
-  int64_t ni, int64_t nj,
+  int64_t n_rows, int64_t n_cols,
   int64_t rank,
   int64_t nleaf,
   int64_t admis,
-  int64_t ni_level, int64_t nj_level,
-  int64_t i_begin, int64_t j_begin
+  int64_t n_row_blocks, int64_t n_col_blocks,
+  int64_t row_start, int64_t col_start
 ) {
-  ClusterTree root(ni, nj, i_begin, j_begin);
-  *this = Hierarchical(root, func, x, rank, nleaf, admis, ni_level, nj_level);
+  ClusterTree root(n_rows, n_cols, row_start, col_start);
+  *this = Hierarchical(
+    root, func, x, rank, nleaf, admis, n_row_blocks, n_col_blocks);
 }
 
 const NodeProxy& Hierarchical::operator[](const ClusterTree& node) const {
@@ -167,18 +174,6 @@ NodeProxy& Hierarchical::operator()(int64_t i, int64_t j) {
   assert(i < dim[0]);
   assert(j < dim[1]);
   return data[i*dim[1]+j];
-}
-
-std::vector<NodeProxy>::iterator Hierarchical::begin() { return data.begin(); }
-
-std::vector<NodeProxy>::const_iterator Hierarchical::begin() const {
-  return data.begin();
-}
-
-std::vector<NodeProxy>::iterator Hierarchical::end() { return data.end(); }
-
-std::vector<NodeProxy>::const_iterator Hierarchical::end() const {
-  return data.end();
 }
 
 void Hierarchical::blr_col_qr(Hierarchical& Q, Hierarchical& R) {

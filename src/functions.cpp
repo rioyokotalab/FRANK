@@ -15,7 +15,7 @@ namespace hicma
 
 void zeros(
   Dense& A, [[maybe_unused]] std::vector<double>& x,
-  [[maybe_unused]] int64_t i_begin, [[maybe_unused]] int64_t j_begin
+  [[maybe_unused]] int64_t row_start, [[maybe_unused]] int64_t col_start
 ) {
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {
@@ -26,18 +26,18 @@ void zeros(
 
 void identity(
   Dense& A, [[maybe_unused]] std::vector<double>& x,
-  int64_t i_begin, int64_t j_begin
+  int64_t row_start, int64_t col_start
 ) {
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {
-      A(i, j) = i_begin+i == j_begin+j ? 1 : 0;
+      A(i, j) = row_start+i == col_start+j ? 1 : 0;
     }
   }
 }
 
 void random_normal(
   Dense& A, [[maybe_unused]] std::vector<double>& x,
-  [[maybe_unused]] int64_t i_begin, [[maybe_unused]] int64_t j_begin
+  [[maybe_unused]] int64_t row_start, [[maybe_unused]] int64_t col_start
 ) {
   std::random_device rd;
   std::mt19937 gen(rd());
@@ -53,7 +53,7 @@ void random_normal(
 
 void random_uniform(
   Dense& A, [[maybe_unused]] std::vector<double>& x,
-  [[maybe_unused]] int64_t i_begin, [[maybe_unused]] int64_t j_begin
+  [[maybe_unused]] int64_t row_start, [[maybe_unused]] int64_t col_start
 ) {
   std::random_device rd;
   std::mt19937 gen(rd());
@@ -69,7 +69,7 @@ void random_uniform(
 
 void arange(
   Dense& A, [[maybe_unused]] std::vector<double>& x,
-  [[maybe_unused]] int64_t i_begin, [[maybe_unused]] int64_t j_begin
+  [[maybe_unused]] int64_t row_start, [[maybe_unused]] int64_t col_start
 ) {
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {
@@ -79,77 +79,80 @@ void arange(
 }
 
 void laplace1d(
-  Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
+  Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
 ) {
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {
       A(i, j) = 1 / (
-        std::abs(x[i+i_begin] - x[j+j_begin]) + 1e-3);
+        std::abs(x[i+row_start] - x[j+col_start]) + 1e-3);
     }
   }
 }
 
 void cauchy2d(
-  std::vector<double>& data,
+  Dense& A,
   std::vector<std::vector<double>>& x,
-  int64_t ni, int64_t nj,
-  int64_t i_begin, int64_t j_begin
+  int64_t row_start, int64_t col_start
 ) {
-  for (int64_t i=0; i<ni; i++) {
-    for (int64_t j=0; j<nj; j++) {
+  for (int64_t i=0; i<A.dim[0]; i++) {
+    for (int64_t j=0; j<A.dim[1]; j++) {
       // double sgn = (arc4random() % 2 ? 1.0 : -1.0);
-      double rij = (x[0][i+i_begin] - x[1][j+j_begin]) + 1e-2;
-      data[i*nj+j] = 1.0 / rij;
+      double rij = (x[0][i+row_start] - x[1][j+col_start]) + 1e-2;
+      A(i, j) = 1.0 / rij;
     }
   }
 }
 
 void laplacend(
-  std::vector<double>& data,
+  Dense& A,
   std::vector<std::vector<double>>& x,
-  int64_t ni, int64_t nj,
-  int64_t i_begin, int64_t j_begin
+  int64_t row_start, int64_t col_start
 ) {
-  for (int64_t i=0; i<ni; i++) {
-    for (int64_t j=0; j<nj; j++) {
+  for (int64_t i=0; i<A.dim[0]; i++) {
+    for (int64_t j=0; j<A.dim[1]; j++) {
       double rij = 0.0;
       for(size_t k=0; k<x.size(); k++) {
-        rij += (x[k][i+i_begin]-x[k][j+j_begin])*(x[k][i+i_begin]-x[k][j+j_begin]);
+        rij += (
+          (x[k][i+row_start] - x[k][j+col_start])
+          * (x[k][i+row_start] - x[k][j+col_start])
+        );
       }
-      data[i*nj+j] = 1 / (std::sqrt(rij) + 1e-3);
+      A(i, j) = 1 / (std::sqrt(rij) + 1e-3);
     }
   }
 }
 
 void helmholtznd(
-  std::vector< double>& data,
+  Dense& A,
   std::vector<std::vector<double>>& x,
-  int64_t ni, int64_t nj,
-  int64_t i_begin, int64_t j_begin
+  int64_t row_start, int64_t col_start
 ) {
-  for (int64_t i=0; i<ni; i++) {
-    for (int64_t j=0; j<nj; j++) {
+  for (int64_t i=0; i<A.dim[0]; i++) {
+    for (int64_t j=0; j<A.dim[1]; j++) {
       double rij = 0.0;
       for(size_t k=0; k<x.size(); k++) {
-        rij += (x[k][i+i_begin]-x[k][j+j_begin])*(x[k][i+i_begin]-x[k][j+j_begin]);
+        rij += (
+          (x[k][i+row_start] - x[k][j+col_start])
+          * (x[k][i+row_start] - x[k][j+col_start])
+        );
       }
-      data[i*nj+j] = std::exp(-1.0 * rij) / (std::sqrt(rij) + 1e-3);
+      A(i, j) = std::exp(-1.0 * rij) / (std::sqrt(rij) + 1e-3);
     }
   }
 }
 
 bool is_admissible_nd(
   std::vector<std::vector<double>>& x,
-  int64_t ni, int64_t nj,
-  int64_t i_begin, int64_t j_begin,
+  int64_t n_rows, int64_t n_cols,
+  int64_t row_start, int64_t col_start,
   double admis
 ) {
   std::vector<double> diamsI, diamsJ, centerI, centerJ;
   for(size_t k=0; k<x.size(); k++) {
-    diamsI.push_back(diam(x[k], ni, i_begin));
-    diamsJ.push_back(diam(x[k], nj, j_begin));
-    centerI.push_back(mean(x[k], ni, i_begin));
-    centerJ.push_back(mean(x[k], nj, j_begin));
+    diamsI.push_back(diam(x[k], n_rows, row_start));
+    diamsJ.push_back(diam(x[k], n_cols, col_start));
+    centerI.push_back(mean(x[k], n_rows, row_start));
+    centerJ.push_back(mean(x[k], n_cols, col_start));
   }
   double diamI = *std::max_element(diamsI.begin(), diamsI.end());
   double diamJ = *std::max_element(diamsJ.begin(), diamsJ.end());
@@ -163,29 +166,32 @@ bool is_admissible_nd(
 
 bool is_admissible_nd_morton(
   std::vector<std::vector<double>>& x,
-  int64_t ni, int64_t nj,
-  int64_t i_begin, int64_t j_begin,
+  int64_t n_rows, int64_t n_cols,
+  int64_t row_start, int64_t col_start,
   double admis
 ) {
   std::vector<double> diamsI, diamsJ, centerI, centerJ;
   for(size_t k=0; k<x.size(); k++) {
-    diamsI.push_back(diam(x[k], ni, i_begin));
-    diamsJ.push_back(diam(x[k], nj, j_begin));
-    centerI.push_back(mean(x[k], ni, i_begin));
-    centerJ.push_back(mean(x[k], nj, j_begin));
+    diamsI.push_back(diam(x[k], n_rows, row_start));
+    diamsJ.push_back(diam(x[k], n_cols, col_start));
+    centerI.push_back(mean(x[k], n_rows, row_start));
+    centerJ.push_back(mean(x[k], n_cols, col_start));
   }
   double diamI = *std::max_element(diamsI.begin(), diamsI.end());
   double diamJ = *std::max_element(diamsJ.begin(), diamsJ.end());
   //Compute distance based on morton index of box
-  int64_t boxSize = std::min(ni, nj);
+  int64_t boxSize = std::min(n_rows, n_cols);
   int64_t npartitions = x[0].size()/boxSize;
   int64_t level = (int64_t)log2((double)npartitions);
   std::vector<int64_t> indexI(x.size(), 0), indexJ(x.size(), 0);
   for(size_t k=0; k<x.size(); k++) {
-    indexI[k] = i_begin/boxSize;
-    indexJ[k] = j_begin/boxSize;
+    indexI[k] = row_start/boxSize;
+    indexJ[k] = col_start/boxSize;
   }
-  double dist = std::abs((double)getMortonIndex(indexI, level) - (double)getMortonIndex(indexJ, level));
+  double dist = std::abs(
+    getMortonIndex(indexI, level)
+    - getMortonIndex(indexJ, level)
+  );
   return (std::max(diamI, diamJ) <= (admis * dist));
 }
 

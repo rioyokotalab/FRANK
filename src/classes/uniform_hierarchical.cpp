@@ -72,16 +72,16 @@ UniformHierarchical::UniformHierarchical(NodeProxy&& A) {
 }
 
 UniformHierarchical::UniformHierarchical(
-  int64_t ni_level, int64_t nj_level
-) : Hierarchical(ni_level, nj_level) {
-  col_basis.resize(ni_level);
-  row_basis.resize(nj_level);
+  int64_t n_row_blocks, int64_t n_col_blocks
+) : Hierarchical(n_row_blocks, n_col_blocks) {
+  col_basis.resize(n_row_blocks);
+  row_basis.resize(n_col_blocks);
 }
 
 Dense UniformHierarchical::make_block_row(
   const ClusterTree& node,
   void (*func)(
-    Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
+    Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
   ),
   std::vector<double>& x,
   int64_t admis
@@ -96,12 +96,11 @@ Dense UniformHierarchical::make_block_row(
     }
   }
   Dense block_row(node.dim[0], n_cols);
-  int64_t col_begin = 0;
+  int64_t col_start = 0;
   for (const ClusterTree& block : admissible_blocks) {
-    Dense part(
-      ClusterTree(block.dim[0], block.dim[1], 0, col_begin), block_row);
+    Dense part(block.dim[0], block.dim[1], 0, col_start, block_row);
     func(part, x, block.start[0], block.start[1]);
-    col_begin += block.dim[1];
+    col_start += block.dim[1];
   }
   return block_row;
 }
@@ -109,7 +108,7 @@ Dense UniformHierarchical::make_block_row(
 Dense UniformHierarchical::make_block_col(
   const ClusterTree& node,
   void (*func)(
-    Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
+    Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
   ),
   std::vector<double>& x,
   int64_t admis
@@ -124,12 +123,11 @@ Dense UniformHierarchical::make_block_col(
     }
   }
   Dense block_col(n_rows, node.dim[1]);
-  int64_t row_begin = 0;
+  int64_t row_start = 0;
   for (const ClusterTree& block : admissible_blocks) {
-    Dense part(
-      ClusterTree(block.dim[0], block.dim[1], row_begin, 0), block_col);
+    Dense part(block.dim[0], block.dim[1], row_start, 0, block_col);
     func(part, x, block.start[0], block.start[1]);
-    row_begin += block.dim[0];
+    row_start += block.dim[0];
   }
   return block_col;
 }
@@ -137,7 +135,7 @@ Dense UniformHierarchical::make_block_col(
 LowRankShared UniformHierarchical::construct_shared_block_id(
   const ClusterTree& node,
   void (*func)(
-    Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
+    Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
   ),
   std::vector<double>& x,
   std::vector<std::vector<int64_t>>& selected_rows,
@@ -162,7 +160,7 @@ LowRankShared UniformHierarchical::construct_shared_block_id(
       col_block, rank+5, rank);
     row_basis[node.rel_pos[1]] = std::make_shared<Dense>(std::move(V));
   }
-  Dense D(node, func, x);
+  Dense D(func, x, node.dim[0], node.dim[1], node.start[0], node.start[1]);
   Dense S(rank, rank);
   for (int64_t ic=0; ic<rank; ++ic) {
     for (int64_t jc=0; jc<rank; ++jc) {
@@ -179,7 +177,7 @@ LowRankShared UniformHierarchical::construct_shared_block_id(
 LowRankShared UniformHierarchical::construct_shared_block_svd(
   const ClusterTree& node,
   void (*func)(
-    Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
+    Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
   ),
   std::vector<double>& x,
   int64_t rank,
@@ -195,7 +193,7 @@ LowRankShared UniformHierarchical::construct_shared_block_svd(
     row_basis[node.rel_pos[1]] = std::make_shared<Dense>(LowRank(
       col_block, rank).V());
   }
-  Dense D(node, func, x);
+  Dense D(func, x, node.dim[0], node.dim[1], node.start[0], node.start[1]);
   Dense S = gemm(
     gemm(*col_basis[node.rel_pos[0]], D, 1, true, false),
     *row_basis[node.rel_pos[1]],
@@ -210,21 +208,21 @@ LowRankShared UniformHierarchical::construct_shared_block_svd(
 UniformHierarchical::UniformHierarchical(
   ClusterTree& node,
   void (*func)(
-    Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
+    Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
   ),
   std::vector<double>& x,
   int64_t rank,
   int64_t nleaf,
   int64_t admis,
-  int64_t ni_level, int64_t nj_level,
+  int64_t n_row_blocks, int64_t n_col_blocks,
   bool use_svd
-) : Hierarchical(ni_level, nj_level) {
+) : Hierarchical(n_row_blocks, n_col_blocks) {
   // TODO All dense UH not allowed for now!
   assert(dim[0] > admis + 1 && dim[1] > admis+1);
   // TODO Only single leve allowed for now. Constructions and some operations
   // work for more levels, but LU does not yet (LR+=LR issue).
-  assert(node.dim[0]/ni_level <= nleaf);
-  assert(node.dim[1]/nj_level <= nleaf);
+  assert(node.dim[0]/n_row_blocks <= nleaf);
+  assert(node.dim[1]/n_col_blocks <= nleaf);
   assert(rank <= nleaf);
   // TODO For now only admis 0! gemm(D, LR, LR) and gemm(LR, D, LR) needed for
   // more.
@@ -234,21 +232,22 @@ UniformHierarchical::UniformHierarchical(
   std::vector<std::vector<int64_t>> selected_rows(dim[0]);
   std::vector<std::vector<int64_t>> selected_cols(dim[1]);
   node.split(dim[0], dim[1]);
-  for (ClusterTree& child_node : node) {
-    if (is_admissible(child_node, admis)) {
+  for (ClusterTree& child : node) {
+    if (is_admissible(child, admis)) {
       if (use_svd) {
-        (*this)[child_node] = construct_shared_block_svd(
-          child_node, func, x, rank, admis);
+        (*this)[child] = construct_shared_block_svd(
+          child, func, x, rank, admis);
       } else {
-        (*this)[child_node] = construct_shared_block_id(
-          child_node, func, x, selected_rows, selected_cols, rank, admis);
+        (*this)[child] = construct_shared_block_id(
+          child, func, x, selected_rows, selected_cols, rank, admis);
       }
     } else {
-      if (is_leaf(child_node, nleaf)) {
-        (*this)[child_node] = Dense(child_node, func, x);
+      if (is_leaf(child, nleaf)) {
+        (*this)[child] = Dense(
+          func, x, child.dim[0], child.dim[1], child.start[0], child.start[1]);
       } else {
-        (*this)[child_node] = UniformHierarchical(
-          child_node, func, x, rank, nleaf, admis, ni_level, nj_level);
+        (*this)[child] = UniformHierarchical(
+          child, func, x, rank, nleaf, admis, n_row_blocks, n_col_blocks);
       }
     }
   }
@@ -256,20 +255,20 @@ UniformHierarchical::UniformHierarchical(
 
 UniformHierarchical::UniformHierarchical(
   void (*func)(
-    Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
+    Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
   ),
   std::vector<double>& x,
-  int64_t ni, int64_t nj,
+  int64_t n_rows, int64_t n_cols,
   int64_t rank,
   int64_t nleaf,
   int64_t admis,
-  int64_t ni_level, int64_t nj_level,
+  int64_t n_row_blocks, int64_t n_col_blocks,
   bool use_svd,
-  int64_t i_begin, int64_t j_begin
+  int64_t row_start, int64_t col_start
 ) {
-  ClusterTree node(ni, nj, i_begin, j_begin);
+  ClusterTree node(n_rows, n_cols, row_start, col_start);
   *this = UniformHierarchical(
-    node, func, x, rank, nleaf, admis, ni_level, nj_level, use_svd);
+    node, func, x, rank, nleaf, admis, n_row_blocks, n_col_blocks, use_svd);
 }
 
 // declare_method(bool, is_LowRankShared, (virtual_<const Node&>));

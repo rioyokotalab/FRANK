@@ -14,24 +14,24 @@
 namespace hicma
 {
 
-// TODO Remove awareness of ClusterTree?
-class ClusterTree;
 class NodeProxy;
 
 class Dense : public Node {
+ public:
+  std::array<int64_t, 2> dim = {0, 0};
+  int64_t stride = 0;
  private:
   std::vector<double> data;
   double* data_ptr = nullptr;
   const double* const_data_ptr = nullptr;
   bool owning = true;
+
  protected:
   virtual double* get_pointer();
 
   virtual const double* get_pointer() const;
- public:
-  std::array<int64_t, 2> dim = {0, 0};
-  int64_t stride = 0;
 
+ public:
   // Special member functions
   Dense() = default;
 
@@ -56,38 +56,36 @@ class Dense : public Node {
   explicit Dense(const Node& A);
 
   // Additional constructors
-  Dense(int64_t m, int64_t n=1);
-
-  Dense(
-    const ClusterTree& node,
-    void (*func)(
-      Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin),
-    std::vector<double>& x
-  );
+  Dense(int64_t n_rows, int64_t n_cols=1);
 
   Dense(
     void (*func)(
-      Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin),
+      Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start),
     std::vector<double>& x,
-    int64_t ni, int64_t nj=1,
-    int64_t i_begin=0, int64_t j_begin=0
+    int64_t n_rows, int64_t n_cols=1,
+    int64_t row_start=0, int64_t col_start=0
   );
 
   Dense(
     void (*func)(
-      std::vector<double>& data,
+      Dense& A,
       std::vector<std::vector<double>>& x,
-      int64_t ni, int64_t nj,
-      int64_t i_begin, int64_t j_begin
+      int64_t row_start, int64_t col_start
     ),
     std::vector<std::vector<double>>& x,
-    const int64_t ni, const int64_t nj,
-    const int64_t i_begin=0, const int64_t j_begin=0
+    const int64_t n_rows, const int64_t n_cols,
+    const int64_t row_start=0, const int64_t col_start=0
   );
 
-  Dense(const ClusterTree& node, Dense& A);
+  Dense(
+    int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start,
+    Dense& A
+  );
 
-  Dense(const ClusterTree& node, const Dense& A);
+  Dense(
+    int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start,
+    const Dense& A
+  );
 
   // Additional operators
   const Dense& operator=(const double a);
@@ -95,10 +93,6 @@ class Dense : public Node {
   double& operator[](int64_t i);
 
   const double& operator[](int64_t i) const;
-
-  double& operator[](std::array<int64_t, 2> pos);
-
-  const double& operator[](std::array<int64_t, 2> pos) const;
 
   double& operator()(int64_t i, int64_t j);
 
@@ -118,7 +112,9 @@ class Dense : public Node {
   void transpose();
 
   // Get part of other Dense
-  Dense get_part(const ClusterTree& node) const;
+  Dense get_part(
+    int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start
+  ) const;
 };
 
 register_class(Dense, Node)

@@ -25,7 +25,7 @@ class UniformHierarchical : public Hierarchical {
   Dense make_block_row(
     const ClusterTree& node,
     void (*func)(
-      Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
+      Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
     ),
     std::vector<double>& x,
     int64_t admis
@@ -34,7 +34,7 @@ class UniformHierarchical : public Hierarchical {
   Dense make_block_col(
     const ClusterTree& node,
     void (*func)(
-      Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
+      Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
     ),
     std::vector<double>& x,
     int64_t admis
@@ -43,7 +43,7 @@ class UniformHierarchical : public Hierarchical {
   LowRankShared construct_shared_block_id(
     const ClusterTree& node,
     void (*func)(
-      Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
+      Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
     ),
     std::vector<double>& x,
     std::vector<std::vector<int64_t>>& selected_rows,
@@ -55,7 +55,7 @@ class UniformHierarchical : public Hierarchical {
   LowRankShared construct_shared_block_svd(
     const ClusterTree& node,
     void (*func)(
-      Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
+      Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
     ),
     std::vector<double>& x,
     int64_t rank,
@@ -86,33 +86,33 @@ class UniformHierarchical : public Hierarchical {
   UniformHierarchical(NodeProxy&&);
 
   // Additional constructors
-  UniformHierarchical(int64_t ni_level, int64_t nj_level);
+  UniformHierarchical(int64_t n_row_blocks, int64_t n_col_blocks);
 
   UniformHierarchical(
     ClusterTree& node,
     void (*func)(
-      Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
+      Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
     ),
     std::vector<double>& x,
     int64_t rank,
     int64_t nleaf,
     int64_t admis=1,
-    int64_t ni_level=2, int64_t nj_level=2,
+    int64_t n_row_blocks=2, int64_t n_col_blocks=2,
     bool use_svd=false
   );
 
   UniformHierarchical(
     void (*func)(
-      Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
+      Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
     ),
     std::vector<double>& x,
-    int64_t ni, int64_t nj,
+    int64_t n_row, int64_t n_cols,
     int64_t rank,
     int64_t nleaf,
     int64_t admis=1,
-    int64_t ni_level=2, int64_t nj_level=2,
+    int64_t n_row_blocks=2, int64_t n_col_blocks=2,
     bool use_svd=false,
-    int64_t i_begin=0, int64_t j_begin=0
+    int64_t row_start=0, int64_t col_start=0
   );
 
   // Additional indexing methods

@@ -5,7 +5,6 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/node.h"
 #include "hicma/classes/node_proxy.h"
-#include "hicma/classes/intitialization_helpers/cluster_tree.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/misc/get_dim.h"
 #include "hicma/util/omm_error_handler.h"
@@ -26,9 +25,8 @@ namespace hicma
 {
 
 Dense::Dense(const Dense& A)
-: Node(A),
-  data_ptr(nullptr), const_data_ptr(nullptr), owning(true),
-  dim{A.dim[0], A.dim[1]}, stride(A.dim[1])
+: Node(A), dim{A.dim[0], A.dim[1]}, stride(A.dim[1]),
+  data_ptr(nullptr), const_data_ptr(nullptr), owning(true)
 {
   timing::start("Dense cctor");
   if (A.owning) {
@@ -47,11 +45,11 @@ Dense::Dense(const Dense& A)
 Dense& Dense::operator=(const Dense& A) {
   timing::start("Dense copy assignment");
   Node::operator=(A);
+  dim = A.dim;
+  stride = A.stride;
   data_ptr = nullptr;
   const_data_ptr = nullptr;
   owning = true;
-  dim = A.dim;
-  stride = A.stride;
   if (A.owning) {
     data = A.data;
   } else {
@@ -77,11 +75,10 @@ std::unique_ptr<Node> Dense::move_clone() {
 const char* Dense::type() const { return "Dense"; }
 
 Dense::Dense(const Node& A)
-: Node(A),
-  data_ptr(nullptr), const_data_ptr(nullptr), owning(true),
-  dim{get_n_rows(A), get_n_cols(A)}, stride(dim[1])
+: Node(A), dim{get_n_rows(A), get_n_cols(A)}, stride(dim[1]),
+  data(dim[0]*dim[1], 0),
+  data_ptr(nullptr), const_data_ptr(nullptr), owning(true)
 {
-  data.resize(dim[0]*dim[1], 0);
   fill_dense_from(A, *this);
 }
 
@@ -117,10 +114,9 @@ define_method(void, fill_dense_from, (const Node& A, Node& B)) {
   abort();
 }
 
-Dense::Dense(int64_t m, int64_t n)
-: Node(),
-  data_ptr(nullptr), const_data_ptr(nullptr), owning(true),
-  dim{m, n}, stride(n)
+Dense::Dense(int64_t n_rows, int64_t n_cols)
+: dim{n_rows, n_cols}, stride(dim[1]), data(dim[0]*dim[1]),
+  data_ptr(nullptr), const_data_ptr(nullptr), owning(true)
 {
   timing::start("Dense alloc");
   data.resize(dim[0]*dim[1], 0);
@@ -128,45 +124,51 @@ Dense::Dense(int64_t m, int64_t n)
 }
 
 Dense::Dense(
-  const ClusterTree& node,
   void (*func)(
-    Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
+    Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
   ),
-  std::vector<double>& x
-) : Node(),
-  data_ptr(nullptr), const_data_ptr(nullptr), owning(true),
-  dim{node.dim}, stride(dim[1])
-{
-  // TODO This function is still aware of hierarchical matrix idea. Change?
-  // Related to making helper class for construction.
-  data.resize(dim[0]*dim[1]);
-  func(*this, x, node.start[0], node.start[1]);
+  std::vector<double>& x,
+  int64_t n_rows, int64_t n_cols,
+  int64_t row_start, int64_t col_start
+) : Dense(n_rows, n_cols) {
+  func(*this, x, row_start, col_start);
 }
 
 Dense::Dense(
   void (*func)(
-    Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
-  ),
-  std::vector<double>& x,
-  int64_t ni, int64_t nj,
-  int64_t i_begin, int64_t j_begin
-) : Dense(ClusterTree(ni, nj, i_begin, j_begin), func, x) {}
-
-Dense::Dense(
-  void (*func)(
-    std::vector<double>& data,
+    Dense& A,
     std::vector<std::vector<double>>& x,
-    int64_t ni, int64_t nj,
     int64_t i_begin, int64_t j_begin
   ),
   std::vector<std::vector<double>>& x,
-  const int64_t ni, const int64_t nj,
+  const int64_t n_rows, const int64_t n_cols,
   const int64_t i_begin, const int64_t j_begin
 ) :
   data_ptr(nullptr), const_data_ptr(nullptr), owning(true),
-  dim{ni, nj}, stride(dim[1]), data(dim[0]*dim[1])
+  dim{n_rows, n_cols}, stride(dim[1]), data(dim[0]*dim[1])
 {
-  func(data, x, ni, nj, i_begin, j_begin);
+  func(*this, x, i_begin, j_begin);
+}
+
+Dense::Dense(
+  int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start,
+  Dense& A
+) : dim{n_rows, n_cols}, stride(A.stride), owning(false) {
+  assert(row_start+dim[0] <= A.dim[0]);
+  assert(col_start+dim[1] <= A.dim[1]);
+  data_ptr = &A(row_start, col_start);
+  const_data_ptr = &A(row_start, col_start);
+}
+
+
+Dense::Dense(
+  int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start,
+  const Dense& A
+) : dim{n_rows, n_cols}, stride(A.stride), owning(false) {
+  assert(row_start+dim[0] <= A.dim[0]);
+  assert(col_start+dim[1] <= A.dim[1]);
+  data_ptr = nullptr;
+  const_data_ptr = &A(row_start, col_start);
 }
 
 const Dense& Dense::operator=(const double a) {
@@ -176,25 +178,6 @@ const Dense& Dense::operator=(const double a) {
     }
   }
   return *this;
-}
-
-Dense::Dense(const ClusterTree& node, Dense& A)
-: Node(), owning(false), dim(node.dim), stride(A.stride)
-{
-  assert(node.start[0]+node.dim[0] <= A.dim[0]);
-  assert(node.start[1]+node.dim[1] <= A.dim[1]);
-  data_ptr = &A[node.start];
-  const_data_ptr = &A[node.start];
-}
-
-
-Dense::Dense(const ClusterTree& node, const Dense& A)
-: Node(), owning(false), dim(node.dim), stride(A.stride)
-{
-  assert(node.start[0]+node.dim[0] <= A.dim[0]);
-  assert(node.start[1]+node.dim[1] <= A.dim[1]);
-  data_ptr = nullptr;
-  const_data_ptr = &A[node.start];
 }
 
 double* Dense::get_pointer() {
@@ -239,14 +222,6 @@ const double& Dense::operator[](int64_t i) const {
     assert(i < dim[0]);
     return get_pointer()[i*stride];
   }
-}
-
-double& Dense::operator[](std::array<int64_t, 2> pos) {
-  return (*this)(pos[0], pos[1]);
-}
-
-const double& Dense::operator[](std::array<int64_t, 2> pos) const {
-  return (*this)(pos[0], pos[1]);
 }
 
 double& Dense::operator()(int64_t i, int64_t j) {
@@ -313,13 +288,15 @@ void Dense::transpose() {
   }
 }
 
-Dense Dense::get_part(const ClusterTree& node) const {
-  assert(node.start[0]+node.dim[0] <= dim[0]);
-  assert(node.start[1]+node.dim[1] <= dim[1]);
-  Dense A(node.dim[0], node.dim[1]);
+Dense Dense::get_part(
+  int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start
+) const {
+  assert(row_start+n_rows <= dim[0]);
+  assert(col_start+n_cols <= dim[1]);
+  Dense A(n_rows, n_cols);
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {
-      A(i, j) = (*this)(i+node.start[0], j+node.start[1]);
+      A(i, j) = (*this)(row_start+i, col_start+j);
     }
   }
   return A;

@@ -31,8 +31,8 @@ std::unique_ptr<Node> NoCopySplit::move_clone() {
 
 const char* NoCopySplit::type() const { return "NoCopySplit"; }
 
-NoCopySplit::NoCopySplit(Node& A, int64_t ni_level, int64_t nj_level)
-: Hierarchical(ni_level, nj_level) {
+NoCopySplit::NoCopySplit(Node& A, int64_t n_row_blocks, int64_t n_col_blocks)
+: Hierarchical(n_row_blocks, n_col_blocks) {
   ClusterTree node(get_n_rows(A), get_n_cols(A));
   node.split(dim[0], dim[1]);
   for (ClusterTree& child_node : node) {
@@ -52,7 +52,7 @@ NoCopySplit::NoCopySplit(Node& A, const Hierarchical& like)
 }
 
 define_method(NodeProxy, make_view, (const ClusterTree& node, Dense& A)) {
-  return Dense(node, A);
+  return Dense(node.dim[0], node.dim[1], node.start[0], node.start[1], A);
 }
 
 define_method(
@@ -62,8 +62,9 @@ define_method(
   abort();
 }
 
-NoCopySplit::NoCopySplit(const Node& A, int64_t ni_level, int64_t nj_level)
-: Hierarchical(ni_level, nj_level) {
+NoCopySplit::NoCopySplit(
+  const Node& A, int64_t n_row_blocks, int64_t n_col_blocks
+) : Hierarchical(n_row_blocks, n_col_blocks) {
   ClusterTree node(get_n_rows(A), get_n_cols(A));
   node.split(dim[0], dim[1]);
   for (ClusterTree& child_node : node) {
@@ -83,13 +84,13 @@ NoCopySplit::NoCopySplit(const Node& A, const Hierarchical& like)
 }
 
 define_method(NodeProxy, make_view, (const ClusterTree& node, const Dense& A)) {
-  return Dense(node, A);
+  return Dense(node.dim[0], node.dim[1], node.start[0], node.start[1], A);
 }
 
 define_method(
   NodeProxy, make_view, (const ClusterTree& node, const LowRank& A)
 ) {
-  return LowRank(node, A);
+  return LowRank(node.dim[0], node.dim[1], node.start[0], node.start[1], A);
 }
 
 define_method(

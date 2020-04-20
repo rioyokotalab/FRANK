@@ -14,8 +14,6 @@
 namespace hicma
 {
 
-class ClusterTree;
-
 class LowRank : public Node {
  private:
   Dense _U, _S, _V;
@@ -54,17 +52,18 @@ class LowRank : public Node {
   virtual const Dense& V() const;
 
   // Additional constructors
-  LowRank(int64_t m, int64_t n, int64_t k);
+  LowRank(int64_t n_rows, int64_t n_cols, int64_t k);
 
   LowRank(const Dense& A, int64_t k);
 
   LowRank(
-    const ClusterTree& node,
     void (*func)(
-      Dense& A, std::vector<double>& x, int64_t i_begin, int64_t j_begin
+      Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
     ),
     std::vector<double>& x,
-    int64_t k
+    int64_t k,
+    int64_t n_rows, int64_t n_cols=1,
+    int64_t row_start=0, int64_t col_start=0
   );
 
   void mergeU(const LowRank& A, const LowRank& B);
@@ -73,12 +72,17 @@ class LowRank : public Node {
 
   void mergeV(const LowRank& A, const LowRank& B);
 
-  // Utility methods
-  LowRank get_part(const ClusterTree& node) const;
-
-  LowRank(const ClusterTree& node, const LowRank& A);
-
   LowRank(const Dense& U, const Dense& S, const Dense& V);
+
+  LowRank(
+    int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start,
+    const LowRank& A
+  );
+
+  // Utility methods
+  LowRank get_part(
+    int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start
+  ) const;
 };
 
 register_class(LowRank, Node)
