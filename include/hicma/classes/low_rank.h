@@ -56,22 +56,6 @@ class LowRank : public Node {
 
   LowRank(const Dense& A, int64_t k);
 
-  LowRank(
-    void (*func)(
-      Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
-    ),
-    std::vector<double>& x,
-    int64_t k,
-    int64_t n_rows, int64_t n_cols=1,
-    int64_t row_start=0, int64_t col_start=0
-  );
-
-  void mergeU(const LowRank& A, const LowRank& B);
-
-  void mergeS(const LowRank& A, const LowRank& B);
-
-  void mergeV(const LowRank& A, const LowRank& B);
-
   LowRank(const Dense& U, const Dense& S, const Dense& V);
 
   LowRank(
@@ -80,6 +64,12 @@ class LowRank : public Node {
   );
 
   // Utility methods
+  void mergeU(const LowRank& A, const LowRank& B);
+
+  void mergeS(const LowRank& A, const LowRank& B);
+
+  void mergeV(const LowRank& A, const LowRank& B);
+
   LowRank get_part(
     int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start
   ) const;

@@ -16,6 +16,7 @@ namespace hicma
 class Dense;
 class LowRankShared;
 class ClusterTree;
+class MatrixInitializer;
 class NodeProxy;
 
 class UniformHierarchical : public Hierarchical {
@@ -24,28 +25,19 @@ class UniformHierarchical : public Hierarchical {
 
   Dense make_block_row(
     const ClusterTree& node,
-    void (*func)(
-      Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
-    ),
-    std::vector<double>& x,
+    const MatrixInitializer& initer,
     int64_t admis
   );
 
   Dense make_block_col(
     const ClusterTree& node,
-    void (*func)(
-      Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
-    ),
-    std::vector<double>& x,
+    const MatrixInitializer& initer,
     int64_t admis
   );
 
   LowRankShared construct_shared_block_id(
     const ClusterTree& node,
-    void (*func)(
-      Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
-    ),
-    std::vector<double>& x,
+    const MatrixInitializer& initer,
     std::vector<std::vector<int64_t>>& selected_rows,
     std::vector<std::vector<int64_t>>& selected_cols,
     int64_t rank,
@@ -54,10 +46,7 @@ class UniformHierarchical : public Hierarchical {
 
   LowRankShared construct_shared_block_svd(
     const ClusterTree& node,
-    void (*func)(
-      Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
-    ),
-    std::vector<double>& x,
+    const MatrixInitializer& initer,
     int64_t rank,
     int64_t admis
   );
@@ -90,10 +79,7 @@ class UniformHierarchical : public Hierarchical {
 
   UniformHierarchical(
     const ClusterTree& node,
-    void (*func)(
-      Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
-    ),
-    std::vector<double>& x,
+    const MatrixInitializer& initer,
     int64_t rank,
     int64_t admis=1,
     bool use_svd=false

@@ -7,6 +7,7 @@ add_library(classes OBJECT
     no_copy_split.cpp
     uniform_hierarchical.cpp
     initialization_helpers/cluster_tree.cpp
+    initialization_helpers/matrix_initializer.cpp
 )
 target_include_directories(classes
 PUBLIC

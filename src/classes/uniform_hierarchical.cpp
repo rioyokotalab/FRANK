@@ -7,6 +7,7 @@
 #include "hicma/classes/node.h"
 #include "hicma/classes/node_proxy.h"
 #include "hicma/classes/intitialization_helpers/cluster_tree.h"
+#include "hicma/classes/intitialization_helpers/matrix_initializer.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/randomized_factorizations.h"
 #include "hicma/operations/misc/get_dim.h"
@@ -80,10 +81,7 @@ UniformHierarchical::UniformHierarchical(
 
 Dense UniformHierarchical::make_block_row(
   const ClusterTree& node,
-  void (*func)(
-    Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
-  ),
-  std::vector<double>& x,
+  const MatrixInitializer& initer,
   int64_t admis
 ) {
   // Create row block without admissible blocks
@@ -99,7 +97,7 @@ Dense UniformHierarchical::make_block_row(
   int64_t col_start = 0;
   for (const ClusterTree& block : admissible_blocks) {
     Dense part(block.dim[0], block.dim[1], 0, col_start, block_row);
-    func(part, x, block.start[0], block.start[1]);
+    initer.fill_dense_representation(part, block);
     col_start += block.dim[1];
   }
   return block_row;
@@ -107,10 +105,7 @@ Dense UniformHierarchical::make_block_row(
 
 Dense UniformHierarchical::make_block_col(
   const ClusterTree& node,
-  void (*func)(
-    Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
-  ),
-  std::vector<double>& x,
+  const MatrixInitializer& initer,
   int64_t admis
 ) {
   // Create col block without admissible blocks
@@ -126,7 +121,7 @@ Dense UniformHierarchical::make_block_col(
   int64_t row_start = 0;
   for (const ClusterTree& block : admissible_blocks) {
     Dense part(block.dim[0], block.dim[1], row_start, 0, block_col);
-    func(part, x, block.start[0], block.start[1]);
+    initer.fill_dense_representation(part, block);
     row_start += block.dim[0];
   }
   return block_col;
@@ -134,17 +129,14 @@ Dense UniformHierarchical::make_block_col(
 
 LowRankShared UniformHierarchical::construct_shared_block_id(
   const ClusterTree& node,
-  void (*func)(
-    Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
-  ),
-  std::vector<double>& x,
+  const MatrixInitializer& initer,
   std::vector<std::vector<int64_t>>& selected_rows,
   std::vector<std::vector<int64_t>>& selected_cols,
   int64_t rank,
   int64_t admis
 ) {
   if (col_basis[node.rel_pos[0]].get() == nullptr) {
-    Dense row_block = make_block_row(node, func, x, admis);
+    Dense row_block = make_block_row(node, initer, admis);
     // Construct U using the ID and remember the selected rows
     Dense Ut;
     std::tie(Ut, selected_rows[node.rel_pos[0]]) = one_sided_rid(
@@ -153,14 +145,14 @@ LowRankShared UniformHierarchical::construct_shared_block_id(
     col_basis[node.rel_pos[0]] = std::make_shared<Dense>(std::move(Ut));
   }
   if (row_basis[node.rel_pos[1]].get() == nullptr) {
-    Dense col_block = make_block_col(node, func, x, admis);
+    Dense col_block = make_block_col(node, initer, admis);
     // Construct V using the ID and remember the selected cols
     Dense V;
     std::tie(V, selected_cols[node.rel_pos[1]]) = one_sided_rid(
       col_block, rank+5, rank);
     row_basis[node.rel_pos[1]] = std::make_shared<Dense>(std::move(V));
   }
-  Dense D(func, x, node.dim[0], node.dim[1], node.start[0], node.start[1]);
+  Dense D = initer.get_dense_representation(node);
   Dense S(rank, rank);
   for (int64_t ic=0; ic<rank; ++ic) {
     for (int64_t jc=0; jc<rank; ++jc) {
@@ -176,24 +168,21 @@ LowRankShared UniformHierarchical::construct_shared_block_id(
 
 LowRankShared UniformHierarchical::construct_shared_block_svd(
   const ClusterTree& node,
-  void (*func)(
-    Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
-  ),
-  std::vector<double>& x,
+  const MatrixInitializer& initer,
   int64_t rank,
   int64_t admis
 ) {
   if (col_basis[node.rel_pos[0]].get() == nullptr) {
-    Dense row_block = make_block_row(node, func, x, admis);
+    Dense row_block = make_block_row(node, initer, admis);
     col_basis[node.rel_pos[0]] = std::make_shared<Dense>(
       LowRank(row_block, rank).U());
   }
   if (row_basis[node.rel_pos[1]].get() == nullptr) {
-    Dense col_block = make_block_col(node, func, x, admis);
+    Dense col_block = make_block_col(node, initer, admis);
     row_basis[node.rel_pos[1]] = std::make_shared<Dense>(LowRank(
       col_block, rank).V());
   }
-  Dense D(func, x, node.dim[0], node.dim[1], node.start[0], node.start[1]);
+  Dense D = initer.get_dense_representation(node);
   Dense S = gemm(
     gemm(*col_basis[node.rel_pos[0]], D, 1, true, false),
     *row_basis[node.rel_pos[1]],
@@ -207,10 +196,7 @@ LowRankShared UniformHierarchical::construct_shared_block_svd(
 
 UniformHierarchical::UniformHierarchical(
   const ClusterTree& node,
-  void (*func)(
-    Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
-  ),
-  std::vector<double>& x,
+  const MatrixInitializer& initer,
   int64_t rank,
   int64_t admis,
   bool use_svd
@@ -233,17 +219,16 @@ UniformHierarchical::UniformHierarchical(
     if (is_admissible(child, admis)) {
       if (use_svd) {
         (*this)[child] = construct_shared_block_svd(
-          child, func, x, rank, admis);
+          child, initer, rank, admis);
       } else {
         (*this)[child] = construct_shared_block_id(
-          child, func, x, selected_rows, selected_cols, rank, admis);
+          child, initer, selected_rows, selected_cols, rank, admis);
       }
     } else {
       if (child.is_leaf()) {
-        (*this)[child] = Dense(
-          func, x, child.dim[0], child.dim[1], child.start[0], child.start[1]);
+        (*this)[child] = initer.get_dense_representation(child);
       } else {
-        (*this)[child] = UniformHierarchical(child, func, x, rank, admis);
+        (*this)[child] = UniformHierarchical(child, initer, rank, admis);
       }
     }
   }
@@ -264,7 +249,8 @@ UniformHierarchical::UniformHierarchical(
 ) : UniformHierarchical(
     ClusterTree(
       n_rows, n_cols, n_row_blocks, n_col_blocks, row_start, col_start, nleaf),
-    func, x, rank, admis, use_svd
+    MatrixInitializer(x, func),
+    rank, admis, use_svd
   )
 {}
 

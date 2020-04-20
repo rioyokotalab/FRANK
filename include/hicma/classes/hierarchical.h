@@ -18,6 +18,7 @@ namespace hicma
 
 class Dense;
 class ClusterTree;
+class MatrixInitializer;
 
 class Hierarchical : public Node {
  public:
@@ -56,10 +57,7 @@ class Hierarchical : public Node {
 
   Hierarchical(
     const ClusterTree& node,
-    void (*func)(
-      Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
-    ),
-    std::vector<double>& x,
+    const MatrixInitializer& initer,
     int64_t rank,
     int64_t admis
   );

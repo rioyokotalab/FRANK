@@ -6,6 +6,7 @@
 #include "hicma/classes/node.h"
 #include "hicma/classes/node_proxy.h"
 #include "hicma/classes/intitialization_helpers/cluster_tree.h"
+#include "hicma/classes/intitialization_helpers/matrix_initializer.h"
 #include "hicma/functions.h"
 #include "hicma/gpu_batch/batch.h"
 #include "hicma/operations/BLAS.h"
@@ -97,25 +98,18 @@ Hierarchical::Hierarchical(int64_t n_row_blocks, int64_t n_col_blocks)
 
 Hierarchical::Hierarchical(
   const ClusterTree& node,
-  void (*func)(
-    Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
-  ),
-  std::vector<double>& x,
+  const MatrixInitializer& initer,
   int64_t rank,
   int64_t admis
 ) : dim(node.block_dim), data(dim[0]*dim[1]) {
   for (const ClusterTree& child : node) {
     if (is_admissible(child, admis)) {
-      (*this)[child] = LowRank(
-        func, x, rank,
-        child.dim[0], child.dim[1], child.start[0], child.start[1]
-      );
+      (*this)[child] = LowRank(initer.get_dense_representation(child), rank);
     } else {
       if (child.is_leaf()) {
-        (*this)[child] = Dense(
-          func, x, child.dim[0], child.dim[1], child.start[0], child.start[1]);
+        (*this)[child] = initer.get_dense_representation(child);
       } else {
-        (*this)[child] = Hierarchical(child, func, x, rank, admis);
+        (*this)[child] = Hierarchical(child, initer, rank, admis);
       }
     }
   }
@@ -136,7 +130,8 @@ Hierarchical::Hierarchical(
       ClusterTree(
         n_rows, n_cols, n_row_blocks, n_col_blocks, row_start, col_start, nleaf
       ),
-      func, x, rank, admis
+      MatrixInitializer(x, func),
+      rank, admis
     )
 {}
 

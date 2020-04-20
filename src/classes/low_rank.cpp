@@ -101,16 +101,6 @@ void LowRank::mergeV(const LowRank& A, const LowRank& B) {
 }
 
 LowRank::LowRank(
-  void (*func)(
-    Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
-  ),
-  std::vector<double>& x,
-  int64_t k,
-  int64_t n_rows, int64_t n_cols,
-  int64_t row_start, int64_t col_start
-) : LowRank(Dense(func, x, n_rows, n_cols, row_start, col_start), k) {}
-
-LowRank::LowRank(
   const Dense& U, const Dense& S, const Dense& V
 ) : _U(U.dim[0], U.dim[1], 0, 0, U),
     _S(S.dim[0], S.dim[1], 0, 0, S),
