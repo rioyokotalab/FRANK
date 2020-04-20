@@ -14,7 +14,7 @@ namespace hicma
 {
 
 void zeros(
-  Dense& A, [[maybe_unused]] std::vector<double>& x,
+  Dense& A, [[maybe_unused]] const std::vector<double>& x,
   [[maybe_unused]] int64_t row_start, [[maybe_unused]] int64_t col_start
 ) {
   for (int64_t i=0; i<A.dim[0]; i++) {
@@ -25,7 +25,7 @@ void zeros(
 }
 
 void identity(
-  Dense& A, [[maybe_unused]] std::vector<double>& x,
+  Dense& A, [[maybe_unused]] const std::vector<double>& x,
   int64_t row_start, int64_t col_start
 ) {
   for (int64_t i=0; i<A.dim[0]; i++) {
@@ -36,7 +36,7 @@ void identity(
 }
 
 void random_normal(
-  Dense& A, [[maybe_unused]] std::vector<double>& x,
+  Dense& A, [[maybe_unused]] const std::vector<double>& x,
   [[maybe_unused]] int64_t row_start, [[maybe_unused]] int64_t col_start
 ) {
   std::random_device rd;
@@ -52,7 +52,7 @@ void random_normal(
 }
 
 void random_uniform(
-  Dense& A, [[maybe_unused]] std::vector<double>& x,
+  Dense& A, [[maybe_unused]] const std::vector<double>& x,
   [[maybe_unused]] int64_t row_start, [[maybe_unused]] int64_t col_start
 ) {
   std::random_device rd;
@@ -68,7 +68,7 @@ void random_uniform(
 }
 
 void arange(
-  Dense& A, [[maybe_unused]] std::vector<double>& x,
+  Dense& A, [[maybe_unused]] const std::vector<double>& x,
   [[maybe_unused]] int64_t row_start, [[maybe_unused]] int64_t col_start
 ) {
   for (int64_t i=0; i<A.dim[0]; i++) {
@@ -79,7 +79,7 @@ void arange(
 }
 
 void laplace1d(
-  Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
+  Dense& A, const std::vector<double>& x, int64_t row_start, int64_t col_start
 ) {
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {
@@ -91,7 +91,7 @@ void laplace1d(
 
 void cauchy2d(
   Dense& A,
-  std::vector<std::vector<double>>& x,
+  const std::vector<std::vector<double>>& x,
   int64_t row_start, int64_t col_start
 ) {
   for (int64_t i=0; i<A.dim[0]; i++) {
@@ -105,7 +105,7 @@ void cauchy2d(
 
 void laplacend(
   Dense& A,
-  std::vector<std::vector<double>>& x,
+  const std::vector<std::vector<double>>& x,
   int64_t row_start, int64_t col_start
 ) {
   for (int64_t i=0; i<A.dim[0]; i++) {
@@ -124,7 +124,7 @@ void laplacend(
 
 void helmholtznd(
   Dense& A,
-  std::vector<std::vector<double>>& x,
+  const std::vector<std::vector<double>>& x,
   int64_t row_start, int64_t col_start
 ) {
   for (int64_t i=0; i<A.dim[0]; i++) {
@@ -142,7 +142,7 @@ void helmholtznd(
 }
 
 bool is_admissible_nd(
-  std::vector<std::vector<double>>& x,
+  const std::vector<std::vector<double>>& x,
   int64_t n_rows, int64_t n_cols,
   int64_t row_start, int64_t col_start,
   double admis
@@ -165,7 +165,7 @@ bool is_admissible_nd(
 }
 
 bool is_admissible_nd_morton(
-  std::vector<std::vector<double>>& x,
+  const std::vector<std::vector<double>>& x,
   int64_t n_rows, int64_t n_cols,
   int64_t row_start, int64_t col_start,
   double admis

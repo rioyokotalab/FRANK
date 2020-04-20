@@ -13,10 +13,10 @@ class Dense;
 
 class MatrixInitializer {
  private:
-  std::vector<double>& x;
   void (*kernel)(
-    Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
+    Dense& A, const std::vector<double>& x, int64_t row_start, int64_t col_start
   ) = nullptr;
+  const std::vector<double>& x;
  public:
 
   // Special member functions
@@ -34,9 +34,11 @@ class MatrixInitializer {
 
   // Additional constructors
   MatrixInitializer(
-    std::vector<double>& x,
     void (*kernel)(
-      Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start)
+      Dense& A, const std::vector<double>& x,
+      int64_t row_start, int64_t col_start
+    ),
+    const std::vector<double>& x
   );
 
   // Utility methods

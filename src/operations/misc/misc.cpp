@@ -20,13 +20,13 @@ double cond(Dense A) {
   return (S[0] / S[k-1]);
 }
 
-double diam(std::vector<double>& x, int64_t n, int64_t offset) {
+double diam(const std::vector<double>& x, int64_t n, int64_t offset) {
   double xmax = *std::max_element(x.begin()+offset, x.begin()+offset+n);
   double xmin = *std::min_element(x.begin()+offset, x.begin()+offset+n);
   return std::abs(xmax-xmin);
 }
 
-double mean(std::vector<double>& x, int64_t n, int64_t offset) {
+double mean(const std::vector<double>& x, int64_t n, int64_t offset) {
   return std::accumulate(x.begin()+offset, x.begin()+offset+n, 0.0)/n;
 }
 

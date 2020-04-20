@@ -12,9 +12,9 @@ class Dense;
 
 double cond(Dense A);
 
-double diam(std::vector<double>& x, int64_t n, int64_t offset);
+double diam(const std::vector<double>& x, int64_t n, int64_t offset);
 
-double mean(std::vector<double>& x, int64_t n, int64_t offset);
+double mean(const std::vector<double>& x, int64_t n, int64_t offset);
 
 std::vector<int64_t> getIndex(int64_t dim, int64_t mortonIndex);
 

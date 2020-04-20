@@ -117,9 +117,9 @@ Hierarchical::Hierarchical(
 
 Hierarchical::Hierarchical(
   void (*func)(
-    Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
+    Dense& A, const std::vector<double>& x, int64_t row_start, int64_t col_start
   ),
-  std::vector<double>& x,
+  const std::vector<double>& x,
   int64_t n_rows, int64_t n_cols,
   int64_t rank,
   int64_t nleaf,
@@ -130,7 +130,7 @@ Hierarchical::Hierarchical(
       ClusterTree(
         n_rows, n_cols, n_row_blocks, n_col_blocks, row_start, col_start, nleaf
       ),
-      MatrixInitializer(x, func),
+      MatrixInitializer(func, x),
       rank, admis
     )
 {}

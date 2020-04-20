@@ -10,10 +10,11 @@ namespace hicma
 {
 
 MatrixInitializer::MatrixInitializer(
-  std::vector<double>& x,
   void (*kernel)(
-    Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start)
-) : x(x), kernel(kernel) {}
+    Dense& A, const std::vector<double>& x, int64_t row_start, int64_t col_start
+  ),
+  const std::vector<double>& x
+) : kernel(kernel), x(x) {}
 
 void MatrixInitializer::fill_dense_representation(
   Dense& A,

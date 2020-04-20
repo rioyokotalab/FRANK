@@ -87,9 +87,10 @@ class UniformHierarchical : public Hierarchical {
 
   UniformHierarchical(
     void (*func)(
-      Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
+      Dense& A, const std::vector<double>& x,
+      int64_t row_start, int64_t col_start
     ),
-    std::vector<double>& x,
+    const std::vector<double>& x,
     int64_t n_row, int64_t n_cols,
     int64_t rank,
     int64_t nleaf,
