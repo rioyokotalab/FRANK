@@ -33,8 +33,7 @@ const char* NoCopySplit::type() const { return "NoCopySplit"; }
 
 NoCopySplit::NoCopySplit(Node& A, int64_t n_row_blocks, int64_t n_col_blocks)
 : Hierarchical(n_row_blocks, n_col_blocks) {
-  ClusterTree node(get_n_rows(A), get_n_cols(A));
-  node.split(dim[0], dim[1]);
+  ClusterTree node(get_n_rows(A), get_n_cols(A), dim[0], dim[1]);
   for (ClusterTree& child_node : node) {
     (*this)[child_node] = make_view(child_node, A);
   }
@@ -44,8 +43,7 @@ NoCopySplit::NoCopySplit(Node& A, const Hierarchical& like)
 : Hierarchical(like.dim[0], like.dim[1]) {
   assert(get_n_rows(A) == get_n_rows(like));
   assert(get_n_cols(A) == get_n_cols(like));
-  ClusterTree node(get_n_rows(A), get_n_cols(A));
-  node.split(like);
+  ClusterTree node(like);
   for (ClusterTree& child_node : node) {
     (*this)[child_node] = make_view(child_node, A);
   }
@@ -65,8 +63,7 @@ define_method(
 NoCopySplit::NoCopySplit(
   const Node& A, int64_t n_row_blocks, int64_t n_col_blocks
 ) : Hierarchical(n_row_blocks, n_col_blocks) {
-  ClusterTree node(get_n_rows(A), get_n_cols(A));
-  node.split(dim[0], dim[1]);
+  ClusterTree node(get_n_rows(A), get_n_cols(A), dim[0], dim[1]);
   for (ClusterTree& child_node : node) {
     (*this)[child_node] = make_view(child_node, A);
   }
@@ -76,8 +73,7 @@ NoCopySplit::NoCopySplit(const Node& A, const Hierarchical& like)
 : Hierarchical(like.dim[0], like.dim[1]) {
   assert(get_n_rows(A) == get_n_rows(like));
   assert(get_n_cols(A) == get_n_cols(like));
-  ClusterTree node(get_n_rows(A), get_n_cols(A));
-  node.split(like);
+  ClusterTree node(like);
   for (ClusterTree& child_node : node) {
     (*this)[child_node] = make_view(child_node, A);
   }

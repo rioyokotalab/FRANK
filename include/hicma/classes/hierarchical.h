@@ -55,15 +55,13 @@ class Hierarchical : public Node {
   Hierarchical(int64_t n_row_blocks, int64_t n_col_blocks=1);
 
   Hierarchical(
-    ClusterTree& node,
+    const ClusterTree& node,
     void (*func)(
       Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
     ),
     std::vector<double>& x,
     int64_t rank,
-    int64_t nleaf,
-    int64_t admis,
-    int64_t n_row_blocks, int64_t n_col_blocks
+    int64_t admis
   );
 
   Hierarchical(
@@ -102,8 +100,6 @@ class Hierarchical : public Node {
   void col_qr(int64_t j, Hierarchical& Q, Hierarchical &R);
 
   bool is_admissible(const ClusterTree& node, int64_t dist_to_diag);
-
-  bool is_leaf(const ClusterTree& node, int64_t nleaf);
 };
 
 register_class(Hierarchical, Node)

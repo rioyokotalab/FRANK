@@ -17,7 +17,6 @@
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
 
-#include <algorithm>
 #include <array>
 #include <cassert>
 #include <cstdint>
@@ -57,8 +56,7 @@ Hierarchical::Hierarchical(
   const Node& A, int64_t n_row_blocks, int64_t n_col_blocks
 ) : dim{n_row_blocks, n_col_blocks}, data(dim[0]*dim[1])
 {
-  ClusterTree node(get_n_rows(A), get_n_cols(A));
-  node.split(dim[0], dim[1]);
+  ClusterTree node(get_n_rows(A), get_n_cols(A), dim[0], dim[1]);
   fill_hierarchical_from(*this, A, node);
 }
 
@@ -98,30 +96,26 @@ Hierarchical::Hierarchical(int64_t n_row_blocks, int64_t n_col_blocks)
 : dim{n_row_blocks, n_col_blocks}, data(dim[0]*dim[1]) {}
 
 Hierarchical::Hierarchical(
-  ClusterTree& node,
+  const ClusterTree& node,
   void (*func)(
     Dense& A, std::vector<double>& x, int64_t row_start, int64_t col_start
   ),
   std::vector<double>& x,
   int64_t rank,
-  int64_t nleaf,
-  int64_t admis,
-  int64_t n_row_blocks, int64_t n_col_blocks
-) : dim{n_row_blocks, n_col_blocks}, data(dim[0]*dim[1]) {
-  node.split(dim[0], dim[1]);
-  for (ClusterTree& child : node) {
+  int64_t admis
+) : dim(node.block_dim), data(dim[0]*dim[1]) {
+  for (const ClusterTree& child : node) {
     if (is_admissible(child, admis)) {
       (*this)[child] = LowRank(
         func, x, rank,
         child.dim[0], child.dim[1], child.start[0], child.start[1]
       );
     } else {
-      if (is_leaf(child, nleaf)) {
+      if (child.is_leaf()) {
         (*this)[child] = Dense(
           func, x, child.dim[0], child.dim[1], child.start[0], child.start[1]);
       } else {
-        (*this)[child] = Hierarchical(
-          child, func, x, rank, nleaf, admis, n_row_blocks, n_col_blocks);
+        (*this)[child] = Hierarchical(child, func, x, rank, admis);
       }
     }
   }
@@ -138,11 +132,13 @@ Hierarchical::Hierarchical(
   int64_t admis,
   int64_t n_row_blocks, int64_t n_col_blocks,
   int64_t row_start, int64_t col_start
-) {
-  ClusterTree root(n_rows, n_cols, row_start, col_start);
-  *this = Hierarchical(
-    root, func, x, rank, nleaf, admis, n_row_blocks, n_col_blocks);
-}
+) : Hierarchical(
+      ClusterTree(
+        n_rows, n_cols, n_row_blocks, n_col_blocks, row_start, col_start, nleaf
+      ),
+      func, x, rank, admis
+    )
+{}
 
 const NodeProxy& Hierarchical::operator[](const ClusterTree& node) const {
   return (*this)(node.rel_pos[0], node.rel_pos[1]);
@@ -271,17 +267,10 @@ bool Hierarchical::is_admissible(
 ) {
   bool admissible = true;
   // Main admissibility condition
-  admissible &= (std::abs(node.abs_pos[0] - node.abs_pos[1]) > dist_to_diag);
+  admissible &= (node.dist_to_diag() > dist_to_diag);
   // Vectors are never admissible
   admissible &= (node.dim[0] > 1 && node.dim[1] > 1);
   return admissible;
-}
-
-bool Hierarchical::is_leaf(const ClusterTree& node, int64_t nleaf) {
-  bool leaf = true;
-  leaf &= (node.dim[0] <= nleaf);
-  leaf &= (node.dim[1] <= nleaf);
-  return leaf;
 }
 
 } // namespace hicma
