@@ -109,18 +109,18 @@ LowRank::LowRank(
 ) : LowRank(Dense(node, func, x), k) {}
 
 LowRank LowRank::get_part(const ClusterTree& node) const {
-  assert(node.begin[0]+node.dim[0] <= dim[0]);
-  assert(node.begin[1]+node.dim[1] <= dim[1]);
+  assert(node.start[0]+node.dim[0] <= dim[0]);
+  assert(node.start[1]+node.dim[1] <= dim[1]);
   LowRank A(node.dim[0], node.dim[1], rank);
   for (int64_t i=0; i<A.U().dim[0]; i++) {
     for (int64_t k=0; k<A.U().dim[1]; k++) {
-      A.U()(i, k) = U()(i+node.begin[0], k);
+      A.U()(i, k) = U()(i+node.start[0], k);
     }
   }
   A.S() = S();
   for (int64_t k=0; k<A.V().dim[0]; k++) {
     for (int64_t j=0; j<A.V().dim[1]; j++) {
-      A.V()(k, j) = V()(k, j+node.begin[1]);
+      A.V()(k, j) = V()(k, j+node.start[1]);
     }
   }
   return A;
@@ -129,11 +129,11 @@ LowRank LowRank::get_part(const ClusterTree& node) const {
 LowRank::LowRank(const ClusterTree& node, const LowRank& A)
 : dim(node.dim), rank(A.rank)
 {
-  assert(node.begin[0]+node.dim[0] <= A.dim[0]);
-  assert(node.begin[1]+node.dim[1] <= A.dim[1]);
-  U() = Dense(ClusterTree(node.dim[0], A.rank, node.begin[0], 0),A.U());
+  assert(node.start[0]+node.dim[0] <= A.dim[0]);
+  assert(node.start[1]+node.dim[1] <= A.dim[1]);
+  U() = Dense(ClusterTree(node.dim[0], A.rank, node.start[0], 0),A.U());
   S() = Dense(ClusterTree(A.rank, A.rank), A.S());
-  V() = Dense(ClusterTree(A.rank, node.dim[1], 0, node.begin[1]), A.V());
+  V() = Dense(ClusterTree(A.rank, node.dim[1], 0, node.start[1]), A.V());
 }
 
 LowRank::LowRank(

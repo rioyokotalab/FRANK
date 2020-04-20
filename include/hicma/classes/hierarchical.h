@@ -20,11 +20,12 @@ class Dense;
 class ClusterTree;
 
 class Hierarchical : public Node {
- private:
-  std::vector<NodeProxy> data;
  public:
   std::array<int64_t, 2> dim = {0, 0};
+ private:
+  std::vector<NodeProxy> data;
 
+ public:
   // Special member functions
   Hierarchical() = default;
 
@@ -83,9 +84,9 @@ class Hierarchical : public Node {
 
   NodeProxy& operator[](int64_t i);
 
-  const NodeProxy& operator[](std::array<int64_t, 2> pos) const;
+  const NodeProxy& operator[](const ClusterTree& node) const;
 
-  NodeProxy& operator[](std::array<int64_t, 2> pos);
+  NodeProxy& operator[](const ClusterTree& node);
 
   const NodeProxy& operator()(int64_t i, int64_t j) const;
 

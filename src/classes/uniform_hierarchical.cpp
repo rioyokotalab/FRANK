@@ -18,6 +18,7 @@ using yorel::yomm2::virtual_;
 
 #include <cassert>
 #include <cstdint>
+#include <functional>
 #include <memory>
 #include <tuple>
 #include <utility>
@@ -87,20 +88,20 @@ Dense UniformHierarchical::make_block_row(
 ) {
   // Create row block without admissible blocks
   int64_t n_cols = 0;
-  std::vector<const ClusterTree*> admissible_blocks;
-  for (const ClusterTree* block : node.get_block_row()) {
-    if (is_admissible(*block, admis)) {
+  std::vector<std::reference_wrapper<const ClusterTree>> admissible_blocks;
+  for (const ClusterTree& block : node.get_block_row()) {
+    if (is_admissible(block, admis)) {
       admissible_blocks.emplace_back(block);
-      n_cols += block->dim[1];
+      n_cols += block.dim[1];
     }
   }
   Dense block_row(node.dim[0], n_cols);
   int64_t col_begin = 0;
-  for (const ClusterTree* block : admissible_blocks) {
+  for (const ClusterTree& block : admissible_blocks) {
     Dense part(
-      ClusterTree(block->dim[0], block->dim[1], 0, col_begin), block_row);
-    func(part, x, block->begin[0], block->begin[1]);
-    col_begin += block->dim[1];
+      ClusterTree(block.dim[0], block.dim[1], 0, col_begin), block_row);
+    func(part, x, block.start[0], block.start[1]);
+    col_begin += block.dim[1];
   }
   return block_row;
 }
@@ -115,20 +116,20 @@ Dense UniformHierarchical::make_block_col(
 ) {
   // Create col block without admissible blocks
   int64_t n_rows = 0;
-  std::vector<const ClusterTree*> admissible_blocks;
-  for (const ClusterTree* block : node.get_block_col()) {
-    if (is_admissible(*block, admis)) {
+  std::vector<std::reference_wrapper<const ClusterTree>> admissible_blocks;
+  for (const ClusterTree& block : node.get_block_col()) {
+    if (is_admissible(block, admis)) {
       admissible_blocks.emplace_back(block);
-      n_rows += block->dim[0];
+      n_rows += block.dim[0];
     }
   }
   Dense block_col(n_rows, node.dim[1]);
   int64_t row_begin = 0;
-  for (const ClusterTree* block : admissible_blocks) {
+  for (const ClusterTree& block : admissible_blocks) {
     Dense part(
-      ClusterTree(block->dim[0], block->dim[1], row_begin, 0), block_col);
-    func(part, x, block->begin[0], block->begin[1]);
-    row_begin += block->dim[0];
+      ClusterTree(block.dim[0], block.dim[1], row_begin, 0), block_col);
+    func(part, x, block.start[0], block.start[1]);
+    row_begin += block.dim[0];
   }
   return block_col;
 }
@@ -233,20 +234,20 @@ UniformHierarchical::UniformHierarchical(
   std::vector<std::vector<int64_t>> selected_rows(dim[0]);
   std::vector<std::vector<int64_t>> selected_cols(dim[1]);
   node.split(dim[0], dim[1]);
-  for (ClusterTree& child_node : node.children) {
+  for (ClusterTree& child_node : node) {
     if (is_admissible(child_node, admis)) {
       if (use_svd) {
-        (*this)[child_node.rel_pos] = construct_shared_block_svd(
+        (*this)[child_node] = construct_shared_block_svd(
           child_node, func, x, rank, admis);
       } else {
-        (*this)[child_node.rel_pos] = construct_shared_block_id(
+        (*this)[child_node] = construct_shared_block_id(
           child_node, func, x, selected_rows, selected_cols, rank, admis);
       }
     } else {
       if (is_leaf(child_node, nleaf)) {
-        (*this)[child_node.rel_pos] = Dense(child_node, func, x);
+        (*this)[child_node] = Dense(child_node, func, x);
       } else {
-        (*this)[child_node.rel_pos] = UniformHierarchical(
+        (*this)[child_node] = UniformHierarchical(
           child_node, func, x, rank, nleaf, admis, ni_level, nj_level);
       }
     }

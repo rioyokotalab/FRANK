@@ -67,8 +67,8 @@ define_method(
   (Hierarchical& H, const Dense& A, const ClusterTree& node)
 ) {
   timing::start("fill_hierarchical_from(D)");
-  for (const ClusterTree& child_node : node.children) {
-    H[child_node.rel_pos] = A.get_part(child_node);
+  for (const ClusterTree& child_node : node) {
+    H[child_node] = A.get_part(child_node);
   }
   timing::stop("fill_hierarchical_from(D)");
 }
@@ -78,8 +78,8 @@ define_method(
   (Hierarchical& H, const LowRank& A, const ClusterTree& node)
 ) {
   timing::start("fill_hierarchical_from(LR)");
-  for (const ClusterTree& child_node : node.children) {
-    H[child_node.rel_pos] = A.get_part(child_node);
+  for (const ClusterTree& child_node : node) {
+    H[child_node] = A.get_part(child_node);
   }
   timing::stop("fill_hierarchical_from(LR)");
 }
@@ -93,9 +93,7 @@ define_method(
 }
 
 Hierarchical::Hierarchical(int64_t ni_level, int64_t nj_level)
-: dim{ni_level, nj_level} {
-  data.resize(dim[0]*dim[1]);
-}
+: dim{ni_level, nj_level}, data(dim[0]*dim[1]) {}
 
 Hierarchical::Hierarchical(
   ClusterTree& node,
@@ -107,19 +105,16 @@ Hierarchical::Hierarchical(
   int64_t nleaf,
   int64_t admis,
   int64_t ni_level, int64_t nj_level
-) {
-  dim[0] = std::min(ni_level, node.dim[0]);
-  dim[1] = std::min(nj_level, node.dim[1]);
-  data.resize(dim[0]*dim[1]);
+) : dim{ni_level, nj_level}, data(dim[0]*dim[1]) {
   node.split(dim[0], dim[1]);
-  for (ClusterTree& child_node : node.children) {
+  for (ClusterTree& child_node : node) {
     if (is_admissible(child_node, admis)) {
-      (*this)[child_node.rel_pos] = LowRank(child_node, func, x, rank);
+      (*this)[child_node] = LowRank(child_node, func, x, rank);
     } else {
       if (is_leaf(child_node, nleaf)) {
-        (*this)[child_node.rel_pos] = Dense(child_node, func, x);
+        (*this)[child_node] = Dense(child_node, func, x);
       } else {
-        (*this)[child_node.rel_pos] = Hierarchical(
+        (*this)[child_node] = Hierarchical(
           child_node, func, x, rank, nleaf, admis, ni_level, nj_level);
       }
     }
@@ -142,12 +137,12 @@ Hierarchical::Hierarchical(
   *this = Hierarchical(root, func, x, rank, nleaf, admis, ni_level, nj_level);
 }
 
-const NodeProxy& Hierarchical::operator[](std::array<int64_t, 2> pos) const {
-  return (*this)(pos[0], pos[1]);
+const NodeProxy& Hierarchical::operator[](const ClusterTree& node) const {
+  return (*this)(node.rel_pos[0], node.rel_pos[1]);
 }
 
-NodeProxy& Hierarchical::operator[](std::array<int64_t, 2> pos) {
-  return (*this)(pos[0], pos[1]);
+NodeProxy& Hierarchical::operator[](const ClusterTree& node) {
+  return (*this)(node.rel_pos[0], node.rel_pos[1]);
 }
 
 const NodeProxy& Hierarchical::operator[](int64_t i) const {

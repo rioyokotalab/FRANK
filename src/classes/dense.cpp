@@ -140,7 +140,7 @@ Dense::Dense(
   // TODO This function is still aware of hierarchical matrix idea. Change?
   // Related to making helper class for construction.
   data.resize(dim[0]*dim[1]);
-  func(*this, x, node.begin[0], node.begin[1]);
+  func(*this, x, node.start[0], node.start[1]);
 }
 
 Dense::Dense(
@@ -181,20 +181,20 @@ const Dense& Dense::operator=(const double a) {
 Dense::Dense(const ClusterTree& node, Dense& A)
 : Node(), owning(false), dim(node.dim), stride(A.stride)
 {
-  assert(node.begin[0]+node.dim[0] <= A.dim[0]);
-  assert(node.begin[1]+node.dim[1] <= A.dim[1]);
-  data_ptr = &A[node.begin];
-  const_data_ptr = &A[node.begin];
+  assert(node.start[0]+node.dim[0] <= A.dim[0]);
+  assert(node.start[1]+node.dim[1] <= A.dim[1]);
+  data_ptr = &A[node.start];
+  const_data_ptr = &A[node.start];
 }
 
 
 Dense::Dense(const ClusterTree& node, const Dense& A)
 : Node(), owning(false), dim(node.dim), stride(A.stride)
 {
-  assert(node.begin[0]+node.dim[0] <= A.dim[0]);
-  assert(node.begin[1]+node.dim[1] <= A.dim[1]);
+  assert(node.start[0]+node.dim[0] <= A.dim[0]);
+  assert(node.start[1]+node.dim[1] <= A.dim[1]);
   data_ptr = nullptr;
-  const_data_ptr = &A[node.begin];
+  const_data_ptr = &A[node.start];
 }
 
 double* Dense::get_pointer() {
@@ -314,12 +314,12 @@ void Dense::transpose() {
 }
 
 Dense Dense::get_part(const ClusterTree& node) const {
-  assert(node.begin[0]+node.dim[0] <= dim[0]);
-  assert(node.begin[1]+node.dim[1] <= dim[1]);
+  assert(node.start[0]+node.dim[0] <= dim[0]);
+  assert(node.start[1]+node.dim[1] <= dim[1]);
   Dense A(node.dim[0], node.dim[1]);
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {
-      A(i, j) = (*this)(i+node.begin[0], j+node.begin[1]);
+      A(i, j) = (*this)(i+node.start[0], j+node.start[1]);
     }
   }
   return A;
