@@ -4,7 +4,11 @@ project(HICMA
     LANGUAGES CXX
     VERSION 1.0
 )
-set(CMAKE_CXX_STANDARD 17)
+if(${CMAKE_VERSION} VERSION_LESS "3.8.2")
+    list(APPEND HICMA_OPTIONS -std=c++17)
+else()
+    list(APPEND HICMA_FEATURES cxx_std_17)
+endif()
 
 # Use Release build by default
 if(NOT CMAKE_BUILD_TYPE)

@@ -31,5 +31,6 @@ target_include_directories(operations
 SYSTEM PUBLIC
     $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/yomm2-src/include>
 )
-target_compile_options(operations PRIVATE ${HICMA_OPTIONS})
 target_compile_definitions(operations PUBLIC ${HICMA_DEFINITIONS})
+target_compile_features(operations PRIVATE ${HICMA_FEATURES})
+target_compile_options(operations PRIVATE ${HICMA_OPTIONS})

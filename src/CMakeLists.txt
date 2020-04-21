@@ -19,8 +19,9 @@ target_include_directories(hicma
 SYSTEM PUBLIC
     $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/yomm2-src/include>
 )
-target_compile_options(hicma PRIVATE ${HICMA_OPTIONS})
 target_compile_definitions(hicma PUBLIC ${HICMA_DEFINITIONS})
+target_compile_features(hicma PRIVATE ${HICMA_FEATURES})
+target_compile_options(hicma PRIVATE ${HICMA_OPTIONS})
 target_link_libraries(hicma ${HICMA_DEPENDENCIES})
 
 # Install instructions
