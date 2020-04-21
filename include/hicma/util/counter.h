@@ -1,17 +1,22 @@
-#ifndef counter_h
-#define counter_h
+#ifndef hicma_util_counter_h
+#define hicma_util_counter_h
+
 #include <map>
+#include <string>
+
 
 namespace hicma {
 
-  extern std::map<std::string,int> globalCounter;
+extern std::map<std::string,int> globalCounter;
 
-  int getCounter(std::string event);
+int getCounter(std::string event);
 
-  void resetCounter(std::string event);
+void resetCounter(std::string event);
 
-  void updateCounter(std::string event, int d);
+void updateCounter(std::string event, int d);
 
-  void printCounter(std::string event);
-}
-#endif
+void printCounter(std::string event);
+
+} // namespace hicma
+
+#endif // hicma_util_counter_h

@@ -1,9 +1,12 @@
-#ifndef batch_h
-#define batch_h
+#ifndef hicma_batch_h
+#define hicma_batch_h
 
+#include <cstdint>
 #include <vector>
 
-namespace hicma {
+
+namespace hicma
+{
 
   class NodeProxy;
   class Dense;
@@ -13,13 +16,14 @@ namespace hicma {
   extern std::vector<Dense*> vecC;
   extern std::vector<NodeProxy*> vecLR;
 
-  void rsvd_push(NodeProxy& A, Dense& Aij, int rank);
+  void rsvd_push(NodeProxy& A, Dense& Aij, int64_t rank);
 
   void gemm_push(const Dense& A, const Dense& B, Dense& C);
 
   void rsvd_batch();
 
   void gemm_batch();
-}
 
-#endif
+} // namespace hicma
+
+#endif // hicma_batch_h

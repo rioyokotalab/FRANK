@@ -1,45 +1,28 @@
 add_external_dependency(googletest)
 
-# Class tests
-add_executable(dense_test dense_test.cpp)
-target_link_libraries(dense_test gtest_main hicma)
-add_test(NAME dense_test COMMAND dense_test)
-
-# add_executable(low_rank_test low_rank_test.cpp)
-# target_link_libraries(low_rank_test gtest_main hicma)
-# add_test(NAME low_rank_test COMMAND low_rank_test)
-
-# add_executable(hierarchical_test hierarchical_test.cpp)
-# target_link_libraries(hierarchical_test gtest_main hicma)
-# add_test(NAME hierarchical_test COMMAND hierarchical_test)
+list(APPEND GTEST_TESTS "dense" "id")
+foreach(TEST ${GTEST_TESTS})
+    add_executable(${TEST}_test ${TEST}_test.cpp)
+    target_link_libraries(${TEST}_test gtest_main hicma)
+    add_test(NAME ${TEST}_test COMMAND ${TEST}_test)
+    target_compile_options(${TEST}_test PRIVATE ${HICMA_OPTIONS})
+endforeach()
 
 # Legacy execution files
-add_executable(lr_add lr_add.cpp)
-target_link_libraries(lr_add hicma)
-
-add_executable(block_lu block_lu.cpp)
-target_link_libraries(block_lu hicma)
-
-add_executable(block_qr block_qr.cpp)
-target_link_libraries(block_qr hicma)
-
-add_executable(tiled_qr tiled_qr.cpp)
-target_link_libraries(tiled_qr hicma)
-
-add_executable(tlr_qr tlr_qr.cpp)
-target_link_libraries(tlr_qr hicma)
-
-add_executable(blr_lu blr_lu.cpp)
-target_link_libraries(blr_lu hicma)
-
-add_executable(blr_qr blr_qr.cpp)
-target_link_libraries(blr_qr hicma)
-
-add_executable(h_lu h_lu.cpp)
-target_link_libraries(h_lu hicma)
-
-add_executable(h_qr h_qr.cpp)
-target_link_libraries(h_qr hicma)
-
-add_executable(rsvd rsvd.cpp)
-target_link_libraries(rsvd hicma)
+list(
+    APPEND EXECUTABLES
+    "lr_add"
+    "block_qr"
+    "tiled_qr"
+    "tlr_qr"
+    "blr_qr"
+    "h_lu"
+    "uh_lu"
+    "h_qr"
+    "rsvd"
+)
+foreach(EXECUTABLE ${EXECUTABLES})
+    add_executable(${EXECUTABLE} ${EXECUTABLE}.cpp)
+    target_link_libraries(${EXECUTABLE} hicma)
+    target_compile_options(${EXECUTABLE} PRIVATE ${HICMA_OPTIONS})
+endforeach()

@@ -1,17 +1,18 @@
-#ifndef operations_h
-#define operations_h
+#ifndef hicma_operations_h
+#define hicma_operations_h
 
-#include "hicma/operations/getrf.h"
-#include "hicma/operations/trmm.h"
-#include "hicma/operations/trsm.h"
-#include "hicma/operations/gemm.h"
-#include "hicma/operations/tpmqrt.h"
-#include "hicma/operations/tpqrt.h"
-#include "hicma/operations/larfb.h"
-#include "hicma/operations/geqrt.h"
-#include "hicma/operations/qr.h"
-#include "hicma/operations/get_dim.h"
-#include "hicma/operations/misc.h"
-#include "hicma/operations/latms.h"
 
-#endif // operations_h
+#include "hicma/operations/arithmetic.h"
+
+#include "hicma/operations/BLAS.h"
+
+#include "hicma/operations/LAPACK.h"
+
+#include "hicma/operations/misc/get_dim.h"
+#include "hicma/operations/misc/misc.h"
+#include "hicma/operations/misc/norm.h"
+#include "hicma/operations/misc/transpose.h"
+
+#include "hicma/operations/randomized_factorizations.h"
+
+#endif // hicma_operations_h

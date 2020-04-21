@@ -1,106 +1,77 @@
-#ifndef functions_h
-#define functions_h
+#ifndef hicma_functions_h
+#define hicma_functions_h
+
+#include <cstdint>
 #include <vector>
 
-namespace hicma {
-  void zeros(
-            std::vector<double>& data,
-            std::vector<double>& x,
-            const int& ni,
-            const int& nj,
-            const int& i_begin,
-            const int& j_begin
-            );
 
-  void identity(
-                std::vector<double>& data,
-                std::vector<double>& x,
-                const int& ni,
-                const int& nj,
-                const int& i_begin,
-                const int& j_begin
-                );
+namespace hicma
+{
 
-  void random(
-            std::vector<double>& data,
-            std::vector<double>& x,
-            const int& ni,
-            const int& nj,
-            const int& i_begin,
-            const int& j_begin
-            );
+class Dense;
 
-  void latms(
-             std::vector<double>& data,
-             std::vector<double>& x,
-             const int& ni,
-             const int& nj,
-             const int& i_begin,
-             const int& j_begin
-             );
+void zeros(
+  Dense& A,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
 
-  void arange(
-            std::vector<double>& data,
-            std::vector<double>& x,
-            const int& ni,
-            const int& nj,
-            const int& i_begin,
-            const int& j_begin
-            );
+void identity(
+  Dense& A,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
 
-  void laplace1d(
-                 std::vector<double>& data,
-                 std::vector<double>& x,
-                 const int& ni,
-                 const int& nj,
-                 const int& i_begin,
-                 const int& j_begin
-                 );
+void random_normal(
+  Dense& A,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
 
-  void cauchy2d(
-                 std::vector<double>& data,
-                 std::vector<std::vector<double>>& x,
-                 const int& ni,
-                 const int& nj,
-                 const int& i_begin,
-                 const int& j_begin
-                 );
+void random_uniform(
+  Dense& A,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
 
-  void laplacend(
-                 std::vector<double>& data,
-                 std::vector<std::vector<double>>& x,
-                 const int& ni,
-                 const int& nj,
-                 const int& i_begin,
-                 const int& j_begin
-                 );
+void arange(
+  Dense& A,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
 
-  void helmholtznd(
-                 std::vector<double>& data,
-                 std::vector<std::vector<double>>& x,
-                 const int& ni,
-                 const int& nj,
-                 const int& i_begin,
-                 const int& j_begin
-                 );
+void cauchy2d(
+  Dense& A,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
 
-  bool is_admissible_nd(
-                        std::vector<std::vector<double>>& x,
-                        const int& ni,
-                        const int& nj,
-                        const int& i_begin,
-                        const int& j_begin,
-                        const double& admis
-                        );
+void laplacend(
+  Dense& A,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
 
-  bool is_admissible_nd_morton(
-                               std::vector<std::vector<double>>& x,
-                               const int& ni,
-                               const int& nj,
-                               const int& i_begin,
-                               const int& j_begin,
-                               const double& admis
-                               );
-}
+void helmholtznd(
+  Dense& A,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
 
-#endif
+bool is_admissible_nd(
+  const std::vector<std::vector<double>>& x,
+  int64_t n_rows, int64_t n_cols,
+  int64_t row_start, int64_t col_start,
+  double admis
+);
+
+bool is_admissible_nd_morton(
+  const std::vector<std::vector<double>>& x,
+  int64_t n_rows, int64_t n_cols,
+  int64_t row_start, int64_t col_start,
+  double admis
+);
+
+} // namespace hicma
+
+#endif // hicma_functions_h

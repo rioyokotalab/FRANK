@@ -1,31 +1,24 @@
-#include "hicma/low_rank.h"
-#include "hicma/hierarchical.h"
-#include "hicma/functions.h"
-#include "hicma/operations.h"
-#include "hicma/gpu_batch/batch.h"
-#include "hicma/util/print.h"
-#include "hicma/util/timer.h"
-#include "hicma/util/counter.h"
+#include "hicma/hicma.h"
 
-#include <algorithm>
+#include "yorel/yomm2/cute.hpp"
+
 #include <cmath>
-#include <iostream>
-#include <random>
-#include <iomanip>
+#include <cstdint>
+#include <utility>
+#include <vector>
 
-#include "yorel/multi_methods.hpp"
 
 using namespace hicma;
 
 int main(int argc, char** argv) {
-  yorel::multi_methods::initialize();
-  int N = argc > 1 ? atoi(argv[1]) : 256;
-  int Nb = argc > 2 ? atoi(argv[2]) : 32;
-  int rank = argc > 3 ? atoi(argv[3]) : 16;
+  yorel::yomm2::update_methods();
+  int64_t N = argc > 1 ? atoi(argv[1]) : 256;
+  int64_t Nb = argc > 2 ? atoi(argv[2]) : 32;
+  int64_t rank = argc > 3 ? atoi(argv[3]) : 16;
   double admis = argc > 4 ? atof(argv[4]) : 0;
-  int matCode = argc > 5 ? atoi(argv[5]) : 0;
-  int lra = argc > 6 ? atoi(argv[6]) : 2; updateCounter("LRA", lra);
-  int Nc = N / Nb;
+  int64_t matCode = argc > 5 ? atoi(argv[5]) : 0;
+  int64_t lra = argc > 6 ? atoi(argv[6]) : 2; updateCounter("LRA", lra);
+  int64_t Nc = N / Nb;
   std::vector<std::vector<double>> randpts;
   updateCounter("LR_ADDITION_COUNTER", 1); //Enable LR addition counter
 
@@ -42,26 +35,26 @@ int main(int argc, char** argv) {
   Hierarchical D(Nc, Nc);
   Hierarchical Q(Nc, Nc);
   Hierarchical T(Nc, Nc);
-  for (int ic=0; ic<Nc; ic++) {
-    for (int jc=0; jc<Nc; jc++) {
+  for (int64_t ic=0; ic<Nc; ic++) {
+    for (int64_t jc=0; jc<Nc; jc++) {
       Dense Aij;
       if(matCode == 0) {
-        Dense _Aij(laplacend, randpts, Nb, Nb, Nb*ic, Nb*jc, ic, jc, 1);
+        Dense _Aij(laplacend, randpts, Nb, Nb, Nb*ic, Nb*jc);
         Aij = std::move(_Aij);
       }
       else if(matCode == 1) {
-        Dense _Aij(helmholtznd, randpts, Nb, Nb, Nb*ic, Nb*jc, ic, jc, 1);
+        Dense _Aij(helmholtznd, randpts, Nb, Nb, Nb*ic, Nb*jc);
         Aij = std::move(_Aij);
       }
       else if(matCode == 2) {
-        Dense _Aij(cauchy2d, randpts, Nb, Nb, Nb*ic, Nb*jc, ic, jc, 1);
+        Dense _Aij(cauchy2d, randpts, Nb, Nb, Nb*ic, Nb*jc);
         Aij = std::move(_Aij);
       }
-      Dense Qij(identity, randpts[0], Nb, Nb, Nb*ic, Nb*jc, ic, jc, 1);
-      Dense Tij(zeros, randpts[0], Nb, Nb);
+      Dense Qij(identity, randpts, Nb, Nb, Nb*ic, Nb*jc);
+      Dense Tij(zeros, randpts, Nb, Nb);
       D(ic,jc) = Aij;
       T(ic,jc) = Tij;
-      if (std::abs(ic - jc) <= (int)admis) {
+      if (std::abs(ic - jc) <= (int64_t)admis) {
         A(ic,jc) = Aij;
         Q(ic,jc) = Qij;
       }
@@ -75,40 +68,36 @@ int main(int argc, char** argv) {
 
   // For residual measurement
   Dense x(N); x = 1.0;
-  Dense Ax(N);
-  gemm(A, x, Ax, 1, 0);
-  //Approximation error
-  double diff, norm;
-  diff = (Dense(A) - Dense(D)).norm();
-  norm = D.norm();
+  Dense Ax = gemm(A, x);
+
   print("BLR QR Decomposition");
   print("Compression Accuracy");
-  print("Rel. L2 Error", std::sqrt(diff/norm), false);
+  print("Rel. L2 Error", l2_error(A, D), false);
 
   print("Time");
   resetCounter("LR-addition");
-  start("BLR QR decomposition");
-  for(int k = 0; k < Nc; k++) {
+  timing::start("BLR QR decomposition");
+  for(int64_t k = 0; k < Nc; k++) {
     geqrt(A(k, k), T(k, k));
-    for(int j = k+1; j < Nc; j++) {
+    for(int64_t j = k+1; j < Nc; j++) {
       larfb(A(k, k), T(k, k), A(k, j), true);
     }
-    for(int i = k+1; i < Nc; i++) {
+    for(int64_t i = k+1; i < Nc; i++) {
       tpqrt(A(k, k), A(i, k), T(i, k));
-      for(int j = k+1; j < Nc; j++) {
+      for(int64_t j = k+1; j < Nc; j++) {
         tpmqrt(A(i, k), T(i, k), A(k, j), A(i, j), true);
       }
     }
   }
-  stop("BLR QR decomposition");
+  timing::stopAndPrint("BLR QR decomposition");
   //Build Q: Apply Q to Id
-  for(int k = Nc-1; k >= 0; k--) {
-    for(int i = Nc-1; i > k; i--) {
-      for(int j = k; j < Nc; j++) {
+  for(int64_t k = Nc-1; k >= 0; k--) {
+    for(int64_t i = Nc-1; i > k; i--) {
+      for(int64_t j = k; j < Nc; j++) {
         tpmqrt(A(i, k), T(i, k), Q(k, j), Q(i, j), false);
       }
     }
-    for(int j = k; j < Nc; j++) {
+    for(int64_t j = k; j < Nc; j++) {
       larfb(A(k, k), T(k, k), Q(k, j), false);
     }
   }
@@ -116,8 +105,8 @@ int main(int argc, char** argv) {
   printCounter("LR-addition");
 
   //Build R: Take upper triangular part of modified A
-  for(int i=0; i<A.dim[0]; i++) {
-    for(int j=0; j<=i; j++) {
+  for(int64_t i=0; i<A.dim[0]; i++) {
+    for(int64_t j=0; j<=i; j++) {
       if(i == j) //Diagonal must be dense, zero lower-triangular part
         zero_lowtri(A(i, j));
       else
@@ -125,25 +114,15 @@ int main(int argc, char** argv) {
     }
   }
   //Residual
-  Dense Rx(N);
-  gemm(A, x, Rx, 1, 0);
-  Dense QRx(N);
-  gemm(Q, Rx, QRx, 1, 0);
-  diff = (Ax - QRx).norm();
-  norm = Ax.norm();
+  Dense Rx = gemm(A, x);
+  Dense QRx = gemm(Q, Rx);
   print("Residual");
-  print("Rel. Error (operator norm)", std::sqrt(diff/norm), false);
+  print("Rel. Error (operator norm)", l2_error(QRx, Ax), false);
   //Orthogonality
-  Dense Qx(N);
-  gemm(Q, x, Qx, 1, 0);
-  Dense QtQx(N);
-  Q.transpose();
-  gemm(Q, Qx, QtQx, 1, 0);
-  diff = (QtQx - x).norm();
-  norm = (double)N;
+  Dense Qx = gemm(Q, x);
+  transpose(Q);
+  Dense QtQx = gemm(Q, Qx);
   print("Orthogonality");
-  print("Rel. Error (operator norm)", std::sqrt(diff/norm), false);
+  print("Rel. Error (operator norm)", l2_error(QtQx, x), false);
   return 0;
 }
-
-

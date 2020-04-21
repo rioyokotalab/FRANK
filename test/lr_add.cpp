@@ -1,36 +1,28 @@
-#include "hicma/low_rank.h"
-#include "hicma/functions.h"
-#include "hicma/util/print.h"
-#include "hicma/util/timer.h"
+#include "hicma/hicma.h"
 
-#include <algorithm>
-#include <cmath>
+#include "yorel/yomm2/cute.hpp"
 
-#include "yorel/multi_methods.hpp"
+#include <cstdint>
+#include <vector>
+
 
 using namespace hicma;
 
-int main(int argc, char** argv) {
-  yorel::multi_methods::initialize();
-  int N = 32;
-  int rank = 16;
-  std::vector<double> randx(2*N);
-  for (int i=0; i<2*N; i++) {
-    randx[i] = drand48();
-  }
-  std::sort(randx.begin(), randx.end());
+int main() {
+  yorel::yomm2::update_methods();
+  int64_t N = 2048;
+  int64_t rank = 128;
+  std::vector<std::vector<double>> randx{get_sorted_random_vector(2*N)};
   print("Time");
-  start("Init matrix");
-  Dense D(laplace1d, randx, N, N-2, 0, N);
-  stop("Init matrix");
-  start("LR Add");
+  timing::start("Init matrix");
+  Dense D(laplacend, randx, N, N, 0, N);
   LowRank A(D, rank);
   LowRank B(D, rank);
+  timing::stopAndPrint("Init matrix");
+  timing::start("LR Add");
   A += B;
-  stop("LR Add");
-  double diff = (D + D - Dense(A)).norm();
-  double norm = D.norm();
+  timing::stopAndPrint("LR Add", 2);
   print("Accuracy");
-  print("Rel. L2 Error", std::sqrt(diff/norm), false);
+  print("Rel. L2 Error", l2_error(D+D, A), false);
   return 0;
 }

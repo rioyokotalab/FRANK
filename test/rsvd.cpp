@@ -1,34 +1,44 @@
-#include "hicma/low_rank.h"
-#include "hicma/functions.h"
-#include "hicma/util/print.h"
-#include "hicma/util/timer.h"
+#include "hicma/hicma.h"
 
-#include <algorithm>
-#include <cmath>
+#include "yorel/yomm2/cute.hpp"
 
-#include "yorel/multi_methods.hpp"
+#include <cstdint>
+#include <tuple>
+#include <vector>
+
 
 using namespace hicma;
 
-int main(int argc, char** argv) {
-  yorel::multi_methods::initialize();
-  int N = 32;
-  int rank = 16;
-  std::vector<double> randx(2*N);
-  for (int i=0; i<2*N; i++) {
-    randx[i] = drand48();
-  }
-  std::sort(randx.begin(), randx.end());
-  print("Time");
-  start("Init matrix");
-  Dense D(laplace1d, randx, N, N-2, 0, N);
-  stop("Init matrix");
-  start("Randomized SVD");
+int main() {
+  yorel::yomm2::update_methods();
+  int64_t N = 2048;
+  int64_t rank = 16;
+
+  timing::start("Init matrix");
+  std::vector<std::vector<double>> randx{get_sorted_random_vector(2*N)};
+  Dense D(laplacend, randx, N, N, 0, N);
+  timing::stopAndPrint("Init matrix");
+
+  print("RSVD");
+  timing::start("Randomized SVD");
   LowRank LR(D, rank);
-  stop("Randomized SVD");
-  double diff = (D - Dense(LR)).norm();
-  double norm = D.norm();
-  print("Accuracy");
-  print("Rel. L2 Error", std::sqrt(diff/norm), false);
+  timing::stopAndPrint("Randomized SVD", 2);
+  print("Rel. L2 Error", l2_error(D, LR), false);
+
+  print("ID");
+  Dense U, S, V;
+  timing::start("ID");
+  Dense Dwork(D);
+  std::tie(U, S, V) = id(Dwork, rank);
+  timing::stopAndPrint("ID", 2);
+  Dense test = gemm(gemm(U, S), V);
+  print("Rel. L2 Error", l2_error(D, test), false);
+
+  print("RID");
+  timing::start("Randomized ID");
+  std::tie(U, S, V) = rid(D, rank+5, rank);
+  timing::stopAndPrint("Randomized ID", 2);
+  test = gemm(gemm(U, S), V);
+  print("Rel. L2 Error", l2_error(D, test), false);
   return 0;
 }

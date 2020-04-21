@@ -1,31 +1,22 @@
-#include "hicma/low_rank.h"
-#include "hicma/hierarchical.h"
-#include "hicma/functions.h"
-#include "hicma/operations.h"
-#include "hicma/gpu_batch/batch.h"
-#include "hicma/util/print.h"
-#include "hicma/util/timer.h"
+#include "hicma/hicma.h"
 
-#include <algorithm>
-#include <cmath>
+#include "yorel/yomm2/cute.hpp"
+
+#include <cstdint>
 #include <iostream>
+#include <vector>
 
-#include "yorel/multi_methods.hpp"
 
 using namespace hicma;
 
 int main(int argc, char** argv) {
-  yorel::multi_methods::initialize();
-  int N = 128;
-  int nleaf = 16;
-  int rank = 8;
-  std::vector<double> randx(N);
-  for (int i=0; i<N; i++) {
-    randx[i] = drand48();
-  }
-  std::sort(randx.begin(), randx.end());
-  start("Init matrix");
-  int nblocks=0, admis=0;
+  yorel::yomm2::update_methods();
+  int64_t N = 128;
+  int64_t nleaf = 16;
+  int64_t rank = 8;
+  std::vector<std::vector<double>> randx{get_sorted_random_vector(N)};
+  timing::start("Init matrix");
+  int64_t nblocks=0, admis=0;
   if(argc < 2) {
     std::cout <<"Argument(s) needed" <<std::endl;
     exit(1);
@@ -58,43 +49,31 @@ int main(int argc, char** argv) {
     nblocks = 2; // Hierarchical (log_2(N/nleaf) levels)
     admis = 1; // Strong admissibility
   }
-  start("CPU compression");
-  Hierarchical A(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
-  stop("CPU compression");
+  timing::start("CPU compression");
+  Hierarchical A(laplacend, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
+  timing::stop("CPU compression");
   rsvd_batch();
   Hierarchical Q(zeros, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   Hierarchical R(zeros, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   Hierarchical QR(zeros, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
-  stop("Init matrix");
+  timing::stopAndPrint("Init matrix");
   admis = N / nleaf; // Full rank
-  start("Dense tree");
-  Hierarchical D(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
-  stop("Dense tree");
-  start("Verification");
-  double diff = (Dense(A) - Dense(D)).norm();
-  double norm = D.norm();
-  stop("Verification");
+  timing::start("Dense tree");
+  Hierarchical D(laplacend, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
+  timing::stopAndPrint("Dense tree");
   print("Compression Accuracy");
-  print("Rel. L2 Error", std::sqrt(diff/norm), false);
+  print("Rel. L2 Error", l2_error(A, D), false);
   print("Time");
-  start("QR decomposition");
+  timing::start("QR decomposition");
   qr(A, Q, R);
-  stop("QR decomposition");
-  printTime("-DGEQRF");
-  printTime("-DGEMM");
+  timing::stopAndPrint("QR decomposition", 1);
   gemm(Q, R, QR, 1, 1);
-  diff = (Dense(QR) - Dense(D)).norm();
-  norm = D.norm();
   print("QR Accuracy");
-  print("Rel. L2 Error", std::sqrt(diff/norm), false);
+  print("Rel. L2 Error", l2_error(QR, D), false);
   Dense DQ(Q);
   Dense QtQ(DQ.dim[1], DQ.dim[1]);
-  gemm(DQ, DQ, QtQ, CblasTrans, CblasNoTrans, 1, 1);
+  gemm(DQ, DQ, QtQ, true, false, 1, 1);
   Dense Id(identity, randx, QtQ.dim[0], QtQ.dim[1]);
-  diff = (QtQ - Id).norm();
-  norm = Id.norm();
-  print("Rel. L2 Orthogonality", std::sqrt(diff/norm), false);
+  print("Rel. L2 Orthogonality", l2_error(QtQ, Id), false);
   return 0;
 }
-
-

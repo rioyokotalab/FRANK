@@ -1,14 +1,14 @@
-#include "node_proxy.h"
-#include "low_rank.h"
-#include "hierarchical.h"
-#include "functions.h"
-#include "print.h"
-#include "timer.h"
+#include "hicma/hicma.h"
 
-#include <cublas_v2.h>
-#include <magma_v2.h>
+#include "cublas_v2.h"
+#include "magma_v2.h"
 #include "kblas.h"
 #include "testing_helper.h"
+
+#include <algorithm>
+#include <cmath>
+#include <vector>
+
 
 using namespace hicma;
 
@@ -34,9 +34,9 @@ int main(int argc, char** argv) {
   std::vector<Dense> vecC;
   for (int b=0; b<batchCount; b++) {
     std::vector<double> x;
-    Dense A(random, x, h_m[b], h_k[b], 0, 0);
-    Dense B(random, x, h_k[b], h_n[b], 0, 0);
-    Dense C(random, x, h_m[b], h_n[b], 0, 0);
+    Dense A(random_uniform, x, h_m[b], h_k[b], 0, 0);
+    Dense B(random_uniform, x, h_k[b], h_n[b], 0, 0);
+    Dense C(random_uniform, x, h_m[b], h_n[b], 0, 0);
     vecA.push_back(A);
     vecB.push_back(B);
     vecC.push_back(C);
@@ -106,9 +106,9 @@ int main(int argc, char** argv) {
     }
     Dense D = vecC[b];
     gemm(vecA[b], vecB[b], D, alpha, beta);
-    double diff = (C - D).norm();
-    double norm = D.norm();
-    print("Rel. L2 Error", std::sqrt(diff/norm), false);
+    double diff = norm(C - D);
+    double l2 = norm(D);
+    print("Rel. L2 Error", std::sqrt(diff/l2), false);
   }
   cudaFree(d_A);
   cudaFree(d_B);

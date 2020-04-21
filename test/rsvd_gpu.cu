@@ -1,18 +1,17 @@
-#include "low_rank.h"
-#include "functions.h"
-#include "print.h"
-#include "timer.h"
+#include "hicma/hicma.h"
 
-#include <algorithm>
-#include <cublas_v2.h>
-#include <magma_v2.h>
+#include "cublas_v2.h"
+#include "magma_v2.h"
 #include "kblas.h"
 #include "testing_helper.h"
 #include "batch_rand.h"
 #include "batch_ara.h"
 
+#include <algorithm>
 #include <iostream>
 #include <fstream>
+#include <vector>
+
 
 using namespace hicma;
 
@@ -29,12 +28,8 @@ int main(int argc, char** argv)
     int n = (b+1)*16;
     m = 16;
     n = 16;
-    std::vector<double> randx(2*m);
-    for (int i=0; i<2*m; i++) {
-      randx[i] = drand48();
-    }
-    std::sort(randx.begin(), randx.end());
-    Dense A(laplace1d, randx, m, n, 0, n);
+    std::vector<double> randx = get_sorted_random_vector(2*m);
+    Dense A(laplacend, randx, m, n, 0, n);
     vecA.push_back(A);
   }
 #else
@@ -139,10 +134,8 @@ int main(int argc, char** argv)
     vecLR.push_back(LR);
   }
   for (int b=0; b<batchCount; b++) {
-    double diff = (vecA[b] - Dense(vecLR[b])).norm();
-    double norm = vecA[b].norm();
     print("rank", h_k[b]);
-    print("Rel. L2 Error", std::sqrt(diff/norm), false);
+    print("Rel. L2 Error", l2_error(vecA[b], vecLR[b]), false);
   }
   cudaFree(p_A);
   cudaFree(p_U);

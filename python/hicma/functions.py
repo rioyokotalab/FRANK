@@ -47,3 +47,10 @@ def laplace1d(data, x, ni, nj, i_begin, j_begin):
     for i in range(ni):
         for j in range(nj):
             data[i, j] = 1. / (abs(x[i + i_begin] - x[j + j_begin]) + 1e-3)
+
+def identity(data, x, ni, nj, i_begin, j_begin):
+    # Expects matrix as x, just copies in
+    data.reshape((ni, nj))
+    for i in range(ni):
+        for j in range(nj):
+            data[i, j] = x[i_begin+i, j_begin+j]
