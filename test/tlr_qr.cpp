@@ -5,10 +5,13 @@
 #include "hicma/gpu_batch/batch.h"
 #include "hicma/util/print.h"
 #include "hicma/util/timer.h"
+#include "hicma/util/counter.h"
 
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <random>
+#include <iomanip>
 
 #include "yorel/multi_methods.hpp"
 
@@ -16,24 +19,49 @@ using namespace hicma;
 
 int main(int argc, char** argv) {
   yorel::multi_methods::initialize();
-  int N = 256;
-  int Nb = 32;
+  int N = argc > 1 ? atoi(argv[1]) : 256;
+  int Nb = argc > 2 ? atoi(argv[2]) : 32;
+  int rank = argc > 3 ? atoi(argv[3]) : 16;
+  double admis = argc > 4 ? atof(argv[4]) : 0;
+  int matCode = argc > 5 ? atoi(argv[5]) : 0;
+  int lra = argc > 6 ? atoi(argv[6]) : 2; updateCounter("LRA", lra);
   int Nc = N / Nb;
-  int rank = 16;
-  std::vector<double> randx(N);
-  for(int i = 0; i < N; i++) {
-    randx[i] = drand48();
+  std::vector<std::vector<double>> randpts;
+  updateCounter("LR_ADDITION_COUNTER", 1); //Enable LR addition counter
+
+  if(matCode == 0 || matCode == 1) { //Laplace1D or Helmholtz1D
+    randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
   }
-  std::sort(randx.begin(), randx.end());
+  else { //Ill-conditioned Cauchy2D (Matrix A3 From HODLR Paper)
+    randpts.push_back(equallySpacedVector(N, -1.25, 998.25));
+    randpts.push_back(equallySpacedVector(N, -0.15, 999.45));
+  }
+
+  Dense DA;
   Hierarchical A(Nc, Nc);
   Hierarchical D(Nc, Nc);
   Hierarchical Q(Nc, Nc);
+  Hierarchical T(Nc, Nc);
   for (int ic=0; ic<Nc; ic++) {
     for (int jc=0; jc<Nc; jc++) {
-      Dense Aij(laplace1d, randx, Nb, Nb, Nb*ic, Nb*jc);
-      Dense Qij(identity, randx, Nb, Nb, Nb*ic, Nb*jc);
+      Dense Aij;
+      if(matCode == 0) {
+        Dense _Aij(laplacend, randpts, Nb, Nb, Nb*ic, Nb*jc, ic, jc, 1);
+        Aij = std::move(_Aij);
+      }
+      else if(matCode == 1) {
+        Dense _Aij(helmholtznd, randpts, Nb, Nb, Nb*ic, Nb*jc, ic, jc, 1);
+        Aij = std::move(_Aij);
+      }
+      else if(matCode == 2) {
+        Dense _Aij(cauchy2d, randpts, Nb, Nb, Nb*ic, Nb*jc, ic, jc, 1);
+        Aij = std::move(_Aij);
+      }
+      Dense Qij(identity, randpts[0], Nb, Nb, Nb*ic, Nb*jc, ic, jc, 1);
+      Dense Tij(zeros, randpts[0], Nb, Nb);
       D(ic,jc) = Aij;
-      if (std::abs(ic - jc) <= 0) {
+      T(ic,jc) = Tij;
+      if (std::abs(ic - jc) <= (int)admis) {
         A(ic,jc) = Aij;
         Q(ic,jc) = Qij;
       }
@@ -44,6 +72,12 @@ int main(int argc, char** argv) {
     }
   }
   rsvd_batch();
+
+  // For residual measurement
+  Dense x(N); x = 1.0;
+  Dense Ax(N);
+  gemm(A, x, Ax, 1, 0);
+  //Approximation error
   double diff, norm;
   diff = (Dense(A) - Dense(D)).norm();
   norm = D.norm();
@@ -51,10 +85,8 @@ int main(int argc, char** argv) {
   print("Compression Accuracy");
   print("Rel. L2 Error", std::sqrt(diff/norm), false);
 
-  Dense Id(identity, randx, N, N);
-  Dense Z(zeros, randx, N, N);
-  Hierarchical T(Z, Nc, Nc);
   print("Time");
+  resetCounter("LR-addition");
   start("BLR QR decomposition");
   for(int k = 0; k < Nc; k++) {
     geqrt(A(k, k), T(k, k));
@@ -69,13 +101,6 @@ int main(int argc, char** argv) {
     }
   }
   stop("BLR QR decomposition");
-  //Build R: Take upper triangular part of A
-  Dense DR(A);
-  for(int i = 0; i < N; i++) {
-    for(int j = 0; j < i; j++) {
-      DR(i, j) = 0.0;
-    }
-  }
   //Build Q: Apply Q to Id
   for(int k = Nc-1; k >= 0; k--) {
     for(int i = Nc-1; i > k; i--) {
@@ -87,19 +112,37 @@ int main(int argc, char** argv) {
       larfb(A(k, k), T(k, k), Q(k, j), false);
     }
   }
-  Dense DQ(Q);
-  Dense QR(N, N);
-  gemm(DQ, DR, QR, 1, 0);
-  diff = (Dense(D) - QR).norm();
-  norm = D.norm();
-  print("Accuracy");
-  print("Rel. L2 Error", std::sqrt(diff/norm), false);
-  Dense QtQ(N, N);
-  gemm(DQ, DQ, QtQ, CblasTrans, CblasNoTrans, 1, 0);
-  diff = (QtQ - Id).norm();
-  norm = Id.norm();
+
+  printCounter("LR-addition");
+
+  //Build R: Take upper triangular part of modified A
+  for(int i=0; i<A.dim[0]; i++) {
+    for(int j=0; j<=i; j++) {
+      if(i == j) //Diagonal must be dense, zero lower-triangular part
+        zero_lowtri(A(i, j));
+      else
+        zero_whole(A(i, j));
+    }
+  }
+  //Residual
+  Dense Rx(N);
+  gemm(A, x, Rx, 1, 0);
+  Dense QRx(N);
+  gemm(Q, Rx, QRx, 1, 0);
+  diff = (Ax - QRx).norm();
+  norm = Ax.norm();
+  print("Residual");
+  print("Rel. Error (operator norm)", std::sqrt(diff/norm), false);
+  //Orthogonality
+  Dense Qx(N);
+  gemm(Q, x, Qx, 1, 0);
+  Dense QtQx(N);
+  Q.transpose();
+  gemm(Q, Qx, QtQx, 1, 0);
+  diff = (QtQx - x).norm();
+  norm = (double)N;
   print("Orthogonality");
-  print("Rel. L2 Error", std::sqrt(diff/norm), false);
+  print("Rel. Error (operator norm)", std::sqrt(diff/norm), false);
   return 0;
 }
 

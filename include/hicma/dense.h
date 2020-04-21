@@ -54,6 +54,24 @@ namespace hicma {
           const int j_abs=0,
           const int level=0);
 
+    Dense(
+          void (*func)(
+                       std::vector<double>& data,
+                       std::vector<std::vector<double>>& x,
+                       const int& ni,
+                       const int& nj,
+                       const int& i_begin,
+                       const int& j_begin
+                       ),
+          std::vector<std::vector<double>>& x,
+          const int ni,
+          const int nj,
+          const int i_begin=0,
+          const int j_begin=0,
+          const int i_abs=0,
+          const int j_abs=0,
+          const int level=0);
+
     Dense(const Dense& A);
 
     Dense(Dense&& A);

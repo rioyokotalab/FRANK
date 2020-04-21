@@ -17,6 +17,7 @@ include(add_external)
 add_library(util
     src/util/print.cpp
     src/util/timer.cpp
+    src/util/counter.cpp
 )
 target_include_directories(util
     PUBLIC ${PROJECT_SOURCE_DIR}/include
@@ -40,27 +41,44 @@ add_library(hicma
     src/hierarchical.cpp
     src/functions.cpp
     src/operations/getrf.cpp
+    src/operations/trmm.cpp
     src/operations/trsm.cpp
     src/operations/gemm.cpp
     src/operations/tpmqrt.cpp
     src/operations/tpqrt.cpp
     src/operations/larfb.cpp
     src/operations/geqrt.cpp
+    src/operations/latms.cpp
     src/operations/qr.cpp
+    src/operations/get_dim.cpp
+    src/operations/misc.cpp
 )
+
+# Custom compilation options
+target_compile_options(util PUBLIC -O3)
+target_compile_options(gpu_batch PUBLIC -O3)
+target_compile_options(hicma PUBLIC -O3)
+
 target_include_directories(hicma
     PUBLIC ${PROJECT_SOURCE_DIR}/include
            ${CMAKE_CURRENT_BINARY_DIR}/yomm11-src/include
 )
 target_include_directories(hicma PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_link_libraries(hicma util gpu_batch yomm11)
+
+# Check for OpenMP
+find_package(OpenMP)
+if(OpenMP_FOUND)
+  target_compile_options(hicma PUBLIC ${OpenMP_CXX_FLAGS})
+endif()
 # Flag for MKL Usage
 if(NOT USE_MKL)
     set(USE_MKL OFF)
 endif()
 if(USE_MKL)
-    # target_compile_options(hicma PUBLIC -DUSE_MKL) #Correct one
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_MKL")
+    target_compile_definitions(util PUBLIC -DUSE_MKL)
+    target_compile_definitions(gpu_batch PUBLIC -DUSE_MKL)
+    target_compile_definitions(hicma PUBLIC -DUSE_MKL)
     target_link_libraries(hicma mkl_intel_lp64 mkl_intel_thread mkl_core iomp5 pthread)
 else()
     target_link_libraries(hicma blas lapacke)

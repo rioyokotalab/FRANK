@@ -43,6 +43,9 @@ namespace hicma {
     tree.put("<xmlattr>.type", A.type());
     tree.put("<xmlattr>.dim0", A.dim[0]);
     tree.put("<xmlattr>.dim1", A.dim[1]);
+    tree.put("<xmlattr>.i_abs", A.i_abs);
+    tree.put("<xmlattr>.j_abs", A.j_abs);
+    tree.put("<xmlattr>.level", A.level);
   } END_SPECIALIZATION;
 
   BEGIN_SPECIALIZATION(
@@ -57,6 +60,9 @@ namespace hicma {
     tree.put("<xmlattr>.type", A.type());
     tree.put("<xmlattr>.dim0", A.dim[0]);
     tree.put("<xmlattr>.dim1", A.dim[1]);
+    tree.put("<xmlattr>.i_abs", A.i_abs);
+    tree.put("<xmlattr>.j_abs", A.j_abs);
+    tree.put("<xmlattr>.level", A.level);
     tree.put("<xmlattr>.rank", A.rank);
     tree.put("<xmlattr>.svalues", singular_values);
   } END_SPECIALIZATION;
@@ -73,6 +79,9 @@ namespace hicma {
     tree.put("<xmlattr>.type", A.type());
     tree.put("<xmlattr>.dim0", A.dim[0]);
     tree.put("<xmlattr>.dim1", A.dim[1]);
+    tree.put("<xmlattr>.i_abs", A.i_abs);
+    tree.put("<xmlattr>.j_abs", A.j_abs);
+    tree.put("<xmlattr>.level", A.level);
     tree.put("<xmlattr>.svalues", singular_values);
   } END_SPECIALIZATION;
 
@@ -83,7 +92,7 @@ namespace hicma {
     std::cerr << "WARNING: XML output not defined for " << A.type() << "!" << std::endl;
   } END_SPECIALIZATION;
 
-  void printXML(const Node& A) {
+  void printXML(const Node& A, std::string filename) {
     namespace pt = boost::property_tree;
     pt::ptree tree;
     // Write any header info you want here, like a time stamp
@@ -92,7 +101,7 @@ namespace hicma {
     fillXML(A, root_el);
     tree.add_child("root", root_el);
     pt::xml_writer_settings<std::string> settings(' ', 4);
-    write_xml("matrix.xml", tree, std::locale(), settings);
+    write_xml(filename.c_str(), tree, std::locale(), settings);
   }
 
   void print(std::string s) {

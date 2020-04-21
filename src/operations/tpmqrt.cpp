@@ -4,9 +4,12 @@
 #include "hicma/dense.h"
 #include "hicma/low_rank.h"
 #include "hicma/hierarchical.h"
+#include "hicma/functions.h"
 #include "hicma/operations/gemm.h"
+#include "hicma/operations/trmm.h"
 
 #include <iostream>
+#include <vector>
 
 #ifdef USE_MKL
 #include <mkl.h>
@@ -33,7 +36,7 @@ BEGIN_SPECIALIZATION(
   LAPACKE_dtprfb(
     LAPACK_ROW_MAJOR,
     'L', (trans ? 'T': 'N'), 'F', 'C',
-    A.dim[0], A.dim[1], V.dim[1], 0,
+    B.dim[0], B.dim[1], T.dim[1], 0,
     &V[0], V.dim[1],
     &T[0], T.dim[1],
     &A[0], A.dim[1],
@@ -46,9 +49,13 @@ BEGIN_SPECIALIZATION(
   const LowRank& V, const Dense& T, Dense& A, Dense& B,
   const bool trans
 ) {
-  Dense UV(V.U.dim[0], V.V.dim[1]);
-  gemm(V.U, V.V, UV, 1, 0);
-  tpmqrt(UV, T, A, B, trans);
+  std::vector<double> x;
+  Dense C(A);
+  LowRank Vt(V); Vt.transpose();
+  gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
+  trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
+  gemm(Dense(identity, x, C.dim[0], C.dim[0]), C, A, -1, 1); //A = A - I*C
+  gemm(V, C, B, -1, 1); //B = B - Y*C
 } END_SPECIALIZATION;
 
 BEGIN_SPECIALIZATION(
@@ -56,9 +63,12 @@ BEGIN_SPECIALIZATION(
   const Dense& V, const Dense& T, LowRank& A, Dense& B,
   const bool trans
 ) {
-  Dense AD(A);
-  tpmqrt(V, T, AD, B, trans);
-  A = LowRank(AD, A.rank);
+  std::vector<double> x;
+  Dense C(A);
+  gemm(V, B, C, CblasTrans, CblasNoTrans, 1, 1); //C = A + Y^t*B
+  trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
+  gemm(Dense(identity, x, C.dim[0], C.dim[0]), C, A, -1, 1); //A = A - I*C //Recompression
+  gemm(V, C, B, -1, 1); //B = B - Y*C
 } END_SPECIALIZATION;
 
 BEGIN_SPECIALIZATION(
@@ -66,11 +76,14 @@ BEGIN_SPECIALIZATION(
   const LowRank& V, const Dense& T, LowRank& A, Dense& B,
   const bool trans
 ) {
-  Dense UV(V.U.dim[0], V.V.dim[1]);
-  gemm(V.U, V.V, UV, 1, 0);
-  Dense AD(A);
-  tpmqrt(UV, T, AD, B, trans);
-  A = LowRank(AD, A.rank);
+  std::vector<double> x;
+  LowRank C(A);
+  LowRank Vt(V);
+  Vt.transpose();
+  gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
+  trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
+  gemm(Dense(identity, x, C.dim[0], C.dim[0]), C, A, -1, 1); //A = A - I*C
+  gemm(V, C, B, -1, 1); //B = B - Y*C
 } END_SPECIALIZATION;
 
 BEGIN_SPECIALIZATION(
@@ -80,13 +93,16 @@ BEGIN_SPECIALIZATION(
 ) {
   Dense Vt(V);
   Vt.transpose();
+  Dense T_upper_tri(T);
+  for(int i=0; i<T_upper_tri.dim[0]; i++)
+    for(int j=0; j<i; j++)
+      T_upper_tri(i, j) = 0.0;
   Hierarchical AH(A);
   gemm(Vt, B, AH, 1, 1); // AH = A + Vt*B
-  Dense Tt(T);
-  if(trans) Tt.transpose();
-  gemm(Tt, AH, A, -1, 1); // A = A - (T or Tt)*AH
-  Dense VTt(V.dim[0], Tt.dim[1]);
-  gemm(V, Tt, VTt, 1, 0);
+  if(trans) T_upper_tri.transpose();
+  gemm(T_upper_tri, AH, A, -1, 1); // A = A - (T or Tt)*AH
+  Dense VTt(V.dim[0], T_upper_tri.dim[1]);
+  gemm(V, T_upper_tri, VTt, 1, 0);
   gemm(VTt, AH, B, -1, 1); // B = B - V*(T or Tt)*AH
 } END_SPECIALIZATION;
 
@@ -105,9 +121,14 @@ BEGIN_SPECIALIZATION(
   const Dense& V, const Dense& T, Dense& A, LowRank& B,
   const bool trans
 ) {
-  Dense BD(B);
-  tpmqrt(V, T, A, BD, trans);
-  B = LowRank(BD, B.rank);
+  std::vector<double> x;
+  Dense C(A);
+  Dense Vt(V);
+  Vt.transpose();
+  gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
+  trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
+  gemm(Dense(identity, x, C.dim[0], C.dim[0]), C, A, -1, 1); //A = A - I*C
+  gemm(V, C, B, -1, 1); //B = B - Y*C
 } END_SPECIALIZATION;
 
 BEGIN_SPECIALIZATION(
@@ -115,11 +136,14 @@ BEGIN_SPECIALIZATION(
   const LowRank& V, const Dense& T, Dense& A, LowRank& B,
   const bool trans
 ) {
-  Dense UV(V.U.dim[0], V.V.dim[1]);
-  gemm(V.U, V.V, UV, 1, 0);
-  Dense BD(B);
-  tpmqrt(UV, T, A, BD, trans);
-  B = LowRank(BD, B.rank);
+  std::vector<double> x;
+  Dense C(A);
+  LowRank Vt(V);
+  Vt.transpose();
+  gemm(Vt, B, C, 1, 1); //C = A + Y^t * B
+  trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
+  gemm(Dense(identity, x, C.dim[0], C.dim[0]), C, A, -1, 1); //A = A - I*C
+  gemm(V, C, B, -1, 1); //B = B - Y*C
 } END_SPECIALIZATION;
 
 BEGIN_SPECIALIZATION(
@@ -127,11 +151,14 @@ BEGIN_SPECIALIZATION(
   const Dense& V, const Dense& T, LowRank& A, LowRank& B,
   const bool trans
 ) {
-  Dense AD(A);
-  Dense BD(B);
-  tpmqrt(V, T, AD, BD, trans);
-  A = LowRank(AD, A.rank);
-  B = LowRank(BD, B.rank);
+  std::vector<double> x;
+  LowRank C(A);
+  Dense Vt(V);
+  Vt.transpose();
+  gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
+  trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
+  gemm(Dense(identity, x, C.dim[0], C.dim[0]), C, A, -1, 1); //A = A - I*C
+  gemm(V, C, B, -1, 1); //B = B - Y*C
 } END_SPECIALIZATION;
 
 BEGIN_SPECIALIZATION(
@@ -139,13 +166,14 @@ BEGIN_SPECIALIZATION(
   const LowRank& V, const Dense& T, LowRank& A, LowRank& B,
   const bool trans
 ) {
-  Dense UV(V.U.dim[0], V.V.dim[1]);
-  gemm(V.U, V.V, UV, 1, 0);
-  Dense AD(A);
-  Dense BD(B);
-  tpmqrt(UV, T, AD, BD, trans);
-  A = LowRank(AD, A.rank);
-  B = LowRank(BD, B.rank);
+  std::vector<double> x;
+  LowRank C(A);
+  LowRank Vt(V);
+  Vt.transpose();
+  gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
+  trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
+  gemm(Dense(identity, x, C.dim[0], C.dim[0]), C, A, -1, 1); //A = A - I*C
+  gemm(V, C, B, -1, 1); //B = B - Y*C
 } END_SPECIALIZATION;
 
 BEGIN_SPECIALIZATION(
@@ -153,16 +181,19 @@ BEGIN_SPECIALIZATION(
   const Dense& V, const Dense& T, Dense& A, Hierarchical& B,
   const bool trans
 ) {
-    Dense Vt(V);
-    Vt.transpose();
-    Dense A_copy(A);
-    gemm(Vt, B, A_copy, 1, 1); // A_copy = A + Vt*B
-    Dense Tt(T);
-    if(trans) Tt.transpose();
-    gemm(Tt, A_copy, A, -1, 1); // A = A - (T or Tt)*A_copy
-    Dense VTt(V.dim[0], Tt.dim[1]);
-    gemm(V, Tt, VTt, 1, 1);
-    gemm(VTt, A_copy, B, -1, 1); // B = B - V*(T or Tt)*A_copy
+  Dense C(A);
+  Dense Vt(V);
+  Vt.transpose();
+  Dense T_upper_tri(T);
+  for(int i=0; i<T_upper_tri.dim[0]; i++)
+    for(int j=0; j<i; j++)
+      T_upper_tri(i, j) = 0.0;
+  gemm(Vt, B, C, 1, 1); // C = A + Y^t*B
+  if(trans) T_upper_tri.transpose();
+  gemm(T_upper_tri, C, A, -1, 1); // A = A - (T or Tt)*C
+  Dense VTt(V.dim[0], T_upper_tri.dim[1]);
+  gemm(V, T_upper_tri, VTt, 1, 1);
+  gemm(VTt, C, B, -1, 1); // B = B - V*(T or Tt)*C
 } END_SPECIALIZATION;
 
 BEGIN_SPECIALIZATION(
@@ -213,3 +244,4 @@ BEGIN_SPECIALIZATION(
 } END_SPECIALIZATION;
 
 } // namespace hicma
+

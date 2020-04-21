@@ -9,7 +9,7 @@ namespace hicma {
 
   class Node;
 
-  void printXML(const Node& A);
+  void printXML(const Node& A, std::string filename = "matrix.xml");
 
   void print(std::string s);
 
