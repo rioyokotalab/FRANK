@@ -177,7 +177,11 @@ define_method(
 }
 
 define_method(
-  void, update_splitted_size_omm, (const Node& A, int64_t& rows, int64_t& cols)
+  void, update_splitted_size_omm,
+  (
+    [[maybe_unused]] const Node& A,
+    [[maybe_unused]] int64_t& rows, [[maybe_unused]] int64_t& cols
+  )
 ) {
   rows++;
 }
@@ -238,7 +242,8 @@ define_method(
 define_method(
   NodeProxy, concat_columns_omm,
   (
-    const Dense& A, const Hierarchical& splitted, const Dense& Q,
+    [[maybe_unused]] const Dense& A, const Hierarchical& splitted,
+    [[maybe_unused]] const Dense& Q,
     int64_t& currentRow
   )
 ) {
@@ -284,7 +289,8 @@ define_method(
 define_method(
   NodeProxy, concat_columns_omm,
   (
-    const Hierarchical& A, const Hierarchical& splitted, const Dense& Q,
+    const Hierarchical& A, const Hierarchical& splitted,
+    [[maybe_unused]] const Dense& Q,
     int64_t& currentRow)
   ) {
   //In case of hierarchical, just put element in respective cells

@@ -661,7 +661,7 @@ define_method(
   Dense, gemm_omm,
   (
     const Hierarchical& A, const Dense& B,
-    double alpha, bool TransA,  bool TransB
+    double alpha, [[maybe_unused]] bool TransA, [[maybe_unused]] bool TransB
   )
 ) {
   // TODO Implement with transposed allowed
@@ -678,7 +678,7 @@ define_method(
   Dense, gemm_omm,
   (
     const Dense& A, const Hierarchical& B,
-    double alpha, bool TransA,  bool TransB
+    double alpha, [[maybe_unused]] bool TransA, [[maybe_unused]] bool TransB
   )
 ) {
   // TODO Implement with transposed allowed

@@ -41,8 +41,6 @@ define_method(void, geqrt_omm, (Hierarchical& A, Hierarchical& T)) {
     for(int64_t j = k+1; j < A.dim[1]; j++) {
       larfb(A(k, k), T(k, k), A(k, j), true);
     }
-    int64_t dim0 = -1;
-    int64_t dim1 = -1;
     for(int64_t i = k+1; i < A.dim[0]; i++) {
       tpqrt(A(k, k), A(i, k), T(i, k));
       for(int64_t j = k+1; j < A.dim[1]; j++) {

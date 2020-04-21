@@ -26,7 +26,8 @@ Timer& start(std::string event) {
   return *current_timer;
 }
 
-double stop(std::string event) {
+// TODO Refactor so this doesn't need event?
+double stop([[maybe_unused]] std::string event) {
   assert(current_timer->get_name() == event);
   double duration = current_timer->stop();
   if (current_timer->get_parent() != nullptr) {
