@@ -69,8 +69,8 @@ define_method(DenseIndexSetPair, one_sided_id_omm, (Dense& A, int64_t k)) {
     trsm(R11, T, TRSM_UPPER);
     col_basis = interleave_id(T, selected_cols);
   } else {
-    std::vector<double> x;
-    col_basis = interleave_id(Dense(identity, x, k, k), selected_cols);
+    col_basis = interleave_id(
+      Dense(identity, std::vector<std::vector<double>>(), k, k), selected_cols);
   }
   selected_cols.resize(k);
   // Returns the selected columns of A

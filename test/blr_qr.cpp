@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
         Dense _Aij(cauchy2d, randpts, Nb, Nb, Nb*ic, Nb*jc);
         Aij = std::move(_Aij);
       }
-      Dense Rij(zeros, randpts[0], Nb, Nb, Nb*ic, Nb*jc);
+      Dense Rij(zeros, randpts, Nb, Nb, Nb*ic, Nb*jc);
       D(ic,jc) = Aij;
       if (std::abs(ic - jc) <= (int64_t)admis) {
         A(ic,jc) = Aij;

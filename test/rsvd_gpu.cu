@@ -29,7 +29,7 @@ int main(int argc, char** argv)
     m = 16;
     n = 16;
     std::vector<double> randx = get_sorted_random_vector(2*m);
-    Dense A(laplace1d, randx, m, n, 0, n);
+    Dense A(laplacend, randx, m, n, 0, n);
     vecA.push_back(A);
   }
 #else

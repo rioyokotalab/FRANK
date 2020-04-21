@@ -11,22 +11,34 @@ namespace hicma
 class Dense;
 
 void zeros(
-  Dense& A, const std::vector<double>& x, int64_t row_start, int64_t col_start);
+  Dense& A,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
 
 void identity(
-  Dense& A, const std::vector<double>& x, int64_t row_start, int64_t col_start);
+  Dense& A,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
 
 void random_normal(
-  Dense& A, const std::vector<double>& x, int64_t row_start, int64_t col_start);
+  Dense& A,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
 
 void random_uniform(
-  Dense& A, const std::vector<double>& x, int64_t row_start, int64_t col_start);
+  Dense& A,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
 
 void arange(
-  Dense& A, const std::vector<double>& x, int64_t row_start, int64_t col_start);
-
-void laplace1d(
-  Dense& A, const std::vector<double>& x, int64_t row_start, int64_t col_start);
+  Dense& A,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
 
 void cauchy2d(
   Dense& A,

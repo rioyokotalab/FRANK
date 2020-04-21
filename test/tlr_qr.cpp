@@ -50,8 +50,8 @@ int main(int argc, char** argv) {
         Dense _Aij(cauchy2d, randpts, Nb, Nb, Nb*ic, Nb*jc);
         Aij = std::move(_Aij);
       }
-      Dense Qij(identity, randpts[0], Nb, Nb, Nb*ic, Nb*jc);
-      Dense Tij(zeros, randpts[0], Nb, Nb);
+      Dense Qij(identity, randpts, Nb, Nb, Nb*ic, Nb*jc);
+      Dense Tij(zeros, randpts, Nb, Nb);
       D(ic,jc) = Aij;
       T(ic,jc) = Tij;
       if (std::abs(ic - jc) <= (int64_t)admis) {

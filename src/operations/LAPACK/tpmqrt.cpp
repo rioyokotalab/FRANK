@@ -47,13 +47,15 @@ define_method(
   void, tpmqrt_omm,
   (const LowRank& V, const Dense& T, Dense& A, Dense& B, bool trans)
 ) {
-  std::vector<double> x;
   Dense C(A);
   LowRank Vt(V);
   transpose(Vt);
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
-  gemm(Dense(identity, x, C.dim[0], C.dim[0]), C, A, -1, 1); //A = A - I*C
+  gemm(
+    Dense(identity, std::vector<std::vector<double>>(), C.dim[0], C.dim[0]),
+    C, A, -1, 1
+  ); //A = A - I*C
   gemm(V, C, B, -1, 1); //B = B - Y*C
 }
 
@@ -61,11 +63,13 @@ define_method(
   void, tpmqrt_omm,
   (const Dense& V, const Dense& T, LowRank& A, Dense& B, bool trans)
 ) {
-  std::vector<double> x;
   Dense C(A);
   gemm(V, B, C, true, false, 1, 1); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
-  gemm(Dense(identity, x, C.dim[0], C.dim[0]), C, A, -1, 1); //A = A - I*C //Recompression
+  gemm(
+    Dense(identity, std::vector<std::vector<double>>(), C.dim[0], C.dim[0]),
+    C, A, -1, 1
+  ); //A = A - I*C //Recompression
   gemm(V, C, B, -1, 1); //B = B - Y*C
 }
 
@@ -73,13 +77,15 @@ define_method(
   void, tpmqrt_omm,
   (const LowRank& V, const Dense& T, LowRank& A, Dense& B, bool trans)
 ) {
-  std::vector<double> x;
   LowRank C(A);
   LowRank Vt(V);
   transpose(Vt);
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
-  gemm(Dense(identity, x, C.dim[0], C.dim[0]), C, A, -1, 1); //A = A - I*C
+  gemm(
+    Dense(identity, std::vector<std::vector<double>>(), C.dim[0], C.dim[0]),
+    C, A, -1, 1
+  ); //A = A - I*C
   gemm(V, C, B, -1, 1); //B = B - Y*C
 }
 
@@ -117,13 +123,15 @@ define_method(
   void, tpmqrt_omm,
   (const Dense& V, const Dense& T, Dense& A, LowRank& B, bool trans)
 ) {
-  std::vector<double> x;
   Dense C(A);
   Dense Vt(V);
   transpose(Vt);
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
-  gemm(Dense(identity, x, C.dim[0], C.dim[0]), C, A, -1, 1); //A = A - I*C
+  gemm(
+    Dense(identity, std::vector<std::vector<double>>(), C.dim[0], C.dim[0]),
+    C, A, -1, 1
+  ); //A = A - I*C
   gemm(V, C, B, -1, 1); //B = B - Y*C
 }
 
@@ -131,13 +139,15 @@ define_method(
   void, tpmqrt_omm,
   (const LowRank& V, const Dense& T, Dense& A, LowRank& B, bool trans)
 ) {
-  std::vector<double> x;
   Dense C(A);
   LowRank Vt(V);
   transpose(Vt);
   gemm(Vt, B, C, 1, 1); //C = A + Y^t * B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
-  gemm(Dense(identity, x, C.dim[0], C.dim[0]), C, A, -1, 1); //A = A - I*C
+  gemm(
+    Dense(identity, std::vector<std::vector<double>>(), C.dim[0], C.dim[0]),
+    C, A, -1, 1
+  ); //A = A - I*C
   gemm(V, C, B, -1, 1); //B = B - Y*C
 }
 
@@ -145,13 +155,15 @@ define_method(
   void, tpmqrt_omm,
   (const Dense& V, const Dense& T, LowRank& A, LowRank& B, bool trans)
 ) {
-  std::vector<double> x;
   LowRank C(A);
   Dense Vt(V);
   transpose(Vt);
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
-  gemm(Dense(identity, x, C.dim[0], C.dim[0]), C, A, -1, 1); //A = A - I*C
+  gemm(
+    Dense(identity, std::vector<std::vector<double>>(), C.dim[0], C.dim[0]),
+    C, A, -1, 1
+  ); //A = A - I*C
   gemm(V, C, B, -1, 1); //B = B - Y*C
 }
 
@@ -159,13 +171,15 @@ define_method(
   void, tpmqrt_omm,
   (const LowRank& V, const Dense& T, LowRank& A, LowRank& B, bool trans)
 ) {
-  std::vector<double> x;
   LowRank C(A);
   LowRank Vt(V);
   transpose(Vt);
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
-  gemm(Dense(identity, x, C.dim[0], C.dim[0]), C, A, -1, 1); //A = A - I*C
+  gemm(
+    Dense(identity, std::vector<std::vector<double>>(), C.dim[0], C.dim[0]),
+    C, A, -1, 1
+  ); //A = A - I*C
   gemm(V, C, B, -1, 1); //B = B - Y*C
 }
 

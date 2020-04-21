@@ -15,9 +15,11 @@ TEST(DenseTest, ContructorHierarchical) {
   int64_t N = 128;
   int64_t nblocks = 4;
   int64_t nleaf = N / nblocks;
-  std::vector<double> randx = get_sorted_random_vector(N);
   // Construct single level all-dense hierarchical
-  Hierarchical H(random_uniform, randx, N, N, 0, nleaf, nblocks, nblocks, nblocks);
+  Hierarchical H(
+    random_uniform, std::vector<std::vector<double>>(),
+    N, N, 0, nleaf, nblocks, nblocks, nblocks
+  );
   Dense D(H);
   // Check block-by-block and element-by-element if values match
   for (int64_t ib=0; ib<nblocks; ++ib) {
@@ -36,8 +38,7 @@ TEST(DenseTest, resize) {
   timing::start("Init");
   yorel::yomm2::update_methods();
   int64_t N = 4092;
-  std::vector<double> vec;
-  Dense D(random_normal, vec, N, N);
+  Dense D(random_normal, std::vector<std::vector<double>>(), N, N);
   Dense D_compare(D);
   timing::stopAndPrint("Init");
   timing::start("Resize");

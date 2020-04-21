@@ -13,7 +13,7 @@ int main() {
   int64_t N = 64;
   int64_t Nb = 16;
   int64_t Nc = N / Nb;
-  std::vector<double> randx = get_sorted_random_vector(N);
+  std::vector<std::vector<double>> randx{get_sorted_random_vector(N)};
   Hierarchical A(Nc, Nc);
   Hierarchical Q(Nc, Nc);
   Hierarchical R(Nc, Nc);
@@ -21,7 +21,7 @@ int main() {
   timing::start("Init matrix");
   for(int64_t ic = 0; ic < Nc; ic++) {
     for(int64_t jc = 0; jc < Nc; jc++) {
-      Dense Aij(laplace1d, randx, Nb, Nb, Nb*ic, Nb*jc);
+      Dense Aij(laplacend, randx, Nb, Nb, Nb*ic, Nb*jc);
       A(ic, jc) = Aij;
       //Fill R with zeros
       Dense Rij(Nb, Nb);

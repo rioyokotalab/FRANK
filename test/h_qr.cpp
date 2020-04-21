@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
   int64_t N = 128;
   int64_t nleaf = 16;
   int64_t rank = 8;
-  std::vector<double> randx = get_sorted_random_vector(N);
+  std::vector<std::vector<double>> randx{get_sorted_random_vector(N)};
   timing::start("Init matrix");
   int64_t nblocks=0, admis=0;
   if(argc < 2) {
@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
     admis = 1; // Strong admissibility
   }
   timing::start("CPU compression");
-  Hierarchical A(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
+  Hierarchical A(laplacend, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   timing::stop("CPU compression");
   rsvd_batch();
   Hierarchical Q(zeros, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
   timing::stopAndPrint("Init matrix");
   admis = N / nleaf; // Full rank
   timing::start("Dense tree");
-  Hierarchical D(laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
+  Hierarchical D(laplacend, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   timing::stopAndPrint("Dense tree");
   print("Compression Accuracy");
   print("Rel. L2 Error", l2_error(A, D), false);

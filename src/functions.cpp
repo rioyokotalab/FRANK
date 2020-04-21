@@ -14,7 +14,7 @@ namespace hicma
 {
 
 void zeros(
-  Dense& A, [[maybe_unused]] const std::vector<double>& x,
+  Dense& A, [[maybe_unused]] const std::vector<std::vector<double>>& x,
   [[maybe_unused]] int64_t row_start, [[maybe_unused]] int64_t col_start
 ) {
   for (int64_t i=0; i<A.dim[0]; i++) {
@@ -25,7 +25,7 @@ void zeros(
 }
 
 void identity(
-  Dense& A, [[maybe_unused]] const std::vector<double>& x,
+  Dense& A, [[maybe_unused]] const std::vector<std::vector<double>>& x,
   int64_t row_start, int64_t col_start
 ) {
   for (int64_t i=0; i<A.dim[0]; i++) {
@@ -36,7 +36,7 @@ void identity(
 }
 
 void random_normal(
-  Dense& A, [[maybe_unused]] const std::vector<double>& x,
+  Dense& A, [[maybe_unused]] const std::vector<std::vector<double>>& x,
   [[maybe_unused]] int64_t row_start, [[maybe_unused]] int64_t col_start
 ) {
   std::random_device rd;
@@ -52,7 +52,7 @@ void random_normal(
 }
 
 void random_uniform(
-  Dense& A, [[maybe_unused]] const std::vector<double>& x,
+  Dense& A, [[maybe_unused]] const std::vector<std::vector<double>>& x,
   [[maybe_unused]] int64_t row_start, [[maybe_unused]] int64_t col_start
 ) {
   std::random_device rd;
@@ -68,23 +68,12 @@ void random_uniform(
 }
 
 void arange(
-  Dense& A, [[maybe_unused]] const std::vector<double>& x,
+  Dense& A, [[maybe_unused]] const std::vector<std::vector<double>>& x,
   [[maybe_unused]] int64_t row_start, [[maybe_unused]] int64_t col_start
 ) {
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {
       A(i, j) = (double)(i*A.dim[1]+j);
-    }
-  }
-}
-
-void laplace1d(
-  Dense& A, const std::vector<double>& x, int64_t row_start, int64_t col_start
-) {
-  for (int64_t i=0; i<A.dim[0]; i++) {
-    for (int64_t j=0; j<A.dim[1]; j++) {
-      A(i, j) = 1 / (
-        std::abs(x[i+row_start] - x[j+col_start]) + 1e-3);
     }
   }
 }

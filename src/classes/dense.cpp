@@ -125,28 +125,15 @@ Dense::Dense(int64_t n_rows, int64_t n_cols)
 
 Dense::Dense(
   void (*func)(
-    Dense& A, const std::vector<double>& x, int64_t row_start, int64_t col_start
+    Dense& A,
+    const std::vector<std::vector<double>>& x,
+    int64_t row_start, int64_t col_start
   ),
-  const std::vector<double>& x,
+  const std::vector<std::vector<double>>& x,
   int64_t n_rows, int64_t n_cols,
   int64_t row_start, int64_t col_start
 ) : Dense(n_rows, n_cols) {
   func(*this, x, row_start, col_start);
-}
-
-Dense::Dense(
-  void (*func)(
-    Dense& A,
-    const std::vector<std::vector<double>>& x,
-    int64_t i_begin, int64_t j_begin
-  ),
-  const std::vector<std::vector<double>>& x,
-  const int64_t n_rows, const int64_t n_cols,
-  const int64_t i_begin, const int64_t j_begin
-) : dim{n_rows, n_cols}, stride(dim[1]), data(dim[0]*dim[1]),
-    data_ptr(nullptr), const_data_ptr(nullptr), owning(true)
-{
-  func(*this, x, i_begin, j_begin);
 }
 
 Dense::Dense(

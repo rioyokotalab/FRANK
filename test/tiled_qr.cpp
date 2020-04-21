@@ -17,14 +17,22 @@ int main(int argc, char** argv) {
   double conditionNumber = argc > 4 ? atof(argv[4]) : 1e+0;
   int64_t Nc = N / Nb;
   std::vector<std::vector<double>> randpts;
-  Dense DA;
 
-  if(matCode == 0 || matCode == 1) { //Laplace1D or Helmholtz1D
+  Hierarchical T(
+    zeros, std::vector<std::vector<double>>(), N, N, 0, Nb, Nc, Nc, Nc);
+  Hierarchical Q(
+    identity, std::vector<std::vector<double>>(), N, N, 0, Nb, Nc, Nc, Nc);
+  Hierarchical A;
+  if(matCode == 0) { //Laplace1D
     randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
-  }
-  else if(matCode == 2) { //Ill-conditioned Cauchy2D (Matrix A3 From HODLR Paper)
+    A = Hierarchical(laplacend, randpts, N, N, 0, Nb, Nc, Nc, Nc);
+  } else if (matCode == 1) { // Helmholtz1D
+    randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
+    A = Hierarchical(helmholtznd, randpts, N, N, 0, Nb, Nc, Nc, Nc);
+  } else if (matCode == 2) { //Ill-conditioned Cauchy2D (Matrix A3 From HODLR Paper)
     randpts.push_back(equallySpacedVector(N, -1.25, 998.25));
     randpts.push_back(equallySpacedVector(N, -0.15, 999.45));
+    A = Hierarchical(cauchy2d, randpts, N, N, 0, Nb, Nc, Nc, Nc);
   }
   else { //Ill-conditioned generated from DLATMS
     //Configurations
@@ -38,43 +46,12 @@ int main(int argc, char** argv) {
 
     std::vector<double> d(N, 0.0); //Singular values to be used
     int64_t mode = 1; //See docs
-    Dense _DA(N, N);
-    latms(dist, iseed, sym, d, mode, conditionNumber, dmax, kl, ku, pack, _DA);
-    DA = std::move(_DA);
-
+    Dense DA(N, N);
+    latms(dist, iseed, sym, d, mode, conditionNumber, dmax, kl, ku, pack, DA);
+    A = NoCopySplit(DA, Nc, Nc);
     randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
   }
 
-  Hierarchical A(Nc, Nc);
-  Hierarchical T(Nc, Nc);
-  Hierarchical Q(Nc, Nc);
-  for(int64_t ic = 0; ic < Nc; ic++) {
-    for(int64_t jc = 0; jc < Nc; jc++) {
-      Dense Aij;
-      if(matCode == 0) {
-        Dense _Aij(laplacend, randpts, Nb, Nb, Nb*ic, Nb*jc);
-        Aij = std::move(_Aij);
-      }
-      else if(matCode == 1) {
-        Dense _Aij(helmholtznd, randpts, Nb, Nb, Nb*ic, Nb*jc);
-        Aij = std::move(_Aij);
-      }
-      else if(matCode == 2) {
-        Dense _Aij(cauchy2d, randpts, Nb, Nb, Nb*ic, Nb*jc);
-        Aij = std::move(_Aij);
-      }
-      else {
-        Dense _Aij(zeros, randpts[0], Nb, Nb, Nb*ic, Nb*jc);
-        getSubmatrix(DA, Nb, Nb, Nb*ic, Nb*jc, _Aij);
-        Aij = std::move(_Aij);
-      }
-      Dense Qij(identity, randpts[0], Nb, Nb, Nb*ic, Nb*jc);
-      Dense Tij(zeros, randpts[0], Nb, Nb);
-      A(ic, jc) = Aij;
-      Q(ic, jc) = Qij;
-      T(ic, jc) = Tij;
-    }
-  }
   //Compute condition number of A
   print("Cond(A)", cond(Dense(A)), false);
 

@@ -17,19 +17,20 @@ int main(int argc, char const *argv[])
   int64_t rank = argc > 3 ? atoi(argv[3]) : 8;
   int64_t admis = 0;
   int64_t nleaf = (N+nblocks-1)/nblocks;
-  std::vector<double> randx = get_sorted_random_vector(N);
+  std::vector<std::vector<double>> randx{get_sorted_random_vector(N)};
   timing::start("Init matrix");
   UniformHierarchical A(
-    laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
+    laplacend, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   timing::stopAndPrint("Init matrix", 1);
   timing::start("Init matrix SVD");
   UniformHierarchical A_svd(
-    laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks, true);
+    laplacend, randx, N, N, rank, nleaf, admis, nblocks, nblocks, true);
   timing::stopAndPrint("Init matrix SVD", 1);
   // printXML(A);
   Hierarchical H(
-    laplace1d, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
-  Hierarchical D(laplace1d, randx, N, N, rank, nleaf, N/nblocks, nblocks, nblocks);
+    laplacend, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
+  Hierarchical D(
+    laplacend, randx, N, N, rank, nleaf, N/nblocks, nblocks, nblocks);
   Dense rand(random_normal, randx, N, N);
   Dense x(random_uniform, randx, N);
   Dense b(N);

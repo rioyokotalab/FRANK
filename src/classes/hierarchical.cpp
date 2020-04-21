@@ -117,9 +117,11 @@ Hierarchical::Hierarchical(
 
 Hierarchical::Hierarchical(
   void (*func)(
-    Dense& A, const std::vector<double>& x, int64_t row_start, int64_t col_start
+    Dense& A,
+    const std::vector<std::vector<double>>& x,
+    int64_t row_start, int64_t col_start
   ),
-  const std::vector<double>& x,
+  const std::vector<std::vector<double>>& x,
   int64_t n_rows, int64_t n_cols,
   int64_t rank,
   int64_t nleaf,

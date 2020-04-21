@@ -145,8 +145,7 @@ define_method(bool, need_split_omm, ([[maybe_unused]] const Node& A)) {
 
 
 define_method(DensePair, make_left_orthogonal_omm, (const Dense& A)) {
-  std::vector<double> x;
-  Dense Id(identity, x, A.dim[0], A.dim[0]);
+  Dense Id(identity, std::vector<std::vector<double>>(), A.dim[0], A.dim[0]);
   return {std::move(Id), A};
 }
 
@@ -268,7 +267,6 @@ define_method(
 ) {
   // In case of lowrank, combine split dense matrices into single dense matrix
   // Then form a lowrank matrix with the stored Q
-  std::vector<double> x;
   Hierarchical SpCurRow(1, splitted.dim[1]);
   for(int64_t i=0; i<splitted.dim[1]; i++) {
     SpCurRow(0, i) = splitted(currentRow, i);
@@ -281,7 +279,8 @@ define_method(
   LowRank _A(A.dim[0], A.dim[1], A.rank);
   _A.U() = Q;
   _A.V() = concatenatedRow;
-  _A.S() = Dense(identity, x, _A.rank, _A.rank);
+  _A.S() = Dense(
+    identity, std::vector<std::vector<double>>(), _A.rank, _A.rank);
   currentRow++;
   return _A;
 }
