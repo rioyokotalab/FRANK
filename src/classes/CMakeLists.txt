@@ -14,10 +14,10 @@ PUBLIC
     $<INSTALL_INTERFACE:include>
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
 )
-target_include_directories(classes
-SYSTEM PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/yomm2-src/include>
-)
+foreach(DEPENDENCY_INCLUDE ${DEPDENCY_INCLUDES})
+    target_include_directories(
+        classes SYSTEM PUBLIC $<BUILD_INTERFACE:${DEPENDENCY_INCLUDE}>)
+endforeach()
 target_compile_definitions(classes PUBLIC ${HICMA_DEFINITIONS})
 target_compile_features(classes PRIVATE ${HICMA_FEATURES})
 target_compile_options(classes PRIVATE ${HICMA_OPTIONS})
