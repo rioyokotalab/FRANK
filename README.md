@@ -6,6 +6,18 @@ opposite direction.” - Albert Einstein
 
 Library for hierarchical low-rank matrix operations that calls kblas.
 
+# Compiling
+
+## ABCI
+
+Run the following in the project root:
+```
+module load cmake gcc/7.4.0 intel-mkl intel
+mkdir build
+cd build
+cmake -DUSE_MKL=ON ..
+```
+
 # Classes and their details
 ```c++
 struct Node {
