@@ -7,7 +7,7 @@
 #include "hicma/classes/node.h"
 #include "hicma/classes/node_proxy.h"
 #include "hicma/classes/intitialization_helpers/cluster_tree.h"
-#include "hicma/operations/misc/get_dim.h"
+#include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
 
 #include "yorel/yomm2/cute.hpp"

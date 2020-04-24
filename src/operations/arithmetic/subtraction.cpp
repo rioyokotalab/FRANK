@@ -4,7 +4,7 @@
 #include "hicma/classes/dense.h"
 #include "hicma/classes/node.h"
 #include "hicma/classes/node_proxy.h"
-#include "hicma/operations/misc/get_dim.h"
+#include "hicma/operations/misc.h"
 
 #include <cassert>
 #include <cstdint>

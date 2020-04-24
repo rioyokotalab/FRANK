@@ -8,10 +8,7 @@
 
 #include "hicma/operations/LAPACK.h"
 
-#include "hicma/operations/misc/get_dim.h"
-#include "hicma/operations/misc/misc.h"
-#include "hicma/operations/misc/norm.h"
-#include "hicma/operations/misc/transpose.h"
+#include "hicma/operations/misc.h"
 
 #include "hicma/operations/randomized_factorizations.h"
 

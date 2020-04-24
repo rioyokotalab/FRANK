@@ -5,9 +5,6 @@
 #include "hicma/classes/node.h"
 #include "hicma/classes/node_proxy.h"
 
-#include "yorel/yomm2/cute.hpp"
-using yorel::yomm2::virtual_;
-
 
 namespace hicma
 {

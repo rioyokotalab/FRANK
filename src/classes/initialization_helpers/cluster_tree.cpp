@@ -1,7 +1,7 @@
 #include "hicma/classes/intitialization_helpers/cluster_tree.h"
 
 #include "hicma/classes/hierarchical.h"
-#include "hicma/operations/misc/get_dim.h"
+#include "hicma/operations/misc.h"
 
 #include <cmath>
 #include <cstdint>

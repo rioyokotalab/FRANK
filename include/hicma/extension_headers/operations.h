@@ -4,6 +4,7 @@
 #include "hicma/classes/dense.h"
 #include "hicma/classes/node.h"
 #include "hicma/classes/node_proxy.h"
+#include "hicma/extension_headers/tuple_types.h"
 
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
@@ -15,13 +16,6 @@ using yorel::yomm2::virtual_;
 
 namespace hicma
 {
-
-// NOTE These typedefs are necessary since yomm macros use commas to parse the
-// function signature, so type tuples cannot be defined.
-typedef std::tuple<NodeProxy, NodeProxy> NodePair;
-typedef std::tuple<Dense, Dense> DensePair;
-typedef std::tuple<Dense, Dense, Dense> DenseTriplet;
-typedef std::tuple<Dense, std::vector<int64_t>> DenseIndexSetPair;
 
 // Arithmetic
 declare_method(
@@ -140,6 +134,14 @@ declare_method(
   void, tpqrt_omm,
   (virtual_<Node&>, virtual_<Node&>, virtual_<Node&>)
 )
+
+declare_method(int64_t, get_n_rows_omm, (virtual_<const Node&>))
+
+declare_method(int64_t, get_n_cols_omm, (virtual_<const Node&>))
+
+declare_method(double, norm_omm, (virtual_<const Node&>))
+
+declare_method(void, transpose_omm, (virtual_<Node&>))
 
 } // namespace hicma
 
