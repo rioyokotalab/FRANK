@@ -18,27 +18,16 @@ int main(int argc, char** argv) {
   int64_t Nc = N / Nb;
   std::vector<std::vector<double>> randpts;
 
-  Hierarchical T(
-    zeros, std::vector<std::vector<double>>(), N, N, 0, Nb, Nc, Nc, Nc);
-  Hierarchical Q(
-    identity, std::vector<std::vector<double>>(), N, N, 0, Nb, Nc, Nc, Nc);
   Hierarchical A;
   if(matCode == 0) { //Laplace1D
-    randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
+    std::vector<std::vector<double>> randpts{ equallySpacedVector(N, 0.0, 1.0) };
     A = Hierarchical(laplacend, randpts, N, N, 0, Nb, Nc, Nc, Nc);
-  } else if (matCode == 1) { // Helmholtz1D
-    randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
-    A = Hierarchical(helmholtznd, randpts, N, N, 0, Nb, Nc, Nc, Nc);
-  } else if (matCode == 2) { //Ill-conditioned Cauchy2D (Matrix A3 From HODLR Paper)
-    randpts.push_back(equallySpacedVector(N, -1.25, 998.25));
-    randpts.push_back(equallySpacedVector(N, -0.15, 999.45));
-    A = Hierarchical(cauchy2d, randpts, N, N, 0, Nb, Nc, Nc, Nc);
   }
-  else { //Ill-conditioned generated from DLATMS
+  else { //Generate with LAPACK LATMS Routine
     //Configurations
     char dist = 'U'; //Uses uniform distribution when generating random SV
     std::vector<int> iseed{ 1, 23, 456, 789 };
-    char sym = 'N'; //Generate symmetric matrix
+    char sym = 'N'; //Generate symmetric or non-symmetric matrix
     double dmax = 1.0;
     int64_t kl = N-1;
     int64_t ku = N-1;
@@ -48,16 +37,18 @@ int main(int argc, char** argv) {
     int64_t mode = 1; //See docs
     Dense DA(N, N);
     latms(dist, iseed, sym, d, mode, conditionNumber, dmax, kl, ku, pack, DA);
-    A = NoCopySplit(DA, Nc, Nc);
-    randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
+    A = Hierarchical(DA, Nc, Nc);
   }
+  Hierarchical T(zeros, std::vector<std::vector<double>>(), N, N, 0, Nb, Nc, Nc, Nc);
+  Hierarchical Q(identity, std::vector<std::vector<double>>(), N, N, 0, Nb, Nc, Nc, Nc);
 
-  //Compute condition number of A
   print("Cond(A)", cond(Dense(A)), false);
 
   // For residual measurement
   Dense x(N); x = 1.0;
   Dense Ax = gemm(A, x);
+
+  print("Tiled QR Decomposition");
   print("Time");
   timing::start("QR decomposition");
   for(int64_t k = 0; k < Nc; k++) {

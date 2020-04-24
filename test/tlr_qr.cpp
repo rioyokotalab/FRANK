@@ -17,54 +17,37 @@ int main(int argc, char** argv) {
   int64_t rank = argc > 3 ? atoi(argv[3]) : 16;
   double admis = argc > 4 ? atof(argv[4]) : 0;
   int64_t matCode = argc > 5 ? atoi(argv[5]) : 0;
-  int64_t lra = argc > 6 ? atoi(argv[6]) : 2; updateCounter("LRA", lra);
+  int64_t lra = argc > 6 ? atoi(argv[6]) : 1; updateCounter("LRA", lra);
   int64_t Nc = N / Nb;
   std::vector<std::vector<double>> randpts;
   updateCounter("LR_ADDITION_COUNTER", 1); //Enable LR addition counter
 
-  if(matCode == 0 || matCode == 1) { //Laplace1D or Helmholtz1D
+  Hierarchical A;
+  Hierarchical D;
+  if(matCode == 0) { //Laplace1D
     randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
+    A = Hierarchical(laplacend, randpts, N, N, rank, Nb, (int64_t)admis, Nc, Nc);
+    D = Hierarchical(laplacend, randpts, N, N, 0, Nb, Nc, Nc, Nc);
+  } else if (matCode == 1) { //Laplace2D
+    randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
+    randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
+    A = Hierarchical(laplacend, randpts, N, N, rank, Nb, (int64_t)admis, Nc, Nc);
+    D = Hierarchical(laplacend, randpts, N, N, 0, Nb, Nc, Nc, Nc);
+  } else if(matCode == 2) { //Helmholtz2D
+    randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
+    randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
+    A = Hierarchical(helmholtznd, randpts, N, N, rank, Nb, (int64_t)admis, Nc, Nc);
+    D = Hierarchical(helmholtznd, randpts, N, N, 0, Nb, Nc, Nc, Nc);
+  } else { //Cauchy2D
+    randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
+    randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
+    A = Hierarchical(cauchy2d, randpts, N, N, rank, Nb, (int64_t)admis, Nc, Nc);
+    D = Hierarchical(cauchy2d, randpts, N, N, 0, Nb, Nc, Nc, Nc);
   }
-  else { //Ill-conditioned Cauchy2D (Matrix A3 From HODLR Paper)
-    randpts.push_back(equallySpacedVector(N, -1.25, 998.25));
-    randpts.push_back(equallySpacedVector(N, -0.15, 999.45));
-  }
+  Hierarchical Q(identity, std::vector<std::vector<double>>(), N, N, rank, Nb, (int64_t)admis, Nc, Nc);
+  Hierarchical T(zeros, std::vector<std::vector<double>>(), N, N, 0, Nb, Nc, Nc, Nc);
 
-  Dense DA;
-  Hierarchical A(Nc, Nc);
-  Hierarchical D(Nc, Nc);
-  Hierarchical Q(Nc, Nc);
-  Hierarchical T(Nc, Nc);
-  for (int64_t ic=0; ic<Nc; ic++) {
-    for (int64_t jc=0; jc<Nc; jc++) {
-      Dense Aij;
-      if(matCode == 0) {
-        Dense _Aij(laplacend, randpts, Nb, Nb, Nb*ic, Nb*jc);
-        Aij = std::move(_Aij);
-      }
-      else if(matCode == 1) {
-        Dense _Aij(helmholtznd, randpts, Nb, Nb, Nb*ic, Nb*jc);
-        Aij = std::move(_Aij);
-      }
-      else if(matCode == 2) {
-        Dense _Aij(cauchy2d, randpts, Nb, Nb, Nb*ic, Nb*jc);
-        Aij = std::move(_Aij);
-      }
-      Dense Qij(identity, randpts, Nb, Nb, Nb*ic, Nb*jc);
-      Dense Tij(zeros, randpts, Nb, Nb);
-      D(ic,jc) = Aij;
-      T(ic,jc) = Tij;
-      if (std::abs(ic - jc) <= (int64_t)admis) {
-        A(ic,jc) = Aij;
-        Q(ic,jc) = Qij;
-      }
-      else {
-        rsvd_push(A(ic,jc), Aij, rank);
-        rsvd_push(Q(ic,jc), Qij, rank);
-      }
-    }
-  }
-  rsvd_batch();
+  print("Cond(A)", cond(Dense(A)), false);
 
   // For residual measurement
   Dense x(N); x = 1.0;
@@ -89,7 +72,7 @@ int main(int argc, char** argv) {
       }
     }
   }
-  timing::stopAndPrint("BLR QR decomposition");
+  timing::stopAndPrint("BLR QR decomposition", 1);
   //Build Q: Apply Q to Id
   for(int64_t k = Nc-1; k >= 0; k--) {
     for(int64_t i = Nc-1; i > k; i--) {
