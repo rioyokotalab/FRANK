@@ -1,8 +1,6 @@
 #ifndef hicma_classes_node_h
 #define hicma_classes_node_h
 
-#include "yorel/yomm2/cute.hpp"
-
 #include <memory>
 
 
@@ -34,8 +32,6 @@ class Node {
 
   virtual const char* type() const = 0;
 };
-
-register_class(Node)
 
 } // namespace hicma
 

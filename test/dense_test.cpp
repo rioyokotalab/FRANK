@@ -10,7 +10,7 @@
 using namespace hicma;
 
 TEST(DenseTest, ContructorHierarchical) {
-  yorel::yomm2::update_methods();
+  hicma::initialize();
   // Check whether the Dense(Hierarchical) constructor works correctly.
   int64_t N = 128;
   int64_t nblocks = 4;
@@ -36,7 +36,7 @@ TEST(DenseTest, ContructorHierarchical) {
 
 TEST(DenseTest, resize) {
   timing::start("Init");
-  yorel::yomm2::update_methods();
+  hicma::initialize();
   int64_t N = 4092;
   Dense D(random_normal, std::vector<std::vector<double>>(), N, N);
   Dense D_compare(D);

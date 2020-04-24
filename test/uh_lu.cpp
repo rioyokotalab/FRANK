@@ -1,7 +1,5 @@
 #include "hicma/hicma.h"
 
-#include "yorel/yomm2/cute.hpp"
-
 #include <cstdint>
 #include <tuple>
 #include <vector>
@@ -11,7 +9,7 @@ using namespace hicma;
 
 int main(int argc, char const *argv[])
 {
-  yorel::yomm2::update_methods();
+  hicma::initialize();
   int64_t N = argc > 1 ? atoi(argv[1]) : 256;
   int64_t nblocks = argc > 2 ? atoi(argv[2]) : 2;
   int64_t rank = argc > 3 ? atoi(argv[3]) : 8;

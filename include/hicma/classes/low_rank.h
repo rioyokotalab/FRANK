@@ -4,8 +4,6 @@
 #include "hicma/classes/dense.h"
 #include "hicma/classes/node.h"
 
-#include "yorel/yomm2/cute.hpp"
-
 #include <array>
 #include <cstdint>
 #include <memory>
@@ -74,8 +72,6 @@ class LowRank : public Node {
     int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start
   ) const;
 };
-
-register_class(LowRank, Node)
 
 } // namespace hicma
 

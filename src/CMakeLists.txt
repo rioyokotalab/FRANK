@@ -13,7 +13,7 @@ PUBLIC
 target_compile_definitions(hicma PUBLIC ${HICMA_DEFINITIONS})
 target_compile_features(hicma PRIVATE ${HICMA_FEATURES})
 target_compile_options(hicma PRIVATE ${HICMA_OPTIONS})
-target_link_libraries(hicma ${HICMA_DEPENDENCIES})
+target_link_libraries(hicma PRIVATE ${HICMA_DEPENDENCIES})
 
 # Install instructions
 install(

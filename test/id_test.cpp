@@ -13,7 +13,7 @@
 using namespace hicma;
 
 TEST(IDTest, Precision) {
-  yorel::yomm2::update_methods();
+  hicma::initialize();
   // Check whether the Dense(Hierarchical) constructor works correctly.
   int64_t M = 4096;
   int64_t N = 512;

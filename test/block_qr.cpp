@@ -1,7 +1,5 @@
 #include "hicma/hicma.h"
 
-#include "yorel/yomm2/cute.hpp"
-
 #include <cstdint>
 #include <utility>
 #include <vector>
@@ -10,7 +8,7 @@
 using namespace hicma;
 
 int main(int argc, char **argv) {
-  yorel::yomm2::update_methods();
+  hicma::initialize();
   int64_t N = argc > 1 ? atoi(argv[1]) : 256;
   int64_t Nb = argc > 2 ? atoi(argv[2]) : 32;
   int64_t matCode = argc > 3 ? atoi(argv[3]) : 0;

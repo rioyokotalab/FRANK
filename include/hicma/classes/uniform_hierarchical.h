@@ -3,8 +3,6 @@
 
 #include "hicma/classes/hierarchical.h"
 
-#include "yorel/yomm2/cute.hpp"
-
 #include <cstdint>
 #include <memory>
 #include <vector>
@@ -118,8 +116,6 @@ class UniformHierarchical : public Hierarchical {
 
   void set_row_basis(int64_t i, int64_t j);
 };
-
-register_class(UniformHierarchical, Hierarchical)
 
 } // namespace hicma
 

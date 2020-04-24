@@ -4,8 +4,6 @@
 #include "hicma/classes/node.h"
 #include "hicma/classes/node_proxy.h"
 
-#include "yorel/yomm2/cute.hpp"
-
 #include <array>
 #include <cstdint>
 #include <memory>
@@ -100,8 +98,6 @@ class Hierarchical : public Node {
 
   bool is_admissible(const ClusterTree& node, int64_t dist_to_diag);
 };
-
-register_class(Hierarchical, Node)
 
 } // namespace hicma
 
