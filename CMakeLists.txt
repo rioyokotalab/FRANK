@@ -65,16 +65,17 @@ unset(USE_MKL CACHE)
 # Open Multi-Method depdency
 # Import external dependency loading script
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-include(add_external)
+include(find_or_download_package)
 
-add_external_dependency(yomm2)
-list(APPEND HICMA_DEPENDENCIES yomm2)
+find_or_download_package(YOMM2)
+list(APPEND HICMA_DEPENDENCIES YOMM2::yomm2)
 install(
     DIRECTORY ${CMAKE_SOURCE_DIR}/dependencies/include/yorel
     DESTINATION include
 )
 
 # Add main source tree
+find_or_download_package(GTest)
 add_subdirectory(src)
 # Enable test for googletest
 enable_testing()

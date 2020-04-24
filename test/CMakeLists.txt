@@ -1,9 +1,7 @@
-add_external_dependency(googletest)
-
 list(APPEND GTEST_TESTS "dense" "id")
 foreach(TEST ${GTEST_TESTS})
     add_executable(${TEST}_test ${TEST}_test.cpp)
-    target_link_libraries(${TEST}_test gtest_main gtest hicma pthread)
+    target_link_libraries(${TEST}_test hicma GTest::gtest_main)
     add_test(NAME ${TEST}_test COMMAND ${TEST}_test)
     target_compile_definitions(${TEST}_test PUBLIC ${HICMA_DEFINITIONS})
     target_compile_features(${TEST}_test PRIVATE ${HICMA_FEATURES})

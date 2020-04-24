@@ -1,24 +1,15 @@
+add_library(hicma
+    functions.cpp
+)
 add_subdirectory(classes)
 add_subdirectory(gpu_batch)
 add_subdirectory(operations)
 add_subdirectory(util)
-
-add_library(hicma
-    functions.cpp
-    $<TARGET_OBJECTS:classes>
-    $<TARGET_OBJECTS:operations>
-    $<TARGET_OBJECTS:util>
-    $<TARGET_OBJECTS:gpu_batch>
-)
 target_include_directories(hicma
 PUBLIC
     $<INSTALL_INTERFACE:include>
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
 )
-foreach(DEPENDENCY_INCLUDE ${DEPENDENCY_INCLUDES})
-    target_include_directories(
-        hicma SYSTEM PUBLIC $<BUILD_INTERFACE:${DEPENDENCY_INCLUDE}>)
-endforeach()
 target_compile_definitions(hicma PUBLIC ${HICMA_DEFINITIONS})
 target_compile_features(hicma PRIVATE ${HICMA_FEATURES})
 target_compile_options(hicma PRIVATE ${HICMA_OPTIONS})
@@ -28,10 +19,6 @@ target_link_libraries(hicma ${HICMA_DEPENDENCIES})
 install(
     DIRECTORY ${CMAKE_SOURCE_DIR}/include/hicma
     DESTINATION include
-)
-install(
-    FILES ${CMAKE_SOURCE_DIR}/dependencies/lib/libyomm2.a
-    DESTINATION lib
 )
 install(
     TARGETS hicma
