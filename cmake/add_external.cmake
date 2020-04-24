@@ -27,11 +27,7 @@ macro(add_external_dependency DEPENDENCY)
     if(result)
         message(FATAL_ERROR "Build step for ${DEPENDENCY} failed: ${result}")
     endif()
-
-    # Add dependency directly to build. This defines the compilation targets.
-    add_subdirectory(
-        ${CMAKE_CURRENT_BINARY_DIR}/${DEPENDENCY}-src
-        ${CMAKE_CURRENT_BINARY_DIR}/${DEPENDENCY}-build
-        EXCLUDE_FROM_ALL
-    )
 endmacro()
+
+link_directories(${CMAKE_SOURCE_DIR}/dependencies/lib)
+list(APPEND DEPENDENCY_INCLUDES ${CMAKE_SOURCE_DIR}/dependencies/include)

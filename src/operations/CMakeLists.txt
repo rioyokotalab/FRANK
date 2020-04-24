@@ -27,7 +27,7 @@ PUBLIC
     $<INSTALL_INTERFACE:include>
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
 )
-foreach(DEPENDENCY_INCLUDE ${DEPDENCY_INCLUDES})
+foreach(DEPENDENCY_INCLUDE ${DEPENDENCY_INCLUDES})
     target_include_directories(
         operations SYSTEM PUBLIC $<BUILD_INTERFACE:${DEPENDENCY_INCLUDE}>)
 endforeach()

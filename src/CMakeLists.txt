@@ -15,7 +15,7 @@ PUBLIC
     $<INSTALL_INTERFACE:include>
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
 )
-foreach(DEPENDENCY_INCLUDE ${DEPDENCY_INCLUDES})
+foreach(DEPENDENCY_INCLUDE ${DEPENDENCY_INCLUDES})
     target_include_directories(
         hicma SYSTEM PUBLIC $<BUILD_INTERFACE:${DEPENDENCY_INCLUDE}>)
 endforeach()
@@ -29,25 +29,16 @@ install(
     DIRECTORY ${CMAKE_SOURCE_DIR}/include/hicma
     DESTINATION include
 )
-if(${CMAKE_VERSION} VERSION_LESS "3.10.0")
-    install(
-        FILES ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libyomm11.a
-        DESTINATION lib
-    )
-    install(
-        TARGETS hicma
-        EXPORT hicma
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib
+install(
+    FILES ${CMAKE_SOURCE_DIR}/dependencies/lib/libyomm2.a
+    DESTINATION lib
 )
-else()
-    install(
-        TARGETS hicma yomm2
-        EXPORT hicma
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib
-    )
-endif()
+install(
+    TARGETS hicma
+    EXPORT hicma
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+)
 install(
     EXPORT hicma
     DESTINATION cmake

@@ -69,9 +69,8 @@ include(add_external)
 
 add_external_dependency(yomm2)
 list(APPEND HICMA_DEPENDENCIES yomm2)
-list(APPEND DEPDENCY_INCLUDES ${CMAKE_BINARY_DIR}/yomm2-src/include)
 install(
-    DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/yomm2-src/include/yorel
+    DIRECTORY ${CMAKE_SOURCE_DIR}/dependencies/include/yorel
     DESTINATION include
 )
 
