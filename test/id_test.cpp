@@ -1,7 +1,6 @@
 #include "hicma/hicma.h"
 
 #include "gtest/gtest.h"
-#include "yorel/yomm2/cute.hpp"
 
 #include <algorithm>
 #include <cstdint>
