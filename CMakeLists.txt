@@ -52,9 +52,10 @@ find_package(Boost 1.53 REQUIRED)
 option(USE_MKL "Use Intel Math Kernel Libraries (MKL)" OFF)
 if(${USE_MKL})
     list(APPEND HICMA_DEFINITIONS USE_MKL)
-    list(APPEND HICMA_DEPENDENCIES
-        mkl_intel_lp64 mkl_intel_thread mkl_core iomp5 pthread
-    )
+    set(BLA_VENDOR Intel10_64lp)
+    find_package(BLAS REQUIRED)
+    find_package(LAPACK REQUIRED)
+    list(APPEND HICMA_DEPENDENCIES ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 else()
     find_package(CBLAS REQUIRED)
     find_package(LAPACKE REQUIRED)

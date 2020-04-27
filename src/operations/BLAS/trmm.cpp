@@ -13,7 +13,6 @@
 #include <mkl.h>
 #else
 #include <cblas.h>
-#include <lapacke.h>
 #endif
 #include "yorel/yomm2/cute.hpp"
 
