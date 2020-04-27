@@ -57,9 +57,7 @@ function(find_or_download PACKAGE)
         # Update search path and use regular find_package to add dependency
         # TODO Use same directory here as for configure_file up there and inside
         # download instructions!
-        list(APPEND CMAKE_PREFIX_PATH
-            "${DEPENDENCY_INSTALL_PREFIX}/lib/cmake/${PACKAGE}"
-        )
+        list(APPEND CMAKE_PREFIX_PATH "${DEPENDENCY_INSTALL_PREFIX}")
         set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} PARENT_SCOPE)
         find_package(${PACKAGE} NO_MODULE REQUIRED)
     endif()
