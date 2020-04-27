@@ -65,7 +65,7 @@ endif()
 
 # Import external dependency loading script
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-include(find_or_download_package)
+include(find_or_download)
 # Open Multi-Method depdency
 find_or_download(PACKAGE YOMM2 INSTALL_WITH_HiCMA)
 list(APPEND HICMA_DEPENDENCIES YOMM2::yomm2)
