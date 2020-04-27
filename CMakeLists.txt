@@ -47,6 +47,7 @@ endif()
 
 # Boost
 find_package(Boost 1.53 REQUIRED)
+list(APPEND HICMA_DEPENDENCIES Boost::headers)
 
 # MKL or other BLAS/LAPACK libraries (default is other)
 option(USE_MKL "Use Intel Math Kernel Libraries (MKL)" OFF)
@@ -66,7 +67,7 @@ endif()
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(find_or_download_package)
 # Open Multi-Method depdency
-find_or_download_package(YOMM2)
+find_or_download(PACKAGE YOMM2 INSTALL_WITH_HiCMA)
 list(APPEND HICMA_DEPENDENCIES YOMM2::yomm2)
 
 
@@ -77,7 +78,7 @@ add_subdirectory(src)
 ## Testing code
 option(BUILD_TESTS "Build unit and other tests" ON)
 if(${BUILD_TESTS})
-    find_or_download_package(GTest)
+    find_or_download(PACKAGE GTest)
     # Enable test for googletest
     enable_testing()
     add_subdirectory(test)

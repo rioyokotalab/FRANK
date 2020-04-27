@@ -1,17 +1,34 @@
-macro(find_or_download_package PACKAGE)
+function(find_or_download)
+    set(options INSTALL_WITH_HiCMA)
+    set(oneValueArgs PACKAGE)
+    cmake_parse_arguments(find_or_download
+        "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN}
+    )
+    set(PACKAGE ${find_or_download_PACKAGE})
     find_package(${PACKAGE} QUIET)
+    if(find_or_download_UNPARSED_ARGUMENTS)
+        message(FATAL_ERROR
+            "Unparsed arguments: ${find_or_download_UNPARSED_ARGUMENTS}.\n"
+            "Ensure that correct arguments are passed to find_or_download!"
+        )
+    endif()
     if(${${PACKAGE}_FOUND})
         message("Found dependency \"${PACKAGE}\" installed in system.")
     else()
         message(STATUS "Package \"${PACKAGE}\" not found in system.")
         message(STATUS
-        "Downloading dependency \"${PACKAGE}\" and building from source."
+            "Downloading dependency \"${PACKAGE}\" and building from source."
         )
 
+        if(${find_or_download_INSTALL_WITH_HiCMA})
+            set(DEPENDENCY_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+        else()
+            set(DEPENDENCY_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/dependencies)
+        endif()
         # Prepare download instructions for dependency
         configure_file(
-        ${CMAKE_SOURCE_DIR}/cmake/${PACKAGE}_download.cmake.in
-        ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}-download/CMakeLists.txt
+            ${CMAKE_SOURCE_DIR}/cmake/${PACKAGE}_download.cmake.in
+            ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}-download/CMakeLists.txt
         )
 
         # Download dependency
@@ -23,7 +40,8 @@ macro(find_or_download_package PACKAGE)
         )
         if(result)
             message(FATAL_ERROR
-                "Download of dependency ${PACKAGE} failed: ${result}.")
+                "Download of dependency ${PACKAGE} failed: ${result}."
+            )
         endif()
 
         # Build dependency
@@ -34,16 +52,17 @@ macro(find_or_download_package PACKAGE)
         )
         if(result)
             message(FATAL_ERROR
-                "Build of dependency ${PACKAGE} failed: ${result}.")
+                "Build of dependency ${PACKAGE} failed: ${result}."
+            )
         endif()
 
         # Update search path and use regular find_package to add dependency
         # TODO Use same directory here as for configure_file up there and inside
         # download instructions!
-        list(
-            APPEND CMAKE_PREFIX_PATH
-            "${CMAKE_SOURCE_DIR}/dependencies/lib/cmake/${PACKAGE}"
+        list(APPEND CMAKE_PREFIX_PATH
+            "${DEPENDENCY_INSTALL_PREFIX}/lib/cmake/${PACKAGE}"
         )
+        set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} PARENT_SCOPE)
         find_package(${PACKAGE} NO_MODULE REQUIRED)
     endif()
-endmacro()
+endfunction()
