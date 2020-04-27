@@ -1,10 +1,8 @@
-function(find_or_download)
+function(find_or_download PACKAGE)
     set(options INSTALL_WITH_HiCMA)
-    set(oneValueArgs PACKAGE)
     cmake_parse_arguments(find_or_download
         "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN}
     )
-    set(PACKAGE ${find_or_download_PACKAGE})
     find_package(${PACKAGE} QUIET)
     if(find_or_download_UNPARSED_ARGUMENTS)
         message(FATAL_ERROR

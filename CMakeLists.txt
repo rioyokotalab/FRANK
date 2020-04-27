@@ -67,7 +67,7 @@ endif()
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(find_or_download)
 # Open Multi-Method depdency
-find_or_download(PACKAGE YOMM2 INSTALL_WITH_HiCMA)
+find_or_download(YOMM2 INSTALL_WITH_HiCMA)
 list(APPEND HICMA_DEPENDENCIES YOMM2::yomm2)
 
 
@@ -78,7 +78,7 @@ add_subdirectory(src)
 ## Testing code
 option(BUILD_TESTS "Build unit and other tests" ON)
 if(${BUILD_TESTS})
-    find_or_download(PACKAGE GTest)
+    find_or_download(GTest)
     # Enable test for googletest
     enable_testing()
     add_subdirectory(test)
