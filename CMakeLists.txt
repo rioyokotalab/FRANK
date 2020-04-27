@@ -83,3 +83,28 @@ if(${BUILD_TESTS})
     enable_testing()
     add_subdirectory(test)
 endif()
+
+## Install instruction
+# Create version file for cmake package
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+  HiCMAConfigVersion.cmake
+  VERSION ${PACKAGE_VERSION}
+  COMPATIBILITY SameMajorVersion
+)
+install(FILES
+  "${CMAKE_CURRENT_BINARY_DIR}/HiCMAConfigVersion.cmake"
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/cmake/HiCMA
+)
+# Create config file of yomm2
+# No public dependencies so a Config file with the targets is enough
+install(EXPORT HiCMATargets
+  FILE HiCMAConfig.cmake
+  NAMESPACE HiCMA::
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/cmake/HiCMA
+)
+# Copy headers to install directory
+install(
+    DIRECTORY ${CMAKE_SOURCE_DIR}/include/hicma
+    DESTINATION include
+)
