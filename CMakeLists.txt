@@ -39,6 +39,10 @@ endif()
 
 
 ## Dependencies
+# Import external dependency loading script
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+include(find_or_download)
+
 # Check for OpenMP
 find_package(OpenMP)
 if(OpenMP_FOUND)
@@ -46,8 +50,8 @@ if(OpenMP_FOUND)
 endif()
 
 # Boost
-find_package(Boost 1.53 REQUIRED)
-list(APPEND HICMA_DEPENDENCIES Boost::headers)
+find_or_download(Boost VERSION 1.65.0 EXACT)
+list(APPEND HICMA_DEPENDENCIES Boost::boost)
 
 # MKL or other BLAS/LAPACK libraries (default is other)
 option(USE_MKL "Use Intel Math Kernel Libraries (MKL)" OFF)
@@ -62,10 +66,6 @@ else()
     find_package(LAPACKE REQUIRED)
     list(APPEND HICMA_DEPENDENCIES ${CBLAS_LIBRARIES} ${LAPACKE_LIBRARIES})
 endif()
-
-# Import external dependency loading script
-set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-include(find_or_download)
 # Open Multi-Method depdency
 find_or_download(YOMM2 INSTALL_WITH_HiCMA)
 list(APPEND HICMA_DEPENDENCIES YOMM2::yomm2)
@@ -96,7 +96,7 @@ install(FILES
   "${CMAKE_CURRENT_BINARY_DIR}/HiCMAConfigVersion.cmake"
   DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/cmake/HiCMA
 )
-# Create config file of yomm2
+# Create config file of HiCMA
 # No public dependencies so a Config file with the targets is enough
 install(EXPORT HiCMATargets
   FILE HiCMAConfig.cmake
