@@ -1,24 +1,23 @@
 function(find_or_download PACKAGE)
     set(options INSTALL_WITH_HiCMA)
-    cmake_parse_arguments(find_or_download
-        "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN}
+    set(multiValueArgs VERSION)
+    cmake_parse_arguments(PARSE_ARGV 1 ARGS
+        "${options}" "${oneValueArgs}" "${multiValueArgs}"
     )
-    find_package(${PACKAGE} QUIET)
-    if(find_or_download_UNPARSED_ARGUMENTS)
+    if(ARGS_UNPARSED_ARGUMENTS)
         message(FATAL_ERROR
-            "Unparsed arguments: ${find_or_download_UNPARSED_ARGUMENTS}.\n"
+            "Unparsed arguments: ${ARGS_UNPARSED_ARGUMENTS}.\n"
             "Ensure that correct arguments are passed to find_or_download!"
         )
     endif()
+    find_package(${PACKAGE} ${ARGS_VERSION} QUIET)
     if(${${PACKAGE}_FOUND})
-        message("Found dependency \"${PACKAGE}\" installed in system.")
+        message("Found dependency ${PACKAGE} installed in system.")
     else()
-        message(STATUS "Package \"${PACKAGE}\" not found in system.")
-        message(STATUS
-            "Downloading dependency \"${PACKAGE}\" and building from source."
-        )
+        message(STATUS "Suitable version of ${PACKAGE} not found in system.")
+        message(STATUS "Downloading ${PACKAGE} and building from source.")
 
-        if(${find_or_download_INSTALL_WITH_HiCMA})
+        if(${ARGS_INSTALL_WITH_HiCMA})
             set(DEPENDENCY_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
         else()
             set(DEPENDENCY_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/dependencies)
@@ -26,14 +25,15 @@ function(find_or_download PACKAGE)
         # Prepare download instructions for dependency
         configure_file(
             ${CMAKE_SOURCE_DIR}/cmake/${PACKAGE}_download.cmake.in
-            ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}-download/CMakeLists.txt
+            ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}_download/CMakeLists.txt
+            @ONLY
         )
 
-        # Download dependency
+        # Configure step for download instructions
         execute_process(
             COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
             RESULT_VARIABLE result
-            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}-download
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}_download
             OUTPUT_QUIET
         )
         if(result)
@@ -42,11 +42,11 @@ function(find_or_download PACKAGE)
             )
         endif()
 
-        # Build dependency
+        # Download, build and install dependency according to instructions
         execute_process(
             COMMAND ${CMAKE_COMMAND} --build .
             RESULT_VARIABLE result
-            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}-download
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}_download
         )
         if(result)
             message(FATAL_ERROR
@@ -55,10 +55,9 @@ function(find_or_download PACKAGE)
         endif()
 
         # Update search path and use regular find_package to add dependency
-        # TODO Use same directory here as for configure_file up there and inside
-        # download instructions!
-        list(APPEND CMAKE_PREFIX_PATH "${DEPENDENCY_INSTALL_PREFIX}")
-        set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} PARENT_SCOPE)
-        find_package(${PACKAGE} NO_MODULE REQUIRED)
+        find_package(${PACKAGE} REQUIRED NO_DEFAULT_PATH
+            PATHS "${DEPENDENCY_INSTALL_PREFIX}/lib/cmake/${PACKAGE}"
+        )
+        message(STATUS "Using ${PACKAGE} from ${DEPENDENCY_INSTALL_PREFIX}.")
     endif()
 endfunction()
