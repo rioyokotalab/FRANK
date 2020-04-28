@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 3.5)
 include(ExternalProject)
-project(YOMM2Download)
-ExternalProject_Add(YOMM2
+project(YOMM2)
+ExternalProject_Add(${PROJECT_NAME}
     GIT_REPOSITORY      https://github.com/derpda/yomm2.git
     GIT_TAG             master
-    SOURCE_DIR          "${CMAKE_SOURCE_DIR}/dependencies/yomm2"
-    BINARY_DIR          "${CMAKE_CURRENT_BINARY_DIR}/yomm2-build"
+    GIT_SHALLOW         True
+    SOURCE_DIR          "@CMAKE_SOURCE_DIR@/dependencies/${PROJECT_NAME}"
+    BINARY_DIR          "@CMAKE_CURRENT_BINARY_DIR@/${PROJECT_NAME}_build"
     INSTALL_DIR         @DEPENDENCY_INSTALL_PREFIX@
     CMAKE_ARGS          -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
                         -DCMAKE_BUILD_TYPE=Release
