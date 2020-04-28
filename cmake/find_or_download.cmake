@@ -69,7 +69,7 @@ function(find_or_download PACKAGE)
         # Update search path and use regular find_package to add dependency
         find_package(${PACKAGE}
             ${ARGS_VERSION} ${EXACT} REQUIRED NO_DEFAULT_PATH
-            PATHS "${DEPENDENCY_INSTALL_PREFIX}/lib/cmake/${PACKAGE}"
+            PATHS "${DEPENDENCY_INSTALL_PREFIX}"
         )
         message(STATUS "Using ${PACKAGE} from ${DEPENDENCY_INSTALL_PREFIX}.")
     endif()
