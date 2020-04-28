@@ -1,6 +1,6 @@
 function(find_or_download PACKAGE)
-    set(options INSTALL_WITH_HiCMA)
-    set(multiValueArgs VERSION)
+    set(options EXACT INSTALL_WITH_HiCMA)
+    set(oneValueArgs VERSION)
     cmake_parse_arguments(PARSE_ARGV 1 ARGS
         "${options}" "${oneValueArgs}" "${multiValueArgs}"
     )
@@ -10,7 +10,10 @@ function(find_or_download PACKAGE)
             "Ensure that correct arguments are passed to find_or_download!"
         )
     endif()
-    find_package(${PACKAGE} ${ARGS_VERSION} QUIET)
+    if(${ARGS_EXACT})
+        set(EXACT "EXACT")
+    endif()
+    find_package(${PACKAGE} ${ARGS_VERSION} ${EXACT} QUIET)
     if(${${PACKAGE}_FOUND})
         message("Found dependency ${PACKAGE} installed in system.")
     else()
@@ -21,6 +24,15 @@ function(find_or_download PACKAGE)
             set(DEPENDENCY_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
         else()
             set(DEPENDENCY_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/dependencies)
+        endif()
+        # Use below settings for git downloads if available
+        if(${CMAKE_VERSION} VERSION_GREATER 3.6)
+            list(APPEND ADDITIONAL_GIT_SETTINGS "GIT_SHALLOW True")
+        endif()
+        if(${CMAKE_VERSION} VERSION_GREATER 3.8)
+            list(APPEND ADDITIONAL_GIT_SETTINGS
+                "GIT_PROGRESS True GIT_CONFIG advice.detachedHead=false"
+            )
         endif()
         # Prepare download instructions for dependency
         configure_file(
@@ -55,7 +67,8 @@ function(find_or_download PACKAGE)
         endif()
 
         # Update search path and use regular find_package to add dependency
-        find_package(${PACKAGE} REQUIRED NO_DEFAULT_PATH
+        find_package(${PACKAGE}
+            ${ARGS_VERSION} ${EXACT} REQUIRED NO_DEFAULT_PATH
             PATHS "${DEPENDENCY_INSTALL_PREFIX}/lib/cmake/${PACKAGE}"
         )
         message(STATUS "Using ${PACKAGE} from ${DEPENDENCY_INSTALL_PREFIX}.")

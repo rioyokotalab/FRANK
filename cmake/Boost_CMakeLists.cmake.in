@@ -15,7 +15,7 @@ include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
   BoostConfigVersion.cmake
   VERSION ${PACKAGE_VERSION}
-  COMPATIBILITY SameMinorVersion
+  COMPATIBILITY ExactVersion
 )
 install(FILES
   "${CMAKE_CURRENT_BINARY_DIR}/BoostConfigVersion.cmake"
