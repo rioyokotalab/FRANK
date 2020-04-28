@@ -1,8 +1,8 @@
 function(find_or_download PACKAGE)
     set(options EXACT INSTALL_WITH_HiCMA)
     set(oneValueArgs VERSION)
-    cmake_parse_arguments(PARSE_ARGV 1 ARGS
-        "${options}" "${oneValueArgs}" "${multiValueArgs}"
+    cmake_parse_arguments(ARGS
+        "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN}
     )
     if(ARGS_UNPARSED_ARGUMENTS)
         message(FATAL_ERROR
@@ -15,7 +15,7 @@ function(find_or_download PACKAGE)
     endif()
     find_package(${PACKAGE} ${ARGS_VERSION} ${EXACT} QUIET)
     if(${${PACKAGE}_FOUND})
-        message("Found dependency ${PACKAGE} installed in system.")
+        message(STATUS "Found dependency ${PACKAGE} installed in system.")
     else()
         message(STATUS "Suitable version of ${PACKAGE} not found in system.")
         message(STATUS "Downloading ${PACKAGE} and building from source.")
