@@ -23,6 +23,10 @@ list(
     "h_qr"
     "rsvd"
 )
+# Check for OpenMP before build taskbased code
+if(OpenMP_FOUND)
+  list(APPEND EXECUTABLES "taskbased_tlr_qr")
+endif()
 foreach(EXECUTABLE ${EXECUTABLES})
     add_executable(${EXECUTABLE} ${EXECUTABLE}.cpp)
     target_link_libraries(${EXECUTABLE} hicma)
