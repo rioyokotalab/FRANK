@@ -65,7 +65,7 @@ define_method(
     double alpha, double beta
   )
 ) {
-  timing::start("DGEMM");
+  // timing::start("DGEMM");
   if (B.dim[1] == 1) {
     cblas_dgemv(
       CblasRowMajor,
@@ -91,7 +91,7 @@ define_method(
       &C, C.stride
     );
   }
-  timing::stop("DGEMM");
+  // timing::stop("DGEMM");
 }
 
 // Fallback default, abort with error message

@@ -62,14 +62,14 @@ define_method(void, qr_omm, (Dense& A, Dense& Q, Dense& R)) {
   assert(Q.dim[1] == A.dim[1]);
   assert(R.dim[0] == A.dim[1]);
   assert(R.dim[1] == A.dim[1]);
-  timing::start("QR");
-  timing::start("DGEQRF");
+  // timing::start("QR");
+  // timing::start("DGEQRF");
   int64_t k = std::min(A.dim[0], A.dim[1]);
   std::vector<double> tau(k);
   for(int64_t i=0; i<std::min(Q.dim[0], Q.dim[1]); i++) Q(i, i) = 1.0;
   LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, A.dim[0], A.dim[1], &A, A.stride, &tau[0]);
-  timing::stop("DGEQRF");
-  timing::start("DORGQR");
+  // timing::stop("DGEQRF");
+  // timing::start("DORGQR");
   // TODO Consider using A for the dorgqr and moving to Q afterwards! That
   // also simplify this loop.
   for(int64_t i=0; i<A.dim[0]; i++) {
@@ -86,8 +86,8 @@ define_method(void, qr_omm, (Dense& A, Dense& Q, Dense& R)) {
   // reflector form, uses dormqr instead of gemm and can be transformed to
   // Dense via dorgqr!
   LAPACKE_dorgqr(LAPACK_ROW_MAJOR, Q.dim[0], Q.dim[1], k, &Q, Q.stride, &tau[0]);
-  timing::stop("DORGQR");
-  timing::stop("QR");
+  // timing::stop("DORGQR");
+  // timing::stop("QR");
 }
 
 define_method(
@@ -361,7 +361,7 @@ define_method(void, rq_omm, (Dense& A, Dense& R, Dense& Q)) {
   assert(R.dim[1] == A.dim[0]);
   assert(Q.dim[0] == A.dim[0]);
   assert(Q.dim[1] == A.dim[1]);
-  timing::start("DGERQF");
+  // timing::start("DGERQF");
   std::vector<double> tau(A.dim[1]);
   LAPACKE_dgerqf(LAPACK_ROW_MAJOR, A.dim[0], A.dim[1], &A, A.stride, &tau[0]);
   // TODO Consider making special function for this. Performance heavy and not
@@ -381,7 +381,7 @@ define_method(void, rq_omm, (Dense& A, Dense& R, Dense& Q)) {
     &tau[0]
   );
   Q = std::move(A);
-  timing::stop("DGERQF");
+  // timing::stop("DGERQF");
 }
 
 } // namespace hicma

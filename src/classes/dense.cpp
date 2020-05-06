@@ -28,7 +28,7 @@ Dense::Dense(const Dense& A)
 : Node(A), dim{A.dim[0], A.dim[1]}, stride(A.dim[1]),
   data_ptr(nullptr), const_data_ptr(nullptr), owning(true)
 {
-  timing::start("Dense cctor");
+  // timing::start("Dense cctor");
   if (A.owning) {
     data = A.data;
   } else {
@@ -39,11 +39,11 @@ Dense::Dense(const Dense& A)
       }
     }
   }
-  timing::stop("Dense cctor");
+  // timing::stop("Dense cctor");
 }
 
 Dense& Dense::operator=(const Dense& A) {
-  timing::start("Dense copy assignment");
+  // timing::start("Dense copy assignment");
   Node::operator=(A);
   dim = A.dim;
   stride = A.stride;
@@ -60,7 +60,7 @@ Dense& Dense::operator=(const Dense& A) {
       }
     }
   }
-  timing::stop("Dense copy assignment");
+  // timing::stop("Dense copy assignment");
   return *this;
 }
 
@@ -83,20 +83,20 @@ Dense::Dense(const Node& A)
 }
 
 define_method(void, fill_dense_from, (const Hierarchical& A, Dense& B)) {
-  timing::start("make_dense(H)");
+  // timing::start("make_dense(H)");
   NoCopySplit BH(B, A);
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {
       fill_dense_from(A(i, j), BH(i, j));
     }
   }
-  timing::stop("make_dense(H)");
+  // timing::stop("make_dense(H)");
 }
 
 define_method(void, fill_dense_from, (const LowRank& A, Dense& B)) {
-  timing::start("make_dense(LR)");
+  // timing::start("make_dense(LR)");
   gemm(gemm(A.U(), A.S()), A.V(), B, 1, 0);
-  timing::stop("make_dense(LR)");
+  // timing::stop("make_dense(LR)");
 }
 
 define_method(void, fill_dense_from, (const Dense& A, Dense& B)) {
@@ -118,9 +118,9 @@ Dense::Dense(int64_t n_rows, int64_t n_cols)
 : dim{n_rows, n_cols}, stride(dim[1]), data(dim[0]*dim[1]),
   data_ptr(nullptr), const_data_ptr(nullptr), owning(true)
 {
-  timing::start("Dense alloc");
+  // timing::start("Dense alloc");
   data.resize(dim[0]*dim[1], 0);
-  timing::stop("Dense alloc");
+  // timing::stop("Dense alloc");
 }
 
 Dense::Dense(
@@ -232,9 +232,9 @@ void Dense::resize(int64_t dim0, int64_t dim1) {
   assert(owning);
   assert(dim0 <= dim[0]);
   assert(dim1 <= dim[1]);
-  timing::start("Dense resize");
+  // timing::start("Dense resize");
   if (dim0 == dim[0] && dim1 == dim[1]) {
-    timing::stop("Dense resize");
+    // timing::stop("Dense resize");
     return;
   }
   for (int64_t i=0; i<dim0; i++) {
@@ -248,7 +248,7 @@ void Dense::resize(int64_t dim0, int64_t dim1) {
   dim = {dim0, dim1};
   stride = dim[1];
   data.resize(dim[0]*dim[1]);
-  timing::stop("Dense resize");
+  // timing::stop("Dense resize");
 }
 
 Dense Dense::transpose() const {

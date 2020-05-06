@@ -19,7 +19,7 @@ namespace hicma
 {
 
 std::tuple<Dense, Dense, Dense> svd(Dense& A) {
-  timing::start("DGESVD");
+  // timing::start("DGESVD");
   int64_t dim_min = std::min(A.dim[0], A.dim[1]);
   Dense Sdiag(dim_min, 1);
   Dense work(dim_min-1, 1);
@@ -39,12 +39,12 @@ std::tuple<Dense, Dense, Dense> svd(Dense& A) {
   for(int64_t i=0; i<dim_min; i++){
     S(i, i) = Sdiag[i];
   }
-  timing::stop("DGESVD");
+  // timing::stop("DGESVD");
   return {std::move(U), std::move(S), std::move(V)};
 }
 
 std::tuple<Dense, Dense, Dense> sdd(Dense& A) {
-  timing::start("DGESDD");
+  // timing::start("DGESDD");
   int64_t dim_min = std::min(A.dim[0], A.dim[1]);
   Dense Sdiag(dim_min, 1);
   Dense work(dim_min-1, 1);
@@ -64,7 +64,7 @@ std::tuple<Dense, Dense, Dense> sdd(Dense& A) {
   for(int64_t i=0; i<dim_min; i++){
     S(i, i) = Sdiag[i];
   }
-  timing::stop("DGESDD");
+  // timing::stop("DGESDD");
   return {std::move(U), std::move(S), std::move(V)};
 }
 

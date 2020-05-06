@@ -179,26 +179,26 @@ define_method(Node&, addition_omm, (LowRank& A, const LowRank& B)) {
   } else {
     //Bebendorf HMatrix Book p17
     //Rounded addition by exploiting orthogonality
-    timing::start("LR += LR");
+    // timing::start("LR += LR");
 
-    timing::start("Merge col basis");
+    // timing::start("Merge col basis");
     Hierarchical OuterU(1, 2);
     Dense InnerU;
     std::tie(OuterU[1], InnerU) = merge_col_basis(A.U(), B.U());
     OuterU[0] = std::move(A.U());
-    timing::stop("Merge col basis");
+    // timing::stop("Merge col basis");
 
-    timing::start("Merge row basis");
+    // timing::start("Merge row basis");
     Hierarchical OuterV(2, 1);
     Dense InnerVt;
     std::tie(OuterV[1], InnerVt) = merge_row_basis(A.V(), B.V());
     OuterV[0] = std::move(A.V());
-    timing::stop("Merge row basis");
+    // timing::stop("Merge row basis");
 
-    timing::start("Merge S");
+    // timing::start("Merge S");
     Dense Uhat, Vhat;
     std::tie(Uhat, A.S(), Vhat) = merge_S(A.S(), B.S(), InnerU, InnerVt);
-    timing::stop("Merge S");
+    // timing::stop("Merge S");
 
     // Restore moved-from U and V and finalize basis
     // TODO Find a way to use more convenient D=gemm(D, D) here?
@@ -208,7 +208,7 @@ define_method(Node&, addition_omm, (LowRank& A, const LowRank& B)) {
     gemm(OuterU, Uhat, A.U(), 1, 0);
     gemm(Vhat, OuterV, A.V(), 1, 0);
 
-    timing::stop("LR += LR");
+    // timing::stop("LR += LR");
   }
   return A;
 }

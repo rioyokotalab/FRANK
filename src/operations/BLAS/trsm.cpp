@@ -82,7 +82,7 @@ define_method(
 }
 
 define_method(void, trsm_omm, (const Dense& A, Dense& B, int uplo, int lr)) {
-  timing::start("DTRSM");
+  // timing::start("DTRSM");
   switch (uplo) {
   case TRSM_UPPER:
     cblas_dtrsm(
@@ -107,7 +107,7 @@ define_method(void, trsm_omm, (const Dense& A, Dense& B, int uplo, int lr)) {
     );
     break;
   }
-  timing::stop("DTRSM");
+  // timing::stop("DTRSM");
 }
 
 define_method(void, trsm_omm, (const Node& A, LowRank& B, int uplo, int lr)) {

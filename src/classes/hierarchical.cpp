@@ -65,24 +65,24 @@ define_method(
   void, fill_hierarchical_from,
   (Hierarchical& H, const Dense& A, const ClusterTree& node)
 ) {
-  timing::start("fill_hierarchical_from(D)");
+  // timing::start("fill_hierarchical_from(D)");
   for (const ClusterTree& child : node) {
     H[child] = A.get_part(
       child.dim[0], child.dim[1], child.start[0], child.start[1]);
   }
-  timing::stop("fill_hierarchical_from(D)");
+  // timing::stop("fill_hierarchical_from(D)");
 }
 
 define_method(
   void, fill_hierarchical_from,
   (Hierarchical& H, const LowRank& A, const ClusterTree& node)
 ) {
-  timing::start("fill_hierarchical_from(LR)");
+  // timing::start("fill_hierarchical_from(LR)");
   for (const ClusterTree& child : node) {
     H[child] = A.get_part(
       child.dim[0], child.dim[1], child.start[0], child.start[1]);
   }
-  timing::stop("fill_hierarchical_from(LR)");
+  // timing::stop("fill_hierarchical_from(LR)");
 }
 
 define_method(
