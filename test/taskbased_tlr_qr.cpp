@@ -67,23 +67,23 @@ int main(int argc, char** argv) {
     #pragma omp single
     {
       for(int64_t k = 0; k < Nc; k++) {
-        #pragma omp task depend(out: dep[k][k])
+        #pragma omp task depend(out: dep[k][k]) priority(3)
         {
           geqrt(A(k, k), T(k, k));
         }
         for(int64_t j = k+1; j < Nc; j++) {
-          #pragma omp task depend(in: dep[k][k]) depend(out: dep[k][j])
+          #pragma omp task depend(in: dep[k][k]) depend(out: dep[k][j]) priority(0)
           {
             larfb(A(k, k), T(k, k), A(k, j), true);
           }
         }
         for(int64_t i = k+1; i < Nc; i++) {
-          #pragma omp task depend(in: dep[i-1][k]) depend(out: dep[i][k])
+          #pragma omp task depend(in: dep[i-1][k]) depend(out: dep[i][k]) priority(2)
           {
             tpqrt(A(k, k), A(i, k), T(i, k));
           }
           for(int64_t j = k+1; j < Nc; j++) {
-            #pragma omp task depend(in: dep[i][k], dep[i-1][j]) depend(out: dep[i][j])
+            #pragma omp task depend(in: dep[i][k], dep[i-1][j]) depend(out: dep[i][j]) priority(1)
             {
               tpmqrt(A(i, k), T(i, k), A(k, j), A(i, j), true);
             }
