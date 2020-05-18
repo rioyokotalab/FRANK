@@ -13,7 +13,10 @@ function(find_or_download PACKAGE)
     if(${ARGS_EXACT})
         set(EXACT "EXACT")
     endif()
-    find_package(${PACKAGE} ${ARGS_VERSION} ${EXACT} QUIET)
+    find_package(
+        ${PACKAGE} ${ARGS_VERSION} ${EXACT} QUIET
+        HINTS ${CMAKE_SOURCE_DIR}/dependencies ${CMAKE_INSTALL_PREFIX}
+    )
     if(${${PACKAGE}_FOUND})
         message(STATUS "Found dependency ${PACKAGE} installed in system.")
     else()
