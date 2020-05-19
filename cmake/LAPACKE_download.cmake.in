@@ -18,4 +18,7 @@ ExternalProject_Add(${PROJECT_NAME}
                         -DLAPACKE_BUILD_COMPLEX=OFF
                         -DLAPACKE_BUILD_COMPLEX16=OFF
                         -DLAPACKE_WITH_TMG=ON
+                        -DBUILD_SINGLE=OFF
+                        -DBUILD_COMPLEX=OFF
+                        -DBUILD_COMPLEX16=OFF
 )
