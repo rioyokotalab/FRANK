@@ -1,5 +1,5 @@
-#ifndef hicma_classes_node_matrix_h
-#define hicma_classes_node_matrix_h
+#ifndef hicma_classes_matrix_proxy_h
+#define hicma_classes_matrix_proxy_h
 
 #include <memory>
 
@@ -45,4 +45,4 @@ class MatrixProxy {
 
 } // namespace hicma
 
-#endif // hicma_classes_node_matrix_h
+#endif // hicma_classes_matrix_proxy_h
