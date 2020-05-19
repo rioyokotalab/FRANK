@@ -1,0 +1,42 @@
+
+name: Build and test
+
+on:
+  pull_request:
+    branches: [ dev ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: dependencies
+        run: sudo apt-get install liblapack-dev gfortran libboost-dev
+
+      - name: Cache dependencies
+        uses: actions/cache@master
+        env:
+          cache-name: cache-built-dependencies
+        with:
+          path: |
+            dependencies
+            install/include/*.h
+            install/include/yorel
+            install/lib/cmake/cblas*
+            install/lib/libcblas.a
+            install/lib/cmake/lapack*
+            install/lib/liblapacke.a
+            install/lib/libtmglib.a
+            install/lib/cmake/YOMM2
+            install/lib/libyomm2.a
+          key: ${{ runner.os }}-build
+
+      - name: cmake
+        run: mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=RELEASE ..
+      - name: make
+        run: cd build && make -j
+      - name: test
+        run: ./bin/h_lu 256 32 8 2 1
