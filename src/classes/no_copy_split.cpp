@@ -13,21 +13,10 @@
 #include "yorel/yomm2/cute.hpp"
 
 #include <cassert>
-#include <cstddef>
-#include <memory>
-#include <utility>
 
 
 namespace hicma
 {
-
-std::unique_ptr<Node> NoCopySplit::clone() const {
-  return std::make_unique<NoCopySplit>(*this);
-}
-
-std::unique_ptr<Node> NoCopySplit::move_clone() {
-  return std::make_unique<NoCopySplit>(std::move(*this));
-}
 
 const char* NoCopySplit::type() const { return "NoCopySplit"; }
 

@@ -15,7 +15,6 @@
 
 #include <cassert>
 #include <cstdint>
-#include <memory>
 #include <utility>
 #include <vector>
 
@@ -61,14 +60,6 @@ Dense& Dense::operator=(const Dense& A) {
   }
   timing::stop("Dense copy assignment");
   return *this;
-}
-
-std::unique_ptr<Node> Dense::clone() const {
-  return std::make_unique<Dense>(*this);
-}
-
-std::unique_ptr<Node> Dense::move_clone() {
-  return std::make_unique<Dense>(std::move(*this));
 }
 
 const char* Dense::type() const { return "Dense"; }

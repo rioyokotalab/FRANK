@@ -44,7 +44,6 @@ class NodeProxy {
 
   // Utility methods
   const char* type() const;
-
 };
 
 } // namespace hicma

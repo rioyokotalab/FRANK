@@ -4,7 +4,6 @@
 #include "hicma/classes/hierarchical.h"
 
 #include <cstdint>
-#include <memory>
 
 
 namespace hicma
@@ -28,10 +27,6 @@ class NoCopySplit : public Hierarchical {
   NoCopySplit& operator=(NoCopySplit&& A) = default;
 
   // Overridden functions from Node
-  std::unique_ptr<Node> clone() const override;
-
-  std::unique_ptr<Node> move_clone() override;
-
   const char* type() const override;
 
   // Additional constructors

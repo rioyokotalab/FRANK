@@ -5,7 +5,6 @@
 
 #include <array>
 #include <cstdint>
-#include <memory>
 #include <vector>
 
 
@@ -44,10 +43,6 @@ class Dense : public Node {
   Dense& operator=(Dense&& A) = default;
 
   // Overridden functions from Node
-  virtual std::unique_ptr<Node> clone() const override;
-
-  virtual std::unique_ptr<Node> move_clone() override;
-
   virtual const char* type() const override;
 
   // Explicit conversions using multiple-dispatch function.

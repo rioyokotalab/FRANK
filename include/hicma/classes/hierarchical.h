@@ -6,7 +6,6 @@
 
 #include <array>
 #include <cstdint>
-#include <memory>
 #include <tuple>
 #include <vector>
 
@@ -39,10 +38,6 @@ class Hierarchical : public Node {
   Hierarchical& operator=(Hierarchical&& A) = default;
 
   // Overridden functions from Node
-  virtual std::unique_ptr<Node> clone() const override;
-
-  virtual std::unique_ptr<Node> move_clone() override;
-
   virtual const char* type() const override;
 
   // Conversion constructors

@@ -42,14 +42,6 @@ UniformHierarchical::UniformHierarchical(const UniformHierarchical& A)
   }
 }
 
-std::unique_ptr<Node> UniformHierarchical::clone() const {
-  return std::make_unique<UniformHierarchical>(*this);
-}
-
-std::unique_ptr<Node> UniformHierarchical::move_clone() {
-  return std::make_unique<UniformHierarchical>(std::move(*this));
-}
-
 const char* UniformHierarchical::type() const { return "UniformHierarchical"; }
 
 declare_method(

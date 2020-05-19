@@ -6,7 +6,6 @@
 
 #include <array>
 #include <cstdint>
-#include <memory>
 
 
 namespace hicma
@@ -33,10 +32,6 @@ class LowRank : public Node {
   LowRank& operator=(LowRank&& A) = default;
 
   // Overridden functions from Node
-  virtual std::unique_ptr<Node> clone() const override;
-
-  virtual std::unique_ptr<Node> move_clone() override;
-
   virtual const char* type() const override;
 
   // Getters and setters

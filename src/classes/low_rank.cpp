@@ -10,21 +10,11 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
-#include <memory>
 #include <tuple>
-#include <utility>
 
 
 namespace hicma
 {
-
-std::unique_ptr<Node> LowRank::clone() const {
-  return std::make_unique<LowRank>(*this);
-}
-
-std::unique_ptr<Node> LowRank::move_clone() {
-  return std::make_unique<LowRank>(std::move(*this));
-}
 
 const char* LowRank::type() const { return "LowRank"; }
 

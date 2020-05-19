@@ -12,10 +12,15 @@
 using yorel::yomm2::virtual_;
 
 #include <cstdint>
+#include <memory>
 
 
 namespace hicma
 {
+
+declare_method(std::unique_ptr<Node>, clone, (virtual_<const Node&>))
+
+declare_method(std::unique_ptr<Node>, move_clone, (virtual_<Node&&>))
 
 declare_method(
   void, fill_hierarchical_from,

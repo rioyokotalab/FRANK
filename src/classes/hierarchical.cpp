@@ -18,24 +18,14 @@
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
 
-#include <array>
 #include <cassert>
 #include <cstdint>
-#include <memory>
 #include <tuple>
 #include <utility>
 
 
 namespace hicma
 {
-
-std::unique_ptr<Node> Hierarchical::clone() const {
-  return std::make_unique<Hierarchical>(*this);
-}
-
-std::unique_ptr<Node> Hierarchical::move_clone() {
-  return std::make_unique<Hierarchical>(std::move(*this));
-}
 
 const char* Hierarchical::type() const { return "Hierarchical"; }
 

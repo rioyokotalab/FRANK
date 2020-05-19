@@ -63,10 +63,6 @@ class UniformHierarchical : public Hierarchical {
   UniformHierarchical& operator=(UniformHierarchical&& A) = default;
 
   // Overridden functions from Hierarchical
-  std::unique_ptr<Node> clone() const override;
-
-  std::unique_ptr<Node> move_clone() override;
-
   const char* type() const override;
 
   // Conversion constructors
