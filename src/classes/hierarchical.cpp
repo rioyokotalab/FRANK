@@ -27,8 +27,6 @@ using yorel::yomm2::virtual_;
 namespace hicma
 {
 
-const char* Hierarchical::type() const { return "Hierarchical"; }
-
 declare_method(Hierarchical&&, move_from_hierarchical, (virtual_<Node&>))
 
 Hierarchical::Hierarchical(NodeProxy&& A)

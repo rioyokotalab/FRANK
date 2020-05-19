@@ -37,9 +37,6 @@ class Hierarchical : public Node {
 
   Hierarchical& operator=(Hierarchical&& A) = default;
 
-  // Overridden functions from Node
-  virtual const char* type() const override;
-
   // Conversion constructors
   Hierarchical(NodeProxy&&);
 

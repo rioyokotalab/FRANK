@@ -16,8 +16,6 @@
 namespace hicma
 {
 
-const char* LowRank::type() const { return "LowRank"; }
-
 Dense& LowRank::U() { return _U; }
 const Dense& LowRank::U() const { return _U; }
 

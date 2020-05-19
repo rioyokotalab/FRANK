@@ -31,9 +31,6 @@ class LowRank : public Node {
 
   LowRank& operator=(LowRank&& A) = default;
 
-  // Overridden functions from Node
-  virtual const char* type() const override;
-
   // Getters and setters
   virtual Dense& U();
   virtual const Dense& U() const;

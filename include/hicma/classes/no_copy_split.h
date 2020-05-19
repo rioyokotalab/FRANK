@@ -26,9 +26,6 @@ class NoCopySplit : public Hierarchical {
 
   NoCopySplit& operator=(NoCopySplit&& A) = default;
 
-  // Overridden functions from Node
-  const char* type() const override;
-
   // Additional constructors
   NoCopySplit(Node& A, int64_t n_row_blocks, int64_t n_col_blocks);
 

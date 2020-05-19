@@ -66,9 +66,6 @@ class LowRankShared : public Node {
 
   LowRankShared& operator=(LowRankShared&& A) = default;
 
-  // Overridden functions from Node
-  const char* type() const override;
-
   // Additional construcors
   LowRankShared(
     const Dense& S, std::shared_ptr<Dense> U, std::shared_ptr<Dense> V);

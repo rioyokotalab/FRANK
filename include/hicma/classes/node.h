@@ -19,8 +19,6 @@ class Node {
   Node(Node&& A) = default;
 
   Node& operator=(Node&& A) = default;
-
-  virtual const char* type() const = 0;
 };
 
 } // namespace hicma

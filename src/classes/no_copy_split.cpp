@@ -18,8 +18,6 @@
 namespace hicma
 {
 
-const char* NoCopySplit::type() const { return "NoCopySplit"; }
-
 NoCopySplit::NoCopySplit(Node& A, int64_t n_row_blocks, int64_t n_col_blocks)
 : Hierarchical(n_row_blocks, n_col_blocks) {
   ClusterTree node(get_n_rows(A), get_n_cols(A), dim[0], dim[1]);

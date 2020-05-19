@@ -7,6 +7,8 @@
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
 
+#include <string>
+
 
 namespace hicma
 {
@@ -20,6 +22,8 @@ declare_method(
 )
 
 declare_method(void, print_omm, (virtual_<const Node&>))
+
+declare_method(std::string, type_omm, (virtual_<const Node&>))
 
 } // namespace hicma
 

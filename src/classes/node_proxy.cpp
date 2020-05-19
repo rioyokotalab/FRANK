@@ -43,7 +43,6 @@ NodeProxy::operator Node&() {
   return *ptr;
 }
 
-const char* NodeProxy::type() const { return ptr->type(); }
 
 define_method(std::unique_ptr<Node>, clone, (const Dense& A)) {
   return std::make_unique<Dense>(A);

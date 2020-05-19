@@ -62,8 +62,6 @@ Dense& Dense::operator=(const Dense& A) {
   return *this;
 }
 
-const char* Dense::type() const { return "Dense"; }
-
 Dense::Dense(const Node& A)
 : Node(A), dim{get_n_rows(A), get_n_cols(A)}, stride(dim[1]),
   data(dim[0]*dim[1], 0),

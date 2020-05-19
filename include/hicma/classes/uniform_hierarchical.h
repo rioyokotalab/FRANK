@@ -62,9 +62,6 @@ class UniformHierarchical : public Hierarchical {
 
   UniformHierarchical& operator=(UniformHierarchical&& A) = default;
 
-  // Overridden functions from Hierarchical
-  const char* type() const override;
-
   // Conversion constructors
   UniformHierarchical(NodeProxy&&);
 

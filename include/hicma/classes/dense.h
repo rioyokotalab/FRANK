@@ -42,9 +42,6 @@ class Dense : public Node {
 
   Dense& operator=(Dense&& A) = default;
 
-  // Overridden functions from Node
-  virtual const char* type() const override;
-
   // Explicit conversions using multiple-dispatch function.
   explicit Dense(const Node& A);
 

@@ -11,6 +11,8 @@ class Node;
 
 extern bool VERBOSE;
 
+std::string type(const Node&);
+
 void printXML(const Node& A, std::string filename = "matrix.xml");
 
 void print(const Node&);

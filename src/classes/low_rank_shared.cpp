@@ -14,8 +14,6 @@
 namespace hicma
 {
 
-const char* LowRankShared::type() const { return "LowRankShared"; }
-
 LowRankShared::LowRankShared(
   const Dense& S, std::shared_ptr<Dense> U, std::shared_ptr<Dense> V
 ) : U(U), V(V), S(S), dim{U->dim[0], V->dim[1]}, rank(S.dim[0]) {}

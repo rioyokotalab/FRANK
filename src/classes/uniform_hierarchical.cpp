@@ -42,8 +42,6 @@ UniformHierarchical::UniformHierarchical(const UniformHierarchical& A)
   }
 }
 
-const char* UniformHierarchical::type() const { return "UniformHierarchical"; }
-
 declare_method(
   UniformHierarchical, move_from_uniform_hierarchical, (virtual_<Node&>))
 
