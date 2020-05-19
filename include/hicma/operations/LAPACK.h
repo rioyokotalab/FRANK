@@ -9,26 +9,26 @@
 namespace hicma
 {
 
-class Node;
-class NodeProxy;
+class Matrix;
+class MatrixProxy;
 class Dense;
 
-std::tuple<Dense, std::vector<int64_t>> geqp3(Node& A);
+std::tuple<Dense, std::vector<int64_t>> geqp3(Matrix& A);
 
-void geqrt(Node&, Node&);
+void geqrt(Matrix&, Matrix&);
 
 void geqrt2(Dense&, Dense&);
 
-std::tuple<NodeProxy, NodeProxy> getrf(Node&);
+std::tuple<MatrixProxy, MatrixProxy> getrf(Matrix&);
 
-std::tuple<Dense, std::vector<int64_t>> one_sided_id(Node& A, int64_t k);
+std::tuple<Dense, std::vector<int64_t>> one_sided_id(Matrix& A, int64_t k);
 
 // TODO Does this need to be in the header?
 Dense get_cols(const Dense& A, std::vector<int64_t> P);
 
-std::tuple<Dense, Dense, Dense> id(Node& A, int64_t k);
+std::tuple<Dense, Dense, Dense> id(Matrix& A, int64_t k);
 
-void larfb(const Node&, const Node&, Node&, bool);
+void larfb(const Matrix&, const Matrix&, Matrix&, bool);
 
 void latms(
   const char& dist,
@@ -43,28 +43,29 @@ void latms(
   Dense& A
 );
 
-void qr(Node&, Node&, Node&);
+void qr(Matrix&, Matrix&, Matrix&);
 
 // TODO Does this need to be in the header?
-bool need_split(const Node&);
+bool need_split(const Matrix&);
 
 // TODO Does this need to be in the header?
-std::tuple<Dense, Dense> make_left_orthogonal(const Node&);
+std::tuple<Dense, Dense> make_left_orthogonal(const Matrix&);
 
 // TODO Does this need to be in the header?
-void update_splitted_size(const Node&, int64_t&, int64_t&);
+void update_splitted_size(const Matrix&, int64_t&, int64_t&);
 
 // TODO Does this need to be in the header?
-NodeProxy split_by_column(const Node&, Node&, int64_t&);
+MatrixProxy split_by_column(const Matrix&, Matrix&, int64_t&);
 
 // TODO Does this need to be in the header?
-NodeProxy concat_columns(const Node&, const Node&, const Node&, int64_t&);
+MatrixProxy concat_columns(
+  const Matrix&, const Matrix&, const Matrix&, int64_t&);
 
-void zero_lowtri(Node&);
+void zero_lowtri(Matrix&);
 
-void zero_whole(Node&);
+void zero_whole(Matrix&);
 
-void rq(Node&, Node&, Node&);
+void rq(Matrix&, Matrix&, Matrix&);
 
 std::tuple<Dense, Dense, Dense> svd(Dense& A);
 
@@ -73,9 +74,9 @@ std::tuple<Dense, Dense, Dense> sdd(Dense& A);
 // TODO Does this need to be in the header?
 Dense get_singular_values(Dense& A);
 
-void tpmqrt(const Node&, const Node&, Node&, Node&, bool);
+void tpmqrt(const Matrix&, const Matrix&, Matrix&, Matrix&, bool);
 
-void tpqrt(Node&, Node&, Node&);
+void tpqrt(Matrix&, Matrix&, Matrix&);
 
 } // namespace hicma
 

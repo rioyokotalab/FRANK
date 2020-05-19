@@ -23,11 +23,11 @@
 namespace hicma
 {
 
-std::tuple<double, double> collect_diff_norm(const Node& A, const Node& B) {
+std::tuple<double, double> collect_diff_norm(const Matrix& A, const Matrix& B) {
   return collect_diff_norm_omm(A, B);
 }
 
-double l2_error(const Node& A, const Node& B) {
+double l2_error(const Matrix& A, const Matrix& B) {
   assert(get_n_rows(A) == get_n_rows(B));
   assert(get_n_cols(A) == get_n_cols(B));
   double diff, mat_norm;
@@ -62,14 +62,14 @@ define_method(
 }
 
 define_method(
-  DoublePair, collect_diff_norm_omm, (const Hierarchical& A, const Node& B)
+  DoublePair, collect_diff_norm_omm, (const Hierarchical& A, const Matrix& B)
 ) {
   NoCopySplit BH(B, A.dim[0], A.dim[1]);
   return collect_diff_norm_omm(A, BH);
 }
 
 define_method(
-  DoublePair, collect_diff_norm_omm, (const Node& A, const Hierarchical& B)
+  DoublePair, collect_diff_norm_omm, (const Matrix& A, const Hierarchical& B)
 ) {
   NoCopySplit AH(A, B.dim[0], B.dim[1]);
   return collect_diff_norm_omm(AH, B);
@@ -127,7 +127,7 @@ define_method(
 }
 
 define_method(
-  DoublePair, collect_diff_norm_omm, (const Node& A, const Node& B)
+  DoublePair, collect_diff_norm_omm, (const Matrix& A, const Matrix& B)
 ) {
   omm_error_handler("collect_diff_norm", {A, B}, __FILE__, __LINE__);
   std::abort();

@@ -17,7 +17,7 @@
 namespace hicma
 {
 
-double norm(const Node& A) { return norm_omm(A); }
+double norm(const Matrix& A) { return norm_omm(A); }
 
 define_method(double, norm_omm, (const Dense& A)) {
   double l2 = 0;
@@ -43,7 +43,7 @@ define_method(double, norm_omm, (const Hierarchical& A)) {
   return l2;
 }
 
-define_method(double, norm_omm, (const Node& A)) {
+define_method(double, norm_omm, (const Matrix& A)) {
   omm_error_handler("norm", {A}, __FILE__, __LINE__);
   std::abort();
 }

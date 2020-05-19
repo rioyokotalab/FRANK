@@ -17,7 +17,7 @@
 namespace hicma
 {
 
-int64_t get_n_rows(const Node& A) { return get_n_rows_omm(A); }
+int64_t get_n_rows(const Matrix& A) { return get_n_rows_omm(A); }
 
 define_method(int64_t, get_n_rows_omm, (const Dense& A)) { return A.dim[0]; }
 
@@ -35,13 +35,13 @@ define_method(int64_t, get_n_rows_omm, (const Hierarchical& A)) {
   return n_rows;
 }
 
-define_method(int64_t, get_n_rows_omm, (const Node& A)) {
+define_method(int64_t, get_n_rows_omm, (const Matrix& A)) {
   omm_error_handler("get_n_rows", {A}, __FILE__, __LINE__);
   std::abort();
 }
 
 
-int64_t get_n_cols(const Node& A) { return get_n_cols_omm(A); }
+int64_t get_n_cols(const Matrix& A) { return get_n_cols_omm(A); }
 
 define_method(int64_t, get_n_cols_omm, (const Dense& A)) { return A.dim[1]; }
 
@@ -59,7 +59,7 @@ define_method(int64_t, get_n_cols_omm, (const Hierarchical& A)) {
   return n_cols;
 }
 
-define_method(int64_t, get_n_cols_omm, (const Node& A)) {
+define_method(int64_t, get_n_cols_omm, (const Matrix& A)) {
   omm_error_handler("get_n_cols", {A}, __FILE__, __LINE__);
   std::abort();
 }

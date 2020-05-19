@@ -12,7 +12,7 @@
 namespace hicma
 {
 
-class LowRankShared : public Node {
+class LowRankShared : public Matrix {
  public:
   // TODO Make these members private just like in LowRank
   class SharedBasis {

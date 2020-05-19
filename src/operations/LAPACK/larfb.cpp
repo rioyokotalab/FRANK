@@ -22,7 +22,7 @@
 namespace hicma
 {
 
-void larfb(const Node& V, const Node& T, Node& C, bool trans) {
+void larfb(const Matrix& V, const Matrix& T, Matrix& C, bool trans) {
   larfb_omm(V, T, C, trans);
 }
 
@@ -108,7 +108,7 @@ define_method(
 // Fallback default, abort with error message
 define_method(
   void, larfb_omm,
-  (const Node& V, const Node& T, Node& C, [[maybe_unused]] bool trans)
+  (const Matrix& V, const Matrix& T, Matrix& C, [[maybe_unused]] bool trans)
 ) {
   omm_error_handler("larfb", {V, T, C}, __FILE__, __LINE__);
   std::abort();

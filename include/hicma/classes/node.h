@@ -1,26 +1,26 @@
-#ifndef hicma_classes_node_h
-#define hicma_classes_node_h
+#ifndef hicma_classes_matrix_h
+#define hicma_classes_matrix_h
 
 
 namespace hicma
 {
 
-class Node {
+class Matrix {
  public:
   // Special member functions
-  Node() = default;
+  Matrix() = default;
 
-  virtual ~Node() = default;
+  virtual ~Matrix() = default;
 
-  Node(const Node& A) = default;
+  Matrix(const Matrix& A) = default;
 
-  Node& operator=(const Node& A) = default;
+  Matrix& operator=(const Matrix& A) = default;
 
-  Node(Node&& A) = default;
+  Matrix(Matrix&& A) = default;
 
-  Node& operator=(Node&& A) = default;
+  Matrix& operator=(Matrix&& A) = default;
 };
 
 } // namespace hicma
 
-#endif // hicma_classes_node_h
+#endif // hicma_classes_matrix_h

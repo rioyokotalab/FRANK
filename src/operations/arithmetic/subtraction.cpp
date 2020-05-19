@@ -15,13 +15,13 @@
 namespace hicma
 {
 
-NodeProxy operator-(const Node& A, const Node& B) {
+MatrixProxy operator-(const Matrix& A, const Matrix& B) {
   assert(get_n_rows(A) == get_n_rows(B));
   assert(get_n_cols(A) == get_n_cols(B));
   return subtraction_omm(A, B);
 }
 
-define_method(NodeProxy, subtraction_omm, (const Dense& A, const Dense& B)) {
+define_method(MatrixProxy, subtraction_omm, (const Dense& A, const Dense& B)) {
   Dense out(A.dim[0], A.dim[1]);
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {
@@ -31,7 +31,9 @@ define_method(NodeProxy, subtraction_omm, (const Dense& A, const Dense& B)) {
   return out;
 }
 
-define_method(NodeProxy, subtraction_omm, (const Node& A, const Node& B)) {
+define_method(
+  MatrixProxy, subtraction_omm, (const Matrix& A, const Matrix& B)
+) {
   omm_error_handler("operator-", {A, B}, __FILE__, __LINE__);
   std::abort();
 }

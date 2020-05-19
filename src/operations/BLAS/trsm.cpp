@@ -24,7 +24,7 @@
 namespace hicma
 {
 
-void trsm(const Node& A, Node& B, int uplo, int lr) {
+void trsm(const Matrix& A, Matrix& B, int uplo, int lr) {
   assert(uplo == TRSM_UPPER || uplo == TRSM_LOWER);
   assert(lr == TRSM_LEFT || lr == TRSM_RIGHT);
   trsm_omm(A, B, uplo, lr);
@@ -111,7 +111,7 @@ define_method(void, trsm_omm, (const Dense& A, Dense& B, int uplo, int lr)) {
   timing::stop("DTRSM");
 }
 
-define_method(void, trsm_omm, (const Node& A, LowRank& B, int uplo, int lr)) {
+define_method(void, trsm_omm, (const Matrix& A, LowRank& B, int uplo, int lr)) {
   switch (uplo) {
   case TRSM_UPPER:
     trsm(A, B.V(), uplo, lr);
@@ -141,7 +141,7 @@ define_method(
 define_method(
   void, trsm_omm,
   (
-    const Node& A, Node& B,
+    const Matrix& A, Matrix& B,
     [[maybe_unused]] int uplo, [[maybe_unused]] int lr
   )
 ) {

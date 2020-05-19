@@ -25,7 +25,9 @@
 namespace hicma
 {
 
-void tpmqrt(const Node& V, const Node& T, Node& A, Node& B, bool trans) {
+void tpmqrt(
+  const Matrix& V, const Matrix& T, Matrix& A, Matrix& B, bool trans
+) {
   tpmqrt_omm(V, T, A, B, trans);
 }
 
@@ -218,7 +220,8 @@ define_method(
 define_method(
   void, tpmqrt_omm,
   (
-    const Hierarchical& V, const Hierarchical& T, Hierarchical& A, Hierarchical& B,
+    const Hierarchical& V, const Hierarchical& T,
+    Hierarchical& A, Hierarchical& B,
     bool trans
   )
 ) {
@@ -245,7 +248,10 @@ define_method(
 // Fallback default, abort with error message
 define_method(
   void, tpmqrt_omm,
-  (const Node& V, const Node& T, Node& A, Node& B, [[maybe_unused]] bool trans)
+  (
+    const Matrix& V, const Matrix& T, Matrix& A, Matrix& B,
+    [[maybe_unused]] bool trans
+  )
 ) {
   omm_error_handler("tpmqrt", {V, T, A, B}, __FILE__, __LINE__);
   std::abort();

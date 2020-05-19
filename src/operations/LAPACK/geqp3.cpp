@@ -24,7 +24,9 @@
 namespace hicma
 {
 
-std::tuple<Dense, std::vector<int64_t>> geqp3(Node& A) { return geqp3_omm(A); }
+std::tuple<Dense, std::vector<int64_t>> geqp3(Matrix& A) {
+  return geqp3_omm(A);
+}
 
 // Fallback default, abort with error message
 define_method(DenseIndexSetPair, geqp3_omm, (Dense& A)) {
@@ -55,7 +57,7 @@ define_method(DenseIndexSetPair, geqp3_omm, (Dense& A)) {
 }
 
 // Fallback default, abort with error message
-define_method(DenseIndexSetPair, geqp3_omm, (Node& A)) {
+define_method(DenseIndexSetPair, geqp3_omm, (Matrix& A)) {
   omm_error_handler("geqp3", {A}, __FILE__, __LINE__);
   std::abort();
 }

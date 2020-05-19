@@ -1,5 +1,5 @@
-#ifndef hicma_classes_node_proxy_h
-#define hicma_classes_node_proxy_h
+#ifndef hicma_classes_node_matrix_h
+#define hicma_classes_node_matrix_h
 
 #include <memory>
 
@@ -7,42 +7,42 @@
 namespace hicma
 {
 
-class Node;
+class Matrix;
 
-class NodeProxy {
+class MatrixProxy {
  private:
-  std::unique_ptr<Node> ptr;
+  std::unique_ptr<Matrix> ptr;
  public:
   // Special member functions
-  NodeProxy() = default;
+  MatrixProxy() = default;
 
-  ~NodeProxy() = default;
+  ~MatrixProxy() = default;
 
-  NodeProxy(const NodeProxy& A);
+  MatrixProxy(const MatrixProxy& A);
 
-  NodeProxy& operator=(const NodeProxy& A);
+  MatrixProxy& operator=(const MatrixProxy& A);
 
-  NodeProxy(NodeProxy&& A) = default;
+  MatrixProxy(MatrixProxy&& A) = default;
 
-  NodeProxy& operator=(NodeProxy&& A) = default;
+  MatrixProxy& operator=(MatrixProxy&& A) = default;
 
-  // Additional constructors from Node to allow implicit conversion
-  NodeProxy(const Node& A);
+  // Additional constructors from Matrix to allow implicit conversion
+  MatrixProxy(const Matrix& A);
 
-  NodeProxy(Node&& A);
+  MatrixProxy(Matrix&& A);
 
-  // Conversion operator to Node&. We want to write our operations as
-  // operation(Node&, Node&) and not have to write a list of overloads that
+  // Conversion operator to Matrix&. We want to write our operations as
+  // operation(Matrix&, Matrix&) and not have to write a list of overloads that
   // cover cases where we pass operation(H(0, 0), H(0, 1)).
-  // If we define an implicit copy/move constructor on the Node class, the
+  // If we define an implicit copy/move constructor on the Matrix class, the
   // derived types get cut short since we would need a copy/move to implement
   // them and would have no way of knowing which of the types we derived from
-  // Node is actually pointed to by ptr of NodeProxy.
-  operator const Node&() const;
+  // Matrix is actually pointed to by ptr of MatrixProxy.
+  operator const Matrix&() const;
 
-  operator Node&();
+  operator Matrix&();
 };
 
 } // namespace hicma
 
-#endif // hicma_classes_node_proxy_h
+#endif // hicma_classes_node_matrix_h

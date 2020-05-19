@@ -10,15 +10,15 @@ namespace hicma
 {
 
 // Addition
-Node& operator+=(Node&, const Node&);
+Matrix& operator+=(Matrix&, const Matrix&);
 
 Dense operator+(const Dense&, const Dense&);
 
 // Subtraction
-NodeProxy operator-(const Node&, const Node&);
+MatrixProxy operator-(const Matrix&, const Matrix&);
 
 // Multiplication
-Node& operator*=(Node&, double);
+Matrix& operator*=(Matrix&, double);
 
 } // namespace hicma
 

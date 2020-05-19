@@ -33,7 +33,8 @@ LowRank::LowRank(int64_t n_rows, int64_t n_cols, int64_t k)
   V() = Dense(k, dim[1]);
 }
 
-LowRank::LowRank(const Dense& A, int64_t k) : Node(A), dim{A.dim[0], A.dim[1]} {
+LowRank::LowRank(const Dense& A, int64_t k)
+: Matrix(A), dim{A.dim[0], A.dim[1]} {
   // Rank with oversampling limited by dimensions
   rank = std::min(std::min(k+5, dim[0]), dim[1]);
   std::tie(U(), S(), V()) = rsvd(A, rank);
@@ -42,6 +43,7 @@ LowRank::LowRank(const Dense& A, int64_t k) : Node(A), dim{A.dim[0], A.dim[1]} {
   V().resize(k, dim[1]);
   rank = k;
 }
+
 void LowRank::mergeU(const LowRank& A, const LowRank& B) {
   assert(rank == A.rank + B.rank);
   for (int64_t i=0; i<dim[0]; i++) {

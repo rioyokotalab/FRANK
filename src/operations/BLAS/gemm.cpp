@@ -34,13 +34,13 @@ namespace hicma
 declare_method(
   void, gemm_trans_omm,
   (
-    virtual_<const Node&>, virtual_<const Node&>, virtual_<Node&>,
+    virtual_<const Matrix&>, virtual_<const Matrix&>, virtual_<Matrix&>,
     bool, bool, double, double
   )
 )
 
 void gemm(
-  const Node& A, const Node& B, Node& C,
+  const Matrix& A, const Matrix& B, Matrix& C,
   bool TransA, bool TransB,
   double alpha, double beta
 ) {
@@ -100,7 +100,7 @@ define_method(
 define_method(
   void, gemm_trans_omm,
   (
-    const Node& A, const Node& B, Node& C,
+    const Matrix& A, const Matrix& B, Matrix& C,
     [[maybe_unused]] bool TransA, [[maybe_unused]] bool TransB,
     [[maybe_unused]] double alpha, [[maybe_unused]] double beta
   )
@@ -110,7 +110,7 @@ define_method(
 }
 
 void gemm(
-  const Node& A, const Node& B, Node& C,
+  const Matrix& A, const Matrix& B, Matrix& C,
   double alpha, double beta
 ) {
   assert(get_n_rows(A) == get_n_rows(C));
@@ -456,13 +456,13 @@ define_method(
 declare_method(
   void, gemm_regular_only_omm,
   (
-    virtual_<const Node&>, virtual_<const Node&>, virtual_<Node&>,
+    virtual_<const Matrix&>, virtual_<const Matrix&>, virtual_<Matrix&>,
     double, double
   )
 )
 
 void gemm_regular_only(
-  const Node& A, const Node& B, Node& C, double alpha, double beta
+  const Matrix& A, const Matrix& B, Matrix& C, double alpha, double beta
 ) {
   gemm_regular_only_omm(A, B, C, alpha, beta);
 }
@@ -519,7 +519,7 @@ define_method(
 define_method(
   void, gemm_regular_only_omm,
   (
-    const Node& A, const Node& B, Node& C,
+    const Matrix& A, const Matrix& B, Matrix& C,
     [[maybe_unused]] double alpha, [[maybe_unused]] double beta
   )
 ) {
@@ -530,13 +530,13 @@ define_method(
 declare_method(
   bool, gemm_shared_only_omm,
   (
-    virtual_<const Node&>, virtual_<const Node&>, virtual_<Node&>,
+    virtual_<const Matrix&>, virtual_<const Matrix&>, virtual_<Matrix&>,
     double, double
   )
 )
 
 bool gemm_shared_only(
-  const Node& A, const Node& B, Node& C, double alpha, double beta
+  const Matrix& A, const Matrix& B, Matrix& C, double alpha, double beta
 ) {
   return gemm_shared_only_omm(A, B, C, alpha, beta);
 }
@@ -555,8 +555,8 @@ define_method(
 define_method(
   bool, gemm_shared_only_omm,
   (
-    [[maybe_unused]] const Dense& A, [[maybe_unused]] const Node& B,
-    [[maybe_unused]] Node& C,
+    [[maybe_unused]] const Dense& A, [[maybe_unused]] const Matrix& B,
+    [[maybe_unused]] Matrix& C,
     [[maybe_unused]] double alpha, [[maybe_unused]] double beta
   )
 ) {
@@ -567,8 +567,9 @@ define_method(
 define_method(
   bool, gemm_shared_only_omm,
   (
-    [[maybe_unused]] const UniformHierarchical& A, [[maybe_unused]] const Node& B,
-    [[maybe_unused]] Node& C,
+    [[maybe_unused]] const UniformHierarchical& A,
+    [[maybe_unused]] const Matrix& B,
+    [[maybe_unused]] Matrix& C,
     [[maybe_unused]] double alpha, [[maybe_unused]] double beta
   )
 ) {
@@ -579,7 +580,7 @@ define_method(
 define_method(
   bool, gemm_shared_only_omm,
   (
-    const Node& A, const Node& B, Node& C,
+    const Matrix& A, const Matrix& B, Matrix& C,
     [[maybe_unused]] double alpha, [[maybe_unused]] double beta
   )
 ) {
@@ -614,9 +615,11 @@ define_method(
     for (int64_t i=0; i<CH.dim[0]; i++) {
       Hierarchical SRowBasisB(1, RowBasisB.dim[1]);
       for (int64_t k=0; k<A.dim[1]; k++) {
-        SRowBasisB[k] = Dense(get_n_cols(A.get_col_basis(i)), get_n_cols(RowBasisB[k]));
+        SRowBasisB[k] = Dense(
+          get_n_cols(A.get_col_basis(i)), get_n_cols(RowBasisB[k]));
         // Returns whether an operations took place (false when Dense/UH)
-        bool shared = gemm_shared_only(A(i, k), RowBasisB[k], SRowBasisB[k], 1, 0);
+        bool shared = gemm_shared_only(
+          A(i, k), RowBasisB[k], SRowBasisB[k], 1, 0);
         if (shared) {
           gemm(A.get_col_basis(i), SRowBasisB[k], CH(i, j), alpha, 1);
         }
@@ -629,7 +632,7 @@ define_method(
 define_method(
   void, gemm_omm,
   (
-    const Node& A, const Node& B, Node& C,
+    const Matrix& A, const Matrix& B, Matrix& C,
     [[maybe_unused]] double alpha, [[maybe_unused]] double beta
   )
 ) {
@@ -638,7 +641,7 @@ define_method(
 }
 
 Dense gemm(
-  const Node& A, const Node& B, double alpha, bool TransA, bool TransB
+  const Matrix& A, const Matrix& B, double alpha, bool TransA, bool TransB
 ) {
   assert(
     (TransA ? get_n_rows(A) : get_n_cols(A))
@@ -696,7 +699,7 @@ define_method(
 define_method(
   Dense, gemm_omm,
   (
-    const Node& A, const Node& B,
+    const Matrix& A, const Matrix& B,
     [[maybe_unused]] double alpha,
     [[maybe_unused]] bool TransA, [[maybe_unused]] bool TransB
   )

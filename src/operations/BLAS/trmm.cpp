@@ -25,7 +25,7 @@ namespace hicma
 {
 
 void trmm(
-  const Node& A, Node& B,
+  const Matrix& A, Matrix& B,
   const char& side, const char& uplo, const char& trans, const char& diag,
   double alpha
 ) {
@@ -33,7 +33,7 @@ void trmm(
 }
 
 void trmm(
-  const Node& A, Node& B,
+  const Matrix& A, Matrix& B,
   const char& side, const char& uplo,
   double alpha
 ) {
@@ -124,7 +124,7 @@ define_method(
 define_method(
   void, trmm_omm,
   (
-    const Node& A, Node& B,
+    const Matrix& A, Matrix& B,
     [[maybe_unused]] const char& side, [[maybe_unused]] const char& uplo,
     [[maybe_unused]] const char& trans, [[maybe_unused]] const char& diag,
     [[maybe_unused]] double alpha

@@ -11,9 +11,7 @@
 namespace hicma
 {
 
-class NodeProxy;
-
-class Dense : public Node {
+class Dense : public Matrix {
  public:
   std::array<int64_t, 2> dim = {0, 0};
   int64_t stride = 0;
@@ -43,7 +41,7 @@ class Dense : public Node {
   Dense& operator=(Dense&& A) = default;
 
   // Explicit conversions using multiple-dispatch function.
-  explicit Dense(const Node& A);
+  explicit Dense(const Matrix& A);
 
   // Additional constructors
   Dense(int64_t n_rows, int64_t n_cols=1);

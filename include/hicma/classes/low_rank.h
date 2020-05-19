@@ -11,7 +11,7 @@
 namespace hicma
 {
 
-class LowRank : public Node {
+class LowRank : public Matrix {
  private:
   Dense _U, _S, _V;
  public:

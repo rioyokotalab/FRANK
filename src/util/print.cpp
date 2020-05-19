@@ -30,7 +30,7 @@ bool VERBOSE = true;
 static const int stringLength = 35; //!< Length of formatted string
 static const int decimal = 7; //!< Decimal precision
 
-std::string type(const Node& A) { return type_omm(A); }
+std::string type(const Matrix& A) { return type_omm(A); }
 
 define_method(std::string, type_omm, ([[maybe_unused]] const Dense& A)) {
   return "Dense";
@@ -56,18 +56,19 @@ define_method(std::string, type_omm, ([[maybe_unused]] const NoCopySplit& A)) {
   return "NoCopySplit";
 }
 
-define_method(std::string, type_omm, (const Node& A)) {
+define_method(std::string, type_omm, (const Matrix& A)) {
   omm_error_handler("type", {A}, __FILE__, __LINE__);
   std::abort();
 }
 
 declare_method(
   void, fillXML_omm,
-  (virtual_<const Node&>, pt::ptree&, int64_t, int64_t, int64_t)
+  (virtual_<const Matrix&>, pt::ptree&, int64_t, int64_t, int64_t)
 )
 
 void fillXML(
-  const Node& A, pt::ptree& tree, int64_t i_abs=0, int64_t j_abs=0, int64_t level=0
+  const Matrix& A, pt::ptree& tree,
+  int64_t i_abs=0, int64_t j_abs=0, int64_t level=0
 ) {
   fillXML_omm(A, tree, i_abs, j_abs, level);
 }
@@ -98,7 +99,10 @@ define_method(
 
 define_method(
   void, fillXML_omm,
-  (const LowRank& A, pt::ptree& tree, int64_t i_abs, int64_t j_abs, int64_t level)
+  (
+    const LowRank& A, pt::ptree& tree,
+    int64_t i_abs, int64_t j_abs, int64_t level
+  )
 ) {
   Dense AD(A);
   Dense S = get_singular_values(AD);
@@ -117,7 +121,10 @@ define_method(
 
 define_method(
   void, fillXML_omm,
-  (const LowRankShared& A, pt::ptree& tree, int64_t i_abs, int64_t j_abs, int64_t level)
+  (
+    const LowRankShared& A, pt::ptree& tree,
+    int64_t i_abs, int64_t j_abs, int64_t level
+  )
 ) {
   Dense AD(A);
   Dense S = get_singular_values(AD);
@@ -155,7 +162,7 @@ define_method(
 define_method(
   void, fillXML_omm,
   (
-    const Node& A, [[maybe_unused]] pt::ptree& tree,
+    const Matrix& A, [[maybe_unused]] pt::ptree& tree,
     [[maybe_unused]] int64_t i_abs, [[maybe_unused]] int64_t j_abs,
     [[maybe_unused]] int64_t level
   )
@@ -163,7 +170,7 @@ define_method(
   omm_error_handler("fillXML", {A}, __FILE__, __LINE__);
 }
 
-void printXML(const Node& A, std::string filename) {
+void printXML(const Matrix& A, std::string filename) {
   pt::ptree tree;
   // Write any header info you want here, like a time stamp
   // And then pass pass A into printXML along with the basic ptree
@@ -173,14 +180,14 @@ void printXML(const Node& A, std::string filename) {
   write_xml(filename.c_str(), tree, std::locale());
 }
 
-void print(const Node& A) { print_omm(A); }
+void print(const Matrix& A) { print_omm(A); }
 
 void print_separation_line() {
   for (int i=0; i<82; ++i) std::cout << "-";
   std::cout << std::endl;
 }
 
-define_method(void, print_omm, (const Node& A)) {
+define_method(void, print_omm, (const Matrix& A)) {
   omm_error_handler("print", {A}, __FILE__, __LINE__);
 }
 

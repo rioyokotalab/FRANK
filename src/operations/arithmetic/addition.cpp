@@ -27,9 +27,9 @@
 namespace hicma
 {
 
-Node& operator+=(Node& A, const Node& B) { return addition_omm(A, B); }
+Matrix& operator+=(Matrix& A, const Matrix& B) { return addition_omm(A, B); }
 
-define_method(Node&, addition_omm, (Dense& A, const Dense& B)) {
+define_method(Matrix&, addition_omm, (Dense& A, const Dense& B)) {
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {
       A(i, j) += B(i, j);
@@ -38,12 +38,12 @@ define_method(Node&, addition_omm, (Dense& A, const Dense& B)) {
   return A;
 }
 
-define_method(Node&, addition_omm, (Dense& A, const LowRank& B)) {
+define_method(Matrix&, addition_omm, (Dense& A, const LowRank& B)) {
   gemm(gemm(B.U(), B.S()), B.V(), A, 1, 1);
   return A;
 }
 
-define_method(Node&, addition_omm, (Hierarchical& A, const LowRank& B)) {
+define_method(Matrix&, addition_omm, (Hierarchical& A, const LowRank& B)) {
   NoCopySplit BH(B, A.dim[0], A.dim[1]);
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {
@@ -127,7 +127,7 @@ std::tuple<Dense, Dense, Dense> merge_S(
   return {std::move(Uhat), std::move(Shat), std::move(Vhat)};
 }
 
-define_method(Node&, addition_omm, (LowRank& A, const LowRank& B)) {
+define_method(Matrix&, addition_omm, (LowRank& A, const LowRank& B)) {
   assert(A.dim[0] == B.dim[0]);
   assert(A.dim[1] == B.dim[1]);
   assert(A.rank == B.rank);
@@ -214,7 +214,7 @@ define_method(Node&, addition_omm, (LowRank& A, const LowRank& B)) {
   return A;
 }
 
-define_method(Node&, addition_omm, (Node& A, const Node& B)) {
+define_method(Matrix&, addition_omm, (Matrix& A, const Matrix& B)) {
   omm_error_handler("operator+=", {A, B}, __FILE__, __LINE__);
   std::abort();
 }

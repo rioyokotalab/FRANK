@@ -9,7 +9,7 @@
 namespace hicma
 {
 
-class Node;
+class Matrix;
 
 class NoCopySplit : public Hierarchical {
  public:
@@ -27,13 +27,13 @@ class NoCopySplit : public Hierarchical {
   NoCopySplit& operator=(NoCopySplit&& A) = default;
 
   // Additional constructors
-  NoCopySplit(Node& A, int64_t n_row_blocks, int64_t n_col_blocks);
+  NoCopySplit(Matrix& A, int64_t n_row_blocks, int64_t n_col_blocks);
 
-  NoCopySplit(const Node& A, int64_t n_row_blocks, int64_t n_col_blocks);
+  NoCopySplit(const Matrix& A, int64_t n_row_blocks, int64_t n_col_blocks);
 
-  NoCopySplit(Node& A, const Hierarchical& like);
+  NoCopySplit(Matrix& A, const Hierarchical& like);
 
-  NoCopySplit(const Node& A, const Hierarchical& like);
+  NoCopySplit(const Matrix& A, const Hierarchical& like);
 };
 
 } // namespace hicma

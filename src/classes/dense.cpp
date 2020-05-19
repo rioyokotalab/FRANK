@@ -24,7 +24,7 @@ namespace hicma
 {
 
 Dense::Dense(const Dense& A)
-: Node(A), dim{A.dim[0], A.dim[1]}, stride(A.dim[1]),
+: Matrix(A), dim{A.dim[0], A.dim[1]}, stride(A.dim[1]),
   data_ptr(nullptr), const_data_ptr(nullptr), owning(true)
 {
   timing::start("Dense cctor");
@@ -43,7 +43,7 @@ Dense::Dense(const Dense& A)
 
 Dense& Dense::operator=(const Dense& A) {
   timing::start("Dense copy assignment");
-  Node::operator=(A);
+  Matrix::operator=(A);
   dim = A.dim;
   stride = A.stride;
   data_ptr = nullptr;
@@ -63,8 +63,8 @@ Dense& Dense::operator=(const Dense& A) {
   return *this;
 }
 
-Dense::Dense(const Node& A)
-: Node(A), dim{get_n_rows(A), get_n_cols(A)}, stride(dim[1]),
+Dense::Dense(const Matrix& A)
+: Matrix(A), dim{get_n_rows(A), get_n_cols(A)}, stride(dim[1]),
   data(dim[0]*dim[1], 0),
   data_ptr(nullptr), const_data_ptr(nullptr), owning(true)
 {
@@ -98,7 +98,7 @@ define_method(void, fill_dense_from, (const Dense& A, Dense& B)) {
   }
 }
 
-define_method(void, fill_dense_from, (const Node& A, Node& B)) {
+define_method(void, fill_dense_from, (const Matrix& A, Matrix& B)) {
   omm_error_handler("fill_dense_from", {A, B}, __FILE__, __LINE__);
   std::abort();
 }

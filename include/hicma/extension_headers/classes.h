@@ -18,27 +18,29 @@ using yorel::yomm2::virtual_;
 namespace hicma
 {
 
-declare_method(std::unique_ptr<Node>, clone, (virtual_<const Node&>))
+declare_method(std::unique_ptr<Matrix>, clone, (virtual_<const Matrix&>))
 
-declare_method(std::unique_ptr<Node>, move_clone, (virtual_<Node&&>))
+declare_method(std::unique_ptr<Matrix>, move_clone, (virtual_<Matrix&&>))
 
 declare_method(
   void, fill_hierarchical_from,
-  (Hierarchical&, virtual_<const Node &>, const ClusterTree&)
+  (Hierarchical&, virtual_<const Matrix &>, const ClusterTree&)
 )
 
 declare_method(
-  NoCopySplit, make_no_copy_split, (virtual_<Node&>, int64_t, int64_t)
+  NoCopySplit, make_no_copy_split, (virtual_<Matrix&>, int64_t, int64_t)
 )
 
 declare_method(
-  NodeProxy, make_view, (const ClusterTree&, virtual_<Node&>)
+  MatrixProxy, make_view, (const ClusterTree&, virtual_<Matrix&>)
 )
 declare_method(
-  NodeProxy, make_view, (const ClusterTree&, virtual_<const Node&>)
+  MatrixProxy, make_view, (const ClusterTree&, virtual_<const Matrix&>)
 )
 
-declare_method(void, fill_dense_from, (virtual_<const Node&>, virtual_<Node&>))
+declare_method(
+  void, fill_dense_from, (virtual_<const Matrix&>, virtual_<Matrix&>)
+)
 
 } // namespace hicma
 

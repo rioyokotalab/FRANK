@@ -23,7 +23,7 @@
 namespace hicma
 {
 
-void tpqrt(Node& A, Node& B, Node& T) { tpqrt_omm(A, B, T); }
+void tpqrt(Matrix& A, Matrix& B, Matrix& T) { tpqrt_omm(A, B, T); }
 
 define_method(void, tpqrt_omm, (Dense& A, Dense& B, Dense& T)) {
   LAPACKE_dtpqrt2(
@@ -60,7 +60,7 @@ define_method(
 }
 
 // Fallback default, abort with error message
-define_method(void, tpqrt_omm, (Node& A, Node& B, Node& T)) {
+define_method(void, tpqrt_omm, (Matrix& A, Matrix& B, Matrix& T)) {
   omm_error_handler("tpqrt", {A, B, T}, __FILE__, __LINE__);
   std::abort();
 }

@@ -44,7 +44,7 @@ UniformHierarchical::UniformHierarchical(const UniformHierarchical& A)
 }
 
 declare_method(
-  UniformHierarchical, move_from_uniform_hierarchical, (virtual_<Node&>))
+  UniformHierarchical, move_from_uniform_hierarchical, (virtual_<Matrix&>))
 
 define_method(
   UniformHierarchical, move_from_uniform_hierarchical,
@@ -53,12 +53,14 @@ define_method(
   return std::move(A);
 }
 
-define_method(UniformHierarchical, move_from_uniform_hierarchical, (Node& A)) {
+define_method(
+  UniformHierarchical, move_from_uniform_hierarchical, (Matrix& A)
+) {
   omm_error_handler("move_from_unifor_hierarchical", {A}, __FILE__, __LINE__);
   std::abort();
 }
 
-UniformHierarchical::UniformHierarchical(NodeProxy&& A) {
+UniformHierarchical::UniformHierarchical(MatrixProxy&& A) {
   *this = move_from_uniform_hierarchical(A);
 }
 
@@ -246,13 +248,13 @@ UniformHierarchical::UniformHierarchical(
   )
 {}
 
-// declare_method(bool, is_LowRankShared, (virtual_<const Node&>));
+// declare_method(bool, is_LowRankShared, (virtual_<const Matrix&>));
 
 // define_method(bool, is_LowRankShared, (const LowRankShared&)) {
 //   return true;
 // }
 
-// define_method(bool, is_LowRankShared, (const Node&)) {
+// define_method(bool, is_LowRankShared, (const Matrix&)) {
 //   return false;
 // }
 
@@ -330,7 +332,7 @@ void UniformHierarchical::copy_row_basis(const UniformHierarchical& A) {
 
 declare_method(
   void, set_col_basis_omm,
-  (virtual_<Node&>, std::shared_ptr<Dense>)
+  (virtual_<Matrix&>, std::shared_ptr<Dense>)
 )
 
 define_method(
@@ -359,7 +361,7 @@ define_method(
 
 define_method(
   void, set_col_basis_omm,
-  (Node& A, [[maybe_unused]] std::shared_ptr<Dense> basis)
+  (Matrix& A, [[maybe_unused]] std::shared_ptr<Dense> basis)
 ) {
   omm_error_handler("set_col_basis", {A}, __FILE__, __LINE__);
   std::abort();
@@ -367,7 +369,7 @@ define_method(
 
 declare_method(
   void, set_row_basis_omm,
-  (virtual_<Node&>, std::shared_ptr<Dense>)
+  (virtual_<Matrix&>, std::shared_ptr<Dense>)
 )
 
 define_method(
@@ -396,7 +398,7 @@ define_method(
 
 define_method(
   void, set_row_basis_omm,
-  (Node& A, [[maybe_unused]] std::shared_ptr<Dense> basis)
+  (Matrix& A, [[maybe_unused]] std::shared_ptr<Dense> basis)
 ) {
   omm_error_handler("set_row_basis", {A}, __FILE__, __LINE__);
   std::abort();

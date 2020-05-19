@@ -31,29 +31,31 @@
 namespace hicma
 {
 
-void qr(Node& A, Node& Q, Node& R) {
+void qr(Matrix& A, Matrix& Q, Matrix& R) {
   // TODO consider moving assertions here (same in other files)!
   qr_omm(A, Q, R);
 }
 
-bool need_split(const Node& A) {
+bool need_split(const Matrix& A) {
   return need_split_omm(A);
 }
 
-std::tuple<Dense, Dense> make_left_orthogonal(const Node& A) {
+std::tuple<Dense, Dense> make_left_orthogonal(const Matrix& A) {
   return make_left_orthogonal_omm(A);
 }
 
-void update_splitted_size(const Node& A, int64_t& rows, int64_t& cols) {
+void update_splitted_size(const Matrix& A, int64_t& rows, int64_t& cols) {
   update_splitted_size_omm(A, rows, cols);
 }
 
-NodeProxy split_by_column(const Node& A, Node& storage, int64_t &currentRow) {
+MatrixProxy split_by_column(
+  const Matrix& A, Matrix& storage, int64_t &currentRow
+) {
   return split_by_column_omm(A, storage, currentRow);
 }
 
-NodeProxy concat_columns(
-  const Node& A, const Node& splitted, const Node& Q, int64_t& currentRow
+MatrixProxy concat_columns(
+  const Matrix& A, const Matrix& splitted, const Matrix& Q, int64_t& currentRow
 ) {
   return concat_columns_omm(A, splitted, Q, currentRow);
 }
@@ -131,7 +133,7 @@ define_method(
   }
 }
 
-define_method(void, qr_omm, (Node& A, Node& Q, Node& R)) {
+define_method(void, qr_omm, (Matrix& A, Matrix& Q, Matrix& R)) {
   omm_error_handler("qr", {A, Q, R}, __FILE__, __LINE__);
   std::abort();
 }
@@ -141,7 +143,7 @@ define_method(bool, need_split_omm, ([[maybe_unused]] const Hierarchical& A)) {
   return true;
 }
 
-define_method(bool, need_split_omm, ([[maybe_unused]] const Node& A)) {
+define_method(bool, need_split_omm, ([[maybe_unused]] const Matrix& A)) {
   return false;
 }
 
@@ -163,7 +165,7 @@ define_method(DensePair, make_left_orthogonal_omm, (const LowRank& A)) {
   return {std::move(Qu), std::move(RSV)};
 }
 
-define_method(DensePair, make_left_orthogonal_omm, (const Node& A)) {
+define_method(DensePair, make_left_orthogonal_omm, (const Matrix& A)) {
   omm_error_handler("make_left_orthogonal", {A}, __FILE__, __LINE__);
   std::abort();
 }
@@ -180,7 +182,7 @@ define_method(
 define_method(
   void, update_splitted_size_omm,
   (
-    [[maybe_unused]] const Node& A,
+    [[maybe_unused]] const Matrix& A,
     [[maybe_unused]] int64_t& rows, [[maybe_unused]] int64_t& cols
   )
 ) {
@@ -189,7 +191,7 @@ define_method(
 
 
 define_method(
-  NodeProxy, split_by_column_omm,
+  MatrixProxy, split_by_column_omm,
   (const Dense& A, Hierarchical& storage, int64_t& currentRow)
 ) {
   Hierarchical splitted(A, 1, storage.dim[1]);
@@ -200,7 +202,7 @@ define_method(
 }
 
 define_method(
-  NodeProxy, split_by_column_omm,
+  MatrixProxy, split_by_column_omm,
   (const LowRank& A, Hierarchical& storage, int64_t& currentRow)
 ) {
   LowRank _A(A);
@@ -219,7 +221,7 @@ define_method(
 }
 
 define_method(
-  NodeProxy, split_by_column_omm,
+  MatrixProxy, split_by_column_omm,
   (const Hierarchical& A, Hierarchical& storage, int64_t& currentRow)
 ) {
   for(int64_t i=0; i<A.dim[0]; i++) {
@@ -232,8 +234,8 @@ define_method(
 }
 
 define_method(
-  NodeProxy, split_by_column_omm,
-  (const Node& A, Node& storage, [[maybe_unused]] int64_t& currentRow)
+  MatrixProxy, split_by_column_omm,
+  (const Matrix& A, Matrix& storage, [[maybe_unused]] int64_t& currentRow)
 ) {
   omm_error_handler("split_by_column", {A, storage}, __FILE__, __LINE__);
   std::abort();
@@ -241,7 +243,7 @@ define_method(
 
 
 define_method(
-  NodeProxy, concat_columns_omm,
+  MatrixProxy, concat_columns_omm,
   (
     [[maybe_unused]] const Dense& A, const Hierarchical& splitted,
     [[maybe_unused]] const Dense& Q,
@@ -261,7 +263,7 @@ define_method(
 }
 
 define_method(
-  NodeProxy, concat_columns_omm,
+  MatrixProxy, concat_columns_omm,
   (
     const LowRank& A, const Hierarchical& splitted, const Dense& Q,
     int64_t& currentRow
@@ -288,7 +290,7 @@ define_method(
 }
 
 define_method(
-  NodeProxy, concat_columns_omm,
+  MatrixProxy, concat_columns_omm,
   (
     const Hierarchical& A, const Hierarchical& splitted,
     [[maybe_unused]] const Dense& Q,
@@ -307,9 +309,9 @@ define_method(
 }
 
 define_method(
-  NodeProxy, concat_columns_omm,
+  MatrixProxy, concat_columns_omm,
   (
-    const Node& A, const Node& splitted, const Node& Q,
+    const Matrix& A, const Matrix& splitted, const Matrix& Q,
     [[maybe_unused]] int64_t& currentRow
   )
 ) {
@@ -317,11 +319,11 @@ define_method(
   std::abort();
 }
 
-void zero_lowtri(Node& A) {
+void zero_lowtri(Matrix& A) {
   zero_lowtri_omm(A);
 }
 
-void zero_whole(Node& A) {
+void zero_whole(Matrix& A) {
   zero_whole_omm(A);
 }
 
@@ -331,7 +333,7 @@ define_method(void, zero_lowtri_omm, (Dense& A)) {
       A(i,j) = 0.0;
 }
 
-define_method(void, zero_lowtri_omm, (Node& A)) {
+define_method(void, zero_lowtri_omm, (Matrix& A)) {
   omm_error_handler("zero_lowtri", {A}, __FILE__, __LINE__);
   std::abort();
 }
@@ -350,13 +352,13 @@ define_method(void, zero_whole_omm, (LowRank& A)) {
     A.V()(i, i) = 1.0;
 }
 
-define_method(void, zero_whole_omm, (Node& A)) {
+define_method(void, zero_whole_omm, (Matrix& A)) {
   omm_error_handler("zero_whole", {A}, __FILE__, __LINE__);
   std::abort();
 }
 
 
-void rq(Node& A, Node& R, Node& Q) { rq_omm(A, R, Q); }
+void rq(Matrix& A, Matrix& R, Matrix& Q) { rq_omm(A, R, Q); }
 
 define_method(void, rq_omm, (Dense& A, Dense& R, Dense& Q)) {
   assert(R.dim[0] == A.dim[0]);

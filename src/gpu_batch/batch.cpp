@@ -15,9 +15,9 @@ namespace hicma
 std::vector<Dense> vecA;
 std::vector<Dense> vecB;
 std::vector<Dense*> vecC;
-std::vector<NodeProxy*> vecLR;
+std::vector<MatrixProxy*> vecLR;
 
-void rsvd_push(NodeProxy& A, Dense& Aij, int64_t rank) {
+void rsvd_push(MatrixProxy& A, Dense& Aij, int64_t rank) {
   A = LowRank(Aij, rank);
 }
 
