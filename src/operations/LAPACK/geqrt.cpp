@@ -15,6 +15,7 @@
 
 #include <cassert>
 #include <cstdint>
+#include <cstdlib>
 #include <iostream>
 
 
@@ -53,7 +54,7 @@ define_method(void, geqrt_omm, (Hierarchical& A, Hierarchical& T)) {
 // Fallback default, abort with error message
 define_method(void, geqrt_omm, (Node& A, Node& T)) {
   omm_error_handler("geqrt", {A, T}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 void geqrt2(Dense& A, Dense& T) {

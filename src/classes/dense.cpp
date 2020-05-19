@@ -15,6 +15,7 @@
 
 #include <cassert>
 #include <cstdint>
+#include <cstdlib>
 #include <utility>
 #include <vector>
 
@@ -99,7 +100,7 @@ define_method(void, fill_dense_from, (const Dense& A, Dense& B)) {
 
 define_method(void, fill_dense_from, (const Node& A, Node& B)) {
   omm_error_handler("fill_dense_from", {A, B}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 Dense::Dense(int64_t n_rows, int64_t n_cols)

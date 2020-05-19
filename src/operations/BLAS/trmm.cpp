@@ -17,6 +17,8 @@
 #include "yorel/yomm2/cute.hpp"
 
 #include <cassert>
+#include <cstdint>
+#include <cstdlib>
 
 
 namespace hicma
@@ -129,7 +131,7 @@ define_method(
   )
 ) {
   omm_error_handler("trmm", {A, B}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 } // namespace hicma

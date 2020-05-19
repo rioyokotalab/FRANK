@@ -15,6 +15,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <cstdlib>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -56,7 +57,7 @@ define_method(DenseIndexSetPair, geqp3_omm, (Dense& A)) {
 // Fallback default, abort with error message
 define_method(DenseIndexSetPair, geqp3_omm, (Node& A)) {
   omm_error_handler("geqp3", {A}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 } // namespace hicma

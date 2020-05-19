@@ -11,6 +11,7 @@
 #include "yorel/yomm2/cute.hpp"
 
 #include <cstdint>
+#include <cstdlib>
 
 
 namespace hicma
@@ -44,7 +45,7 @@ define_method(double, norm_omm, (const Hierarchical& A)) {
 
 define_method(double, norm_omm, (const Node& A)) {
   omm_error_handler("norm", {A}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 } // namespace hicma

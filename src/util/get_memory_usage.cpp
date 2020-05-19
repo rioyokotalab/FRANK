@@ -14,6 +14,7 @@
 #include "yorel/yomm2/cute.hpp"
 
 #include <cstdint>
+#include <cstdlib>
 #include <memory>
 
 
@@ -110,7 +111,7 @@ define_method(
   (const Node& A, [[maybe_unused]] bool include_structure)
 ) {
   omm_error_handler("get_memor_usage", {A}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 } // namespace hicma

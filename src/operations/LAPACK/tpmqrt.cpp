@@ -18,6 +18,7 @@
 #include "yorel/yomm2/cute.hpp"
 
 #include <cstdint>
+#include <cstdlib>
 #include <vector>
 
 
@@ -247,7 +248,7 @@ define_method(
   (const Node& V, const Node& T, Node& A, Node& B, [[maybe_unused]] bool trans)
 ) {
   omm_error_handler("tpmqrt", {V, T, A, B}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 } // namespace hicma

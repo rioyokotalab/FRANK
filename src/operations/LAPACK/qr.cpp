@@ -19,8 +19,10 @@
 #endif
 #include "yorel/yomm2/cute.hpp"
 
+#include <algorithm>
 #include <cassert>
 #include <cstdint>
+#include <cstdlib>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -131,7 +133,7 @@ define_method(
 
 define_method(void, qr_omm, (Node& A, Node& Q, Node& R)) {
   omm_error_handler("qr", {A, Q, R}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 
@@ -163,7 +165,7 @@ define_method(DensePair, make_left_orthogonal_omm, (const LowRank& A)) {
 
 define_method(DensePair, make_left_orthogonal_omm, (const Node& A)) {
   omm_error_handler("make_left_orthogonal", {A}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 
@@ -234,7 +236,7 @@ define_method(
   (const Node& A, Node& storage, [[maybe_unused]] int64_t& currentRow)
 ) {
   omm_error_handler("split_by_column", {A, storage}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 
@@ -312,7 +314,7 @@ define_method(
   )
 ) {
   omm_error_handler("concat_columns", {A, splitted, Q}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 void zero_lowtri(Node& A) {
@@ -331,7 +333,7 @@ define_method(void, zero_lowtri_omm, (Dense& A)) {
 
 define_method(void, zero_lowtri_omm, (Node& A)) {
   omm_error_handler("zero_lowtri", {A}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 define_method(void, zero_whole_omm, (Dense& A)) {
@@ -350,7 +352,7 @@ define_method(void, zero_whole_omm, (LowRank& A)) {
 
 define_method(void, zero_whole_omm, (Node& A)) {
   omm_error_handler("zero_whole", {A}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 

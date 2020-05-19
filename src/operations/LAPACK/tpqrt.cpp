@@ -17,6 +17,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <cstdlib>
 
 
 namespace hicma
@@ -61,7 +62,7 @@ define_method(
 // Fallback default, abort with error message
 define_method(void, tpqrt_omm, (Node& A, Node& B, Node& T)) {
   omm_error_handler("tpqrt", {A, B, T}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 } // namespace hicma

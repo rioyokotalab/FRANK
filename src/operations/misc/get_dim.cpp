@@ -11,6 +11,7 @@
 #include "yorel/yomm2/cute.hpp"
 
 #include <cstdint>
+#include <cstdlib>
 
 
 namespace hicma
@@ -36,7 +37,7 @@ define_method(int64_t, get_n_rows_omm, (const Hierarchical& A)) {
 
 define_method(int64_t, get_n_rows_omm, (const Node& A)) {
   omm_error_handler("get_n_rows", {A}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 
@@ -60,7 +61,7 @@ define_method(int64_t, get_n_cols_omm, (const Hierarchical& A)) {
 
 define_method(int64_t, get_n_cols_omm, (const Node& A)) {
   omm_error_handler("get_n_cols", {A}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 } // namespace hicma

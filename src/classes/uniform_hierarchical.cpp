@@ -18,6 +18,7 @@ using yorel::yomm2::virtual_;
 
 #include <cassert>
 #include <cstdint>
+#include <cstdlib>
 #include <functional>
 #include <memory>
 #include <tuple>
@@ -54,7 +55,7 @@ define_method(
 
 define_method(UniformHierarchical, move_from_uniform_hierarchical, (Node& A)) {
   omm_error_handler("move_from_unifor_hierarchical", {A}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 UniformHierarchical::UniformHierarchical(NodeProxy&& A) {
@@ -361,7 +362,7 @@ define_method(
   (Node& A, [[maybe_unused]] std::shared_ptr<Dense> basis)
 ) {
   omm_error_handler("set_col_basis", {A}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 declare_method(
@@ -398,7 +399,7 @@ define_method(
   (Node& A, [[maybe_unused]] std::shared_ptr<Dense> basis)
 ) {
   omm_error_handler("set_row_basis", {A}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 void UniformHierarchical::set_col_basis(int64_t i, int64_t j) {

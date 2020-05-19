@@ -19,6 +19,7 @@
 
 #include <cassert>
 #include <cstdint>
+#include <cstdlib>
 #include <tuple>
 #include <utility>
 
@@ -211,6 +212,11 @@ define_method(Node&, addition_omm, (LowRank& A, const LowRank& B)) {
     timing::stop("LR += LR");
   }
   return A;
+}
+
+define_method(Node&, addition_omm, (Node& A, const Node& B)) {
+  omm_error_handler("operator+=", {A, B}, __FILE__, __LINE__);
+  std::abort();
 }
 
 Dense operator+(const Dense& A, const Dense& B) {

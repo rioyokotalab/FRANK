@@ -8,6 +8,7 @@
 #include "hicma/util/omm_error_handler.h"
 
 #include <cstdint>
+#include <cstdlib>
 
 
 namespace hicma
@@ -48,7 +49,7 @@ define_method(
 
 define_method(Node&, multiplication_omm, (Node& A, [[maybe_unused]] double b)) {
   omm_error_handler("operator*<double>", {A}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 } // namespace hicma

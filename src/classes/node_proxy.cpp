@@ -13,6 +13,7 @@
 #include "yorel/yomm2/cute.hpp"
 
 #include <cassert>
+#include <cstdlib>
 #include <memory>
 
 
@@ -70,7 +71,7 @@ define_method(std::unique_ptr<Node>, clone, (const NoCopySplit& A)) {
 
 define_method(std::unique_ptr<Node>, clone, (const Node& A)) {
   omm_error_handler("clone", {A}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 define_method(std::unique_ptr<Node>, move_clone, (Dense&& A)) {
@@ -99,7 +100,7 @@ define_method(std::unique_ptr<Node>, move_clone, (NoCopySplit&& A)) {
 
 define_method(std::unique_ptr<Node>, move_clone, (Node&& A)) {
   omm_error_handler("move_clone", {A}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 } // namespace hicma

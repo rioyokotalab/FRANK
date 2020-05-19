@@ -18,6 +18,7 @@
 
 #include <cassert>
 #include <cstdint>
+#include <cstdlib>
 
 
 namespace hicma
@@ -47,7 +48,7 @@ define_method(
       } else {
         omm_error_handler(
           "Left upper with B.dim[1] != 1 trsm", {A, B}, __FILE__, __LINE__);
-        abort();
+        std::abort();
       }
       break;
     case TRSM_RIGHT:
@@ -75,7 +76,7 @@ define_method(
       break;
     case TRSM_RIGHT:
       omm_error_handler("Right lower trsm", {A, B}, __FILE__, __LINE__);
-      abort();
+      std::abort();
     }
     break;
   }
@@ -145,7 +146,7 @@ define_method(
   )
 ) {
   omm_error_handler("trsm", {A, B}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 } // namespace hicma

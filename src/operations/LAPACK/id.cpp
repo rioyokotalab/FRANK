@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
+#include <cstdlib>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -83,7 +84,7 @@ define_method(
   (Node& A, [[maybe_unused]] int64_t k)
 ) {
   omm_error_handler("id", {A}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 
@@ -122,7 +123,7 @@ define_method(
   (Node& A, [[maybe_unused]] int64_t k)
 ) {
   omm_error_handler("id", {A}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 } // namespace hicma

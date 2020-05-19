@@ -13,6 +13,8 @@
 #include "yorel/yomm2/cute.hpp"
 
 #include <cassert>
+#include <cstdint>
+#include <cstdlib>
 
 
 namespace hicma
@@ -44,7 +46,7 @@ define_method(
   NodeProxy, make_view, ([[maybe_unused]] const ClusterTree&, Node& A)
 ) {
   omm_error_handler("make_view", {A}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 NoCopySplit::NoCopySplit(
@@ -80,7 +82,7 @@ define_method(
   NodeProxy, make_view, ([[maybe_unused]] const ClusterTree&, const Node& A)
 ) {
   omm_error_handler("make_view (const)", {A}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 } // namespace hicma

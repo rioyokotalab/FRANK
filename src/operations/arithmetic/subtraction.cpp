@@ -5,9 +5,11 @@
 #include "hicma/classes/node.h"
 #include "hicma/classes/node_proxy.h"
 #include "hicma/operations/misc.h"
+#include "hicma/util/omm_error_handler.h"
 
 #include <cassert>
 #include <cstdint>
+#include <cstdlib>
 
 
 namespace hicma
@@ -27,6 +29,11 @@ define_method(NodeProxy, subtraction_omm, (const Dense& A, const Dense& B)) {
     }
   }
   return out;
+}
+
+define_method(NodeProxy, subtraction_omm, (const Node& A, const Node& B)) {
+  omm_error_handler("operator-", {A, B}, __FILE__, __LINE__);
+  std::abort();
 }
 
 } // namespace hicma

@@ -18,6 +18,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <cstdlib>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -99,7 +100,7 @@ define_method(NodePair, getrf_omm, (UniformHierarchical& A)) {
 
 define_method(NodePair, getrf_omm, (Node& A)) {
   omm_error_handler("getrf", {A}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 } // namespace hicma

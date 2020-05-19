@@ -20,6 +20,7 @@ using yorel::yomm2::virtual_;
 
 #include <cassert>
 #include <cstdint>
+#include <cstdlib>
 #include <tuple>
 #include <utility>
 
@@ -38,7 +39,7 @@ define_method(Hierarchical&&, move_from_hierarchical, (Hierarchical& A)) {
 
 define_method(Hierarchical&&, move_from_hierarchical, (Node& A)) {
   omm_error_handler("move_from_hierarchical", {A}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 Hierarchical::Hierarchical(
@@ -78,7 +79,7 @@ define_method(
   (Hierarchical& H, const Node& A, [[maybe_unused]] const ClusterTree& node)
 ) {
   omm_error_handler("fill_hierarchical_from", {H, A}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 Hierarchical::Hierarchical(int64_t n_row_blocks, int64_t n_col_blocks)

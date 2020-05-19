@@ -17,6 +17,7 @@
 #include <cassert>
 #include <cmath>
 #include <cstdint>
+#include <cstdlib>
 
 
 namespace hicma
@@ -129,7 +130,7 @@ define_method(
   DoublePair, collect_diff_norm_omm, (const Node& A, const Node& B)
 ) {
   omm_error_handler("collect_diff_norm", {A, B}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 } // namespace hicma

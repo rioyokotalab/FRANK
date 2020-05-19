@@ -25,6 +25,7 @@ using yorel::yomm2::virtual_;
 
 #include <cassert>
 #include <cstdint>
+#include <cstdlib>
 
 
 namespace hicma
@@ -105,7 +106,7 @@ define_method(
   )
 ) {
   omm_error_handler("gemm_trans", {A, B, C}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 void gemm(
@@ -523,7 +524,7 @@ define_method(
   )
 ) {
   omm_error_handler("gemm_regular_only", {A, B, C}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 declare_method(
@@ -583,7 +584,7 @@ define_method(
   )
 ) {
   omm_error_handler("gemm_shared_only", {A, B, C}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 define_method(
@@ -633,7 +634,7 @@ define_method(
   )
 ) {
   omm_error_handler("gemm", {A, B, C}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 Dense gemm(
@@ -701,7 +702,7 @@ define_method(
   )
 ) {
   omm_error_handler("gemm", {A, B}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 } // namespace hicma

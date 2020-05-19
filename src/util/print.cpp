@@ -18,6 +18,7 @@ namespace pt = boost::property_tree;
 using yorel::yomm2::virtual_;
 
 #include <cstdint>
+#include <cstdlib>
 #include <iostream>
 #include <string>
 
@@ -57,7 +58,7 @@ define_method(std::string, type_omm, ([[maybe_unused]] const NoCopySplit& A)) {
 
 define_method(std::string, type_omm, (const Node& A)) {
   omm_error_handler("type", {A}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 declare_method(

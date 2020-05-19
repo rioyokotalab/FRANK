@@ -10,6 +10,7 @@
 #include "yorel/yomm2/cute.hpp"
 
 #include <cstdint>
+#include <cstdlib>
 #include <utility>
 
 
@@ -47,7 +48,7 @@ define_method(void, transpose_omm, (Hierarchical& A)) {
 
 define_method(void, transpose_omm, (Node& A)) {
   omm_error_handler("transpose", {A}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 } // namespace hicma
