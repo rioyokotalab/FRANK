@@ -64,13 +64,13 @@ if(${USE_MKL})
 else()
     find_package(BLAS REQUIRED)
     find_package(LAPACK REQUIRED)
-    find_or_download(CBLAS INSTALL_WITH_HiCMA)
-    find_or_download(LAPACKE INSTALL_WITH_HiCMA)
+    find_or_download(CBLAS)
+    find_or_download(LAPACKE)
     list(APPEND HICMA_DEPENDENCIES cblas lapacke)
 endif()
 
 # Open Multi-Method depdency
-find_or_download(YOMM2 INSTALL_WITH_HiCMA)
+find_or_download(YOMM2)
 list(APPEND HICMA_DEPENDENCIES YOMM2::yomm2)
 
 

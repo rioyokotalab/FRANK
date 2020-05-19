@@ -10,6 +10,7 @@ ExternalProject_Add(${PROJECT_NAME}
     UPDATE_COMMAND      ""
     CMAKE_ARGS          -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
                         -DCMAKE_BUILD_TYPE=Release
+                        -DCMAKE_POSITION_INDEPENDENT_CODE=True
                         -DBLAS_LIBRARIES=@BLAS_LIBRARIES@
                         -DLAPACK_LIBRARIES=@LAPACK_LIBRARIES@
                         -DLAPACKE=ON

@@ -22,16 +22,8 @@ jobs:
           cache-name: cache-built-dependencies
         with:
           path: |
-            dependencies
-            install/include/*.h
-            install/include/yorel
-            install/lib/cmake/cblas*
-            install/lib/libcblas.a
-            install/lib/cmake/lapack*
-            install/lib/liblapacke.a
-            install/lib/libtmglib.a
-            install/lib/cmake/YOMM2
-            install/lib/libyomm2.a
+            dependencies/include
+            dependencies/lib
           key: ${{ runner.os }}-build
 
       - name: cmake
