@@ -13,7 +13,6 @@
 #include "hicma/util/print.h"
 
 #include "yorel/yomm2/cute.hpp"
-using yorel::yomm2::virtual_;
 
 #include <cassert>
 #include <cmath>

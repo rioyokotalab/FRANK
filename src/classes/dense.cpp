@@ -12,7 +12,6 @@
 #include "hicma/util/timer.h"
 
 #include "yorel/yomm2/cute.hpp"
-using yorel::yomm2::virtual_;
 
 #include <cassert>
 #include <cstdint>
