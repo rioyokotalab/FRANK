@@ -2,8 +2,8 @@
 #define hicma_operations_arithmetic_h
 
 #include "hicma/classes/dense.h"
-#include "hicma/classes/node.h"
-#include "hicma/classes/node_proxy.h"
+#include "hicma/classes/matrix.h"
+#include "hicma/classes/matrix_proxy.h"
 
 
 namespace hicma

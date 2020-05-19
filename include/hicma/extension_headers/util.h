@@ -1,7 +1,7 @@
 #ifndef hicma_extension_headers_util_h
 #define hicma_extension_headers_util_h
 
-#include "hicma/classes/node.h"
+#include "hicma/classes/matrix.h"
 #include "hicma/extension_headers/tuple_types.h"
 
 #include "yorel/yomm2/cute.hpp"

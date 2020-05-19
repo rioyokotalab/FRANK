@@ -3,7 +3,7 @@
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
-#include "hicma/classes/node.h"
+#include "hicma/classes/matrix.h"
 #include "hicma/util/omm_error_handler.h"
 
 #ifdef USE_MKL

@@ -3,8 +3,8 @@
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
-#include "hicma/classes/node.h"
-#include "hicma/classes/node_proxy.h"
+#include "hicma/classes/matrix.h"
+#include "hicma/classes/matrix_proxy.h"
 #include "hicma/classes/no_copy_split.h"
 #include "hicma/classes/intitialization_helpers/cluster_tree.h"
 

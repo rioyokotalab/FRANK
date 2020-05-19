@@ -2,7 +2,7 @@
 #define hicma_classes_low_rank_h
 
 #include "hicma/classes/dense.h"
-#include "hicma/classes/node.h"
+#include "hicma/classes/matrix.h"
 
 #include <array>
 #include <cstdint>

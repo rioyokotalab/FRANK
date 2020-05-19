@@ -29,10 +29,3 @@
 * Check load balance, breakdown, vary {block size, partition size}
 * Asynchronous communication
 * Compare with other codes
-
-## Restructuring ?
-* Base class for yomm is "Matrix" with virtual functions for
-  * Number of rows, cols
-  * Element access?
-* Remove Node class
-* NodeProxy -> Node

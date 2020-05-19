@@ -1,5 +1,5 @@
 #include "hicma/classes/low_rank.h"
-#include "hicma/classes/node_proxy.h"
+#include "hicma/classes/matrix_proxy.h"
 #include "hicma/gpu_batch/batch.h"
 #include "hicma/util/timer.h"
 

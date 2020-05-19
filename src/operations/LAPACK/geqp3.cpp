@@ -2,7 +2,7 @@
 #include "hicma/extension_headers/operations.h"
 
 #include "hicma/classes/dense.h"
-#include "hicma/classes/node.h"
+#include "hicma/classes/matrix.h"
 #include "hicma/util/omm_error_handler.h"
 #include "hicma/util/timer.h"
 

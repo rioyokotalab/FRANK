@@ -1,7 +1,7 @@
 #ifndef hicma_classes_dense_h
 #define hicma_classes_dense_h
 
-#include "hicma/classes/node.h"
+#include "hicma/classes/matrix.h"
 
 #include <array>
 #include <cstdint>

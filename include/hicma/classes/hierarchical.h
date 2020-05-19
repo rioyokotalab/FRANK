@@ -1,8 +1,8 @@
 #ifndef hicma_classes_hierarchical_h
 #define hicma_classes_hierarchical_h
 
-#include "hicma/classes/node.h"
-#include "hicma/classes/node_proxy.h"
+#include "hicma/classes/matrix.h"
+#include "hicma/classes/matrix_proxy.h"
 
 #include <array>
 #include <cstdint>

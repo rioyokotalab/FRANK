@@ -1,6 +1,6 @@
 #include "hicma/util/omm_error_handler.h"
 
-#include "hicma/classes/node.h"
+#include "hicma/classes/matrix.h"
 #include "hicma/util/print.h"
 
 #include <cstdint>

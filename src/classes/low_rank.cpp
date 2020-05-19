@@ -1,7 +1,7 @@
 #include "hicma/classes/low_rank.h"
 
 #include "hicma/classes/dense.h"
-#include "hicma/classes/node.h"
+#include "hicma/classes/matrix.h"
 #include "hicma/operations/randomized_factorizations.h"
 #include "hicma/operations/misc.h"
 
