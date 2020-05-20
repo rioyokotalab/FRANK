@@ -1,6 +1,7 @@
 #ifndef hicma_classes_low_rank_h
 #define hicma_classes_low_rank_h
 
+#include "hicma/classes/basis.h"
 #include "hicma/classes/dense.h"
 #include "hicma/classes/matrix.h"
 
@@ -13,7 +14,8 @@ namespace hicma
 
 class LowRank : public Matrix {
  private:
-  Dense _U, _S, _V;
+  Basis _U, _V;
+  Dense _S;
  public:
   std::array<int64_t, 2> dim = {0, 0};
   int64_t rank = 0;
