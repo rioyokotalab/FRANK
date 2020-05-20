@@ -1,5 +1,5 @@
-#ifndef hicma_classis_basis_h
-#define hicma_classis_basis_h
+#ifndef hicma_classes_basis_h
+#define hicma_classes_basis_h
 
 #include "hicma/classes/dense.h"
 
@@ -50,4 +50,4 @@ class Basis {
 
 } // namespace hicma
 
-#endif // hicma_classis_basis_h
+#endif // hicma_classes_basis_h
