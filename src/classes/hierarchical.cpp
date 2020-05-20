@@ -3,8 +3,8 @@
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/low_rank.h"
-#include "hicma/classes/node.h"
-#include "hicma/classes/node_proxy.h"
+#include "hicma/classes/matrix.h"
+#include "hicma/classes/matrix_proxy.h"
 #include "hicma/classes/intitialization_helpers/cluster_tree.h"
 #include "hicma/classes/intitialization_helpers/matrix_initializer.h"
 #include "hicma/functions.h"
@@ -18,10 +18,9 @@
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
 
-#include <array>
 #include <cassert>
 #include <cstdint>
-#include <memory>
+#include <cstdlib>
 #include <tuple>
 #include <utility>
 
@@ -29,32 +28,22 @@ using yorel::yomm2::virtual_;
 namespace hicma
 {
 
-std::unique_ptr<Node> Hierarchical::clone() const {
-  return std::make_unique<Hierarchical>(*this);
-}
+declare_method(Hierarchical&&, move_from_hierarchical, (virtual_<Matrix&>))
 
-std::unique_ptr<Node> Hierarchical::move_clone() {
-  return std::make_unique<Hierarchical>(std::move(*this));
-}
-
-const char* Hierarchical::type() const { return "Hierarchical"; }
-
-declare_method(Hierarchical&&, move_from_hierarchical, (virtual_<Node&>))
-
-Hierarchical::Hierarchical(NodeProxy&& A)
+Hierarchical::Hierarchical(MatrixProxy&& A)
 : Hierarchical(move_from_hierarchical(A)) {}
 
 define_method(Hierarchical&&, move_from_hierarchical, (Hierarchical& A)) {
   return std::move(A);
 }
 
-define_method(Hierarchical&&, move_from_hierarchical, (Node& A)) {
+define_method(Hierarchical&&, move_from_hierarchical, (Matrix& A)) {
   omm_error_handler("move_from_hierarchical", {A}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 Hierarchical::Hierarchical(
-  const Node& A, int64_t n_row_blocks, int64_t n_col_blocks
+  const Matrix& A, int64_t n_row_blocks, int64_t n_col_blocks
 ) : dim{n_row_blocks, n_col_blocks}, data(dim[0]*dim[1])
 {
   ClusterTree node(get_n_rows(A), get_n_cols(A), dim[0], dim[1]);
@@ -87,10 +76,10 @@ define_method(
 
 define_method(
   void, fill_hierarchical_from,
-  (Hierarchical& H, const Node& A, [[maybe_unused]] const ClusterTree& node)
+  (Hierarchical& H, const Matrix& A, [[maybe_unused]] const ClusterTree& node)
 ) {
   omm_error_handler("fill_hierarchical_from", {H, A}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 Hierarchical::Hierarchical(int64_t n_row_blocks, int64_t n_col_blocks)
@@ -137,33 +126,33 @@ Hierarchical::Hierarchical(
     )
 {}
 
-const NodeProxy& Hierarchical::operator[](const ClusterTree& node) const {
+const MatrixProxy& Hierarchical::operator[](const ClusterTree& node) const {
   return (*this)(node.rel_pos[0], node.rel_pos[1]);
 }
 
-NodeProxy& Hierarchical::operator[](const ClusterTree& node) {
+MatrixProxy& Hierarchical::operator[](const ClusterTree& node) {
   return (*this)(node.rel_pos[0], node.rel_pos[1]);
 }
 
-const NodeProxy& Hierarchical::operator[](int64_t i) const {
+const MatrixProxy& Hierarchical::operator[](int64_t i) const {
   assert(dim[0] == 1 || dim[1] == 1);
   assert(i < (dim[0] != 1 ? dim[0] : dim[1]));
   return data[i];
 }
 
-NodeProxy& Hierarchical::operator[](int64_t i) {
+MatrixProxy& Hierarchical::operator[](int64_t i) {
   assert(dim[0] == 1 || dim[1] == 1);
   assert(i < (dim[0] != 1 ? dim[0] : dim[1]));
   return data[i];
 }
 
-const NodeProxy& Hierarchical::operator()(int64_t i, int64_t j) const {
+const MatrixProxy& Hierarchical::operator()(int64_t i, int64_t j) const {
   assert(i < dim[0]);
   assert(j < dim[1]);
   return data[i*dim[1]+j];
 }
 
-NodeProxy& Hierarchical::operator()(int64_t i, int64_t j) {
+MatrixProxy& Hierarchical::operator()(int64_t i, int64_t j) {
   assert(i < dim[0]);
   assert(j < dim[1]);
   return data[i*dim[1]+j];

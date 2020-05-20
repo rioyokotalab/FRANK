@@ -4,7 +4,7 @@
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
-#include "hicma/classes/node.h"
+#include "hicma/classes/matrix.h"
 #include "hicma/functions.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/util/omm_error_handler.h"
@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
+#include <cstdlib>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -50,7 +51,7 @@ Dense interleave_id(const Dense& A, std::vector<int64_t>& P) {
   return Anew;
 }
 
-std::tuple<Dense, std::vector<int64_t>> one_sided_id(Node& A, int64_t k) {
+std::tuple<Dense, std::vector<int64_t>> one_sided_id(Matrix& A, int64_t k) {
   return one_sided_id_omm(A, k);
 }
 
@@ -80,14 +81,16 @@ define_method(DenseIndexSetPair, one_sided_id_omm, (Dense& A, int64_t k)) {
 // Fallback default, abort with error message
 define_method(
   DenseIndexSetPair, one_sided_id_omm,
-  (Node& A, [[maybe_unused]] int64_t k)
+  (Matrix& A, [[maybe_unused]] int64_t k)
 ) {
   omm_error_handler("id", {A}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 
-std::tuple<Dense, Dense, Dense> id(Node& A, int64_t k) { return id_omm(A, k); }
+std::tuple<Dense, Dense, Dense> id(Matrix& A, int64_t k) {
+  return id_omm(A, k);
+}
 
 Dense get_cols(const Dense& A, std::vector<int64_t> Pr) {
   Dense B(A.dim[0], Pr.size());
@@ -119,10 +122,10 @@ define_method(DenseTriplet, id_omm, (Dense& A, int64_t k)) {
 // Fallback default, abort with error message
 define_method(
   DenseTriplet, id_omm,
-  (Node& A, [[maybe_unused]] int64_t k)
+  (Matrix& A, [[maybe_unused]] int64_t k)
 ) {
   omm_error_handler("id", {A}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 } // namespace hicma

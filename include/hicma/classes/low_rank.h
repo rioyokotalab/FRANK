@@ -2,17 +2,16 @@
 #define hicma_classes_low_rank_h
 
 #include "hicma/classes/dense.h"
-#include "hicma/classes/node.h"
+#include "hicma/classes/matrix.h"
 
 #include <array>
 #include <cstdint>
-#include <memory>
 
 
 namespace hicma
 {
 
-class LowRank : public Node {
+class LowRank : public Matrix {
  private:
   Dense _U, _S, _V;
  public:
@@ -31,13 +30,6 @@ class LowRank : public Node {
   LowRank(LowRank&& A) = default;
 
   LowRank& operator=(LowRank&& A) = default;
-
-  // Overridden functions from Node
-  virtual std::unique_ptr<Node> clone() const override;
-
-  virtual std::unique_ptr<Node> move_clone() override;
-
-  virtual const char* type() const override;
 
   // Getters and setters
   virtual Dense& U();

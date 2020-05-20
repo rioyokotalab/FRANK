@@ -2,7 +2,7 @@
 #define hicma_classes_low_rank_shared_h
 
 #include "hicma/classes/dense.h"
-#include "hicma/classes/node.h"
+#include "hicma/classes/matrix.h"
 
 #include <array>
 #include <cstdint>
@@ -12,7 +12,7 @@
 namespace hicma
 {
 
-class LowRankShared : public Node {
+class LowRankShared : public Matrix {
  public:
   // TODO Make these members private just like in LowRank
   class SharedBasis {
@@ -65,13 +65,6 @@ class LowRankShared : public Node {
   LowRankShared(LowRankShared&& A) = default;
 
   LowRankShared& operator=(LowRankShared&& A) = default;
-
-  // Overridden functions from Node
-  std::unique_ptr<Node> clone() const override;
-
-  std::unique_ptr<Node> move_clone() override;
-
-  const char* type() const override;
 
   // Additional construcors
   LowRankShared(

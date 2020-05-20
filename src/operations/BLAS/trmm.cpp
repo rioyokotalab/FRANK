@@ -1,10 +1,10 @@
 #include "hicma/operations/BLAS.h"
 #include "hicma/extension_headers/operations.h"
 
-#include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
-#include "hicma/classes/low_rank.h"
 #include "hicma/classes/hierarchical.h"
+#include "hicma/classes/low_rank.h"
+#include "hicma/classes/matrix.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/util/omm_error_handler.h"
 #include "hicma/util/timer.h"
@@ -17,13 +17,15 @@
 #include "yorel/yomm2/cute.hpp"
 
 #include <cassert>
+#include <cstdint>
+#include <cstdlib>
 
 
 namespace hicma
 {
 
 void trmm(
-  const Node& A, Node& B,
+  const Matrix& A, Matrix& B,
   const char& side, const char& uplo, const char& trans, const char& diag,
   double alpha
 ) {
@@ -31,7 +33,7 @@ void trmm(
 }
 
 void trmm(
-  const Node& A, Node& B,
+  const Matrix& A, Matrix& B,
   const char& side, const char& uplo,
   double alpha
 ) {
@@ -122,14 +124,14 @@ define_method(
 define_method(
   void, trmm_omm,
   (
-    const Node& A, Node& B,
+    const Matrix& A, Matrix& B,
     [[maybe_unused]] const char& side, [[maybe_unused]] const char& uplo,
     [[maybe_unused]] const char& trans, [[maybe_unused]] const char& diag,
     [[maybe_unused]] double alpha
   )
 ) {
   omm_error_handler("trmm", {A, B}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 } // namespace hicma

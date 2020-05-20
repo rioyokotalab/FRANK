@@ -5,7 +5,9 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/low_rank_shared.h"
-#include "hicma/classes/node.h"
+#include "hicma/classes/matrix.h"
+#include "hicma/classes/no_copy_split.h"
+#include "hicma/classes/uniform_hierarchical.h"
 #include "hicma/operations/LAPACK.h"
 #include "hicma/util/omm_error_handler.h"
 
@@ -16,6 +18,7 @@ namespace pt = boost::property_tree;
 using yorel::yomm2::virtual_;
 
 #include <cstdint>
+#include <cstdlib>
 #include <iostream>
 #include <string>
 
@@ -27,13 +30,45 @@ bool VERBOSE = true;
 static const int stringLength = 35; //!< Length of formatted string
 static const int decimal = 7; //!< Decimal precision
 
+std::string type(const Matrix& A) { return type_omm(A); }
+
+define_method(std::string, type_omm, ([[maybe_unused]] const Dense& A)) {
+  return "Dense";
+}
+
+define_method(std::string, type_omm, ([[maybe_unused]] const LowRank& A)) {
+  return "LowRank";
+}
+
+define_method(std::string, type_omm, ([[maybe_unused]] const LowRankShared& A)) {
+  return "LowRankShared";
+}
+
+define_method(std::string, type_omm, ([[maybe_unused]] const Hierarchical& A)) {
+  return "Hierarchical";
+}
+
+define_method(std::string, type_omm, ([[maybe_unused]] const UniformHierarchical& A)) {
+  return "UniformHierarchical";
+}
+
+define_method(std::string, type_omm, ([[maybe_unused]] const NoCopySplit& A)) {
+  return "NoCopySplit";
+}
+
+define_method(std::string, type_omm, (const Matrix& A)) {
+  omm_error_handler("type", {A}, __FILE__, __LINE__);
+  std::abort();
+}
+
 declare_method(
   void, fillXML_omm,
-  (virtual_<const Node&>, pt::ptree&, int64_t, int64_t, int64_t)
+  (virtual_<const Matrix&>, pt::ptree&, int64_t, int64_t, int64_t)
 )
 
 void fillXML(
-  const Node& A, pt::ptree& tree, int64_t i_abs=0, int64_t j_abs=0, int64_t level=0
+  const Matrix& A, pt::ptree& tree,
+  int64_t i_abs=0, int64_t j_abs=0, int64_t level=0
 ) {
   fillXML_omm(A, tree, i_abs, j_abs, level);
 }
@@ -51,10 +86,10 @@ define_method(
       fillXML(A(i, j), el_subtree, i_abs*A.dim[0]+i, j_abs*A.dim[1]+j, level+1);
       std::string el_name = "i" + std::to_string(i) + "j" + std::to_string(j);
       tree.add_child(el_name, el_subtree);
-      tree.put(el_name + ".<xmlattr>.type", A(i, j).type());
+      tree.put(el_name + ".<xmlattr>.type", type(A(i, j)));
     }
   }
-  tree.put("<xmlattr>.type", A.type());
+  tree.put("<xmlattr>.type", type(A));
   tree.put("<xmlattr>.dim0", A.dim[0]);
   tree.put("<xmlattr>.dim1", A.dim[1]);
   tree.put("<xmlattr>.i_abs", i_abs);
@@ -64,14 +99,17 @@ define_method(
 
 define_method(
   void, fillXML_omm,
-  (const LowRank& A, pt::ptree& tree, int64_t i_abs, int64_t j_abs, int64_t level)
+  (
+    const LowRank& A, pt::ptree& tree,
+    int64_t i_abs, int64_t j_abs, int64_t level
+  )
 ) {
   Dense AD(A);
   Dense S = get_singular_values(AD);
   std::string singular_values = std::to_string(S[0]);
   for (int64_t i=1; i<A.dim[0]; ++i)
     singular_values += std::string(",") + std::to_string(S[i]);
-  tree.put("<xmlattr>.type", A.type());
+  tree.put("<xmlattr>.type", type(A));
   tree.put("<xmlattr>.dim0", A.dim[0]);
   tree.put("<xmlattr>.dim1", A.dim[1]);
   tree.put("<xmlattr>.i_abs", i_abs);
@@ -83,14 +121,17 @@ define_method(
 
 define_method(
   void, fillXML_omm,
-  (const LowRankShared& A, pt::ptree& tree, int64_t i_abs, int64_t j_abs, int64_t level)
+  (
+    const LowRankShared& A, pt::ptree& tree,
+    int64_t i_abs, int64_t j_abs, int64_t level
+  )
 ) {
   Dense AD(A);
   Dense S = get_singular_values(AD);
   std::string singular_values = std::to_string(S[0]);
   for (int64_t i=1; i<A.dim[0]; ++i)
     singular_values += std::string(",") + std::to_string(S[i]);
-  tree.put("<xmlattr>.type", A.type());
+  tree.put("<xmlattr>.type", type(A));
   tree.put("<xmlattr>.dim0", A.dim[0]);
   tree.put("<xmlattr>.dim1", A.dim[1]);
   tree.put("<xmlattr>.i_abs", i_abs);
@@ -109,7 +150,7 @@ define_method(
   std::string singular_values = std::to_string(S[0]);
   for (int64_t i=1; i<A.dim[0]; ++i)
     singular_values += std::string(",") + std::to_string(S[i]);
-  tree.put("<xmlattr>.type", A.type());
+  tree.put("<xmlattr>.type", type(A));
   tree.put("<xmlattr>.dim0", A.dim[0]);
   tree.put("<xmlattr>.dim1", A.dim[1]);
   tree.put("<xmlattr>.i_abs", i_abs);
@@ -121,7 +162,7 @@ define_method(
 define_method(
   void, fillXML_omm,
   (
-    const Node& A, [[maybe_unused]] pt::ptree& tree,
+    const Matrix& A, [[maybe_unused]] pt::ptree& tree,
     [[maybe_unused]] int64_t i_abs, [[maybe_unused]] int64_t j_abs,
     [[maybe_unused]] int64_t level
   )
@@ -129,7 +170,7 @@ define_method(
   omm_error_handler("fillXML", {A}, __FILE__, __LINE__);
 }
 
-void printXML(const Node& A, std::string filename) {
+void printXML(const Matrix& A, std::string filename) {
   pt::ptree tree;
   // Write any header info you want here, like a time stamp
   // And then pass pass A into printXML along with the basic ptree
@@ -139,15 +180,15 @@ void printXML(const Node& A, std::string filename) {
   write_xml(filename.c_str(), tree, std::locale());
 }
 
-void print(const Node& A) { print_omm(A); }
+void print(const Matrix& A) { print_omm(A); }
 
 void print_separation_line() {
   for (int i=0; i<82; ++i) std::cout << "-";
   std::cout << std::endl;
 }
 
-define_method(void, print_omm, (const Node& A)) {
-  std::cout << "Print not defined for " << A.type() << std::endl;
+define_method(void, print_omm, (const Matrix& A)) {
+  omm_error_handler("print", {A}, __FILE__, __LINE__);
 }
 
 define_method(void, print_omm, (const Dense& A)) {
@@ -173,7 +214,7 @@ define_method(void, print_omm, (const LowRank& A)) {
 define_method(void, print_omm, (const Hierarchical& A)) {
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {
-      std::cout << A(i, j).type() << " (" << i << "," << j << ")" << std::endl;
+      std::cout << type(A(i, j)) << " (" << i << "," << j << ")" << std::endl;
       print(A(i,j));
     }
     std::cout << std::endl;

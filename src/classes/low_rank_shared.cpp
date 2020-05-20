@@ -2,28 +2,17 @@
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/low_rank.h"
-#include "hicma/classes/node.h"
+#include "hicma/classes/matrix.h"
 #include "hicma/extension_headers/classes.h"
 #include "hicma/operations/BLAS.h"
 
 #include "yorel/yomm2/cute.hpp"
 
 #include <memory>
-#include <utility>
 
 
 namespace hicma
 {
-
-std::unique_ptr<Node> LowRankShared::clone() const {
-  return std::make_unique<LowRankShared>(*this);
-}
-
-std::unique_ptr<Node> LowRankShared::move_clone() {
-  return std::make_unique<LowRankShared>(std::move(*this));
-}
-
-const char* LowRankShared::type() const { return "LowRankShared"; }
 
 LowRankShared::LowRankShared(
   const Dense& S, std::shared_ptr<Dense> U, std::shared_ptr<Dense> V

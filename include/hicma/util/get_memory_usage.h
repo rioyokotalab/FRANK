@@ -5,9 +5,9 @@
 namespace hicma
 {
 
-class Node;
+class Matrix;
 
-unsigned long get_memory_usage(const Node&, bool include_structure=true);
+unsigned long get_memory_usage(const Matrix&, bool include_structure=true);
 
 } // namespace hicma
 

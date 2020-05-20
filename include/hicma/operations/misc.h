@@ -8,12 +8,12 @@
 namespace hicma
 {
 
-class Node;
+class Matrix;
 class Dense;
 
-int64_t get_n_rows(const Node&);
+int64_t get_n_rows(const Matrix&);
 
-int64_t get_n_cols(const Node&);
+int64_t get_n_cols(const Matrix&);
 
 double cond(Dense A);
 
@@ -36,9 +36,9 @@ void getSubmatrix(
   Dense& out
 );
 
-double norm(const Node&);
+double norm(const Matrix&);
 
-void transpose(Node&);
+void transpose(Matrix&);
 
 } // namespace hicma
 

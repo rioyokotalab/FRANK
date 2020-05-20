@@ -3,7 +3,7 @@
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
-#include "hicma/classes/node.h"
+#include "hicma/classes/matrix.h"
 #include "hicma/util/omm_error_handler.h"
 
 #ifdef USE_MKL
@@ -15,13 +15,14 @@
 
 #include <cassert>
 #include <cstdint>
+#include <cstdlib>
 #include <iostream>
 
 
 namespace hicma
 {
 
-void geqrt(Node& A, Node& T) { geqrt_omm(A, T); }
+void geqrt(Matrix& A, Matrix& T) { geqrt_omm(A, T); }
 
 define_method(void, geqrt_omm, (Dense& A, Dense& T)) {
   assert(T.dim[0] == A.dim[1]);
@@ -51,9 +52,9 @@ define_method(void, geqrt_omm, (Hierarchical& A, Hierarchical& T)) {
 }
 
 // Fallback default, abort with error message
-define_method(void, geqrt_omm, (Node& A, Node& T)) {
+define_method(void, geqrt_omm, (Matrix& A, Matrix& T)) {
   omm_error_handler("geqrt", {A, T}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 void geqrt2(Dense& A, Dense& T) {

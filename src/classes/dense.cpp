@@ -3,8 +3,8 @@
 
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
-#include "hicma/classes/node.h"
-#include "hicma/classes/node_proxy.h"
+#include "hicma/classes/matrix.h"
+#include "hicma/classes/matrix_proxy.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
@@ -12,11 +12,10 @@
 #include "hicma/util/timer.h"
 
 #include "yorel/yomm2/cute.hpp"
-using yorel::yomm2::virtual_;
 
 #include <cassert>
 #include <cstdint>
-#include <memory>
+#include <cstdlib>
 #include <utility>
 #include <vector>
 
@@ -25,7 +24,7 @@ namespace hicma
 {
 
 Dense::Dense(const Dense& A)
-: Node(A), dim{A.dim[0], A.dim[1]}, stride(A.dim[1]),
+: Matrix(A), dim{A.dim[0], A.dim[1]}, stride(A.dim[1]),
   data_ptr(nullptr), const_data_ptr(nullptr), owning(true)
 {
   timing::start("Dense cctor");
@@ -44,7 +43,7 @@ Dense::Dense(const Dense& A)
 
 Dense& Dense::operator=(const Dense& A) {
   timing::start("Dense copy assignment");
-  Node::operator=(A);
+  Matrix::operator=(A);
   dim = A.dim;
   stride = A.stride;
   data_ptr = nullptr;
@@ -64,18 +63,8 @@ Dense& Dense::operator=(const Dense& A) {
   return *this;
 }
 
-std::unique_ptr<Node> Dense::clone() const {
-  return std::make_unique<Dense>(*this);
-}
-
-std::unique_ptr<Node> Dense::move_clone() {
-  return std::make_unique<Dense>(std::move(*this));
-}
-
-const char* Dense::type() const { return "Dense"; }
-
-Dense::Dense(const Node& A)
-: Node(A), dim{get_n_rows(A), get_n_cols(A)}, stride(dim[1]),
+Dense::Dense(const Matrix& A)
+: Matrix(A), dim{get_n_rows(A), get_n_cols(A)}, stride(dim[1]),
   data(dim[0]*dim[1], 0),
   data_ptr(nullptr), const_data_ptr(nullptr), owning(true)
 {
@@ -109,9 +98,9 @@ define_method(void, fill_dense_from, (const Dense& A, Dense& B)) {
   }
 }
 
-define_method(void, fill_dense_from, (const Node& A, Node& B)) {
+define_method(void, fill_dense_from, (const Matrix& A, Matrix& B)) {
   omm_error_handler("fill_dense_from", {A, B}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 Dense::Dense(int64_t n_rows, int64_t n_cols)

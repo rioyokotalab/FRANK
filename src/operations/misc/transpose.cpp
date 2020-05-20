@@ -4,19 +4,20 @@
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
-#include "hicma/classes/node.h"
+#include "hicma/classes/matrix.h"
 #include "hicma/util/omm_error_handler.h"
 
 #include "yorel/yomm2/cute.hpp"
 
 #include <cstdint>
+#include <cstdlib>
 #include <utility>
 
 
 namespace hicma
 {
 
-void transpose(Node& A) { transpose_omm(A); }
+void transpose(Matrix& A) { transpose_omm(A); }
 
 define_method(void, transpose_omm, (Dense& A)) {
   // This implementation depends heavily on the details of Dense,
@@ -45,9 +46,9 @@ define_method(void, transpose_omm, (Hierarchical& A)) {
   swap(A, A_trans);
 }
 
-define_method(void, transpose_omm, (Node& A)) {
+define_method(void, transpose_omm, (Matrix& A)) {
   omm_error_handler("transpose", {A}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 } // namespace hicma

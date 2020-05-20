@@ -2,23 +2,23 @@
 #define hicma_operations_arithmetic_h
 
 #include "hicma/classes/dense.h"
-#include "hicma/classes/node.h"
-#include "hicma/classes/node_proxy.h"
+#include "hicma/classes/matrix.h"
+#include "hicma/classes/matrix_proxy.h"
 
 
 namespace hicma
 {
 
 // Addition
-Node& operator+=(Node&, const Node&);
+Matrix& operator+=(Matrix&, const Matrix&);
 
 Dense operator+(const Dense&, const Dense&);
 
 // Subtraction
-NodeProxy operator-(const Node&, const Node&);
+MatrixProxy operator-(const Matrix&, const Matrix&);
 
 // Multiplication
-Node& operator*=(Node&, double);
+Matrix& operator*=(Matrix&, double);
 
 } // namespace hicma
 

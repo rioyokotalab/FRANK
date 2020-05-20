@@ -5,8 +5,8 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/low_rank_shared.h"
-#include "hicma/classes/node.h"
-#include "hicma/classes/node_proxy.h"
+#include "hicma/classes/matrix.h"
+#include "hicma/classes/matrix_proxy.h"
 #include "hicma/classes/uniform_hierarchical.h"
 #include "hicma/util/omm_error_handler.h"
 #include "hicma/util/print.h"
@@ -14,13 +14,14 @@
 #include "yorel/yomm2/cute.hpp"
 
 #include <cstdint>
+#include <cstdlib>
 #include <memory>
 
 
 namespace hicma
 {
 
-unsigned long get_memory_usage(const Node& A, bool include_structure) {
+unsigned long get_memory_usage(const Matrix& A, bool include_structure) {
   return get_memory_usage_omm(A, include_structure);
 }
 
@@ -73,7 +74,7 @@ define_method(
     }
   }
   if (include_structure) {
-    memory_usage += A.dim[0] * A.dim[1] * sizeof(NodeProxy);
+    memory_usage += A.dim[0] * A.dim[1] * sizeof(MatrixProxy);
     memory_usage += sizeof(Hierarchical);
   }
   return memory_usage;
@@ -99,7 +100,7 @@ define_method(
   if (include_structure) {
     memory_usage += A.dim[0] * sizeof(std::shared_ptr<Dense>);
     memory_usage += A.dim[1] * sizeof(std::shared_ptr<Dense>);
-    memory_usage += A.dim[0] * A.dim[1] * sizeof(NodeProxy);
+    memory_usage += A.dim[0] * A.dim[1] * sizeof(MatrixProxy);
     memory_usage += sizeof(UniformHierarchical);
   }
   return memory_usage;
@@ -107,10 +108,10 @@ define_method(
 
 define_method(
   unsigned long, get_memory_usage_omm,
-  (const Node& A, [[maybe_unused]] bool include_structure)
+  (const Matrix& A, [[maybe_unused]] bool include_structure)
 ) {
   omm_error_handler("get_memor_usage", {A}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 } // namespace hicma

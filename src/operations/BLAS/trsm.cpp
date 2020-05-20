@@ -4,7 +4,7 @@
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
-#include "hicma/classes/node.h"
+#include "hicma/classes/matrix.h"
 #include "hicma/classes/no_copy_split.h"
 #include "hicma/util/omm_error_handler.h"
 #include "hicma/util/timer.h"
@@ -18,12 +18,13 @@
 
 #include <cassert>
 #include <cstdint>
+#include <cstdlib>
 
 
 namespace hicma
 {
 
-void trsm(const Node& A, Node& B, int uplo, int lr) {
+void trsm(const Matrix& A, Matrix& B, int uplo, int lr) {
   assert(uplo == TRSM_UPPER || uplo == TRSM_LOWER);
   assert(lr == TRSM_LEFT || lr == TRSM_RIGHT);
   trsm_omm(A, B, uplo, lr);
@@ -47,7 +48,7 @@ define_method(
       } else {
         omm_error_handler(
           "Left upper with B.dim[1] != 1 trsm", {A, B}, __FILE__, __LINE__);
-        abort();
+        std::abort();
       }
       break;
     case TRSM_RIGHT:
@@ -75,7 +76,7 @@ define_method(
       break;
     case TRSM_RIGHT:
       omm_error_handler("Right lower trsm", {A, B}, __FILE__, __LINE__);
-      abort();
+      std::abort();
     }
     break;
   }
@@ -110,7 +111,7 @@ define_method(void, trsm_omm, (const Dense& A, Dense& B, int uplo, int lr)) {
   timing::stop("DTRSM");
 }
 
-define_method(void, trsm_omm, (const Node& A, LowRank& B, int uplo, int lr)) {
+define_method(void, trsm_omm, (const Matrix& A, LowRank& B, int uplo, int lr)) {
   switch (uplo) {
   case TRSM_UPPER:
     trsm(A, B.V(), uplo, lr);
@@ -140,12 +141,12 @@ define_method(
 define_method(
   void, trsm_omm,
   (
-    const Node& A, Node& B,
+    const Matrix& A, Matrix& B,
     [[maybe_unused]] int uplo, [[maybe_unused]] int lr
   )
 ) {
   omm_error_handler("trsm", {A, B}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 } // namespace hicma

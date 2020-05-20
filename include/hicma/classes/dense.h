@@ -1,20 +1,17 @@
 #ifndef hicma_classes_dense_h
 #define hicma_classes_dense_h
 
-#include "hicma/classes/node.h"
+#include "hicma/classes/matrix.h"
 
 #include <array>
 #include <cstdint>
-#include <memory>
 #include <vector>
 
 
 namespace hicma
 {
 
-class NodeProxy;
-
-class Dense : public Node {
+class Dense : public Matrix {
  public:
   std::array<int64_t, 2> dim = {0, 0};
   int64_t stride = 0;
@@ -43,15 +40,8 @@ class Dense : public Node {
 
   Dense& operator=(Dense&& A) = default;
 
-  // Overridden functions from Node
-  virtual std::unique_ptr<Node> clone() const override;
-
-  virtual std::unique_ptr<Node> move_clone() override;
-
-  virtual const char* type() const override;
-
   // Explicit conversions using multiple-dispatch function.
-  explicit Dense(const Node& A);
+  explicit Dense(const Matrix& A);
 
   // Additional constructors
   Dense(int64_t n_rows, int64_t n_cols=1);

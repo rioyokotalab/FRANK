@@ -9,11 +9,11 @@ namespace hicma
 {
 
 // Register all classes for the open multi methods
-register_class(Node)
-register_class(Dense, Node)
-register_class(LowRank, Node)
-register_class(LowRankShared, Node)
-register_class(Hierarchical, Node)
+register_class(Matrix)
+register_class(Dense, Matrix)
+register_class(LowRank, Matrix)
+register_class(LowRankShared, Matrix)
+register_class(Hierarchical, Matrix)
 register_class(NoCopySplit, Hierarchical)
 register_class(UniformHierarchical, Hierarchical)
 

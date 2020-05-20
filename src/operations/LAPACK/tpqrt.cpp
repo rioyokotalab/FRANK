@@ -4,7 +4,7 @@
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
-#include "hicma/classes/node.h"
+#include "hicma/classes/matrix.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/util/omm_error_handler.h"
 
@@ -17,12 +17,13 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <cstdlib>
 
 
 namespace hicma
 {
 
-void tpqrt(Node& A, Node& B, Node& T) { tpqrt_omm(A, B, T); }
+void tpqrt(Matrix& A, Matrix& B, Matrix& T) { tpqrt_omm(A, B, T); }
 
 define_method(void, tpqrt_omm, (Dense& A, Dense& B, Dense& T)) {
   LAPACKE_dtpqrt2(
@@ -59,9 +60,9 @@ define_method(
 }
 
 // Fallback default, abort with error message
-define_method(void, tpqrt_omm, (Node& A, Node& B, Node& T)) {
+define_method(void, tpqrt_omm, (Matrix& A, Matrix& B, Matrix& T)) {
   omm_error_handler("tpqrt", {A, B, T}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 } // namespace hicma

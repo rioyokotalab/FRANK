@@ -1,12 +1,11 @@
 #ifndef hicma_classes_hierarchical_h
 #define hicma_classes_hierarchical_h
 
-#include "hicma/classes/node.h"
-#include "hicma/classes/node_proxy.h"
+#include "hicma/classes/matrix.h"
+#include "hicma/classes/matrix_proxy.h"
 
 #include <array>
 #include <cstdint>
-#include <memory>
 #include <tuple>
 #include <vector>
 
@@ -18,11 +17,11 @@ class Dense;
 class ClusterTree;
 class MatrixInitializer;
 
-class Hierarchical : public Node {
+class Hierarchical : public Matrix {
  public:
   std::array<int64_t, 2> dim = {0, 0};
  private:
-  std::vector<NodeProxy> data;
+  std::vector<MatrixProxy> data;
 
  public:
   // Special member functions
@@ -38,17 +37,10 @@ class Hierarchical : public Node {
 
   Hierarchical& operator=(Hierarchical&& A) = default;
 
-  // Overridden functions from Node
-  virtual std::unique_ptr<Node> clone() const override;
-
-  virtual std::unique_ptr<Node> move_clone() override;
-
-  virtual const char* type() const override;
-
   // Conversion constructors
-  Hierarchical(NodeProxy&&);
+  Hierarchical(MatrixProxy&&);
 
-  Hierarchical(const Node& A, int64_t n_row_blocks, int64_t n_col_blocks);
+  Hierarchical(const Matrix& A, int64_t n_row_blocks, int64_t n_col_blocks);
 
   // Additional constructors
   Hierarchical(int64_t n_row_blocks, int64_t n_col_blocks=1);
@@ -75,17 +67,17 @@ class Hierarchical : public Node {
   );
 
   // Additional operators
-  const NodeProxy& operator[](int64_t i) const;
+  const MatrixProxy& operator[](int64_t i) const;
 
-  NodeProxy& operator[](int64_t i);
+  MatrixProxy& operator[](int64_t i);
 
-  const NodeProxy& operator[](const ClusterTree& node) const;
+  const MatrixProxy& operator[](const ClusterTree& node) const;
 
-  NodeProxy& operator[](const ClusterTree& node);
+  MatrixProxy& operator[](const ClusterTree& node);
 
-  const NodeProxy& operator()(int64_t i, int64_t j) const;
+  const MatrixProxy& operator()(int64_t i, int64_t j) const;
 
-  NodeProxy& operator()(int64_t i, int64_t j);
+  MatrixProxy& operator()(int64_t i, int64_t j);
 
   // Utility methods
   void blr_col_qr(Hierarchical& Q, Hierarchical& R);

@@ -4,8 +4,8 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/low_rank_shared.h"
-#include "hicma/classes/node.h"
-#include "hicma/classes/node_proxy.h"
+#include "hicma/classes/matrix.h"
+#include "hicma/classes/matrix_proxy.h"
 #include "hicma/classes/intitialization_helpers/cluster_tree.h"
 #include "hicma/classes/intitialization_helpers/matrix_initializer.h"
 #include "hicma/operations/BLAS.h"
@@ -18,6 +18,7 @@ using yorel::yomm2::virtual_;
 
 #include <cassert>
 #include <cstdint>
+#include <cstdlib>
 #include <functional>
 #include <memory>
 #include <tuple>
@@ -42,18 +43,8 @@ UniformHierarchical::UniformHierarchical(const UniformHierarchical& A)
   }
 }
 
-std::unique_ptr<Node> UniformHierarchical::clone() const {
-  return std::make_unique<UniformHierarchical>(*this);
-}
-
-std::unique_ptr<Node> UniformHierarchical::move_clone() {
-  return std::make_unique<UniformHierarchical>(std::move(*this));
-}
-
-const char* UniformHierarchical::type() const { return "UniformHierarchical"; }
-
 declare_method(
-  UniformHierarchical, move_from_uniform_hierarchical, (virtual_<Node&>))
+  UniformHierarchical, move_from_uniform_hierarchical, (virtual_<Matrix&>))
 
 define_method(
   UniformHierarchical, move_from_uniform_hierarchical,
@@ -62,12 +53,14 @@ define_method(
   return std::move(A);
 }
 
-define_method(UniformHierarchical, move_from_uniform_hierarchical, (Node& A)) {
+define_method(
+  UniformHierarchical, move_from_uniform_hierarchical, (Matrix& A)
+) {
   omm_error_handler("move_from_unifor_hierarchical", {A}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
-UniformHierarchical::UniformHierarchical(NodeProxy&& A) {
+UniformHierarchical::UniformHierarchical(MatrixProxy&& A) {
   *this = move_from_uniform_hierarchical(A);
 }
 
@@ -255,13 +248,13 @@ UniformHierarchical::UniformHierarchical(
   )
 {}
 
-// declare_method(bool, is_LowRankShared, (virtual_<const Node&>));
+// declare_method(bool, is_LowRankShared, (virtual_<const Matrix&>));
 
 // define_method(bool, is_LowRankShared, (const LowRankShared&)) {
 //   return true;
 // }
 
-// define_method(bool, is_LowRankShared, (const Node&)) {
+// define_method(bool, is_LowRankShared, (const Matrix&)) {
 //   return false;
 // }
 
@@ -339,7 +332,7 @@ void UniformHierarchical::copy_row_basis(const UniformHierarchical& A) {
 
 declare_method(
   void, set_col_basis_omm,
-  (virtual_<Node&>, std::shared_ptr<Dense>)
+  (virtual_<Matrix&>, std::shared_ptr<Dense>)
 )
 
 define_method(
@@ -368,15 +361,15 @@ define_method(
 
 define_method(
   void, set_col_basis_omm,
-  (Node& A, [[maybe_unused]] std::shared_ptr<Dense> basis)
+  (Matrix& A, [[maybe_unused]] std::shared_ptr<Dense> basis)
 ) {
   omm_error_handler("set_col_basis", {A}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 declare_method(
   void, set_row_basis_omm,
-  (virtual_<Node&>, std::shared_ptr<Dense>)
+  (virtual_<Matrix&>, std::shared_ptr<Dense>)
 )
 
 define_method(
@@ -405,10 +398,10 @@ define_method(
 
 define_method(
   void, set_row_basis_omm,
-  (Node& A, [[maybe_unused]] std::shared_ptr<Dense> basis)
+  (Matrix& A, [[maybe_unused]] std::shared_ptr<Dense> basis)
 ) {
   omm_error_handler("set_row_basis", {A}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 void UniformHierarchical::set_col_basis(int64_t i, int64_t j) {

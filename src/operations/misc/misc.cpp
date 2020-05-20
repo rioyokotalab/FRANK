@@ -1,7 +1,7 @@
 #include "hicma/operations/misc.h"
 
-#include "hicma/classes/node.h"
 #include "hicma/classes/dense.h"
+#include "hicma/classes/matrix.h"
 #include "hicma/operations/LAPACK.h"
 
 #include <algorithm>
@@ -9,6 +9,7 @@
 #include <cmath>
 #include <cstdint>
 #include <numeric>
+#include <vector>
 
 
 namespace hicma

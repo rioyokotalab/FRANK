@@ -15,7 +15,7 @@ class Dense;
 class LowRankShared;
 class ClusterTree;
 class MatrixInitializer;
-class NodeProxy;
+class MatrixProxy;
 
 class UniformHierarchical : public Hierarchical {
  private:
@@ -62,15 +62,8 @@ class UniformHierarchical : public Hierarchical {
 
   UniformHierarchical& operator=(UniformHierarchical&& A) = default;
 
-  // Overridden functions from Hierarchical
-  std::unique_ptr<Node> clone() const override;
-
-  std::unique_ptr<Node> move_clone() override;
-
-  const char* type() const override;
-
   // Conversion constructors
-  UniformHierarchical(NodeProxy&&);
+  UniformHierarchical(MatrixProxy&&);
 
   // Additional constructors
   UniformHierarchical(int64_t n_row_blocks, int64_t n_col_blocks);

@@ -5,9 +5,9 @@
 namespace hicma
 {
 
-class Node;
+class Matrix;
 
-double l2_error(const Node&, const Node&);
+double l2_error(const Matrix&, const Matrix&);
 
 } // namespace hicma
 

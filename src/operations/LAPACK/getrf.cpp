@@ -3,7 +3,7 @@
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
-#include "hicma/classes/node.h"
+#include "hicma/classes/matrix.h"
 #include "hicma/classes/uniform_hierarchical.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/util/omm_error_handler.h"
@@ -18,6 +18,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <cstdlib>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -26,9 +27,9 @@
 namespace hicma
 {
 
-std::tuple<NodeProxy, NodeProxy> getrf(Node& A) { return getrf_omm(A); }
+std::tuple<MatrixProxy, MatrixProxy> getrf(Matrix& A) { return getrf_omm(A); }
 
-define_method(NodePair, getrf_omm, (Hierarchical& A)) {
+define_method(MatrixPair, getrf_omm, (Hierarchical& A)) {
   Hierarchical L(A.dim[0], A.dim[1]);
   for (int64_t i=0; i<A.dim[0]; i++) {
     std::tie(L(i, i), A(i, i)) = getrf(A(i,i));
@@ -48,7 +49,7 @@ define_method(NodePair, getrf_omm, (Hierarchical& A)) {
   return {std::move(L), std::move(A)};
 }
 
-define_method(NodePair, getrf_omm, (Dense& A)) {
+define_method(MatrixPair, getrf_omm, (Dense& A)) {
   timing::start("DGETRF");
   std::vector<int> ipiv(std::min(A.dim[0], A.dim[1]));
   LAPACKE_dgetrf(
@@ -69,7 +70,7 @@ define_method(NodePair, getrf_omm, (Dense& A)) {
   return {std::move(L), std::move(A)};
 }
 
-define_method(NodePair, getrf_omm, (UniformHierarchical& A)) {
+define_method(MatrixPair, getrf_omm, (UniformHierarchical& A)) {
   UniformHierarchical L(A.dim[0], A.dim[1]);
   // TODO This is a fairly instable way of copying the bases.
   // Later methods involvin LowRankShared will check for matching pointers to
@@ -97,9 +98,9 @@ define_method(NodePair, getrf_omm, (UniformHierarchical& A)) {
   return {std::move(L), std::move(A)};
 }
 
-define_method(NodePair, getrf_omm, (Node& A)) {
+define_method(MatrixPair, getrf_omm, (Matrix& A)) {
   omm_error_handler("getrf", {A}, __FILE__, __LINE__);
-  abort();
+  std::abort();
 }
 
 } // namespace hicma

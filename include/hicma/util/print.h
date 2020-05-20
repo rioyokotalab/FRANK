@@ -7,13 +7,15 @@
 namespace hicma
 {
 
-class Node;
+class Matrix;
 
 extern bool VERBOSE;
 
-void printXML(const Node& A, std::string filename = "matrix.xml");
+std::string type(const Matrix&);
 
-void print(const Node&);
+void printXML(const Matrix& A, std::string filename = "matrix.xml");
+
+void print(const Matrix&);
 
 void print(std::string s);
 

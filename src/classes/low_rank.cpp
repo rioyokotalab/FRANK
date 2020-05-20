@@ -1,7 +1,7 @@
 #include "hicma/classes/low_rank.h"
 
 #include "hicma/classes/dense.h"
-#include "hicma/classes/node.h"
+#include "hicma/classes/matrix.h"
 #include "hicma/operations/randomized_factorizations.h"
 #include "hicma/operations/misc.h"
 
@@ -10,23 +10,11 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
-#include <memory>
 #include <tuple>
-#include <utility>
 
 
 namespace hicma
 {
-
-std::unique_ptr<Node> LowRank::clone() const {
-  return std::make_unique<LowRank>(*this);
-}
-
-std::unique_ptr<Node> LowRank::move_clone() {
-  return std::make_unique<LowRank>(std::move(*this));
-}
-
-const char* LowRank::type() const { return "LowRank"; }
 
 Dense& LowRank::U() { return _U; }
 const Dense& LowRank::U() const { return _U; }
@@ -45,7 +33,8 @@ LowRank::LowRank(int64_t n_rows, int64_t n_cols, int64_t k)
   V() = Dense(k, dim[1]);
 }
 
-LowRank::LowRank(const Dense& A, int64_t k) : Node(A), dim{A.dim[0], A.dim[1]} {
+LowRank::LowRank(const Dense& A, int64_t k)
+: Matrix(A), dim{A.dim[0], A.dim[1]} {
   // Rank with oversampling limited by dimensions
   rank = std::min(std::min(k+5, dim[0]), dim[1]);
   std::tie(U(), S(), V()) = rsvd(A, rank);
@@ -54,6 +43,7 @@ LowRank::LowRank(const Dense& A, int64_t k) : Node(A), dim{A.dim[0], A.dim[1]} {
   V().resize(k, dim[1]);
   rank = k;
 }
+
 void LowRank::mergeU(const LowRank& A, const LowRank& B) {
   assert(rank == A.rank + B.rank);
   for (int64_t i=0; i<dim[0]; i++) {

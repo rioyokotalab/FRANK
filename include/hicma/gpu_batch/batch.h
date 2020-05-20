@@ -8,15 +8,15 @@
 namespace hicma
 {
 
-  class NodeProxy;
+  class MatrixProxy;
   class Dense;
 
   extern std::vector<Dense> vecA;
   extern std::vector<Dense> vecB;
   extern std::vector<Dense*> vecC;
-  extern std::vector<NodeProxy*> vecLR;
+  extern std::vector<MatrixProxy*> vecLR;
 
-  void rsvd_push(NodeProxy& A, Dense& Aij, int64_t rank);
+  void rsvd_push(MatrixProxy& A, Dense& Aij, int64_t rank);
 
   void gemm_push(const Dense& A, const Dense& B, Dense& C);
 
