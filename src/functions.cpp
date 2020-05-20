@@ -1,8 +1,9 @@
 #include "hicma/functions.h"
 
 #include "hicma/classes/dense.h"
-#include "hicma/operations/misc/misc.h"
+#include "hicma/operations/misc.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <random>

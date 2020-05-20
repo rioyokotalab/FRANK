@@ -7,7 +7,7 @@
 #include "hicma/classes/node.h"
 #include "hicma/functions.h"
 #include "hicma/operations/BLAS.h"
-#include "hicma/operations/misc/transpose.h"
+#include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
 
 #ifdef USE_MKL

@@ -1,7 +1,6 @@
 #include "hicma/hicma.h"
 
 #include "gtest/gtest.h"
-#include "yorel/yomm2/cute.hpp"
 
 #include <algorithm>
 #include <cstdint>
@@ -13,7 +12,7 @@
 using namespace hicma;
 
 TEST(IDTest, Precision) {
-  yorel::yomm2::update_methods();
+  hicma::initialize();
   // Check whether the Dense(Hierarchical) constructor works correctly.
   int64_t M = 4096;
   int64_t N = 512;

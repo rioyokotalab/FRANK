@@ -1,0 +1,20 @@
+cmake_minimum_required(VERSION 3.5)
+include(ExternalProject)
+project(CBLAS)
+ExternalProject_Add(${PROJECT_NAME}
+    GIT_REPOSITORY      https://github.com/derpda/lapack.git
+    GIT_TAG             master
+    @ADDITIONAL_GIT_SETTINGS@
+    SOURCE_DIR          "@CMAKE_SOURCE_DIR@/dependencies/${PROJECT_NAME}"
+    BINARY_DIR          "@CMAKE_CURRENT_BINARY_DIR@/${PROJECT_NAME}_build"
+    INSTALL_DIR         @DEPENDENCY_INSTALL_PREFIX@
+    CMAKE_ARGS          -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+                        -DCMAKE_BUILD_TYPE=Release
+                        -DCMAKE_POSITION_INDEPENDENT_CODE=True
+                        -DBLAS_LIBRARIES=@BLAS_LIBRARIES@
+                        -DLAPACK_LIBRARIES=@LAPACK_LIBRARIES@
+                        -DCBLAS=ON
+                        -DBUILD_SINGLE=OFF
+                        -DBUILD_COMPLEX=OFF
+                        -DBUILD_COMPLEX16=OFF
+)

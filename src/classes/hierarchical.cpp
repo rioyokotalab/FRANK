@@ -11,7 +11,7 @@
 #include "hicma/gpu_batch/batch.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/LAPACK.h"
-#include "hicma/operations/misc/get_dim.h"
+#include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
 #include "hicma/util/timer.h"
 

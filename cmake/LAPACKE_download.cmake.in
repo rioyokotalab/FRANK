@@ -1,0 +1,24 @@
+cmake_minimum_required(VERSION 3.5)
+include(ExternalProject)
+project(LAPACKE)
+ExternalProject_Add(${PROJECT_NAME}
+    DOWNLOAD_COMMAND    ""
+    @ADDITIONAL_GIT_SETTINGS@
+    SOURCE_DIR          "@CMAKE_SOURCE_DIR@/dependencies/CBLAS"
+    BINARY_DIR          "@CMAKE_CURRENT_BINARY_DIR@/${PROJECT_NAME}_build"
+    INSTALL_DIR         @DEPENDENCY_INSTALL_PREFIX@
+    UPDATE_COMMAND      ""
+    CMAKE_ARGS          -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+                        -DCMAKE_BUILD_TYPE=Release
+                        -DCMAKE_POSITION_INDEPENDENT_CODE=True
+                        -DBLAS_LIBRARIES=@BLAS_LIBRARIES@
+                        -DLAPACK_LIBRARIES=@LAPACK_LIBRARIES@
+                        -DLAPACKE=ON
+                        -DLAPACKE_BUILD_SINGLE=OFF
+                        -DLAPACKE_BUILD_COMPLEX=OFF
+                        -DLAPACKE_BUILD_COMPLEX16=OFF
+                        -DLAPACKE_WITH_TMG=ON
+                        -DBUILD_SINGLE=OFF
+                        -DBUILD_COMPLEX=OFF
+                        -DBUILD_COMPLEX16=OFF
+)

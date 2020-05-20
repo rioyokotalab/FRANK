@@ -1,4 +1,5 @@
-#include "hicma/operations/misc/transpose.h"
+#include "hicma/operations/misc.h"
+#include "hicma/extension_headers/operations.h"
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"

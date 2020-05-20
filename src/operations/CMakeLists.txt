@@ -1,36 +1,24 @@
-add_library(operations OBJECT
-    arithmetic/addition.cpp
-    arithmetic/multiplication.cpp
-    arithmetic/subtraction.cpp
-    BLAS/gemm.cpp
-    BLAS/trmm.cpp
-    BLAS/trsm.cpp
-    LAPACK/geqrt.cpp
-    LAPACK/geqp3.cpp
-    LAPACK/getrf.cpp
-    LAPACK/id.cpp
-    LAPACK/larfb.cpp
-    LAPACK/latms.cpp
-    LAPACK/qr.cpp
-    LAPACK/svd.cpp
-    LAPACK/tpmqrt.cpp
-    LAPACK/tpqrt.cpp
-    misc/get_dim.cpp
-    misc/misc.cpp
-    misc/norm.cpp
-    misc/transpose.cpp
-    randomized/rid.cpp
-    randomized/rsvd.cpp
+target_sources(hicma PRIVATE
+    ${CMAKE_CURRENT_LIST_DIR}/arithmetic/addition.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/arithmetic/multiplication.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/arithmetic/subtraction.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/BLAS/gemm.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/BLAS/trmm.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/BLAS/trsm.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/LAPACK/geqrt.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/LAPACK/geqp3.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/LAPACK/getrf.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/LAPACK/id.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/LAPACK/larfb.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/LAPACK/latms.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/LAPACK/qr.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/LAPACK/svd.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/LAPACK/tpmqrt.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/LAPACK/tpqrt.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/misc/get_dim.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/misc/misc.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/misc/norm.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/misc/transpose.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/randomized/rid.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/randomized/rsvd.cpp
 )
-target_include_directories(operations
-PUBLIC
-    $<INSTALL_INTERFACE:include>
-    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-)
-foreach(DEPENDENCY_INCLUDE ${DEPDENCY_INCLUDES})
-    target_include_directories(
-        operations SYSTEM PUBLIC $<BUILD_INTERFACE:${DEPENDENCY_INCLUDE}>)
-endforeach()
-target_compile_definitions(operations PUBLIC ${HICMA_DEFINITIONS})
-target_compile_features(operations PRIVATE ${HICMA_FEATURES})
-target_compile_options(operations PRIVATE ${HICMA_OPTIONS})

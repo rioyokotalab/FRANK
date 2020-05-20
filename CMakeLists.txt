@@ -18,7 +18,7 @@ else()
     list(APPEND HICMA_FEATURES cxx_std_17)
 endif()
 
-# Set appropriate compiler options
+# Set warnings and optimization level
 list(APPEND HICMA_OPTIONS -Wall -Wextra -pedantic)
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
     list(APPEND HICMA_OPTIONS -O3)
@@ -26,57 +26,88 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
     list(APPEND HICMA_OPTIONS -g)
 endif()
 
-# Output folder settings
+# Decide where build results should be saved
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
-
-if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    set (
-        CMAKE_INSTALL_PREFIX
-        "${CMAKE_SOURCE_DIR}/install" CACHE PATH "default install path" FORCE
+# Set default install path
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(CMAKE_INSTALL_PREFIX
+        "${CMAKE_SOURCE_DIR}/install" CACHE PATH "Default install path" FORCE
     )
 endif()
 
 
 ## Dependencies
+# Import external dependency loading script
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+include(find_or_download)
+
 # Check for OpenMP
 find_package(OpenMP)
 if(OpenMP_FOUND)
     list(APPEND HICMA_OPTIONS ${OpenMP_CXX_FLAGS})
 endif()
 
-# Flag for MKL Usage
-if(NOT USE_MKL)
-    set(USE_MKL OFF)
-endif()
-if(USE_MKL)
+# Boost
+find_or_download(Boost VERSION 1.65.0 EXACT)
+list(APPEND HICMA_DEPENDENCIES Boost::boost)
+
+# MKL or other BLAS/LAPACK libraries (default is other)
+option(USE_MKL "Use Intel Math Kernel Libraries (MKL)" OFF)
+if(${USE_MKL})
     list(APPEND HICMA_DEFINITIONS USE_MKL)
-    list(APPEND HICMA_DEPENDENCIES
-        mkl_intel_lp64 mkl_intel_thread mkl_core iomp5 pthread
-    )
+    set(BLA_VENDOR Intel10_64ilp)
+    find_package(BLAS REQUIRED)
+    find_package(LAPACK REQUIRED)
+    list(APPEND HICMA_DEPENDENCIES ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 else()
-    find_package(CBLAS REQUIRED)
-    find_package(LAPACKE REQUIRED)
-    list(APPEND HICMA_DEPENDENCIES ${CBLAS_LIBRARIES} ${LAPACKE_LIBRARIES})
-endif(USE_MKL)
-unset(USE_MKL CACHE)
+    find_package(BLAS REQUIRED)
+    find_package(LAPACK REQUIRED)
+    find_or_download(CBLAS)
+    find_or_download(LAPACKE)
+    list(APPEND HICMA_DEPENDENCIES cblas lapacke)
+endif()
 
 # Open Multi-Method depdency
-# Import external dependency loading script
-set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-include(add_external)
+find_or_download(YOMM2)
+list(APPEND HICMA_DEPENDENCIES YOMM2::yomm2)
 
-add_external_dependency(yomm2)
-list(APPEND HICMA_DEPENDENCIES yomm2)
-list(APPEND DEPDENCY_INCLUDES ${CMAKE_BINARY_DIR}/yomm2-src/include)
+
+## Main source tree
+add_subdirectory(src)
+
+
+## Testing code
+option(BUILD_TESTS "Build unit and other tests" ON)
+if(${BUILD_TESTS})
+    find_or_download(GTest)
+    # Enable test for googletest
+    enable_testing()
+    add_subdirectory(test)
+endif()
+
+## Install instruction
+# Create version file for cmake package
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+  HiCMAConfigVersion.cmake
+  VERSION ${PACKAGE_VERSION}
+  COMPATIBILITY SameMajorVersion
+)
+install(FILES
+  "${CMAKE_CURRENT_BINARY_DIR}/HiCMAConfigVersion.cmake"
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/cmake/HiCMA
+)
+# Create config file of HiCMA
+# No public dependencies so a Config file with the targets is enough
+install(EXPORT HiCMATargets
+  FILE HiCMAConfig.cmake
+  NAMESPACE HiCMA::
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/cmake/HiCMA
+)
+# Copy headers to install directory
 install(
-    DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/yomm2-src/include/yorel
+    DIRECTORY ${CMAKE_SOURCE_DIR}/include/hicma
     DESTINATION include
 )
-
-# Add main source tree
-add_subdirectory(src)
-# Enable test for googletest
-enable_testing()
-add_subdirectory(test)

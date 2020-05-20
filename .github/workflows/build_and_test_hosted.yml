@@ -13,30 +13,22 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: dependencies
+      - name: Install system dependencies
         run: sudo apt-get install liblapack-dev gfortran libboost-dev
 
-      - name: Cache dependencies
+      - name: Cache build dependencies
         uses: actions/cache@master
         env:
           cache-name: cache-built-dependencies
         with:
           path: |
-            dependencies
-            install/include/*.h
-            install/include/yorel
-            install/lib/cmake/cblas*
-            install/lib/libcblas.a
-            install/lib/cmake/lapack*
-            install/lib/liblapacke.a
-            install/lib/libtmglib.a
-            install/lib/cmake/YOMM2
-            install/lib/libyomm2.a
+            dependencies/include
+            dependencies/lib
           key: ${{ runner.os }}-build
 
-      - name: cmake
+      - name: CMake configuration
         run: mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=RELEASE ..
-      - name: make
+      - name: Build using make
         run: cd build && make -j
-      - name: test
+      - name: Hierarchical LU execution test
         run: ./bin/h_lu 256 32 8 2 1

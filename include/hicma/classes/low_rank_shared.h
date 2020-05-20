@@ -4,8 +4,6 @@
 #include "hicma/classes/dense.h"
 #include "hicma/classes/node.h"
 
-#include "yorel/yomm2/cute.hpp"
-
 #include <array>
 #include <cstdint>
 #include <memory>
@@ -79,8 +77,6 @@ class LowRankShared : public Node {
   LowRankShared(
     const Dense& S, std::shared_ptr<Dense> U, std::shared_ptr<Dense> V);
 };
-
-register_class(LowRankShared, Node)
 
 } // namespace hicma
 

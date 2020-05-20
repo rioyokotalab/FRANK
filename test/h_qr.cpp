@@ -1,7 +1,5 @@
 #include "hicma/hicma.h"
 
-#include "yorel/yomm2/cute.hpp"
-
 #include <cstdint>
 #include <iostream>
 #include <vector>
@@ -10,7 +8,7 @@
 using namespace hicma;
 
 int main(int argc, char** argv) {
-  yorel::yomm2::update_methods();
+  hicma::initialize();
   int64_t N = 128;
   int64_t nleaf = 16;
   int64_t rank = 8;

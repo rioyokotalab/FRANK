@@ -1,23 +1,11 @@
-add_library(classes OBJECT
-    node_proxy.cpp
-    dense.cpp
-    hierarchical.cpp
-    low_rank.cpp
-    low_rank_shared.cpp
-    no_copy_split.cpp
-    uniform_hierarchical.cpp
-    initialization_helpers/cluster_tree.cpp
-    initialization_helpers/matrix_initializer.cpp
+target_sources(hicma PRIVATE
+    ${CMAKE_CURRENT_LIST_DIR}/node_proxy.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/dense.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/hierarchical.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/low_rank.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/low_rank_shared.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/no_copy_split.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/uniform_hierarchical.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/initialization_helpers/cluster_tree.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/initialization_helpers/matrix_initializer.cpp
 )
-target_include_directories(classes
-PUBLIC
-    $<INSTALL_INTERFACE:include>
-    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-)
-foreach(DEPENDENCY_INCLUDE ${DEPDENCY_INCLUDES})
-    target_include_directories(
-        classes SYSTEM PUBLIC $<BUILD_INTERFACE:${DEPENDENCY_INCLUDE}>)
-endforeach()
-target_compile_definitions(classes PUBLIC ${HICMA_DEFINITIONS})
-target_compile_features(classes PRIVATE ${HICMA_FEATURES})
-target_compile_options(classes PRIVATE ${HICMA_OPTIONS})

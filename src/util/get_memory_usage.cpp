@@ -1,4 +1,5 @@
 #include "hicma/util/get_memory_usage.h"
+#include "hicma/extension_headers/util.h"
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"

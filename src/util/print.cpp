@@ -1,4 +1,5 @@
 #include "hicma/util/print.h"
+#include "hicma/extension_headers/util.h"
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"

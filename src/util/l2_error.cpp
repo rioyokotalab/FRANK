@@ -1,4 +1,5 @@
 #include "hicma/util/l2_error.h"
+#include "hicma/extension_headers/util.h"
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
@@ -7,8 +8,7 @@
 #include "hicma/classes/node.h"
 #include "hicma/classes/no_copy_split.h"
 #include "hicma/operations/arithmetic.h"
-#include "hicma/operations/misc/norm.h"
-#include "hicma/operations/misc/get_dim.h"
+#include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
 #include "hicma/util/print.h"
 

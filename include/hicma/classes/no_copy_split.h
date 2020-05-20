@@ -3,8 +3,6 @@
 
 #include "hicma/classes/hierarchical.h"
 
-#include "yorel/yomm2/cute.hpp"
-
 #include <cstdint>
 #include <memory>
 
@@ -45,8 +43,6 @@ class NoCopySplit : public Hierarchical {
 
   NoCopySplit(const Node& A, const Hierarchical& like);
 };
-
-register_class(NoCopySplit, Hierarchical)
 
 } // namespace hicma
 

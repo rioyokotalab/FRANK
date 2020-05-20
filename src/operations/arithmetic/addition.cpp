@@ -10,7 +10,7 @@
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/LAPACK.h"
 #include "hicma/operations/arithmetic.h"
-#include "hicma/operations/misc/get_dim.h"
+#include "hicma/operations/misc.h"
 #include "hicma/util/counter.h"
 #include "hicma/util/omm_error_handler.h"
 #include "hicma/util/timer.h"
