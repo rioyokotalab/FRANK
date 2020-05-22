@@ -47,38 +47,38 @@ Hierarchical::Hierarchical(
 ) : dim{n_row_blocks, n_col_blocks}, data(dim[0]*dim[1])
 {
   ClusterTree node(get_n_rows(A), get_n_cols(A), dim[0], dim[1]);
-  fill_hierarchical_from(*this, A, node);
+  split_into_hierarchical(*this, A, node);
 }
 
 define_method(
-  void, fill_hierarchical_from,
+  void, split_into_hierarchical,
   (Hierarchical& H, const Dense& A, const ClusterTree& node)
 ) {
-  timing::start("fill_hierarchical_from(D)");
+  timing::start("split_into_hierarchical(D)");
   for (const ClusterTree& child : node) {
     H[child] = A.get_part(
       child.dim[0], child.dim[1], child.start[0], child.start[1]);
   }
-  timing::stop("fill_hierarchical_from(D)");
+  timing::stop("split_into_hierarchical(D)");
 }
 
 define_method(
-  void, fill_hierarchical_from,
+  void, split_into_hierarchical,
   (Hierarchical& H, const LowRank& A, const ClusterTree& node)
 ) {
-  timing::start("fill_hierarchical_from(LR)");
+  timing::start("split_into_hierarchical(LR)");
   for (const ClusterTree& child : node) {
     H[child] = A.get_part(
       child.dim[0], child.dim[1], child.start[0], child.start[1]);
   }
-  timing::stop("fill_hierarchical_from(LR)");
+  timing::stop("split_into_hierarchical(LR)");
 }
 
 define_method(
-  void, fill_hierarchical_from,
+  void, split_into_hierarchical,
   (Hierarchical& H, const Matrix& A, [[maybe_unused]] const ClusterTree& node)
 ) {
-  omm_error_handler("fill_hierarchical_from", {H, A}, __FILE__, __LINE__);
+  omm_error_handler("split_into_hierarchical", {H, A}, __FILE__, __LINE__);
   std::abort();
 }
 
