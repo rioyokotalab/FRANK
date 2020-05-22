@@ -5,6 +5,7 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
+#include "hicma/classes/intitialization_helpers/basis_copy_tracker.h"
 #include "hicma/classes/intitialization_helpers/cluster_tree.h"
 #include "hicma/classes/intitialization_helpers/matrix_initializer.h"
 #include "hicma/functions.h"
@@ -27,6 +28,46 @@ using yorel::yomm2::virtual_;
 
 namespace hicma
 {
+
+Hierarchical::Hierarchical(const Hierarchical& A) {
+  BasisCopyTracker tracker;
+  *this = Hierarchical(A, tracker);
+}
+
+declare_method(
+  MatrixProxy, copy_block, (virtual_<const Matrix&>, BasisCopyTracker&)
+)
+define_method(
+  MatrixProxy, copy_block, (const Hierarchical& A, BasisCopyTracker& tracker)
+) {
+  return Hierarchical(A, tracker);
+}
+define_method(
+  MatrixProxy, copy_block,
+  (const Dense& A, [[maybe_unused]] BasisCopyTracker& tracker)
+) {
+  return A;
+}
+define_method(
+  MatrixProxy, copy_block, (const LowRank& A, BasisCopyTracker& tracker)
+) {
+  return LowRank(tracker.copy_col_basis(A), A.S(), tracker.copy_row_basis(A));
+}
+
+Hierarchical::Hierarchical(
+  const Hierarchical& A, BasisCopyTracker& tracker
+) : Matrix(A), dim(A.dim), data(dim[0]*dim[1]) {
+  for (int64_t i=0; i<A.dim[0]; ++i) {
+    for (int64_t j=0; j<A.dim[1]; ++j) {
+      (*this)(i, j) = copy_block(A(i, j), tracker);
+    }
+  }
+}
+
+Hierarchical& Hierarchical::operator=(const Hierarchical& A) {
+  *this = Hierarchical(A);
+  return *this;
+}
 
 declare_method(Hierarchical&&, move_from_hierarchical, (virtual_<Matrix&>))
 

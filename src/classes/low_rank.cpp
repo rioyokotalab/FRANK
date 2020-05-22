@@ -10,34 +10,51 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
+#include <memory>
 #include <tuple>
 
 
 namespace hicma
 {
 
-Dense& LowRank::U() { return _U; }
-const Dense& LowRank::U() const { return _U; }
+LowRank::LowRank(const LowRank& A)
+: Matrix(A),
+  _U(std::make_shared<Dense>(A.U())), _V(std::make_shared<Dense>(A.V())),
+  _S(A.S()), dim(A.dim), rank(A.rank)
+{}
+
+LowRank& LowRank::operator=(const LowRank& A) {
+  Matrix::operator=(A);
+  U() = A.U();
+  V() = A.V();
+  S() = A.S();
+  dim = A.dim;
+  rank = A.rank;
+  return *this;
+}
+
+Dense& LowRank::U() { return *_U; }
+const Dense& LowRank::U() const { return *_U; }
 
 Dense& LowRank::S() { return _S; }
 const Dense& LowRank::S() const { return _S; }
 
-Dense& LowRank::V() { return _V; }
-const Dense& LowRank::V() const { return _V; }
+Dense& LowRank::V() { return *_V; }
+const Dense& LowRank::V() const { return *_V; }
 
 LowRank::LowRank(int64_t n_rows, int64_t n_cols, int64_t k)
 : dim{n_rows, n_cols}, rank(k)
 {
-  _U = Dense(dim[0], k);
+  U() = Dense(dim[0], k);
   S() = Dense(k, k);
-  _V = Dense(k, dim[1]);
+  V() = Dense(k, dim[1]);
 }
 
 LowRank::LowRank(const Dense& A, int64_t k)
 : Matrix(A), dim{A.dim[0], A.dim[1]} {
   // Rank with oversampling limited by dimensions
   rank = std::min(std::min(k+5, dim[0]), dim[1]);
-  std::tie(_U, S(), _V) = rsvd(A, rank);
+  std::tie(U(), S(), V()) = rsvd(A, rank);
   U().resize(dim[0], k);
   S().resize(k, k);
   V().resize(k, dim[1]);
@@ -92,11 +109,15 @@ void LowRank::mergeV(const LowRank& A, const LowRank& B) {
 
 LowRank::LowRank(
   const Dense& U, const Dense& S, const Dense& V
-) : _U(U.dim[0], U.dim[1], 0, 0, U),
-    _V(V.dim[0], V.dim[1], 0, 0, V),
+) : _U(std::make_shared<Dense>(U.dim[0], U.dim[1], 0, 0, U)),
+    _V(std::make_shared<Dense>(V.dim[0], V.dim[1], 0, 0, V)),
     _S(S.dim[0], S.dim[1], 0, 0, S),
     dim{U.dim[0], V.dim[1]}, rank(S.dim[0])
 {}
+
+LowRank::LowRank(
+  std::shared_ptr<Dense> U, const Dense& S, std::shared_ptr<Dense> V
+) : _U(U), _V(V), _S(S), dim{U->dim[0], V->dim[1]}, rank(S.dim[0]) {}
 
 LowRank::LowRank(
   int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start,
@@ -104,9 +125,9 @@ LowRank::LowRank(
 ) : dim{n_rows, n_cols}, rank(A.rank) {
   assert(row_start+n_rows <= A.dim[0]);
   assert(col_start+n_cols <= A.dim[1]);
-  _U = Basis(n_rows, A.rank, row_start, 0, A.U());
+  U() = Dense(n_rows, A.rank, row_start, 0, A.U());
   S() = Dense(A.rank, A.rank, 0, 0, A.S());
-  _V = Basis(A.rank, n_cols, 0, col_start, A.V());
+  V() = Dense(A.rank, n_cols, 0, col_start, A.V());
 }
 
 LowRank LowRank::get_part(

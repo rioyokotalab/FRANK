@@ -13,6 +13,7 @@
 namespace hicma
 {
 
+class BasisCopyTracker;
 class Dense;
 class ClusterTree;
 class MatrixInitializer;
@@ -22,16 +23,15 @@ class Hierarchical : public Matrix {
   std::array<int64_t, 2> dim = {0, 0};
  private:
   std::vector<MatrixProxy> data;
-
  public:
   // Special member functions
   Hierarchical() = default;
 
   virtual ~Hierarchical() = default;
 
-  Hierarchical(const Hierarchical& A) = default;
+  Hierarchical(const Hierarchical& A);
 
-  Hierarchical& operator=(const Hierarchical& A) = default;
+  Hierarchical& operator=(const Hierarchical& A);
 
   Hierarchical(Hierarchical&& A) = default;
 
@@ -43,6 +43,8 @@ class Hierarchical : public Matrix {
   Hierarchical(const Matrix& A, int64_t n_row_blocks, int64_t n_col_blocks);
 
   // Additional constructors
+  Hierarchical(const Hierarchical& A, BasisCopyTracker& tracker);
+
   Hierarchical(int64_t n_row_blocks, int64_t n_col_blocks=1);
 
   Hierarchical(
