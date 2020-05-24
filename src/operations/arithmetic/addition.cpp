@@ -155,12 +155,16 @@ define_method(Matrix&, addition_omm, (LowRank& A, const LowRank& B)) {
     C.mergeS(A, B);
     C.mergeV(A, B);
 
+    // TODO No need to save C.U() first, just do two opertions and save into a
+    // Hierarchical
     C.U() = gemm(C.U(), C.S());
 
     Dense Qu(C.U().dim[0], C.U().dim[1]);
     Dense Ru(C.U().dim[1], C.U().dim[1]);
     qr(C.U(), Qu, Ru);
 
+    // TODO Probably better to do RQ decomposition (maybe make hierarchical
+    // version and avoid copies?)
     C.V().transpose();
     Dense Qv(C.V().dim[0], C.V().dim[1]);
     Dense Rv(C.V().dim[1], C.V().dim[1]);
