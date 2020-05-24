@@ -128,7 +128,7 @@ Hierarchical::Hierarchical(int64_t n_row_blocks, int64_t n_col_blocks)
 
 Hierarchical::Hierarchical(
   const ClusterTree& node,
-  const MatrixInitializer& initer
+  MatrixInitializer& initer
 ) : dim(node.block_dim), data(dim[0]*dim[1]) {
   for (const ClusterTree& child : node) {
     if (initer.is_admissible(child)) {
@@ -155,14 +155,17 @@ Hierarchical::Hierarchical(
   int64_t nleaf,
   int64_t admis,
   int64_t n_row_blocks, int64_t n_col_blocks,
+  int basis_type,
   int64_t row_start, int64_t col_start
-) : Hierarchical(
-      ClusterTree(
-        n_rows, n_cols, n_row_blocks, n_col_blocks, row_start, col_start, nleaf
-      ),
-      MatrixInitializer(func, x, admis, rank)
-    )
-{}
+) {
+  MatrixInitializer initer(func, x, admis, rank, basis_type);
+  *this = Hierarchical(
+    ClusterTree(
+      n_rows, n_cols, n_row_blocks, n_col_blocks, row_start, col_start, nleaf
+    ),
+    initer
+  );
+}
 
 const MatrixProxy& Hierarchical::operator[](const ClusterTree& node) const {
   return (*this)(node.rel_pos[0], node.rel_pos[1]);

@@ -238,7 +238,7 @@ UniformHierarchical::UniformHierarchical(
 ) : UniformHierarchical(
     ClusterTree(
       n_rows, n_cols, n_row_blocks, n_col_blocks, row_start, col_start, nleaf),
-    MatrixInitializer(func, x, admis, rank),
+    MatrixInitializer(func, x, admis, rank, NORMAL_BASIS),
     rank, admis, use_svd
   )
 {}
