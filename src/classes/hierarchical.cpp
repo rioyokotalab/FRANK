@@ -128,18 +128,16 @@ Hierarchical::Hierarchical(int64_t n_row_blocks, int64_t n_col_blocks)
 
 Hierarchical::Hierarchical(
   const ClusterTree& node,
-  const MatrixInitializer& initer,
-  int64_t rank,
-  int64_t admis
+  const MatrixInitializer& initer
 ) : dim(node.block_dim), data(dim[0]*dim[1]) {
   for (const ClusterTree& child : node) {
-    if (is_admissible(child, admis)) {
-      (*this)[child] = LowRank(initer.get_dense_representation(child), rank);
+    if (initer.is_admissible(child)) {
+      (*this)[child] = initer.get_compressed_representation(child);
     } else {
       if (child.is_leaf()) {
         (*this)[child] = initer.get_dense_representation(child);
       } else {
-        (*this)[child] = Hierarchical(child, initer, rank, admis);
+        (*this)[child] = Hierarchical(child, initer);
       }
     }
   }
@@ -162,8 +160,7 @@ Hierarchical::Hierarchical(
       ClusterTree(
         n_rows, n_cols, n_row_blocks, n_col_blocks, row_start, col_start, nleaf
       ),
-      MatrixInitializer(func, x),
-      rank, admis
+      MatrixInitializer(func, x, admis, rank)
     )
 {}
 
@@ -287,17 +284,6 @@ void Hierarchical::col_qr(int64_t j, Hierarchical& Q, Hierarchical &R) {
     qr(Aj, SpQj, R(0, 0));
     Q.restore_col(SpQj, QL);
   }
-}
-
-bool Hierarchical::is_admissible(
-  const ClusterTree& node, int64_t dist_to_diag
-) {
-  bool admissible = true;
-  // Main admissibility condition
-  admissible &= (node.dist_to_diag() > dist_to_diag);
-  // Vectors are never admissible
-  admissible &= (node.dim[0] > 1 && node.dim[1] > 1);
-  return admissible;
 }
 
 } // namespace hicma

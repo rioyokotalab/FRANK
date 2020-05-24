@@ -49,9 +49,7 @@ class Hierarchical : public Matrix {
 
   Hierarchical(
     const ClusterTree& node,
-    const MatrixInitializer& initer,
-    int64_t rank,
-    int64_t admis
+    const MatrixInitializer& initer
   );
 
   Hierarchical(
@@ -89,8 +87,6 @@ class Hierarchical : public Matrix {
   void restore_col(const Hierarchical& Sp, const Hierarchical& QL);
 
   void col_qr(int64_t j, Hierarchical& Q, Hierarchical &R);
-
-  bool is_admissible(const ClusterTree& node, int64_t dist_to_diag);
 };
 
 } // namespace hicma

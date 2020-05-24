@@ -73,14 +73,13 @@ UniformHierarchical::UniformHierarchical(
 
 Dense UniformHierarchical::make_block_row(
   const ClusterTree& node,
-  const MatrixInitializer& initer,
-  int64_t admis
+  const MatrixInitializer& initer
 ) {
   // Create row block without admissible blocks
   int64_t n_cols = 0;
   std::vector<std::reference_wrapper<const ClusterTree>> admissible_blocks;
   for (const ClusterTree& block : node.get_block_row()) {
-    if (is_admissible(block, admis)) {
+    if (initer.is_admissible(block)) {
       admissible_blocks.emplace_back(block);
       n_cols += block.dim[1];
     }
@@ -97,14 +96,13 @@ Dense UniformHierarchical::make_block_row(
 
 Dense UniformHierarchical::make_block_col(
   const ClusterTree& node,
-  const MatrixInitializer& initer,
-  int64_t admis
+  const MatrixInitializer& initer
 ) {
   // Create col block without admissible blocks
   int64_t n_rows = 0;
   std::vector<std::reference_wrapper<const ClusterTree>> admissible_blocks;
   for (const ClusterTree& block : node.get_block_col()) {
-    if (is_admissible(block, admis)) {
+    if (initer.is_admissible(block)) {
       admissible_blocks.emplace_back(block);
       n_rows += block.dim[0];
     }
@@ -124,11 +122,10 @@ LowRankShared UniformHierarchical::construct_shared_block_id(
   const MatrixInitializer& initer,
   std::vector<std::vector<int64_t>>& selected_rows,
   std::vector<std::vector<int64_t>>& selected_cols,
-  int64_t rank,
-  int64_t admis
+  int64_t rank
 ) {
   if (col_basis[node.rel_pos[0]].get() == nullptr) {
-    Dense row_block = make_block_row(node, initer, admis);
+    Dense row_block = make_block_row(node, initer);
     // Construct U using the ID and remember the selected rows
     Dense Ut;
     std::tie(Ut, selected_rows[node.rel_pos[0]]) = one_sided_rid(
@@ -137,7 +134,7 @@ LowRankShared UniformHierarchical::construct_shared_block_id(
     col_basis[node.rel_pos[0]] = std::make_shared<Dense>(std::move(Ut));
   }
   if (row_basis[node.rel_pos[1]].get() == nullptr) {
-    Dense col_block = make_block_col(node, initer, admis);
+    Dense col_block = make_block_col(node, initer);
     // Construct V using the ID and remember the selected cols
     Dense V;
     std::tie(V, selected_cols[node.rel_pos[1]]) = one_sided_rid(
@@ -161,16 +158,15 @@ LowRankShared UniformHierarchical::construct_shared_block_id(
 LowRankShared UniformHierarchical::construct_shared_block_svd(
   const ClusterTree& node,
   const MatrixInitializer& initer,
-  int64_t rank,
-  int64_t admis
+  int64_t rank
 ) {
   if (col_basis[node.rel_pos[0]].get() == nullptr) {
-    Dense row_block = make_block_row(node, initer, admis);
+    Dense row_block = make_block_row(node, initer);
     col_basis[node.rel_pos[0]] = std::make_shared<Dense>(
       LowRank(row_block, rank).U());
   }
   if (row_basis[node.rel_pos[1]].get() == nullptr) {
-    Dense col_block = make_block_col(node, initer, admis);
+    Dense col_block = make_block_col(node, initer);
     row_basis[node.rel_pos[1]] = std::make_shared<Dense>(LowRank(
       col_block, rank).V());
   }
@@ -208,13 +204,12 @@ UniformHierarchical::UniformHierarchical(
   std::vector<std::vector<int64_t>> selected_rows(dim[0]);
   std::vector<std::vector<int64_t>> selected_cols(dim[1]);
   for (const ClusterTree& child : node) {
-    if (is_admissible(child, admis)) {
+    if (initer.is_admissible(child)) {
       if (use_svd) {
-        (*this)[child] = construct_shared_block_svd(
-          child, initer, rank, admis);
+        (*this)[child] = construct_shared_block_svd(child, initer, rank);
       } else {
         (*this)[child] = construct_shared_block_id(
-          child, initer, selected_rows, selected_cols, rank, admis);
+          child, initer, selected_rows, selected_cols, rank);
       }
     } else {
       if (child.is_leaf()) {
@@ -243,7 +238,7 @@ UniformHierarchical::UniformHierarchical(
 ) : UniformHierarchical(
     ClusterTree(
       n_rows, n_cols, n_row_blocks, n_col_blocks, row_start, col_start, nleaf),
-    MatrixInitializer(func, x),
+    MatrixInitializer(func, x, admis, rank),
     rank, admis, use_svd
   )
 {}

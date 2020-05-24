@@ -23,14 +23,12 @@ class UniformHierarchical : public Hierarchical {
 
   Dense make_block_row(
     const ClusterTree& node,
-    const MatrixInitializer& initer,
-    int64_t admis
+    const MatrixInitializer& initer
   );
 
   Dense make_block_col(
     const ClusterTree& node,
-    const MatrixInitializer& initer,
-    int64_t admis
+    const MatrixInitializer& initer
   );
 
   LowRankShared construct_shared_block_id(
@@ -38,15 +36,13 @@ class UniformHierarchical : public Hierarchical {
     const MatrixInitializer& initer,
     std::vector<std::vector<int64_t>>& selected_rows,
     std::vector<std::vector<int64_t>>& selected_cols,
-    int64_t rank,
-    int64_t admis
+    int64_t rank
   );
 
   LowRankShared construct_shared_block_svd(
     const ClusterTree& node,
     const MatrixInitializer& initer,
-    int64_t rank,
-    int64_t admis
+    int64_t rank
   );
  public:
   // Special member functions
