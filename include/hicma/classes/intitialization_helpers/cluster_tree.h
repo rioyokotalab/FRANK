@@ -18,6 +18,7 @@ class ClusterTree {
   std::array<int64_t, 2> block_dim = {0, 0};
   std::array<int64_t, 2> start = {0, 0};
   int64_t nleaf = 0;
+  int64_t level = 0;
   std::array<int64_t, 2> rel_pos = {0, 0};
   std::array<int64_t, 2> abs_pos = {0, 0};
  private:
@@ -44,6 +45,7 @@ class ClusterTree {
     int64_t n_row_blocks=0, int64_t n_col_blocks=0,
     int64_t i_start=0, int64_t j_start=0,
     int64_t nleaf=0,
+    int64_t level=0,
     int64_t i_rel=0, int64_t j_rel=0,
     int64_t i_abs=0, int64_t j_abs=0,
     ClusterTree* parent=nullptr
@@ -52,6 +54,7 @@ class ClusterTree {
   ClusterTree(
     const Hierarchical& like,
     int64_t i_start=0, int64_t j_start=0,
+    int64_t level=0,
     int64_t i_rel=0, int64_t j_rel=0,
     int64_t i_abs=0, int64_t j_abs=0,
     ClusterTree* parent=nullptr
