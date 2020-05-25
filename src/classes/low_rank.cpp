@@ -1,6 +1,7 @@
 #include "hicma/classes/low_rank.h"
 
 #include "hicma/classes/dense.h"
+#include "hicma/classes/hierarchical.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/operations/randomized_factorizations.h"
 #include "hicma/operations/misc.h"
@@ -63,14 +64,10 @@ LowRank::LowRank(const Dense& A, int64_t k)
 
 void LowRank::mergeU(const LowRank& A, const LowRank& B) {
   assert(rank == A.rank + B.rank);
-  for (int64_t i=0; i<dim[0]; i++) {
-    for (int64_t j=0; j<A.rank; j++) {
-      U()(i,j) = A.U()(i,j);
-    }
-    for (int64_t j=0; j<B.rank; j++) {
-      U()(i,j+A.rank) = B.U()(i,j);
-    }
-  }
+  Hierarchical U_new(1, 2);
+  U_new[0] = get_part(A.U(), A.dim[0], A.rank, 0, 0);
+  U_new[1] = get_part(B.U(), B.dim[0], B.rank, 0, 0);
+  U() = Dense(U_new);
 }
 
 void LowRank::mergeS(const LowRank& A, const LowRank& B) {
@@ -95,16 +92,10 @@ void LowRank::mergeS(const LowRank& A, const LowRank& B) {
 
 void LowRank::mergeV(const LowRank& A, const LowRank& B) {
   assert(rank == A.rank + B.rank);
-  for (int64_t i=0; i<A.rank; i++) {
-    for (int64_t j=0; j<dim[1]; j++) {
-      V()(i,j) = A.V()(i,j);
-    }
-  }
-  for (int64_t i=0; i<B.rank; i++) {
-    for (int64_t j=0; j<dim[1]; j++) {
-      V()(i+A.rank,j) = B.V()(i,j);
-    }
-  }
+  Hierarchical V_new(2, 1);
+  V_new[0] = get_part(A.V(), A.rank, A.dim[1], 0, 0);
+  V_new[1] = get_part(B.V(), B.rank, B.dim[1], 0, 0);
+  V() = Dense(V_new);
 }
 
 LowRank::LowRank(
