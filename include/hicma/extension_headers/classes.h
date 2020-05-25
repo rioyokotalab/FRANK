@@ -32,7 +32,8 @@ declare_method(
 )
 
 declare_method(
-  MatrixProxy, make_view, (const ClusterTree&, virtual_<const Matrix&>)
+  MatrixProxy, get_part_omm,
+  (virtual_<const Matrix&>, int64_t, int64_t, int64_t, int64_t, bool)
 )
 
 declare_method(

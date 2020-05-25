@@ -51,7 +51,7 @@ Dense MatrixInitializer::make_block_row(const ClusterTree& node) const {
   Dense block_row(node.dim[0], n_cols);
   int64_t col_start = 0;
   for (const ClusterTree& block : admissible_blocks) {
-    Dense part(block.dim[0], block.dim[1], 0, col_start, block_row);
+    Dense part(block_row, block.dim[0], block.dim[1], 0, col_start);
     fill_dense_representation(part, block);
     col_start += block.dim[1];
   }
@@ -71,7 +71,7 @@ Dense MatrixInitializer::make_block_col(const ClusterTree& node) const {
   Dense block_col(n_rows, node.dim[1]);
   int64_t row_start = 0;
   for (const ClusterTree& block : admissible_blocks) {
-    Dense part(block.dim[0], block.dim[1], row_start, 0, block_col);
+    Dense part(block_col, block.dim[0], block.dim[1], row_start, 0);
     fill_dense_representation(part, block);
     row_start += block.dim[0];
   }

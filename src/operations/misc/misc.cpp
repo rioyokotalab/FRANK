@@ -1,4 +1,5 @@
 #include "hicma/operations/misc.h"
+#include "hicma/extension_headers/classes.h"
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/matrix.h"
@@ -63,17 +64,22 @@ std::vector<double> equallySpacedVector(int64_t N, double minVal, double maxVal)
   return res;
 }
 
-void getSubmatrix(
-  const Dense& A,
-  int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start,
-  Dense& out
+MatrixProxy get_part(
+  const Matrix& A,
+  int64_t n_rows, int64_t n_cols,
+  int64_t row_start, int64_t col_start,
+  bool copy
 ) {
-  assert(out.dim[0] == n_rows);
-  assert(out.dim[1] == n_cols);
-  for(int64_t i=0; i<n_rows; i++)
-    for(int64_t j=0; j<n_cols; j++) {
-      out(i, j) = A(i+row_start, j+col_start);
-    }
+  return get_part_omm(A, n_rows, n_cols, row_start, col_start, copy);
+}
+
+MatrixProxy get_part(
+  const Matrix& A,
+  const ClusterTree& node,
+  bool copy
+) {
+  return get_part_omm(
+    A, node.dim[0], node.dim[1], node.start[0], node.start[1], copy);
 }
 
 } // namespace hicma

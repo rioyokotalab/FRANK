@@ -118,14 +118,28 @@ Dense::Dense(
 }
 
 Dense::Dense(
+  const Dense& A,
   int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start,
-  const Dense& A
-) : dim{n_rows, n_cols}, stride(A.stride), data(A.data),
-    rel_start{A.rel_start[0]+row_start, A.rel_start[1]+col_start},
-    data_ptr(&(*data)[rel_start[0]*stride+rel_start[1]])
-{
-  assert(row_start+dim[0] <= A.dim[0]);
-  assert(col_start+dim[1] <= A.dim[1]);
+  bool copy
+) : dim{n_rows, n_cols} {
+  if (copy) {
+    stride = dim[1];
+    data = std::make_shared<std::vector<double>>(n_rows*n_cols);
+    rel_start = {0, 0};
+    data_ptr = &(*data)[0];
+    for (int64_t i=0; i<dim[0]; i++) {
+      for (int64_t j=0; j<dim[1]; j++) {
+        (*this)(i, j) = A(row_start+i, col_start+j);
+      }
+    }
+  } else {
+    assert(row_start+dim[0] <= A.dim[0]);
+    assert(col_start+dim[1] <= A.dim[1]);
+    stride = A.stride;
+    data = A.data;
+    rel_start = {A.rel_start[0]+row_start, A.rel_start[1]+col_start};
+    data_ptr = &(*data)[rel_start[0]*stride+rel_start[1]];
+  }
 }
 
 const Dense& Dense::operator=(const double a) {
@@ -191,6 +205,7 @@ void Dense::resize(int64_t dim0, int64_t dim1) {
       // TODO this is the only place where data is used directly now. Would be
       // better not to use it and somehow use the regular index operator
       // efficiently.
+      // TODO This might/will cause issues when rel_start != {0, 0}
       (*data)[i*dim1+j] = (*this)(i, j);
     }
   }
@@ -222,20 +237,6 @@ void Dense::transpose() {
       (*this)(i, j) = Copy(j, i);
     }
   }
-}
-
-Dense Dense::get_part(
-  int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start
-) const {
-  assert(row_start+n_rows <= dim[0]);
-  assert(col_start+n_cols <= dim[1]);
-  Dense A(n_rows, n_cols);
-  for (int64_t i=0; i<A.dim[0]; i++) {
-    for (int64_t j=0; j<A.dim[1]; j++) {
-      A(i, j) = (*this)(row_start+i, col_start+j);
-    }
-  }
-  return A;
 }
 
 } // namespace hicma

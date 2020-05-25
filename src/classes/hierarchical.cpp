@@ -97,8 +97,8 @@ define_method(
 ) {
   timing::start("split_into_hierarchical(D)");
   for (const ClusterTree& child : node) {
-    H[child] = A.get_part(
-      child.dim[0], child.dim[1], child.start[0], child.start[1]);
+    H[child] = get_part(
+      A, child.dim[0], child.dim[1], child.start[0], child.start[1], true);
   }
   timing::stop("split_into_hierarchical(D)");
 }
@@ -109,8 +109,8 @@ define_method(
 ) {
   timing::start("split_into_hierarchical(LR)");
   for (const ClusterTree& child : node) {
-    H[child] = A.get_part(
-      child.dim[0], child.dim[1], child.start[0], child.start[1]);
+    H[child] = get_part(
+      A, child.dim[0], child.dim[1], child.start[0], child.start[1], true);
   }
   timing::stop("split_into_hierarchical(LR)");
 }

@@ -55,8 +55,9 @@ class LowRank : public Matrix {
   LowRank(std::shared_ptr<Dense> U, const Dense& S, std::shared_ptr<Dense> V);
 
   LowRank(
+    const LowRank& A,
     int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start,
-    const LowRank& A
+    bool copy=false
   );
 
   // Utility methods
@@ -65,10 +66,6 @@ class LowRank : public Matrix {
   void mergeS(const LowRank& A, const LowRank& B);
 
   void mergeV(const LowRank& A, const LowRank& B);
-
-  LowRank get_part(
-    int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start
-  ) const;
 };
 
 } // namespace hicma

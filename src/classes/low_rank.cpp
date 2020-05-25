@@ -109,9 +109,9 @@ void LowRank::mergeV(const LowRank& A, const LowRank& B) {
 
 LowRank::LowRank(
   const Dense& U, const Dense& S, const Dense& V
-) : _U(std::make_shared<Dense>(U.dim[0], U.dim[1], 0, 0, U)),
-    _V(std::make_shared<Dense>(V.dim[0], V.dim[1], 0, 0, V)),
-    _S(S.dim[0], S.dim[1], 0, 0, S),
+) : _U(std::make_shared<Dense>(U, U.dim[0], U.dim[1], 0, 0)),
+    _V(std::make_shared<Dense>(V, V.dim[0], V.dim[1], 0, 0)),
+    _S(S, S.dim[0], S.dim[1], 0, 0),
     dim{U.dim[0], V.dim[1]}, rank(S.dim[0])
 {}
 
@@ -120,34 +120,15 @@ LowRank::LowRank(
 ) : _U(U), _V(V), _S(S), dim{U->dim[0], V->dim[1]}, rank(S.dim[0]) {}
 
 LowRank::LowRank(
+  const LowRank& A,
   int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start,
-  const LowRank& A
+  bool copy
 ) : dim{n_rows, n_cols}, rank(A.rank) {
   assert(row_start+n_rows <= A.dim[0]);
   assert(col_start+n_cols <= A.dim[1]);
-  U() = Dense(n_rows, A.rank, row_start, 0, A.U());
-  S() = Dense(A.rank, A.rank, 0, 0, A.S());
-  V() = Dense(A.rank, n_cols, 0, col_start, A.V());
-}
-
-LowRank LowRank::get_part(
-  int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start
-) const {
-  assert(row_start+n_rows <= dim[0]);
-  assert(col_start+n_cols <= dim[1]);
-  LowRank A(n_rows, n_cols, rank);
-  for (int64_t i=0; i<A.U().dim[0]; i++) {
-    for (int64_t k=0; k<A.U().dim[1]; k++) {
-      A.U()(i, k) = U()(i+row_start, k);
-    }
-  }
-  A.S() = S();
-  for (int64_t k=0; k<A.V().dim[0]; k++) {
-    for (int64_t j=0; j<A.V().dim[1]; j++) {
-      A.V()(k, j) = V()(k, j+col_start);
-    }
-  }
-  return A;
+  U() = Dense(A.U(), n_rows, A.rank, row_start, 0, copy);
+  S() = Dense(A.S(), A.rank, A.rank, 0, 0, copy);
+  V() = Dense(A.V(), A.rank, n_cols, 0, col_start, copy);
 }
 
 } // namespace hicma

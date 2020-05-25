@@ -23,7 +23,7 @@ Basis::Basis(
   int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start,
   const Dense& A
 ) : representation(
-  std::make_shared<Dense>(n_rows, n_cols, row_start, col_start, A)
+  std::make_shared<Dense>(A, n_rows, n_cols, row_start, col_start)
 ) {}
 
 // Additional operators
