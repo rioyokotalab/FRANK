@@ -32,9 +32,6 @@ declare_method(
 )
 
 declare_method(
-  MatrixProxy, make_view, (const ClusterTree&, virtual_<Matrix&>)
-)
-declare_method(
   MatrixProxy, make_view, (const ClusterTree&, virtual_<const Matrix&>)
 )
 

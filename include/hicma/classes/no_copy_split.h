@@ -27,11 +27,7 @@ class NoCopySplit : public Hierarchical {
   NoCopySplit& operator=(NoCopySplit&& A) = default;
 
   // Additional constructors
-  NoCopySplit(Matrix& A, int64_t n_row_blocks, int64_t n_col_blocks);
-
   NoCopySplit(const Matrix& A, int64_t n_row_blocks, int64_t n_col_blocks);
-
-  NoCopySplit(Matrix& A, const Hierarchical& like);
 
   NoCopySplit(const Matrix& A, const Hierarchical& like);
 };

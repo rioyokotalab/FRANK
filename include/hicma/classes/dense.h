@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstdint>
+#include <memory>
 #include <vector>
 
 
@@ -16,16 +17,11 @@ class Dense : public Matrix {
   std::array<int64_t, 2> dim = {0, 0};
   int64_t stride = 0;
  private:
-  std::vector<double> data;
-  double* data_ptr = nullptr;
-  const double* const_data_ptr = nullptr;
-  bool owning = true;
-
+  std::shared_ptr<std::vector<double>> data
+    = std::make_shared<std::vector<double>>();
+  std::array<int64_t, 2> rel_start = {0, 0};
  protected:
-  virtual double* get_pointer();
-
-  virtual const double* get_pointer() const;
-
+  double* data_ptr = nullptr;
  public:
   // Special member functions
   Dense() = default;
@@ -54,11 +50,6 @@ class Dense : public Matrix {
     const std::vector<std::vector<double>>& x,
     int64_t n_rows, int64_t n_cols=1,
     int64_t row_start=0, int64_t col_start=0
-  );
-
-  Dense(
-    int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start,
-    Dense& A
   );
 
   Dense(
