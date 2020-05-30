@@ -3,6 +3,9 @@
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/matrix.h"
+#include "hicma/classes/matrix_proxy.h"
+#include "hicma/classes/shared_basis.h"
+#include "hicma/extension_headers/classes.h"
 #include "hicma/operations/randomized_factorizations.h"
 #include "hicma/operations/misc.h"
 
@@ -19,10 +22,7 @@ namespace hicma
 {
 
 LowRank::LowRank(const LowRank& A)
-: Matrix(A),
-  _U(std::make_shared<Dense>(A.U())), _V(std::make_shared<Dense>(A.V())),
-  _S(A.S()), dim(A.dim), rank(A.rank)
-{}
+: Matrix(A), _U(A.U()), _V(A.V()), _S(A.S()), dim(A.dim), rank(A.rank) {}
 
 LowRank& LowRank::operator=(const LowRank& A) {
   Matrix::operator=(A);
@@ -34,14 +34,14 @@ LowRank& LowRank::operator=(const LowRank& A) {
   return *this;
 }
 
-Dense& LowRank::U() { return *_U; }
-const Dense& LowRank::U() const { return *_U; }
+MatrixProxy& LowRank::U() { return _U; }
+const MatrixProxy& LowRank::U() const { return _U; }
 
 Dense& LowRank::S() { return _S; }
 const Dense& LowRank::S() const { return _S; }
 
-Dense& LowRank::V() { return *_V; }
-const Dense& LowRank::V() const { return *_V; }
+MatrixProxy& LowRank::V() { return _V; }
+const MatrixProxy& LowRank::V() const { return _V; }
 
 LowRank::LowRank(int64_t n_rows, int64_t n_cols, int64_t k)
 : dim{n_rows, n_cols}, rank(k)
@@ -55,10 +55,13 @@ LowRank::LowRank(const Dense& A, int64_t k)
 : Matrix(A), dim{A.dim[0], A.dim[1]} {
   // Rank with oversampling limited by dimensions
   rank = std::min(std::min(k+5, dim[0]), dim[1]);
-  std::tie(U(), S(), V()) = rsvd(A, rank);
-  U().resize(dim[0], k);
+  Dense U_full, V_full;
+  std::tie(U_full, S(), V_full) = rsvd(A, rank);
+  U_full.resize(dim[0], k);
+  U() = std::move(U_full);
+  V_full.resize(k, dim[1]);
+  V() = std::move(V_full);
   S().resize(k, k);
-  V().resize(k, dim[1]);
   rank = k;
 }
 
@@ -99,16 +102,10 @@ void LowRank::mergeV(const LowRank& A, const LowRank& B) {
 }
 
 LowRank::LowRank(
-  const Dense& U, const Dense& S, const Dense& V
-) : _U(std::make_shared<Dense>(U, U.dim[0], U.dim[1], 0, 0)),
-    _V(std::make_shared<Dense>(V, V.dim[0], V.dim[1], 0, 0)),
-    _S(S, S.dim[0], S.dim[1], 0, 0),
-    dim{U.dim[0], V.dim[1]}, rank(S.dim[0])
-{}
-
-LowRank::LowRank(
-  std::shared_ptr<Dense> U, const Dense& S, std::shared_ptr<Dense> V
-) : _U(U), _V(V), _S(S), dim{U->dim[0], V->dim[1]}, rank(S.dim[0]) {}
+  const Matrix& U, const Dense& S, const Matrix& V, bool copy_S
+) : _U(share_basis(U)), _V(share_basis(V)),
+    _S(S, S.dim[0], S.dim[1], 0, 0, copy_S),
+    dim{get_n_rows(_U), get_n_cols(_V)}, rank(S.dim[0]) {}
 
 LowRank::LowRank(
   const LowRank& A,
@@ -117,9 +114,9 @@ LowRank::LowRank(
 ) : dim{n_rows, n_cols}, rank(A.rank) {
   assert(row_start+n_rows <= A.dim[0]);
   assert(col_start+n_cols <= A.dim[1]);
-  U() = Dense(A.U(), n_rows, A.rank, row_start, 0, copy);
+  U() = get_part(A.U(), n_rows, A.rank, row_start, 0, copy);
   S() = Dense(A.S(), A.rank, A.rank, 0, 0, copy);
-  V() = Dense(A.V(), A.rank, n_cols, 0, col_start, copy);
+  V() = get_part(A.V(), A.rank, n_cols, 0, col_start, copy);
 }
 
 } // namespace hicma

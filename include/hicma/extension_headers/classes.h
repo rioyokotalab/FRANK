@@ -22,6 +22,8 @@ declare_method(std::unique_ptr<Matrix>, clone, (virtual_<const Matrix&>))
 
 declare_method(std::unique_ptr<Matrix>, move_clone, (virtual_<Matrix&&>))
 
+declare_method(MatrixProxy, share_basis, (virtual_<const Matrix&>))
+
 declare_method(
   void, split_into_hierarchical,
   (Hierarchical&, virtual_<const Matrix &>, const ClusterTree&)

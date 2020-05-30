@@ -3,10 +3,10 @@
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/matrix.h"
+#include "hicma/classes/matrix_proxy.h"
 
 #include <array>
 #include <cstdint>
-#include <memory>
 
 
 namespace hicma
@@ -14,8 +14,7 @@ namespace hicma
 
 class LowRank : public Matrix {
  private:
-  std::shared_ptr<Dense> _U = std::make_shared<Dense>();
-  std::shared_ptr<Dense> _V = std::make_shared<Dense>();
+  MatrixProxy _U, _V;
   friend class BasisCopyTracker;
   Dense _S;
  public:
@@ -36,23 +35,21 @@ class LowRank : public Matrix {
   LowRank& operator=(LowRank&& A) = default;
 
   // Getters and setters
-  Dense& U();
-  const Dense& U() const;
+  MatrixProxy& U();
+  const MatrixProxy& U() const;
 
   Dense& S();
   const Dense& S() const;
 
-  Dense& V();
-  const Dense& V() const;
+  MatrixProxy& V();
+  const MatrixProxy& V() const;
 
   // Additional constructors
   LowRank(int64_t n_rows, int64_t n_cols, int64_t k);
 
   LowRank(const Dense& A, int64_t k);
 
-  LowRank(const Dense& U, const Dense& S, const Dense& V);
-
-  LowRank(std::shared_ptr<Dense> U, const Dense& S, std::shared_ptr<Dense> V);
+  LowRank(const Matrix& U, const Dense& S, const Matrix& V, bool copy_S=false);
 
   LowRank(
     const LowRank& A,

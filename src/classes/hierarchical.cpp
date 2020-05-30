@@ -51,7 +51,7 @@ define_method(
 define_method(
   MatrixProxy, copy_block, (const LowRank& A, BasisCopyTracker& tracker)
 ) {
-  return LowRank(tracker.copy_col_basis(A), A.S(), tracker.copy_row_basis(A));
+  return tracker.tracked_copy(A);
 }
 
 Hierarchical::Hierarchical(

@@ -3,6 +3,7 @@
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
+#include "hicma/classes/shared_basis.h"
 #include "hicma/classes/intitialization_helpers/cluster_tree.h"
 #include "hicma/operations/BLAS.h"
 
@@ -102,9 +103,9 @@ LowRank MatrixInitializer::get_compressed_representation(
       1, false, true
     );
     out = LowRank(
-      col_bases.at({node.level, node.abs_pos[0]}),
+      SharedBasis(col_bases.at({node.level, node.abs_pos[0]})),
       S,
-      row_bases.at({node.level, node.abs_pos[1]})
+      SharedBasis(row_bases.at({node.level, node.abs_pos[1]}))
     );
   }
   return out;
