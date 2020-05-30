@@ -24,9 +24,9 @@ declare_method(
 
 LowRank BasisCopyTracker::tracked_copy(const LowRank& A) {
   return LowRank(
-    tracked_copy_omm(A._U, copied_col_bases),
+    tracked_copy_omm(A.U(), copied_col_bases),
     A.S(),
-    tracked_copy_omm(A._V, copied_row_bases),
+    tracked_copy_omm(A.V(), copied_row_bases),
     true
   );
 }

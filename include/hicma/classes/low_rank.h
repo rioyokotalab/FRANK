@@ -15,7 +15,6 @@ namespace hicma
 class LowRank : public Matrix {
  private:
   MatrixProxy _U, _V;
-  friend class BasisCopyTracker;
   Dense _S;
  public:
   std::array<int64_t, 2> dim = {0, 0};
