@@ -6,6 +6,8 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/no_copy_split.h"
+#include "hicma/classes/shared_basis.h"
+#include "hicma/classes/intitialization_helpers/basis_copy_tracker.h"
 #include "hicma/util/omm_error_handler.h"
 #include "hicma/util/timer.h"
 
@@ -111,7 +113,14 @@ define_method(void, trsm_omm, (const Dense& A, Dense& B, int uplo, int lr)) {
   timing::stop("DTRSM");
 }
 
+define_method(
+  void, trsm_omm, (const Dense& A, SharedBasis& B, int uplo, int lr)
+) {
+  trsm(A, *B.get_ptr(), uplo, lr);
+}
+
 define_method(void, trsm_omm, (const Matrix& A, LowRank& B, int uplo, int lr)) {
+  // TODO Wrong if check? Should probably check on LEFT or RIGHT!
   switch (uplo) {
   case TRSM_UPPER:
     trsm(A, B.V(), uplo, lr);
@@ -147,6 +156,31 @@ define_method(
 ) {
   omm_error_handler("trsm", {A, B}, __FILE__, __LINE__);
   std::abort();
+}
+
+define_method(
+  void, trsm_omm,
+  (const Matrix& A, LowRank& B, int uplo, int lr, BasisCopyTracker& tracker)
+) {
+  // Check if already applied
+  // If applied, do nothing
+  switch (lr) {
+  case TRSM_LEFT:
+    if (tracker.has_col_basis(B.U())) return;
+    break;
+  case TRSM_RIGHT:
+    if (tracker.has_row_basis(B.V())) return;
+    break;
+  }
+  // If not applied, use regular trsm to apply
+  trsm(A, B, uplo, lr);
+}
+
+define_method(
+  void, trsm_omm,
+  (const Matrix& A, Matrix& B, int uplo, int lr, BasisCopyTracker&)
+) {
+  trsm(A, B, uplo, lr);
 }
 
 } // namespace hicma

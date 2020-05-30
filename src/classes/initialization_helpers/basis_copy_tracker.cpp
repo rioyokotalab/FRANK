@@ -64,4 +64,30 @@ define_method(MatrixProxy, share_basis, (const Matrix& A)) {
   std::abort();
 }
 
+declare_method(
+  bool, has_basis_omm, (virtual_<const Matrix&>, const BasisMap&)
+)
+
+define_method(
+  bool, has_basis_omm, (const SharedBasis& A, const BasisMap& map)
+) {
+  return map.find(A.get_ptr()) != map.end();
+}
+
+define_method(bool, has_basis_omm, (const Matrix& A, const BasisMap& map)) {
+  // TODO Might need to find a way to track regular Dense along with SharedBasis
+  // for some cases. Example trsm, where we use this to check whether a trsm was
+  // already applied. If we don't check for shared Dense, trsm might get applied
+  // multiple times
+  return false;
+}
+
+bool BasisCopyTracker::has_col_basis(const Matrix& A) const {
+  return has_basis_omm(A, copied_col_bases);
+}
+
+bool BasisCopyTracker::has_row_basis(const Matrix& A) const {
+  return has_basis_omm(A, copied_row_bases);
+}
+
 } // namespace hicma

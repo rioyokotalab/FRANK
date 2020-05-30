@@ -4,6 +4,7 @@
 #include "hicma/classes/dense.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
+#include "hicma/classes/intitialization_helpers/basis_copy_tracker.h"
 #include "hicma/extension_headers/tuple_types.h"
 
 #include "yorel/yomm2/cute.hpp"
@@ -67,6 +68,11 @@ declare_method(
 declare_method(
   void, trsm_omm,
   (virtual_<const Matrix&>, virtual_<Matrix&>, int, int)
+)
+
+declare_method(
+  void, trsm_omm,
+  (virtual_<const Matrix&>, virtual_<Matrix&>, int, int, BasisCopyTracker&)
 )
 
 // LAPACK

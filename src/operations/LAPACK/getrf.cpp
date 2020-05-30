@@ -5,6 +5,7 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/uniform_hierarchical.h"
+#include "hicma/classes/intitialization_helpers/basis_copy_tracker.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/util/omm_error_handler.h"
 #include "hicma/util/timer.h"
@@ -33,12 +34,13 @@ define_method(MatrixPair, getrf_omm, (Hierarchical& A)) {
   Hierarchical L(A.dim[0], A.dim[1]);
   for (int64_t i=0; i<A.dim[0]; i++) {
     std::tie(L(i, i), A(i, i)) = getrf(A(i,i));
+    BasisCopyTracker tracker;
     for (int64_t i_c=i+1; i_c<L.dim[0]; i_c++) {
       L(i_c, i) = std::move(A(i_c, i));
-      trsm(A(i,i), L(i_c,i), TRSM_UPPER, TRSM_RIGHT);
+      trsm_omm(A(i, i), L(i_c, i), TRSM_UPPER, TRSM_RIGHT, tracker);
     }
     for (int64_t j=i+1; j<A.dim[1]; j++) {
-      trsm(L(i,i), A(i,j), TRSM_LOWER);
+      trsm_omm(L(i, i), A(i, j), TRSM_LOWER, TRSM_LEFT, tracker);
     }
     for (int64_t i_c=i+1; i_c<L.dim[0]; i_c++) {
       for (int64_t k=i+1; k<A.dim[1]; k++) {
