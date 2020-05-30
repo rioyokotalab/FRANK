@@ -151,13 +151,12 @@ define_method(Matrix&, addition_omm, (LowRank& A, const LowRank& B)) {
   assert(A.dim[0] == B.dim[0]);
   assert(A.dim[1] == B.dim[1]);
   assert(A.rank == B.rank);
-  if(getCounter("LR_ADDITION_COUNTER") == 1) updateCounter("LR-addition", 1);
-  if(getCounter("LRA") == 0) {
+  if (getCounter("LR_ADDITION_COUNTER") == 1) updateCounter("LR-addition", 1);
+  if (getCounter("LRA") == 0) {
     //Truncate and Recompress if rank > min(nrow, ncol)
     if (A.rank+B.rank >= std::min(A.dim[0], A.dim[1])) {
       A = LowRank(Dense(A) + Dense(B), A.rank);
-    }
-    else {
+    } else {
       LowRank C(A.dim[0], A.dim[1], A.rank+B.rank);
       C.mergeU(A, B);
       C.mergeS(A, B);
@@ -167,7 +166,7 @@ define_method(Matrix&, addition_omm, (LowRank& A, const LowRank& B)) {
       A.S() = std::move(C.S());
       A.V() = std::move(C.V());
     }
-  } else if(getCounter("LRA") == 1) {
+  } else if (getCounter("LRA") == 1) {
     //Bebendorf HMatrix Book p16
     //Rounded Addition
     LowRank C(A.dim[0], A.dim[1], A.rank+B.rank);
