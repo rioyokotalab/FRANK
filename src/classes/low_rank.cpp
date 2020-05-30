@@ -21,19 +21,6 @@
 namespace hicma
 {
 
-LowRank::LowRank(const LowRank& A)
-: Matrix(A), _U(A.U()), _V(A.V()), _S(A.S()), dim(A.dim), rank(A.rank) {}
-
-LowRank& LowRank::operator=(const LowRank& A) {
-  Matrix::operator=(A);
-  U() = A.U();
-  V() = A.V();
-  S() = A.S();
-  dim = A.dim;
-  rank = A.rank;
-  return *this;
-}
-
 MatrixProxy& LowRank::U() { return _U; }
 const MatrixProxy& LowRank::U() const { return _U; }
 

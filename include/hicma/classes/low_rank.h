@@ -26,9 +26,9 @@ class LowRank : public Matrix {
 
   virtual ~LowRank() = default;
 
-  LowRank(const LowRank& A);
+  LowRank(const LowRank& A) = default;
 
-  LowRank& operator=(const LowRank& A);
+  LowRank& operator=(const LowRank& A) = default;
 
   LowRank(LowRank&& A) = default;
 
