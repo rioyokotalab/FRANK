@@ -1,5 +1,6 @@
 #include "hicma/operations/arithmetic.h"
 #include "hicma/extension_headers/operations.h"
+#include "hicma/extension_headers/tuple_types.h"
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
@@ -16,6 +17,8 @@
 #include "hicma/util/timer.h"
 
 #include "yorel/yomm2/cute.hpp"
+using yorel::yomm2::virtual_;
+
 
 #include <cassert>
 #include <cstdint>
@@ -53,10 +56,12 @@ define_method(Matrix&, addition_omm, (Hierarchical& A, const LowRank& B)) {
   return A;
 }
 
+declare_method(
+  DensePair, merge_col_basis,
+  (virtual_<const Matrix&>, virtual_<const Matrix&>)
+)
 
-std::tuple<Dense, Dense> merge_col_basis(
-  const Dense& U, const Dense& Au
-) {
+define_method(DensePair, merge_col_basis, (const Dense& U, const Dense& Au)) {
   assert(U.dim[0] == Au.dim[0]);
   int64_t Arank = U.dim[1];
   int64_t Brank = Au.dim[1];
@@ -76,8 +81,19 @@ std::tuple<Dense, Dense> merge_col_basis(
   return {std::move(Q), std::move(InnerU)};
 }
 
-std::tuple<Dense, Dense> merge_row_basis(
-  const Dense& V, const Dense& Av
+define_method(DensePair, merge_col_basis, (const Matrix& U, const Matrix& Au)) {
+  omm_error_handler("merge_col_basis", {U, Au}, __FILE__, __LINE__);
+  std::abort();
+}
+
+declare_method(
+  DensePair, merge_row_basis,
+  (virtual_<const Matrix&>, virtual_<const Matrix&>)
+)
+
+define_method(
+  DensePair, merge_row_basis,
+  (const Dense& V, const Dense& Av)
 ) {
   assert(V.dim[1] == Av.dim[1]);
   int64_t Arank = V.dim[0];
@@ -98,6 +114,10 @@ std::tuple<Dense, Dense> merge_row_basis(
   return {std::move(Q), std::move(InnerV)};
 }
 
+define_method(DensePair, merge_row_basis, (const Matrix& V, const Matrix& Av)) {
+  omm_error_handler("merge_row_basis", {V, Av}, __FILE__, __LINE__);
+  std::abort();
+}
 
 std::tuple<Dense, Dense, Dense> merge_S(
   const Dense& S, const Dense& AS,
@@ -159,15 +179,15 @@ define_method(Matrix&, addition_omm, (LowRank& A, const LowRank& B)) {
     // Hierarchical
     C.U() = gemm(C.U(), C.S());
 
-    Dense Qu(C.U().dim[0], C.U().dim[1]);
-    Dense Ru(C.U().dim[1], C.U().dim[1]);
+    Dense Qu(get_n_rows(C.U()), get_n_cols(C.U()));
+    Dense Ru(get_n_cols(C.U()), get_n_cols(C.U()));
     qr(C.U(), Qu, Ru);
 
     // TODO Probably better to do RQ decomposition (maybe make hierarchical
     // version and avoid copies?)
-    C.V().transpose();
-    Dense Qv(C.V().dim[0], C.V().dim[1]);
-    Dense Rv(C.V().dim[1], C.V().dim[1]);
+    transpose(C.V());
+    Dense Qv(get_n_rows(C.V()), get_n_cols(C.V()));
+    Dense Rv(get_n_cols(C.V()), get_n_cols(C.V()));
     qr(C.V(), Qv, Rv);
 
     Dense RuRvT = gemm(Ru, Rv, 1, false, true);

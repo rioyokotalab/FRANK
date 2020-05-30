@@ -155,12 +155,12 @@ define_method(DensePair, make_left_orthogonal_omm, (const Dense& A)) {
 
 define_method(DensePair, make_left_orthogonal_omm, (const LowRank& A)) {
   Dense Au(A.U());
-  Dense Qu(A.U().dim[0], A.U().dim[1]);
-  Dense Ru(A.U().dim[1], A.U().dim[1]);
+  Dense Qu(get_n_rows(A.U()), get_n_cols(A.U()));
+  Dense Ru(get_n_cols(A.U()), get_n_cols(A.U()));
   qr(Au, Qu, Ru);
   Dense RS(Ru.dim[0], A.S().dim[1]);
   gemm(Ru, A.S(), RS, 1, 1);
-  Dense RSV(RS.dim[0], A.V().dim[1]);
+  Dense RSV(RS.dim[0], get_n_cols(A.V()));
   gemm(RS, A.V(), RSV, 1, 1);
   return {std::move(Qu), std::move(RSV)};
 }
@@ -206,8 +206,8 @@ define_method(
   (const LowRank& A, Hierarchical& storage, int64_t& currentRow)
 ) {
   LowRank _A(A);
-  Dense Qu(_A.U().dim[0], _A.U().dim[1]);
-  Dense Ru(_A.U().dim[1], _A.U().dim[1]);
+  Dense Qu(get_n_rows(_A.U()), get_n_cols(_A.U()));
+  Dense Ru(get_n_cols(_A.U()), get_n_cols(_A.U()));
   qr(_A.U(), Qu, Ru);
   Dense RS = gemm(Ru, _A.S());
   Dense RSV = gemm(RS, _A.V());
@@ -343,13 +343,9 @@ define_method(void, zero_whole_omm, (Dense& A)) {
 }
 
 define_method(void, zero_whole_omm, (LowRank& A)) {
-  A.U() = 0.0;
-  for(int64_t i=0; i<std::min(A.U().dim[0], A.U().dim[1]); i++)
-    A.U()(i, i) = 1.0;
+  A.U() = Dense(identity, std::vector<std::vector<double>>(), 0, 0);
   A.S() = 0.0;
-  A.V() = 0.0;
-  for(int64_t i=0; i<std::min(A.V().dim[0], A.V().dim[1]); i++)
-    A.V()(i, i) = 1.0;
+  A.V() = Dense(identity, std::vector<std::vector<double>>(), 0, 0);
 }
 
 define_method(void, zero_whole_omm, (Matrix& A)) {
