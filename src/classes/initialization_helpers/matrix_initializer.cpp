@@ -78,13 +78,12 @@ Dense MatrixInitializer::make_block_col(const ClusterTree& node) const {
   return block_col;
 }
 
-
 LowRank MatrixInitializer::get_compressed_representation(
   const ClusterTree& node
 ) {
   LowRank out;
   if (basis_type == NORMAL_BASIS) {
-    out =  LowRank(get_dense_representation(node), rank);
+    out = LowRank(get_dense_representation(node), rank);
   } else if (basis_type == SHARED_BASIS) {
     if (col_bases.find({node.level, node.abs_pos[0]}) == col_bases.end()) {
       Dense row_block = make_block_row(node);
@@ -93,7 +92,7 @@ LowRank MatrixInitializer::get_compressed_representation(
     }
     if (row_bases.find({node.level, node.abs_pos[1]}) == row_bases.end()) {
       Dense col_block = make_block_col(node);
-      row_bases[{node.level, node.abs_pos[1]}]  = std::make_shared<Dense>(
+      row_bases[{node.level, node.abs_pos[1]}] = std::make_shared<Dense>(
         std::move(LowRank(col_block, rank).V()));
     }
     Dense D = get_dense_representation(node);
@@ -102,7 +101,7 @@ LowRank MatrixInitializer::get_compressed_representation(
       *row_bases.at({node.level, node.abs_pos[1]}),
       1, false ,true
     );
-    out =  LowRank(
+    out = LowRank(
       col_bases.at({node.level, node.abs_pos[0]}),
       S,
       row_bases.at({node.level, node.abs_pos[1]})
