@@ -6,6 +6,7 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/low_rank_shared.h"
 #include "hicma/classes/matrix.h"
+#include "hicma/classes/shared_basis.h"
 #include "hicma/util/omm_error_handler.h"
 
 #include "yorel/yomm2/cute.hpp"
@@ -35,6 +36,10 @@ define_method(int64_t, get_n_rows_omm, (const Hierarchical& A)) {
   return n_rows;
 }
 
+define_method(int64_t, get_n_rows_omm, (const SharedBasis& A)) {
+  return get_n_rows(*A.get_ptr());
+}
+
 define_method(int64_t, get_n_rows_omm, (const Matrix& A)) {
   omm_error_handler("get_n_rows", {A}, __FILE__, __LINE__);
   std::abort();
@@ -57,6 +62,10 @@ define_method(int64_t, get_n_cols_omm, (const Hierarchical& A)) {
     n_cols += get_n_cols(A(0, j));
   }
   return n_cols;
+}
+
+define_method(int64_t, get_n_cols_omm, (const SharedBasis& A)) {
+  return get_n_cols(*A.get_ptr());
 }
 
 define_method(int64_t, get_n_cols_omm, (const Matrix& A)) {

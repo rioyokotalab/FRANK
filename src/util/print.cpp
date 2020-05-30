@@ -7,6 +7,7 @@
 #include "hicma/classes/low_rank_shared.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/no_copy_split.h"
+#include "hicma/classes/shared_basis.h"
 #include "hicma/classes/uniform_hierarchical.h"
 #include "hicma/operations/LAPACK.h"
 #include "hicma/util/omm_error_handler.h"
@@ -48,12 +49,16 @@ define_method(std::string, type_omm, ([[maybe_unused]] const Hierarchical& A)) {
   return "Hierarchical";
 }
 
-define_method(std::string, type_omm, ([[maybe_unused]] const UniformHierarchical& A)) {
-  return "UniformHierarchical";
-}
-
 define_method(std::string, type_omm, ([[maybe_unused]] const NoCopySplit& A)) {
   return "NoCopySplit";
+}
+
+define_method(std::string, type_omm, ([[maybe_unused]] const SharedBasis& A)) {
+  return "SharedBasis";
+}
+
+define_method(std::string, type_omm, ([[maybe_unused]] const UniformHierarchical& A)) {
+  return "UniformHierarchical";
 }
 
 define_method(std::string, type_omm, (const Matrix& A)) {

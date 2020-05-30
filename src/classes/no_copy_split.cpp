@@ -6,6 +6,7 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
+#include "hicma/classes/shared_basis.h"
 #include "hicma/classes/intitialization_helpers/cluster_tree.h"
 #include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
@@ -48,6 +49,17 @@ define_method(
   )
 ) {
   return Dense(A, n_rows, n_cols, row_start, col_start, copy);
+}
+
+define_method(
+  MatrixProxy, get_part_omm,
+  (
+    const SharedBasis& A,
+    int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start,
+    bool copy
+  )
+) {
+  return get_part(*A.get_ptr(), n_rows, n_cols, row_start, col_start, copy);
 }
 
 define_method(
