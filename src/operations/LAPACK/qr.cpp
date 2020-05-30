@@ -343,9 +343,15 @@ define_method(void, zero_whole_omm, (Dense& A)) {
 }
 
 define_method(void, zero_whole_omm, (LowRank& A)) {
-  A.U() = Dense(identity, std::vector<std::vector<double>>(), 0, 0);
+  A.U() = Dense(
+    identity, std::vector<std::vector<double>>(),
+    get_n_rows(A.U()), get_n_cols(A.U())
+  );
   A.S() = 0.0;
-  A.V() = Dense(identity, std::vector<std::vector<double>>(), 0, 0);
+  A.V() = Dense(
+    identity, std::vector<std::vector<double>>(),
+    get_n_rows(A.V()), get_n_cols(A.U())
+  );
 }
 
 define_method(void, zero_whole_omm, (Matrix& A)) {
