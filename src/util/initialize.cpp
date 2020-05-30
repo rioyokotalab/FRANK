@@ -15,6 +15,7 @@ register_class(LowRank, Matrix)
 register_class(LowRankShared, Matrix)
 register_class(Hierarchical, Matrix)
 register_class(NoCopySplit, Hierarchical)
+register_class(SharedBasis, Matrix)
 register_class(UniformHierarchical, Hierarchical)
 
 void initialize() {

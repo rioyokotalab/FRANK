@@ -9,6 +9,7 @@
 #include "hicma/classes/matrix_proxy.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/no_copy_split.h"
+#include "hicma/classes/shared_basis.h"
 #include "hicma/classes/uniform_hierarchical.h"
 
 #endif // hicma_classes_h

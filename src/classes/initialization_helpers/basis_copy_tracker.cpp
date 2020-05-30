@@ -1,6 +1,5 @@
 #include "hicma/classes/intitialization_helpers/basis_copy_tracker.h"
 
-#include "hicma/classes/basis.h"
 #include "hicma/classes/low_rank.h"
 
 #include <memory>

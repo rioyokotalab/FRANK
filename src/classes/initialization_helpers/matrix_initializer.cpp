@@ -99,7 +99,7 @@ LowRank MatrixInitializer::get_compressed_representation(
     Dense S = gemm(
       gemm(*col_bases.at({node.level, node.abs_pos[0]}), D, 1, true, false),
       *row_bases.at({node.level, node.abs_pos[1]}),
-      1, false ,true
+      1, false, true
     );
     out = LowRank(
       col_bases.at({node.level, node.abs_pos[0]}),
