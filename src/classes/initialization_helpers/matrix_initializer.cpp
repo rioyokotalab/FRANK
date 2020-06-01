@@ -88,6 +88,9 @@ LowRank MatrixInitializer::get_compressed_representation(
   } else if (basis_type == SHARED_BASIS) {
     if (col_bases.find({node.level, node.abs_pos[0]}) == col_bases.end()) {
       Dense row_block = make_block_row(node);
+      // TODO: The following line is probably copying right now as there is now
+      // Dense(Matrix&&) or Dense(MatrixProxy&&) constructor.
+      // TODO Consider making a unified syntax for OMM constructors.
       col_bases[{node.level, node.abs_pos[0]}] = std::make_shared<Dense>(
         std::move(LowRank(row_block, rank).U()));
     }
