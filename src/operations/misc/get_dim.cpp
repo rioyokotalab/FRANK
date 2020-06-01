@@ -4,7 +4,6 @@
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
-#include "hicma/classes/low_rank_shared.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/shared_basis.h"
 #include "hicma/util/omm_error_handler.h"
@@ -23,10 +22,6 @@ int64_t get_n_rows(const Matrix& A) { return get_n_rows_omm(A); }
 define_method(int64_t, get_n_rows_omm, (const Dense& A)) { return A.dim[0]; }
 
 define_method(int64_t, get_n_rows_omm, (const LowRank& A)) { return A.dim[0]; }
-
-define_method(int64_t, get_n_rows_omm, (const LowRankShared& A)) {
-  return A.dim[0];
-}
 
 define_method(int64_t, get_n_rows_omm, (const Hierarchical& A)) {
   int64_t n_rows = 0;
@@ -51,10 +46,6 @@ int64_t get_n_cols(const Matrix& A) { return get_n_cols_omm(A); }
 define_method(int64_t, get_n_cols_omm, (const Dense& A)) { return A.dim[1]; }
 
 define_method(int64_t, get_n_cols_omm, (const LowRank& A)) { return A.dim[1]; }
-
-define_method(int64_t, get_n_cols_omm, (const LowRankShared& A)) {
-  return A.dim[1];
-}
 
 define_method(int64_t, get_n_cols_omm, (const Hierarchical& A)) {
   int64_t n_cols = 0;

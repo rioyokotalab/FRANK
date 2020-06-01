@@ -17,7 +17,6 @@ list(
     "tlr_qr"
     "blr_qr"
     "h_lu"
-    "uh_lu"
     "h_qr"
     "rsvd"
 )

@@ -4,11 +4,9 @@
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
-#include "hicma/classes/low_rank_shared.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/no_copy_split.h"
 #include "hicma/classes/shared_basis.h"
-#include "hicma/classes/uniform_hierarchical.h"
 #include "hicma/operations/LAPACK.h"
 #include "hicma/util/omm_error_handler.h"
 
@@ -41,10 +39,6 @@ define_method(std::string, type_omm, ([[maybe_unused]] const LowRank& A)) {
   return "LowRank";
 }
 
-define_method(std::string, type_omm, ([[maybe_unused]] const LowRankShared& A)) {
-  return "LowRankShared";
-}
-
 define_method(std::string, type_omm, ([[maybe_unused]] const Hierarchical& A)) {
   return "Hierarchical";
 }
@@ -55,10 +49,6 @@ define_method(std::string, type_omm, ([[maybe_unused]] const NoCopySplit& A)) {
 
 define_method(std::string, type_omm, ([[maybe_unused]] const SharedBasis& A)) {
   return "SharedBasis";
-}
-
-define_method(std::string, type_omm, ([[maybe_unused]] const UniformHierarchical& A)) {
-  return "UniformHierarchical";
 }
 
 define_method(std::string, type_omm, (const Matrix& A)) {
@@ -106,28 +96,6 @@ define_method(
   void, fillXML_omm,
   (
     const LowRank& A, pt::ptree& tree,
-    int64_t i_abs, int64_t j_abs, int64_t level
-  )
-) {
-  Dense AD(A);
-  Dense S = get_singular_values(AD);
-  std::string singular_values = std::to_string(S[0]);
-  for (int64_t i=1; i<A.dim[0]; ++i)
-    singular_values += std::string(",") + std::to_string(S[i]);
-  tree.put("<xmlattr>.type", type(A));
-  tree.put("<xmlattr>.dim0", A.dim[0]);
-  tree.put("<xmlattr>.dim1", A.dim[1]);
-  tree.put("<xmlattr>.i_abs", i_abs);
-  tree.put("<xmlattr>.j_abs", j_abs);
-  tree.put("<xmlattr>.level", level);
-  tree.put("<xmlattr>.rank", A.rank);
-  tree.put("<xmlattr>.svalues", singular_values);
-}
-
-define_method(
-  void, fillXML_omm,
-  (
-    const LowRankShared& A, pt::ptree& tree,
     int64_t i_abs, int64_t j_abs, int64_t level
   )
 ) {

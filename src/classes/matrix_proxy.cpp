@@ -4,11 +4,9 @@
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
-#include "hicma/classes/low_rank_shared.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/no_copy_split.h"
 #include "hicma/classes/shared_basis.h"
-#include "hicma/classes/uniform_hierarchical.h"
 #include "hicma/util/omm_error_handler.h"
 
 #include "yorel/yomm2/cute.hpp"
@@ -54,11 +52,6 @@ define_method(std::unique_ptr<Matrix>, clone, (const Dense& A)) {
 define_method(std::unique_ptr<Matrix>, clone, (const LowRank& A)) {
   return std::make_unique<LowRank>(A);
 }
-
-define_method(std::unique_ptr<Matrix>, clone, (const LowRankShared& A)) {
-  return std::make_unique<LowRankShared>(A);
-}
-
 define_method(std::unique_ptr<Matrix>, clone, (const Hierarchical& A)) {
   return std::make_unique<Hierarchical>(A);
 }
@@ -69,10 +62,6 @@ define_method(std::unique_ptr<Matrix>, clone, (const NoCopySplit& A)) {
 
 define_method(std::unique_ptr<Matrix>, clone, (const SharedBasis& A)) {
   return std::make_unique<SharedBasis>(A);
-}
-
-define_method(std::unique_ptr<Matrix>, clone, (const UniformHierarchical& A)) {
-  return std::make_unique<UniformHierarchical>(A);
 }
 
 define_method(std::unique_ptr<Matrix>, clone, (const Matrix& A)) {
@@ -88,10 +77,6 @@ define_method(std::unique_ptr<Matrix>, move_clone, (LowRank&& A)) {
   return std::make_unique<LowRank>(std::move(A));
 }
 
-define_method(std::unique_ptr<Matrix>, move_clone, (LowRankShared&& A)) {
-  return std::make_unique<LowRankShared>(std::move(A));
-}
-
 define_method(std::unique_ptr<Matrix>, move_clone, (Hierarchical&& A)) {
   return std::make_unique<Hierarchical>(std::move(A));
 }
@@ -102,10 +87,6 @@ define_method(std::unique_ptr<Matrix>, move_clone, (NoCopySplit&& A)) {
 
 define_method(std::unique_ptr<Matrix>, move_clone, (SharedBasis&& A)) {
   return std::make_unique<SharedBasis>(std::move(A));
-}
-
-define_method(std::unique_ptr<Matrix>, move_clone, (UniformHierarchical&& A)) {
-  return std::make_unique<UniformHierarchical>(std::move(A));
 }
 
 define_method(std::unique_ptr<Matrix>, move_clone, (Matrix&& A)) {

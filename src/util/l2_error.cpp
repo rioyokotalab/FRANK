@@ -4,7 +4,6 @@
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
-#include "hicma/classes/low_rank_shared.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/no_copy_split.h"
 #include "hicma/operations/arithmetic.h"
@@ -93,37 +92,6 @@ define_method(
   } else {
     return collect_diff_norm_omm(Dense(A), Dense(B));
   }
-}
-
-define_method(
-  DoublePair, collect_diff_norm_omm, (const Dense& A, const LowRankShared& B)
-) {
-  return collect_diff_norm_omm(A, Dense(B));
-}
-
-define_method(
-  DoublePair, collect_diff_norm_omm, (const LowRankShared& A, const Dense& B)
-) {
-  return collect_diff_norm_omm(Dense(A), B);
-}
-
-define_method(
-  DoublePair, collect_diff_norm_omm, (const LowRank& A, const LowRankShared& B)
-) {
-  return collect_diff_norm_omm(Dense(A), Dense(B));
-}
-
-define_method(
-  DoublePair, collect_diff_norm_omm, (const LowRankShared& A, const LowRank& B)
-) {
-  return collect_diff_norm_omm(Dense(A), Dense(B));
-}
-
-define_method(
-  DoublePair, collect_diff_norm_omm,
-  (const LowRankShared& A, const LowRankShared& B)
-) {
-  return collect_diff_norm_omm(Dense(A), Dense(B));
 }
 
 define_method(

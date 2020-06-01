@@ -1,5 +1,6 @@
 #include "hicma/hicma.h"
 
+#include <cassert>
 #include <cstdint>
 #include <tuple>
 #include <vector>
@@ -14,10 +15,13 @@ int main(int argc, char** argv) {
   int64_t rank = argc > 3 ? atoi(argv[3]) : 8;
   int64_t nblocks = argc > 4 ? atoi(argv[4]) : 2;
   int64_t admis = argc > 5 ? atoi(argv[5]) : 0;
+  int64_t basis = argc > 6 ? atoi(argv[6]) : 0;
+  assert(basis == NORMAL_BASIS || basis == SHARED_BASIS);
   std::vector<std::vector<double>> randx{get_sorted_random_vector(N)};
   timing::start("Init matrix");
   timing::start("CPU compression");
-  Hierarchical A(laplacend, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
+  Hierarchical A(
+    laplacend, randx, N, N, rank, nleaf, admis, nblocks, nblocks, basis);
   timing::stop("CPU compression");
   rsvd_batch();
   // printXML(A);
