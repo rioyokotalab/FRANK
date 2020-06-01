@@ -139,6 +139,16 @@ define_method(
 define_method(
   void, gemm_omm,
   (
+    const SharedBasis& A, const SharedBasis& B, Matrix& C,
+    double alpha, double beta
+  )
+) {
+  gemm(*A.get_ptr(), *B.get_ptr(), C, alpha, beta);
+}
+
+define_method(
+  void, gemm_omm,
+  (
     const SharedBasis& A, const Matrix& B, Matrix& C,
     double alpha, double beta
   )
@@ -681,6 +691,16 @@ define_method(
   Dense out(A.dim[TransA ? 1 : 0], B.dim[TransB ? 0 : 1]);
   gemm(A, B, out, TransA, TransB, alpha, 0);
   return out;
+}
+
+define_method(
+  Dense, gemm_omm,
+  (
+    const SharedBasis& A, const SharedBasis& B,
+    double alpha, bool TransA, bool TransB
+  )
+) {
+  return gemm(*A.get_ptr(), *B.get_ptr(), alpha, TransA, TransB);
 }
 
 define_method(

@@ -37,6 +37,8 @@ class SharedBasis : public Matrix {
   std::shared_ptr<Dense> get_ptr() const;
 };
 
+bool is_shared(const Matrix& A, const Matrix& B);
+
 } // namespace hicma
 
 #endif // hicma_classes_shared_basis_h

@@ -37,9 +37,15 @@ class BasisCopyTracker {
   // Utility methods
   LowRank tracked_copy(const LowRank& A);
 
+  MatrixProxy tracked_copy(const MatrixProxy& A);
+
   bool has_col_basis(const Matrix& A) const;
 
   bool has_row_basis(const Matrix& A) const;
+
+  void register_col_basis(const Matrix& A);
+
+  void register_row_basis(const Matrix& A);
 };
 
 } // namespace hicma

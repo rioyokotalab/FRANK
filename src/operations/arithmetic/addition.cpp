@@ -8,6 +8,7 @@
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
 #include "hicma/classes/no_copy_split.h"
+#include "hicma/classes/shared_basis.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/LAPACK.h"
 #include "hicma/operations/arithmetic.h"
@@ -151,6 +152,14 @@ define_method(Matrix&, addition_omm, (LowRank& A, const LowRank& B)) {
   assert(A.dim[0] == B.dim[0]);
   assert(A.dim[1] == B.dim[1]);
   assert(A.rank == B.rank);
+  if (is_shared(A.U(), B.U()) && is_shared(A.V(), B.V())) {
+    A.S() += B.S();
+    return A;
+  } else if (is_shared(A.U(), B.U()) != is_shared(A.V(), B.V())) {
+    // TODO Not implemented for semi-shared basis (strong admissiblity requires
+    // this!)
+    abort();
+  }
   if (getCounter("LR_ADDITION_COUNTER") == 1) updateCounter("LR-addition", 1);
   if (getCounter("LRA") == 0) {
     //Truncate and Recompress if rank > min(nrow, ncol)

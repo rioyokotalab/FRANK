@@ -114,7 +114,7 @@ define_method(void, trsm_omm, (const Dense& A, Dense& B, int uplo, int lr)) {
 }
 
 define_method(
-  void, trsm_omm, (const Dense& A, SharedBasis& B, int uplo, int lr)
+  void, trsm_omm, (const Matrix& A, SharedBasis& B, int uplo, int lr)
 ) {
   trsm(A, *B.get_ptr(), uplo, lr);
 }
@@ -166,10 +166,18 @@ define_method(
   // If applied, do nothing
   switch (lr) {
   case TRSM_LEFT:
-    if (tracker.has_col_basis(B.U())) return;
+    if (tracker.has_col_basis(B.U())) {
+      return;
+    } else {
+      tracker.register_col_basis(B.U());
+    }
     break;
   case TRSM_RIGHT:
-    if (tracker.has_row_basis(B.V())) return;
+    if (tracker.has_row_basis(B.V())) {
+      return;
+    } else {
+      tracker.register_row_basis(B.V());
+    }
     break;
   }
   // If not applied, use regular trsm to apply
