@@ -86,30 +86,17 @@ define_method(
 
 define_method(void, trsm_omm, (const Dense& A, Dense& B, int uplo, int lr)) {
   timing::start("DTRSM");
-  switch (uplo) {
-  case TRSM_UPPER:
-    cblas_dtrsm(
-      CblasRowMajor,
-      lr==TRSM_LEFT?CblasLeft:CblasRight, CblasUpper,
-      CblasNoTrans, CblasNonUnit,
-      B.dim[0], B.dim[1],
-      1,
-      &A, A.stride,
-      &B, B.stride
-    );
-    break;
-  case TRSM_LOWER:
-    cblas_dtrsm(
-      CblasRowMajor,
-      lr==TRSM_LEFT?CblasLeft:CblasRight, CblasLower,
-      CblasNoTrans, CblasUnit,
-      B.dim[0], B.dim[1],
-      1,
-      &A, A.stride,
-      &B, B.stride
-    );
-    break;
-  }
+  cblas_dtrsm(
+    CblasRowMajor,
+    lr==TRSM_LEFT?CblasLeft:CblasRight,
+    uplo==TRSM_UPPER?CblasUpper:CblasLower,
+    CblasNoTrans,
+    uplo==TRSM_UPPER?CblasNonUnit:CblasUnit,
+    B.dim[0], B.dim[1],
+    1,
+    &A, A.stride,
+    &B, B.stride
+  );
   timing::stop("DTRSM");
 }
 
@@ -120,13 +107,12 @@ define_method(
 }
 
 define_method(void, trsm_omm, (const Matrix& A, LowRank& B, int uplo, int lr)) {
-  // TODO Wrong if check? Should probably check on LEFT or RIGHT!
-  switch (uplo) {
-  case TRSM_UPPER:
-    trsm(A, B.V(), uplo, lr);
-    break;
-  case TRSM_LOWER:
+  switch (lr) {
+  case TRSM_LEFT:
     trsm(A, B.U(), uplo, lr);
+    break;
+  case TRSM_RIGHT:
+    trsm(A, B.V(), uplo, lr);
     break;
   }
 }
@@ -136,14 +122,7 @@ define_method(
   (const Hierarchical& A, Dense& B, int uplo, int lr)
 ) {
   NoCopySplit BH(B, lr==TRSM_LEFT?A.dim[0]:1, lr==TRSM_LEFT?1:A.dim[1]);
-  switch (uplo) {
-  case TRSM_UPPER:
-    trsm(A, BH, uplo, lr);
-    break;
-  case TRSM_LOWER:
-    trsm(A, BH, uplo, lr);
-    break;
-  }
+  trsm(A, BH, uplo, lr);
 }
 
 // Fallback default, abort with error message
