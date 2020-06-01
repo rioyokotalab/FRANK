@@ -109,10 +109,10 @@ define_method(
 define_method(void, trsm_omm, (const Matrix& A, LowRank& B, int uplo, int lr)) {
   switch (lr) {
   case TRSM_LEFT:
-    trsm(A, B.U(), uplo, lr);
+    trsm(A, B.U, uplo, lr);
     break;
   case TRSM_RIGHT:
-    trsm(A, B.V(), uplo, lr);
+    trsm(A, B.V, uplo, lr);
     break;
   }
 }
@@ -145,17 +145,17 @@ define_method(
   // If applied, do nothing
   switch (lr) {
   case TRSM_LEFT:
-    if (tracker.has_col_basis(B.U())) {
+    if (tracker.has_col_basis(B.U)) {
       return;
     } else {
-      tracker.register_col_basis(B.U());
+      tracker.register_col_basis(B.U);
     }
     break;
   case TRSM_RIGHT:
-    if (tracker.has_row_basis(B.V())) {
+    if (tracker.has_row_basis(B.V)) {
       return;
     } else {
-      tracker.register_row_basis(B.V());
+      tracker.register_row_basis(B.V);
     }
     break;
   }

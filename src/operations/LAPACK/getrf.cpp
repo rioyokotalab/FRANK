@@ -34,7 +34,7 @@ declare_method(void, decuple_col_basis, (virtual_<Matrix&>, BasisCopyTracker&))
 
 define_method(void, decuple_col_basis, (LowRank& A, BasisCopyTracker& tracker)) {
   timing::start("decoupling");
-  A.U() = tracker.tracked_copy(A.U());
+  A.U = tracker.tracked_copy(A.U);
   timing::stop("decoupling");
 }
 
@@ -46,7 +46,7 @@ declare_method(void, decuple_row_basis, (virtual_<Matrix&>, BasisCopyTracker&))
 
 define_method(void, decuple_row_basis, (LowRank& A, BasisCopyTracker& tracker)) {
   timing::start("decoupling");
-  A.V() = tracker.tracked_copy(A.V());
+  A.V = tracker.tracked_copy(A.V);
   timing::stop("decoupling");
 }
 

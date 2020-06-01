@@ -36,13 +36,13 @@ define_method(void, tpqrt_omm, (Dense& A, Dense& B, Dense& T)) {
 }
 
 define_method(void, tpqrt_omm, (Dense& A, LowRank& B, Dense& T)) {
-  Dense BV_copy(B.V());
-  B.V() = gemm(B.S(), B.V());
-  B.S() = 0.0;
-  for(int64_t i = 0; i < std::min(B.S().dim[0], B.S().dim[1]); i++) {
-    B.S()(i, i) = 1.0;
+  Dense BV_copy(B.V);
+  B.V = gemm(B.S, B.V);
+  B.S = 0.0;
+  for(int64_t i = 0; i < std::min(B.S.dim[0], B.S.dim[1]); i++) {
+    B.S(i, i) = 1.0;
   }
-  tpqrt(A, B.V(), T);
+  tpqrt(A, B.V, T);
 }
 
 define_method(

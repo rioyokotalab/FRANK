@@ -176,11 +176,11 @@ define_method(void, print_omm, (const Dense& A)) {
 
 define_method(void, print_omm, (const LowRank& A)) {
   std::cout << "U : --------------------------------------" << std::endl;
-  print(A.U());
+  print(A.U);
   std::cout << "S : --------------------------------------" << std::endl;
-  print(A.S());
+  print(A.S);
   std::cout << "V : --------------------------------------" << std::endl;
-  print(A.V());
+  print(A.V);
   print_separation_line();
 }
 

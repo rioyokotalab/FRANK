@@ -92,12 +92,12 @@ LowRank MatrixInitializer::get_compressed_representation(
       // Dense(Matrix&&) or Dense(MatrixProxy&&) constructor.
       // TODO Consider making a unified syntax for OMM constructors.
       col_bases[{node.level, node.abs_pos[0]}] = std::make_shared<Dense>(
-        std::move(LowRank(row_block, rank).U()));
+        std::move(LowRank(row_block, rank).U));
     }
     if (row_bases.find({node.level, node.abs_pos[1]}) == row_bases.end()) {
       Dense col_block = make_block_col(node);
       row_bases[{node.level, node.abs_pos[1]}] = std::make_shared<Dense>(
-        std::move(LowRank(col_block, rank).V()));
+        std::move(LowRank(col_block, rank).V));
     }
     Dense D = get_dense_representation(node);
     Dense S = gemm(

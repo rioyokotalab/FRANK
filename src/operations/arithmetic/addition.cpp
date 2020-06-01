@@ -43,7 +43,7 @@ define_method(Matrix&, addition_omm, (Dense& A, const Dense& B)) {
 }
 
 define_method(Matrix&, addition_omm, (Dense& A, const LowRank& B)) {
-  gemm(gemm(B.U(), B.S()), B.V(), A, 1, 1);
+  gemm(gemm(B.U, B.S), B.V, A, 1, 1);
   return A;
 }
 
@@ -152,10 +152,10 @@ define_method(Matrix&, addition_omm, (LowRank& A, const LowRank& B)) {
   assert(A.dim[0] == B.dim[0]);
   assert(A.dim[1] == B.dim[1]);
   assert(A.rank == B.rank);
-  if (is_shared(A.U(), B.U()) && is_shared(A.V(), B.V())) {
-    A.S() += B.S();
+  if (is_shared(A.U, B.U) && is_shared(A.V, B.V)) {
+    A.S += B.S;
     return A;
-  } else if (is_shared(A.U(), B.U()) != is_shared(A.V(), B.V())) {
+  } else if (is_shared(A.U, B.U) != is_shared(A.V, B.V)) {
     // TODO Not implemented for semi-shared basis (strong admissiblity requires
     // this!)
     abort();
@@ -171,9 +171,9 @@ define_method(Matrix&, addition_omm, (LowRank& A, const LowRank& B)) {
       C.mergeS(A, B);
       C.mergeV(A, B);
       A.rank += B.rank;
-      A.U() = std::move(C.U());
-      A.S() = std::move(C.S());
-      A.V() = std::move(C.V());
+      A.U = std::move(C.U);
+      A.S = std::move(C.S);
+      A.V = std::move(C.V);
     }
   } else if (getCounter("LRA") == 1) {
     //Bebendorf HMatrix Book p16
@@ -183,20 +183,20 @@ define_method(Matrix&, addition_omm, (LowRank& A, const LowRank& B)) {
     C.mergeS(A, B);
     C.mergeV(A, B);
 
-    // TODO No need to save C.U() first, just do two opertions and save into a
+    // TODO No need to save C.U first, just do two opertions and save into a
     // Hierarchical
-    C.U() = gemm(C.U(), C.S());
+    C.U = gemm(C.U, C.S);
 
-    Dense Qu(get_n_rows(C.U()), get_n_cols(C.U()));
-    Dense Ru(get_n_cols(C.U()), get_n_cols(C.U()));
-    qr(C.U(), Qu, Ru);
+    Dense Qu(get_n_rows(C.U), get_n_cols(C.U));
+    Dense Ru(get_n_cols(C.U), get_n_cols(C.U));
+    qr(C.U, Qu, Ru);
 
     // TODO Probably better to do RQ decomposition (maybe make hierarchical
     // version and avoid copies?)
-    transpose(C.V());
-    Dense Qv(get_n_rows(C.V()), get_n_cols(C.V()));
-    Dense Rv(get_n_cols(C.V()), get_n_cols(C.V()));
-    qr(C.V(), Qv, Rv);
+    transpose(C.V);
+    Dense Qv(get_n_rows(C.V), get_n_cols(C.V));
+    Dense Rv(get_n_cols(C.V), get_n_cols(C.V));
+    qr(C.V, Qv, Rv);
 
     Dense RuRvT = gemm(Ru, Rv, 1, false, true);
 
@@ -204,11 +204,11 @@ define_method(Matrix&, addition_omm, (LowRank& A, const LowRank& B)) {
     std::tie(RRU, RRS, RRV) = svd(RuRvT);
 
     RRS.resize(A.rank, A.rank);
-    A.S() = std::move(RRS);
+    A.S = std::move(RRS);
     RRU.resize(RRU.dim[0], A.rank);
-    gemm(Qu, RRU, A.U(), 1, 0);
+    gemm(Qu, RRU, A.U, 1, 0);
     RRV.resize(A.rank, RRV.dim[1]);
-    gemm(RRV, Qv, A.V(), false, true, 1, 0);
+    gemm(RRV, Qv, A.V, false, true, 1, 0);
   } else {
     //Bebendorf HMatrix Book p17
     //Rounded addition by exploiting orthogonality
@@ -217,29 +217,29 @@ define_method(Matrix&, addition_omm, (LowRank& A, const LowRank& B)) {
     timing::start("Merge col basis");
     Hierarchical OuterU(1, 2);
     Dense InnerU;
-    std::tie(OuterU[1], InnerU) = merge_col_basis(A.U(), B.U());
-    OuterU[0] = std::move(A.U());
+    std::tie(OuterU[1], InnerU) = merge_col_basis(A.U, B.U);
+    OuterU[0] = std::move(A.U);
     timing::stop("Merge col basis");
 
     timing::start("Merge row basis");
     Hierarchical OuterV(2, 1);
     Dense InnerVt;
-    std::tie(OuterV[1], InnerVt) = merge_row_basis(A.V(), B.V());
-    OuterV[0] = std::move(A.V());
+    std::tie(OuterV[1], InnerVt) = merge_row_basis(A.V, B.V);
+    OuterV[0] = std::move(A.V);
     timing::stop("Merge row basis");
 
     timing::start("Merge S");
     Dense Uhat, Vhat;
-    std::tie(Uhat, A.S(), Vhat) = merge_S(A.S(), B.S(), InnerU, InnerVt);
+    std::tie(Uhat, A.S, Vhat) = merge_S(A.S, B.S, InnerU, InnerVt);
     timing::stop("Merge S");
 
     // Restore moved-from U and V and finalize basis
     // TODO Find a way to use more convenient D=gemm(D, D) here?
     // Restore moved-from U and V and finalize basis
-    A.U() = Dense(A.dim[0], A.rank);
-    A.V() = Dense(A.rank, A.dim[1]);
-    gemm(OuterU, Uhat, A.U(), 1, 0);
-    gemm(Vhat, OuterV, A.V(), 1, 0);
+    A.U = Dense(A.dim[0], A.rank);
+    A.V = Dense(A.rank, A.dim[1]);
+    gemm(OuterU, Uhat, A.U, 1, 0);
+    gemm(Vhat, OuterV, A.V, 1, 0);
 
     timing::stop("LR += LR");
   }

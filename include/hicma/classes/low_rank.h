@@ -13,10 +13,9 @@ namespace hicma
 {
 
 class LowRank : public Matrix {
- private:
-  MatrixProxy _U, _V;
-  Dense _S;
  public:
+  MatrixProxy U, V;
+  Dense S;
   std::array<int64_t, 2> dim = {0, 0};
   int64_t rank = 0;
 
@@ -32,16 +31,6 @@ class LowRank : public Matrix {
   LowRank(LowRank&& A) = default;
 
   LowRank& operator=(LowRank&& A) = default;
-
-  // Getters and setters
-  MatrixProxy& U();
-  const MatrixProxy& U() const;
-
-  Dense& S();
-  const Dense& S() const;
-
-  MatrixProxy& V();
-  const MatrixProxy& V() const;
 
   // Additional constructors
   LowRank(int64_t n_rows, int64_t n_cols, int64_t k);

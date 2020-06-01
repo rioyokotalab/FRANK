@@ -40,9 +40,9 @@ define_method(
   (const LowRank& A, bool include_structure)
 ) {
   unsigned long memory_usage = 0;
-  memory_usage += get_memory_usage(A.U(), include_structure);
-  memory_usage += get_memory_usage(A.S(), include_structure);
-  memory_usage += get_memory_usage(A.V(), include_structure);
+  memory_usage += get_memory_usage(A.U, include_structure);
+  memory_usage += get_memory_usage(A.S, include_structure);
+  memory_usage += get_memory_usage(A.V, include_structure);
   if (include_structure) {
     memory_usage += sizeof(LowRank) - 3*sizeof(Dense);
   }

@@ -154,14 +154,14 @@ define_method(DensePair, make_left_orthogonal_omm, (const Dense& A)) {
 }
 
 define_method(DensePair, make_left_orthogonal_omm, (const LowRank& A)) {
-  Dense Au(A.U());
-  Dense Qu(get_n_rows(A.U()), get_n_cols(A.U()));
-  Dense Ru(get_n_cols(A.U()), get_n_cols(A.U()));
+  Dense Au(A.U);
+  Dense Qu(get_n_rows(A.U), get_n_cols(A.U));
+  Dense Ru(get_n_cols(A.U), get_n_cols(A.U));
   qr(Au, Qu, Ru);
-  Dense RS(Ru.dim[0], A.S().dim[1]);
-  gemm(Ru, A.S(), RS, 1, 1);
-  Dense RSV(RS.dim[0], get_n_cols(A.V()));
-  gemm(RS, A.V(), RSV, 1, 1);
+  Dense RS(Ru.dim[0], A.S.dim[1]);
+  gemm(Ru, A.S, RS, 1, 1);
+  Dense RSV(RS.dim[0], get_n_cols(A.V));
+  gemm(RS, A.V, RSV, 1, 1);
   return {std::move(Qu), std::move(RSV)};
 }
 
@@ -206,11 +206,11 @@ define_method(
   (const LowRank& A, Hierarchical& storage, int64_t& currentRow)
 ) {
   LowRank _A(A);
-  Dense Qu(get_n_rows(_A.U()), get_n_cols(_A.U()));
-  Dense Ru(get_n_cols(_A.U()), get_n_cols(_A.U()));
-  qr(_A.U(), Qu, Ru);
-  Dense RS = gemm(Ru, _A.S());
-  Dense RSV = gemm(RS, _A.V());
+  Dense Qu(get_n_rows(_A.U), get_n_cols(_A.U));
+  Dense Ru(get_n_cols(_A.U), get_n_cols(_A.U));
+  qr(_A.U, Qu, Ru);
+  Dense RS = gemm(Ru, _A.S);
+  Dense RSV = gemm(RS, _A.V);
   //Split R*S*V
   Hierarchical splitted(RSV, 1, storage.dim[1]);
   for(int64_t i=0; i<storage.dim[1]; i++) {
@@ -281,9 +281,9 @@ define_method(
   assert(concatenatedRow.dim[0] == A.rank);
   assert(concatenatedRow.dim[1] == A.dim[1]);
   LowRank _A(A.dim[0], A.dim[1], A.rank);
-  _A.U() = Q;
-  _A.V() = concatenatedRow;
-  _A.S() = Dense(
+  _A.U = Q;
+  _A.V = concatenatedRow;
+  _A.S = Dense(
     identity, std::vector<std::vector<double>>(), _A.rank, _A.rank);
   currentRow++;
   return _A;
@@ -343,14 +343,14 @@ define_method(void, zero_whole_omm, (Dense& A)) {
 }
 
 define_method(void, zero_whole_omm, (LowRank& A)) {
-  A.U() = Dense(
+  A.U = Dense(
     identity, std::vector<std::vector<double>>(),
-    get_n_rows(A.U()), get_n_cols(A.U())
+    get_n_rows(A.U), get_n_cols(A.U)
   );
-  A.S() = 0.0;
-  A.V() = Dense(
+  A.S = 0.0;
+  A.V = Dense(
     identity, std::vector<std::vector<double>>(),
-    get_n_rows(A.V()), get_n_cols(A.U())
+    get_n_rows(A.V), get_n_cols(A.U)
   );
 }
 
