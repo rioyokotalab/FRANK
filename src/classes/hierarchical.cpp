@@ -29,7 +29,7 @@ using yorel::yomm2::virtual_;
 namespace hicma
 {
 
-Hierarchical::Hierarchical(const Hierarchical& A) {
+Hierarchical::Hierarchical(const Hierarchical& A) : Matrix(A) {
   BasisCopyTracker tracker;
   *this = Hierarchical(A, tracker);
 }
