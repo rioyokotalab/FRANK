@@ -2,8 +2,11 @@
 #include "hicma/extension_headers/classes.h"
 
 #include "hicma/classes/dense.h"
+#include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
+#include "hicma/classes/shared_basis.h"
 #include "hicma/operations/LAPACK.h"
+#include "hicma/util/omm_error_handler.h"
 
 #include <algorithm>
 #include <cassert>
@@ -80,6 +83,52 @@ MatrixProxy get_part(
 ) {
   return get_part_omm(
     A, node.dim[0], node.dim[1], node.start[0], node.start[1], copy);
+}
+
+define_method(
+  MatrixProxy, get_part_omm,
+  (
+    const Dense& A,
+    int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start,
+    bool copy
+  )
+) {
+  return Dense(A, n_rows, n_cols, row_start, col_start, copy);
+}
+
+define_method(
+  MatrixProxy, get_part_omm,
+  (
+    const SharedBasis& A,
+    int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start,
+    bool copy
+  )
+) {
+  return get_part(*A.get_ptr(), n_rows, n_cols, row_start, col_start, copy);
+}
+
+define_method(
+  MatrixProxy, get_part_omm,
+  (
+    const LowRank& A,
+    int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start,
+    bool copy
+  )
+) {
+  return LowRank(A, n_rows, n_cols, row_start, col_start, copy);
+}
+
+define_method(
+  MatrixProxy, get_part_omm,
+  (
+    const Matrix& A,
+    [[maybe_unused]] int64_t n_rows, [[maybe_unused]] int64_t n_cols,
+    [[maybe_unused]] int64_t row_start, [[maybe_unused]] int64_t col_start,
+    [[maybe_unused]] bool copy
+  )
+) {
+  omm_error_handler("get_part", {A}, __FILE__, __LINE__);
+  std::abort();
 }
 
 } // namespace hicma

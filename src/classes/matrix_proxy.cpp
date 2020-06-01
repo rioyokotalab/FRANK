@@ -5,7 +5,6 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
-#include "hicma/classes/no_copy_split.h"
 #include "hicma/classes/shared_basis.h"
 #include "hicma/util/omm_error_handler.h"
 
@@ -22,9 +21,6 @@ namespace hicma
 
 // Reconsider these constructors. Performance testing needed!!
 MatrixProxy::MatrixProxy(const MatrixProxy& A) : ptr(clone(A)) {}
-
-// TODO This might not play nice with NoCopySplit (pointer replacing doesn't cut
-// it!). Consider MatrixProxyView?
 MatrixProxy& MatrixProxy::operator=(const MatrixProxy& A) {
   ptr = clone(A);
   return *this;
@@ -56,10 +52,6 @@ define_method(std::unique_ptr<Matrix>, clone, (const Hierarchical& A)) {
   return std::make_unique<Hierarchical>(A);
 }
 
-define_method(std::unique_ptr<Matrix>, clone, (const NoCopySplit& A)) {
-  return std::make_unique<NoCopySplit>(A);
-}
-
 define_method(std::unique_ptr<Matrix>, clone, (const SharedBasis& A)) {
   return std::make_unique<SharedBasis>(A);
 }
@@ -81,9 +73,6 @@ define_method(std::unique_ptr<Matrix>, move_clone, (Hierarchical&& A)) {
   return std::make_unique<Hierarchical>(std::move(A));
 }
 
-define_method(std::unique_ptr<Matrix>, move_clone, (NoCopySplit&& A)) {
-  return std::make_unique<NoCopySplit>(std::move(A));
-}
 
 define_method(std::unique_ptr<Matrix>, move_clone, (SharedBasis&& A)) {
   return std::make_unique<SharedBasis>(std::move(A));

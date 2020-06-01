@@ -7,7 +7,6 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
-#include "hicma/classes/no_copy_split.h"
 #include "hicma/classes/shared_basis.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/LAPACK.h"
@@ -48,7 +47,7 @@ define_method(Matrix&, addition_omm, (Dense& A, const LowRank& B)) {
 }
 
 define_method(Matrix&, addition_omm, (Hierarchical& A, const LowRank& B)) {
-  NoCopySplit BH(B, A.dim[0], A.dim[1]);
+  Hierarchical BH(B, A.dim[0], A.dim[1], false);
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {
       A(i, j) += BH(i, j);
@@ -69,7 +68,7 @@ define_method(DensePair, merge_col_basis, (const Dense& U, const Dense& Au)) {
   assert(Arank == Brank);
 
   Dense InnerU(Arank+Brank, Brank);
-  NoCopySplit InnerH(InnerU, 2, 1);
+  Hierarchical InnerH(InnerU, 2, 1, false);
   gemm(U, Au, InnerH[0], true, false, 1, 0);
 
   // TODO This copy has significant cost. Avoidable?
@@ -102,7 +101,7 @@ define_method(
   assert(Arank == Brank);
 
   Dense InnerV(Brank, Arank+Brank);
-  NoCopySplit InnerH(InnerV, 1, 2);
+  Hierarchical InnerH(InnerV, 1, 2, false);
   gemm(Av, V, InnerH[0], false, true, 1, 0);
 
   // TODO This copy has significant cost. Avoidable?

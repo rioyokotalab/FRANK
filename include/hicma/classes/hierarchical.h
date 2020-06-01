@@ -40,7 +40,11 @@ class Hierarchical : public Matrix {
   // Conversion constructors
   Hierarchical(MatrixProxy&&);
 
-  Hierarchical(const Matrix& A, int64_t n_row_blocks, int64_t n_col_blocks);
+  Hierarchical(
+    const Matrix& A, int64_t n_row_blocks, int64_t n_col_blocks, bool copy=true
+  );
+
+  Hierarchical(const Matrix& A, const Hierarchical& like, bool copy=true);
 
   // Additional constructors
   Hierarchical(const Hierarchical& A, BasisCopyTracker& tracker);

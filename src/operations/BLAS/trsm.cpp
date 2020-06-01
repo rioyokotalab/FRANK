@@ -5,7 +5,6 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
-#include "hicma/classes/no_copy_split.h"
 #include "hicma/classes/shared_basis.h"
 #include "hicma/classes/intitialization_helpers/basis_copy_tracker.h"
 #include "hicma/util/omm_error_handler.h"
@@ -121,7 +120,7 @@ define_method(
   void, trsm_omm,
   (const Hierarchical& A, Dense& B, int uplo, int lr)
 ) {
-  NoCopySplit BH(B, lr==TRSM_LEFT?A.dim[0]:1, lr==TRSM_LEFT?1:A.dim[1]);
+  Hierarchical BH(B, lr==TRSM_LEFT?A.dim[0]:1, lr==TRSM_LEFT?1:A.dim[1], false);
   trsm(A, BH, uplo, lr);
 }
 

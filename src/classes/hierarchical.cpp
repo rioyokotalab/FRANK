@@ -84,43 +84,23 @@ define_method(Hierarchical&&, move_from_hierarchical, (Matrix& A)) {
 }
 
 Hierarchical::Hierarchical(
-  const Matrix& A, int64_t n_row_blocks, int64_t n_col_blocks
+  const Matrix& A, int64_t n_row_blocks, int64_t n_col_blocks, bool copy
 ) : dim{n_row_blocks, n_col_blocks}, data(dim[0]*dim[1])
 {
   ClusterTree node(get_n_rows(A), get_n_cols(A), dim[0], dim[1]);
-  split_into_hierarchical(*this, A, node);
-}
-
-define_method(
-  void, split_into_hierarchical,
-  (Hierarchical& H, const Dense& A, const ClusterTree& node)
-) {
-  timing::start("split_into_hierarchical(D)");
   for (const ClusterTree& child : node) {
-    H[child] = get_part(
-      A, child.dim[0], child.dim[1], child.start[0], child.start[1], true);
+    (*this)[child] = get_part(A, child, copy);
   }
-  timing::stop("split_into_hierarchical(D)");
 }
 
-define_method(
-  void, split_into_hierarchical,
-  (Hierarchical& H, const LowRank& A, const ClusterTree& node)
-) {
-  timing::start("split_into_hierarchical(LR)");
+Hierarchical::Hierarchical(const Matrix& A, const Hierarchical& like, bool copy)
+: dim(like.dim), data(dim[0]*dim[1]) {
+  assert(get_n_rows(A) == get_n_rows(like));
+  assert(get_n_cols(A) == get_n_cols(like));
+  ClusterTree node(like);
   for (const ClusterTree& child : node) {
-    H[child] = get_part(
-      A, child.dim[0], child.dim[1], child.start[0], child.start[1], true);
+    (*this)[child] = get_part(A, child, copy);
   }
-  timing::stop("split_into_hierarchical(LR)");
-}
-
-define_method(
-  void, split_into_hierarchical,
-  (Hierarchical& H, const Matrix& A, [[maybe_unused]] const ClusterTree& node)
-) {
-  omm_error_handler("split_into_hierarchical", {H, A}, __FILE__, __LINE__);
-  std::abort();
 }
 
 Hierarchical::Hierarchical(int64_t n_row_blocks, int64_t n_col_blocks)

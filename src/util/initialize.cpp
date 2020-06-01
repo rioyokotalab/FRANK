@@ -13,7 +13,6 @@ register_class(Matrix)
 register_class(Dense, Matrix)
 register_class(LowRank, Matrix)
 register_class(Hierarchical, Matrix)
-register_class(NoCopySplit, Hierarchical)
 register_class(SharedBasis, Matrix)
 
 void initialize() {

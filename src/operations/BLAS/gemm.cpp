@@ -5,7 +5,6 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
-#include "hicma/classes/no_copy_split.h"
 #include "hicma/classes/shared_basis.h"
 #include "hicma/gpu_batch/batch.h"
 #include "hicma/operations/arithmetic.h"
@@ -320,8 +319,8 @@ define_method(
     double alpha, double beta
   )
 ) {
-  NoCopySplit AH(A, C.dim[0], 1);
-  NoCopySplit BH(B, 1, C.dim[1]);
+  Hierarchical AH(A, C.dim[0], 1, false);
+  Hierarchical BH(B, 1, C.dim[1], false);
   gemm(AH, BH, C, alpha, beta);
 }
 
@@ -346,7 +345,7 @@ define_method(
   )
 ) {
   assert(A.dim[0] == C.dim[0]);
-  NoCopySplit BH(B, A.dim[1], C.dim[1]);
+  Hierarchical BH(B, A.dim[1], C.dim[1], false);
   gemm(A, BH, C, alpha, beta);
 }
 
@@ -358,7 +357,7 @@ define_method(
   )
 ) {
   assert(A.dim[0] == C.dim[0]);
-  NoCopySplit BH(B, A.dim[1], C.dim[1]);
+  Hierarchical BH(B, A.dim[1], C.dim[1], false);
   gemm(A, BH, C, alpha, beta);
 }
 
@@ -370,7 +369,7 @@ define_method(
   )
 ) {
   assert(B.dim[1] == C.dim[1]);
-  NoCopySplit AH(A, C.dim[0], B.dim[0]);
+  Hierarchical AH(A, C.dim[0], B.dim[0], false);
   gemm(AH, B, C, alpha, beta);
 }
 
@@ -382,7 +381,7 @@ define_method(
   )
 ) {
   assert(B.dim[1] == C.dim[1]);
-  NoCopySplit AH(A, C.dim[0], B.dim[0]);
+  Hierarchical AH(A, C.dim[0], B.dim[0], false);
   gemm(AH, B, C, alpha, beta);
 }
 
@@ -394,7 +393,7 @@ define_method(
   )
 ) {
   assert(A.dim[1] == B.dim[0]);
-  NoCopySplit CH(C, A.dim[0], B.dim[1]);
+  Hierarchical CH(C, A.dim[0], B.dim[1], false);
   gemm(A, B, CH, alpha, beta);
 }
 
@@ -405,8 +404,8 @@ define_method(
     double alpha, double beta
   )
 ) {
-  NoCopySplit AH(A, 1, B.dim[0]);
-  NoCopySplit CH(C, 1, B.dim[1]);
+  Hierarchical AH(A, 1, B.dim[0], false);
+  Hierarchical CH(C, 1, B.dim[1], false);
   gemm(AH, B, CH, alpha, beta);
 }
 
@@ -417,8 +416,8 @@ define_method(
     double alpha, double beta
   )
 ) {
-  NoCopySplit BH(B, A.dim[1], 1);
-  NoCopySplit CH(C, A.dim[0], 1);
+  Hierarchical BH(B, A.dim[1], 1, false);
+  Hierarchical CH(C, A.dim[0], 1, false);
   gemm(A, BH, CH, alpha, beta);
 }
 
@@ -429,8 +428,8 @@ define_method(
     double alpha, double beta
   )
 ) {
-  NoCopySplit AH(A, 1, B.dim[0]);
-  NoCopySplit CH(C, 1, B.dim[1]);
+  Hierarchical AH(A, 1, B.dim[0], false);
+  Hierarchical CH(C, 1, B.dim[1], false);
   gemm(AH, B, CH, alpha, beta);
 }
 
@@ -441,8 +440,8 @@ define_method(
     double alpha, double beta
   )
 ) {
-  NoCopySplit BH(B, A.dim[1], 1);
-  NoCopySplit CH(C, A.dim[0], 1);
+  Hierarchical BH(B, A.dim[1], 1, false);
+  Hierarchical CH(C, A.dim[0], 1, false);
   gemm(A, BH, CH, alpha, beta);
 }
 
@@ -521,8 +520,8 @@ define_method(
   assert(TransA == false);
   assert(TransB == false);
   Dense out(get_n_rows(A), B.dim[1]);
-  NoCopySplit outH(out, A.dim[0], 1);
-  NoCopySplit BH(B, A.dim[1], 1);
+  Hierarchical outH(out, A.dim[0], 1, false);
+  Hierarchical BH(B, A.dim[1], 1, false);
   gemm(A, BH, outH, alpha, 0);
   return out;
 }
@@ -538,8 +537,8 @@ define_method(
   assert(TransA == false);
   assert(TransB == false);
   Dense out(A.dim[0], get_n_cols(B));
-  NoCopySplit outH(out, 1, B.dim[1]);
-  NoCopySplit AH(A, 1, B.dim[0]);
+  Hierarchical outH(out, 1, B.dim[1], false);
+  Hierarchical AH(A, 1, B.dim[0], false);
   gemm(AH, B, outH, alpha, 0);
   return out;
 }

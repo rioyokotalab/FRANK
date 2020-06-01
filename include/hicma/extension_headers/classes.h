@@ -5,7 +5,6 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
-#include "hicma/classes/no_copy_split.h"
 #include "hicma/classes/intitialization_helpers/cluster_tree.h"
 
 #include "yorel/yomm2/cute.hpp"
@@ -23,15 +22,6 @@ declare_method(std::unique_ptr<Matrix>, clone, (virtual_<const Matrix&>))
 declare_method(std::unique_ptr<Matrix>, move_clone, (virtual_<Matrix&&>))
 
 declare_method(MatrixProxy, share_basis, (virtual_<const Matrix&>))
-
-declare_method(
-  void, split_into_hierarchical,
-  (Hierarchical&, virtual_<const Matrix &>, const ClusterTree&)
-)
-
-declare_method(
-  NoCopySplit, make_no_copy_split, (virtual_<Matrix&>, int64_t, int64_t)
-)
 
 declare_method(
   MatrixProxy, get_part_omm,
