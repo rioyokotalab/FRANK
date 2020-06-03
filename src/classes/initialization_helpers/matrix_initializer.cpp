@@ -28,14 +28,14 @@ void MatrixInitializer::fill_dense_representation(
   Dense& A,
   const ClusterTree& node
 ) const {
-  kernel(A, x, node.start[0], node.start[1]);
+  kernel(A, x, node.rows.start, node.cols.start);
 }
 
 Dense MatrixInitializer::get_dense_representation(
   const ClusterTree& node
 ) const {
-  Dense representation(node.dim[0], node.dim[1]);
-  kernel(representation, x, node.start[0], node.start[1]);
+  Dense representation(node.rows.n, node.cols.n);
+  kernel(representation, x, node.rows.start, node.cols.start);
   return representation;
 }
 
@@ -46,15 +46,15 @@ Dense MatrixInitializer::make_block_row(const ClusterTree& node) const {
   for (const ClusterTree& block : node.get_block_row()) {
     if (is_admissible(block)) {
       admissible_blocks.emplace_back(block);
-      n_cols += block.dim[1];
+      n_cols += block.cols.n;
     }
   }
-  Dense block_row(node.dim[0], n_cols);
+  Dense block_row(node.rows.n, n_cols);
   int64_t col_start = 0;
   for (const ClusterTree& block : admissible_blocks) {
-    Dense part(block_row, block.dim[0], block.dim[1], 0, col_start);
+    Dense part(block_row, block.rows.n, block.cols.n, 0, col_start);
     fill_dense_representation(part, block);
-    col_start += block.dim[1];
+    col_start += block.cols.n;
   }
   return block_row;
 }
@@ -66,15 +66,15 @@ Dense MatrixInitializer::make_block_col(const ClusterTree& node) const {
   for (const ClusterTree& block : node.get_block_col()) {
     if (is_admissible(block)) {
       admissible_blocks.emplace_back(block);
-      n_rows += block.dim[0];
+      n_rows += block.rows.n;
     }
   }
-  Dense block_col(n_rows, node.dim[1]);
+  Dense block_col(n_rows, node.cols.n);
   int64_t row_start = 0;
   for (const ClusterTree& block : admissible_blocks) {
-    Dense part(block_col, block.dim[0], block.dim[1], row_start, 0);
+    Dense part(block_col, block.rows.n, block.cols.n, row_start, 0);
     fill_dense_representation(part, block);
-    row_start += block.dim[0];
+    row_start += block.rows.n;
   }
   return block_col;
 }
@@ -119,7 +119,7 @@ bool MatrixInitializer::is_admissible(const ClusterTree& node) const {
   // Main admissibility condition
   admissible &= (node.dist_to_diag() > admis);
   // Vectors are never admissible
-  admissible &= (node.dim[0] > 1 && node.dim[1] > 1);
+  admissible &= (node.rows.n > 1 && node.cols.n > 1);
   return admissible;
 }
 

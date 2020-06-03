@@ -87,7 +87,7 @@ Hierarchical::Hierarchical(
   const Matrix& A, int64_t n_row_blocks, int64_t n_col_blocks, bool copy
 ) : dim{n_row_blocks, n_col_blocks}, data(dim[0]*dim[1])
 {
-  ClusterTree node(get_n_rows(A), get_n_cols(A), dim[0], dim[1]);
+  ClusterTree node({0, get_n_rows(A)}, {0, get_n_cols(A)}, dim[0], dim[1]);
   for (const ClusterTree& child : node) {
     (*this)[child] = get_part(A, child, copy);
   }
@@ -141,7 +141,8 @@ Hierarchical::Hierarchical(
   MatrixInitializer initer(func, x, admis, rank, basis_type);
   *this = Hierarchical(
     ClusterTree(
-      n_rows, n_cols, n_row_blocks, n_col_blocks, row_start, col_start, nleaf
+      {row_start, n_rows}, {col_start, n_cols},
+      n_row_blocks, n_col_blocks, nleaf
     ),
     initer
   );

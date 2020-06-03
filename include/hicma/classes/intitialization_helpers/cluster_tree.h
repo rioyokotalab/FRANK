@@ -1,6 +1,8 @@
 #ifndef hicma_classes_initializion_helpers_cluster_tree_h
 #define hicma_classes_initializion_helpers_cluster_tree_h
 
+#include "hicma/classes/intitialization_helpers/index_range.h"
+
 #include <array>
 #include <cstdint>
 #include <functional>
@@ -14,9 +16,8 @@ class Hierarchical;
 
 class ClusterTree {
  public:
-  std::array<int64_t, 2> dim = {0, 0};
+  IndexRange rows, cols;
   std::array<int64_t, 2> block_dim = {0, 0};
-  std::array<int64_t, 2> start = {0, 0};
   int64_t nleaf = 0;
   int64_t level = 0;
   std::array<int64_t, 2> rel_pos = {0, 0};
@@ -41,9 +42,8 @@ class ClusterTree {
 
   // Additional constructors
   ClusterTree(
-    int64_t n_rows, int64_t n_cols,
+    IndexRange rows, IndexRange cols,
     int64_t n_row_blocks=0, int64_t n_col_blocks=0,
-    int64_t i_start=0, int64_t j_start=0,
     int64_t nleaf=0,
     int64_t level=0,
     int64_t i_rel=0, int64_t j_rel=0,
@@ -52,7 +52,7 @@ class ClusterTree {
   );
 
   ClusterTree(
-    const Hierarchical& like,
+    const Hierarchical& A,
     int64_t i_start=0, int64_t j_start=0,
     int64_t level=0,
     int64_t i_rel=0, int64_t j_rel=0,

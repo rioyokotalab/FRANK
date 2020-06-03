@@ -12,7 +12,7 @@ namespace hicma
 {
 
 ClusterTree::ClusterTree(const ClusterTree& A)
-: dim(A.dim), block_dim(A.block_dim), start(A.start), nleaf(A.nleaf),
+: rows(A.rows), cols(A.cols), block_dim(A.block_dim), nleaf(A.nleaf),
   level(A.level), rel_pos(A.rel_pos), abs_pos(A.abs_pos), parent(nullptr),
   children(A.children)
 {
@@ -22,38 +22,28 @@ ClusterTree::ClusterTree(const ClusterTree& A)
 }
 
 ClusterTree::ClusterTree(
-  int64_t n_rows, int64_t n_cols,
+  IndexRange rows, IndexRange cols,
   int64_t n_row_blocks, int64_t n_col_blocks,
-  int64_t i_start, int64_t j_start,
   int64_t nleaf,
   int64_t level,
   int64_t i_rel, int64_t j_rel,
   int64_t i_abs, int64_t j_abs,
   ClusterTree* parent
-) : dim{n_rows, n_cols}, block_dim{n_row_blocks, n_col_blocks},
-    start{i_start, j_start}, nleaf(nleaf), level(level), rel_pos{i_rel, j_rel},
+) : rows(rows), cols(cols), block_dim{n_row_blocks, n_col_blocks},
+    nleaf(nleaf), level(level), rel_pos{i_rel, j_rel},
     abs_pos{i_abs, j_abs}, parent(parent)
 {
   if (parent == nullptr || !is_leaf()) {
     children.reserve(block_dim[0]*block_dim[1]);
+    std::vector<IndexRange> row_subranges = rows.split(block_dim[0]);
+    std::vector<IndexRange> col_subranges = cols.split(block_dim[1]);
     for (int64_t i=0; i<block_dim[0]; ++i) {
-      // Split row range
-      int64_t child_n_rows = (dim[0]+block_dim[0]-1) / block_dim[0];
-      int64_t child_row_start = start[0] + child_n_rows * i;
-      if (i == block_dim[0]-1)
-        child_n_rows = dim[0] - child_n_rows * (block_dim[0]-1);
       int64_t child_i_abs = abs_pos[0]*block_dim[0] + i;
       for (int64_t j=0; j<block_dim[1]; ++j) {
-        // Split column range
-        int64_t child_n_cols = (dim[1]+block_dim[1]-1) / block_dim[1];
-        int64_t child_col_start = start[1] + child_n_cols * j;
-        if (j == block_dim[1]-1)
-          child_n_cols = dim[1] - child_n_cols * (block_dim[1]-1);
         int64_t child_j_abs = abs_pos[1]*block_dim[1] + j;
         children.emplace_back(
-          child_n_rows, child_n_cols,
+          row_subranges[i], col_subranges[j],
           n_row_blocks, n_col_blocks,
-          child_row_start, child_col_start,
           nleaf,
           level+1,
           i, j, child_i_abs, child_j_abs,
@@ -89,44 +79,39 @@ ClusterTree& ClusterTree::operator()(int64_t i, int64_t j) {
 }
 
 ClusterTree::ClusterTree(
-  const Hierarchical& like,
+  const Hierarchical& A,
   int64_t i_start, int64_t j_start,
   int64_t level,
   int64_t i_rel, int64_t j_rel,
   int64_t i_abs, int64_t j_abs,
   ClusterTree* parent
-) : dim{get_n_rows(like), get_n_cols(like)},
-    block_dim{like.dim[0], like.dim[1]}, start{i_start, j_start}, level(level),
+) : rows(i_start, get_n_rows(A)), cols(j_start, get_n_cols(A)),
+    block_dim{A.dim[0], A.dim[1]}, level(level),
     rel_pos{i_rel, j_rel}, abs_pos{i_abs, j_abs}, parent(parent)
 {
   children.reserve(block_dim[0]*block_dim[1]);
-  int64_t row_start = 0;
+  std::vector<IndexRange> row_subranges = rows.split_like(A, ALONG_COL);
+  std::vector<IndexRange> col_subranges = cols.split_like(A, ALONG_ROW);
   for (int64_t i=0; i<block_dim[0]; ++i) {
-    int64_t col_start = 0;
-    int64_t n_rows = get_n_rows(like(i, 0));
     int64_t child_i_abs = abs_pos[0]*block_dim[0]+i;
     for (int64_t j=0; j<block_dim[1]; ++j) {
-      int64_t n_cols = get_n_cols(like(i, j));
       int64_t child_j_abs = abs_pos[1]*block_dim[1]+j;
       children.emplace_back(
-        n_rows, n_cols,
+        row_subranges[i], col_subranges[j],
         0, 0,
-        row_start, col_start,
         nleaf,
         level+1,
         i, j, child_i_abs, child_j_abs,
         this
       );
-      col_start += n_cols;
     }
-    row_start += n_rows;
   }
 }
 
 bool ClusterTree::is_leaf() const {
   bool leaf = true;
-  leaf &= (dim[0] <= nleaf);
-  leaf &= (dim[1] <= nleaf);
+  leaf &= (rows.n <= nleaf);
+  leaf &= (cols.n <= nleaf);
   // If leaf size is 0, consider any node a leaf
   leaf |= (nleaf == 0);
   return leaf;
