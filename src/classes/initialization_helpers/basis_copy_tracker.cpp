@@ -1,5 +1,4 @@
 #include "hicma/classes/intitialization_helpers/basis_copy_tracker.h"
-#include "hicma/extension_headers/classes.h"
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/low_rank.h"
@@ -53,19 +52,6 @@ define_method(
 
 MatrixProxy BasisCopyTracker::tracked_copy(const MatrixProxy& A) {
   return tracked_copy_omm(A, copied_col_bases);
-}
-
-define_method(MatrixProxy, share_basis, (const SharedBasis& A)) {
-  return A.share();
-}
-
-define_method(MatrixProxy, share_basis, (const Dense& A)) {
-  return Dense(A, A.dim[0], A.dim[1], 0, 0);
-}
-
-define_method(MatrixProxy, share_basis, (const Matrix& A)) {
-  omm_error_handler("share_basis", {A}, __FILE__, __LINE__);
-  std::abort();
 }
 
 declare_method(

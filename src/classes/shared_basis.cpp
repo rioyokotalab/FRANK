@@ -1,6 +1,8 @@
 #include "hicma/classes/shared_basis.h"
+#include "hicma/extension_headers/classes.h"
 
 #include "hicma/classes/dense.h"
+#include "hicma/util/omm_error_handler.h"
 
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
@@ -45,6 +47,23 @@ define_method(bool, is_shared_omm, (const Matrix&, const Matrix&)) {
   // addition, this could potentiall save a lot of time. For now though, such
   // cases should not happen.
   return false;
+}
+
+MatrixProxy share_basis(const Matrix& A) {
+  return share_basis_omm(A);
+}
+
+define_method(MatrixProxy, share_basis_omm, (const SharedBasis& A)) {
+  return A.share();
+}
+
+define_method(MatrixProxy, share_basis_omm, (const Dense& A)) {
+  return Dense(A, A.dim[0], A.dim[1], 0, 0);
+}
+
+define_method(MatrixProxy, share_basis_omm, (const Matrix& A)) {
+  omm_error_handler("share_basis", {A}, __FILE__, __LINE__);
+  std::abort();
 }
 
 } // namespace hicma

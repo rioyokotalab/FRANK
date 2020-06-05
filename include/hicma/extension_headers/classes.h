@@ -21,7 +21,7 @@ declare_method(std::unique_ptr<Matrix>, clone, (virtual_<const Matrix&>))
 
 declare_method(std::unique_ptr<Matrix>, move_clone, (virtual_<Matrix&&>))
 
-declare_method(MatrixProxy, share_basis, (virtual_<const Matrix&>))
+declare_method(MatrixProxy, share_basis_omm, (virtual_<const Matrix&>))
 
 declare_method(
   MatrixProxy, get_part_omm,
