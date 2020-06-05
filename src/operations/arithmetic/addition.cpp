@@ -61,28 +61,29 @@ declare_method(
   (virtual_<const Matrix&>, virtual_<const Matrix&>)
 )
 
-define_method(DensePair, merge_col_basis, (const Dense& U, const Dense& Au)) {
-  assert(U.dim[0] == Au.dim[0]);
-  int64_t Arank = U.dim[1];
-  int64_t Brank = Au.dim[1];
+define_method(DensePair, merge_col_basis, (const Dense& Au, const Dense& Bu)) {
+  assert(Au.dim[0] == Bu.dim[0]);
+  int64_t Arank = Au.dim[1];
+  int64_t Brank = Bu.dim[1];
   assert(Arank == Brank);
 
   Dense InnerU(Arank+Brank, Brank);
   Hierarchical InnerH(InnerU, 2, 1, false);
-  gemm(U, Au, InnerH[0], true, false, 1, 0);
+  gemm(Au, Bu, InnerH[0], true, false, 1, 0);
 
-  // TODO This copy has significant cost. Avoidable?
-  Dense U_UUtAu(Au);
-  gemm(U, InnerH[0], U_UUtAu, -1, 1);
+  Dense Bu_AuAutBu(Bu);
+  gemm(Au, InnerH[0], Bu_AuAutBu, -1, 1);
 
-  Dense Q(U.dim[0], Brank);
-  qr(U_UUtAu, Q, InnerH[1]);
+  Dense Q(Au.dim[0], Brank);
+  qr(Bu_AuAutBu, Q, InnerH[1]);
 
   return {std::move(Q), std::move(InnerU)};
 }
 
-define_method(DensePair, merge_col_basis, (const Matrix& U, const Matrix& Au)) {
-  omm_error_handler("merge_col_basis", {U, Au}, __FILE__, __LINE__);
+define_method(
+  DensePair, merge_col_basis, (const Matrix& Au, const Matrix& Bu)
+) {
+  omm_error_handler("merge_col_basis", {Au, Bu}, __FILE__, __LINE__);
   std::abort();
 }
 
@@ -93,49 +94,50 @@ declare_method(
 
 define_method(
   DensePair, merge_row_basis,
-  (const Dense& V, const Dense& Av)
+  (const Dense& Av, const Dense& Bv)
 ) {
-  assert(V.dim[1] == Av.dim[1]);
-  int64_t Arank = V.dim[0];
-  int64_t Brank = Av.dim[0];
+  assert(Av.dim[1] == Bv.dim[1]);
+  int64_t Arank = Av.dim[0];
+  int64_t Brank = Bv.dim[0];
   assert(Arank == Brank);
 
   Dense InnerV(Brank, Arank+Brank);
   Hierarchical InnerH(InnerV, 1, 2, false);
-  gemm(Av, V, InnerH[0], false, true, 1, 0);
+  gemm(Bv, Av, InnerH[0], false, true, 1, 0);
 
-  // TODO This copy has significant cost. Avoidable?
-  Dense Av_AvVtV(Av);
-  gemm(InnerH[0], V, Av_AvVtV, -1, 1);
+  Dense Bv_BvAvtAv(Bv);
+  gemm(InnerH[0], Av, Bv_BvAvtAv, -1, 1);
 
-  Dense Q(Brank, V.dim[1]);
-  rq(Av_AvVtV, InnerH[1], Q);
+  Dense Q(Brank, Av.dim[1]);
+  rq(Bv_BvAvtAv, InnerH[1], Q);
 
   return {std::move(Q), std::move(InnerV)};
 }
 
-define_method(DensePair, merge_row_basis, (const Matrix& V, const Matrix& Av)) {
-  omm_error_handler("merge_row_basis", {V, Av}, __FILE__, __LINE__);
+define_method(
+  DensePair, merge_row_basis, (const Matrix& Av, const Matrix& Bv)
+) {
+  omm_error_handler("merge_row_basis", {Av, Bv}, __FILE__, __LINE__);
   std::abort();
 }
 
 std::tuple<Dense, Dense, Dense> merge_S(
-  const Dense& S, const Dense& AS,
+  const Dense& As, const Dense& Bs,
   const Dense& InnerU, const Dense& InnerV
 ) {
-  assert(S.dim[0] == S.dim[1]);
-  int64_t rank = S.dim[0];
+  assert(As.dim[0] == As.dim[1]);
+  int64_t rank = As.dim[0];
 
-  Dense InnerUAS = gemm(InnerU, AS);
+  Dense InnerUBs = gemm(InnerU, Bs);
 
-  // TODO Consider using move for S if possible!
+  // TODO Consider using move for As if possible!
   Dense M(rank*2, rank*2);
   for (int64_t i=0; i<rank; i++) {
     for (int64_t j=0; j<rank; j++) {
-      M(i, j) = S(i, j);
+      M(i, j) = As(i, j);
     }
   }
-  gemm(InnerUAS, InnerV, M, 1, 1);
+  gemm(InnerUBs, InnerV, M, 1, 1);
 
   Dense Uhat, Shat, Vhat;
   std::tie(Uhat, Shat, Vhat) = svd(M);
