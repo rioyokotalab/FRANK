@@ -46,9 +46,8 @@ define_method(std::string, type_omm, ([[maybe_unused]] const SharedBasis& A)) {
   return "SharedBasis";
 }
 
-define_method(std::string, type_omm, (const Matrix& A)) {
-  omm_error_handler("type", {A}, __FILE__, __LINE__);
-  std::abort();
+define_method(std::string, type_omm, ([[maybe_unused]] const Matrix&)) {
+  return "Matrix";
 }
 
 declare_method(
