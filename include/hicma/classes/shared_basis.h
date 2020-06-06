@@ -30,6 +30,8 @@ class SharedBasis : public Matrix {
   SharedBasis& operator=(SharedBasis&& A) = default;
 
   // Constructors
+  SharedBasis(Dense&& representation);
+
   SharedBasis(std::shared_ptr<Dense> representation);
 
   // Utility methods

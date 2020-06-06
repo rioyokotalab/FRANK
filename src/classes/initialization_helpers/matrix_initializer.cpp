@@ -4,9 +4,13 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/shared_basis.h"
+#include "hicma/classes/intitialization_helpers/basis_tracker.h"
 #include "hicma/classes/intitialization_helpers/cluster_tree.h"
+#include "hicma/functions.h"
 #include "hicma/operations/BLAS.h"
+#include "hicma/operations/LAPACK.h"
 
+#include <algorithm>
 #include <cstdint>
 
 
@@ -86,30 +90,46 @@ LowRank MatrixInitializer::get_compressed_representation(
   if (basis_type == NORMAL_BASIS) {
     out = LowRank(get_dense_representation(node), rank);
   } else if (basis_type == SHARED_BASIS) {
-    if (col_bases.find({node.level, node.abs_pos[0]}) == col_bases.end()) {
-      Dense row_block = make_block_row(node);
-      // TODO: The following line is probably copying right now as there is now
-      // Dense(Matrix&&) or Dense(MatrixProxy&&) constructor.
-      // TODO Consider making a unified syntax for OMM constructors.
-      col_bases[{node.level, node.abs_pos[0]}] = std::make_shared<Dense>(
-        std::move(LowRank(row_block, rank).U));
+    int64_t sample_size = std::min(std::min(rank+5, node.rows.n), node.cols.n);
+    if (!col_basis.has_basis(node.rows)) {
+      Dense block_row = make_block_row(node);
+      Dense RN(
+        random_uniform, std::vector<std::vector<double>>(),
+        block_row.dim[1], sample_size
+      );
+      Dense Y = gemm(block_row, RN);
+      Dense Q(Y.dim[0], Y.dim[1]);
+      Dense R(Y.dim[1], Y.dim[1]);
+      qr(Y, Q, R);
+      Dense QtA = gemm(Q, block_row, 1, true, false);
+      Dense Ub, _, __;
+      std::tie(Ub, _, __) = svd(QtA);
+      Dense U = gemm(Q, Ub);
+      U.resize(U.dim[0], rank);
+      col_basis[node.rows] = SharedBasis(std::move(U));
     }
-    if (row_bases.find({node.level, node.abs_pos[1]}) == row_bases.end()) {
-      Dense col_block = make_block_col(node);
-      row_bases[{node.level, node.abs_pos[1]}] = std::make_shared<Dense>(
-        std::move(LowRank(col_block, rank).V));
+    if (!row_basis.has_basis(node.cols)) {
+      Dense block_col = make_block_col(node);
+      Dense RN(
+        random_uniform, std::vector<std::vector<double>>(),
+        block_col.dim[1], sample_size
+      );
+      Dense Y = gemm(block_col, RN);
+      Dense Q(Y.dim[0], Y.dim[1]);
+      Dense R(Y.dim[1], Y.dim[1]);
+      qr(Y, Q, R);
+      Dense QtA = gemm(Q, block_col, 1, true, false);
+      Dense _, __, V;
+      std::tie(_, __, V) = svd(QtA);
+      V.resize(rank, V.dim[1]);
+      row_basis[node.cols] = SharedBasis(std::move(V));
     }
     Dense D = get_dense_representation(node);
     Dense S = gemm(
-      gemm(*col_bases.at({node.level, node.abs_pos[0]}), D, 1, true, false),
-      *row_bases.at({node.level, node.abs_pos[1]}),
+      gemm(col_basis[node.rows], D, 1, true, false), row_basis[node.cols],
       1, false, true
     );
-    out = LowRank(
-      SharedBasis(col_bases.at({node.level, node.abs_pos[0]})),
-      S,
-      SharedBasis(row_bases.at({node.level, node.abs_pos[1]}))
-    );
+    out = LowRank(col_basis[node.rows], S, row_basis[node.cols]);
   }
   return out;
 }

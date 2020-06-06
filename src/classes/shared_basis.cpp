@@ -22,6 +22,9 @@ SharedBasis& SharedBasis::operator=(const SharedBasis& A) {
   return *this;
 }
 
+SharedBasis::SharedBasis(Dense&& A)
+: representation(std::make_shared<Dense>(std::move(A))) {}
+
 SharedBasis::SharedBasis(std::shared_ptr<Dense> A) : representation(A) {}
 
 SharedBasis SharedBasis::share() const { return SharedBasis(representation); }
