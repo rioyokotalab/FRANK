@@ -53,24 +53,12 @@ class BasisTracker {
     return (bases.find(key) != bases.end());
   }
 
-  void register_basis(const T& key, const Matrix& A=Matrix()) {
-    bases[key] = A;
-  }
-
-  void register_basis(const T& key, MatrixProxy&& A) {
-    bases[key] = std::move(A);
-  }
-
   const MatrixProxy& operator[](const T& key) const {
     return bases[key];
   }
 
   MatrixProxy& operator[](const T& key) {
     return bases[key];
-  }
-
-  MatrixProxy get_shared(const T& key) const {
-    return share_basis(bases[key]);
   }
 };
 

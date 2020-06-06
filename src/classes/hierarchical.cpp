@@ -56,10 +56,10 @@ define_method(
   MatrixProxy, copy_block, (const LowRank& A, BasisTracker<BasisKey>& tracker)
 ) {
   if (!tracker.has_basis(A.U)) {
-    tracker[A.U] = MatrixProxy(A.U);
+    tracker[A.U] = A.U;
   }
   if (!tracker.has_basis(A.V)) {
-    tracker[A.V] = MatrixProxy(A.V);
+    tracker[A.V] = A.V;
   }
   return LowRank(tracker[A.U], A.S, tracker[A.V], true);
 }

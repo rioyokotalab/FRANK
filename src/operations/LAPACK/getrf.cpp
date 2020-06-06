@@ -3,8 +3,9 @@
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
+#include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
-#include "hicma/classes/intitialization_helpers/basis_copy_tracker.h"
+#include "hicma/classes/intitialization_helpers/basis_tracker.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/util/omm_error_handler.h"
 #include "hicma/util/timer.h"
@@ -30,27 +31,41 @@ namespace hicma
 
 std::tuple<MatrixProxy, MatrixProxy> getrf(Matrix& A) { return getrf_omm(A); }
 
-declare_method(void, decuple_col_basis, (virtual_<Matrix&>, BasisCopyTracker&))
+declare_method(
+  void, decuple_col_basis, (virtual_<Matrix&>, BasisTracker<BasisKey>&)
+)
 
-define_method(void, decuple_col_basis, (LowRank& A, BasisCopyTracker& tracker)) {
+define_method(
+  void, decuple_col_basis, (LowRank& A, BasisTracker<BasisKey>& tracker)
+) {
   timing::start("decoupling");
-  A.U = tracker.tracked_copy(A.U);
+  if (!tracker.has_basis(A.U)) {
+    tracker[A.U] = A.U;
+  }
+  A.U = share_basis(tracker[A.U]);
   timing::stop("decoupling");
 }
 
-define_method(void, decuple_col_basis, (Matrix&, BasisCopyTracker&)) {
+define_method(void, decuple_col_basis, (Matrix&, BasisTracker<BasisKey>&)) {
   // Do nothing
 }
 
-declare_method(void, decuple_row_basis, (virtual_<Matrix&>, BasisCopyTracker&))
+declare_method(
+  void, decuple_row_basis, (virtual_<Matrix&>, BasisTracker<BasisKey>&)
+)
 
-define_method(void, decuple_row_basis, (LowRank& A, BasisCopyTracker& tracker)) {
+define_method(
+  void, decuple_row_basis, (LowRank& A, BasisTracker<BasisKey>& tracker)
+) {
   timing::start("decoupling");
-  A.V = tracker.tracked_copy(A.V);
+  if (!tracker.has_basis(A.V)) {
+    tracker[A.V] = A.V;
+  }
+  A.V = share_basis(tracker[A.V]);
   timing::stop("decoupling");
 }
 
-define_method(void, decuple_row_basis, (Matrix&, BasisCopyTracker&)) {
+define_method(void, decuple_row_basis, (Matrix&, BasisTracker<BasisKey>&)) {
   // Do nothing
 }
 
@@ -58,10 +73,10 @@ define_method(MatrixPair, getrf_omm, (Hierarchical& A)) {
   Hierarchical L(A.dim[0], A.dim[1]);
   // TODO This will only work for matrices with a single layer! The basis
   // tracker would need to be shared from outside the functions...
-  BasisCopyTracker basis_tracker;
+  BasisTracker<BasisKey> basis_tracker;
   for (int64_t i=0; i<A.dim[0]; i++) {
     std::tie(L(i, i), A(i, i)) = getrf(A(i,i));
-    BasisCopyTracker trsm_tracker;
+    BasisTracker<BasisKey> trsm_tracker;
     for (int64_t i_c=i+1; i_c<L.dim[0]; i_c++) {
       L(i_c, i) = std::move(A(i_c, i));
       decuple_row_basis(L(i_c, i), basis_tracker);
