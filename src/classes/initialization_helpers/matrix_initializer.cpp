@@ -8,7 +8,7 @@
 #include "hicma/classes/intitialization_helpers/cluster_tree.h"
 #include "hicma/functions.h"
 #include "hicma/operations/BLAS.h"
-#include "hicma/operations/LAPACK.h"
+#include "hicma/operations/randomized_factorizations.h"
 
 #include <algorithm>
 #include <cstdint>
@@ -93,34 +93,15 @@ LowRank MatrixInitializer::get_compressed_representation(
     int64_t sample_size = std::min(std::min(rank+5, node.rows.n), node.cols.n);
     if (!col_basis.has_basis(node.rows)) {
       Dense block_row = make_block_row(node);
-      Dense RN(
-        random_uniform, std::vector<std::vector<double>>(),
-        block_row.dim[1], sample_size
-      );
-      Dense Y = gemm(block_row, RN);
-      Dense Q(Y.dim[0], Y.dim[1]);
-      Dense R(Y.dim[1], Y.dim[1]);
-      qr(Y, Q, R);
-      Dense QtA = gemm(Q, block_row, 1, true, false);
-      Dense Ub, _, __;
-      std::tie(Ub, _, __) = svd(QtA);
-      Dense U = gemm(Q, Ub);
+      Dense U, _, __;
+      std::tie(U, _, __) = rsvd(block_row, sample_size);
       U.resize(U.dim[0], rank);
       col_basis[node.rows] = SharedBasis(std::move(U));
     }
     if (!row_basis.has_basis(node.cols)) {
       Dense block_col = make_block_col(node);
-      Dense RN(
-        random_uniform, std::vector<std::vector<double>>(),
-        block_col.dim[1], sample_size
-      );
-      Dense Y = gemm(block_col, RN);
-      Dense Q(Y.dim[0], Y.dim[1]);
-      Dense R(Y.dim[1], Y.dim[1]);
-      qr(Y, Q, R);
-      Dense QtA = gemm(Q, block_col, 1, true, false);
       Dense _, __, V;
-      std::tie(_, __, V) = svd(QtA);
+      std::tie(_, __, V) = rsvd(block_col, sample_size);
       V.resize(rank, V.dim[1]);
       row_basis[node.cols] = SharedBasis(std::move(V));
     }
