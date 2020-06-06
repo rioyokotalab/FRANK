@@ -5,7 +5,7 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
-#include "hicma/classes/intitialization_helpers/basis_copy_tracker.h"
+#include "hicma/classes/intitialization_helpers/basis_tracker.h"
 #include "hicma/classes/intitialization_helpers/cluster_tree.h"
 #include "hicma/classes/intitialization_helpers/matrix_initializer.h"
 #include "hicma/functions.h"
@@ -30,32 +30,50 @@ namespace hicma
 {
 
 Hierarchical::Hierarchical(const Hierarchical& A) : Matrix(A) {
-  BasisCopyTracker tracker;
+  BasisTracker<BasisKey> tracker;
   *this = Hierarchical(A, tracker);
 }
 
 declare_method(
-  MatrixProxy, copy_block, (virtual_<const Matrix&>, BasisCopyTracker&)
+  MatrixProxy, copy_block, (virtual_<const Matrix&>, BasisTracker<BasisKey>&)
 )
+
 define_method(
-  MatrixProxy, copy_block, (const Hierarchical& A, BasisCopyTracker& tracker)
+  MatrixProxy, copy_block,
+  (const Hierarchical& A, BasisTracker<BasisKey>& tracker)
 ) {
   return Hierarchical(A, tracker);
 }
+
 define_method(
   MatrixProxy, copy_block,
-  (const Dense& A, [[maybe_unused]] BasisCopyTracker& tracker)
+  (const Dense& A, [[maybe_unused]] BasisTracker<BasisKey>& tracker)
 ) {
   return A;
 }
+
 define_method(
-  MatrixProxy, copy_block, (const LowRank& A, BasisCopyTracker& tracker)
+  MatrixProxy, copy_block, (const LowRank& A, BasisTracker<BasisKey>& tracker)
 ) {
-  return tracker.tracked_copy(A);
+  if (!tracker.has_basis(A.U)) {
+    tracker[A.U] = MatrixProxy(A.U);
+  }
+  if (!tracker.has_basis(A.V)) {
+    tracker[A.V] = MatrixProxy(A.V);
+  }
+  return LowRank(tracker[A.U], A.S, tracker[A.V], true);
+}
+
+define_method(
+  MatrixProxy, copy_block,
+  (const Matrix& A, [[maybe_unused]] BasisTracker<BasisKey>& tracker)
+) {
+  omm_error_handler("copy_block", {A}, __FILE__, __LINE__);
+  std::abort();
 }
 
 Hierarchical::Hierarchical(
-  const Hierarchical& A, BasisCopyTracker& tracker
+  const Hierarchical& A, BasisTracker<BasisKey>& tracker
 ) : Matrix(A), dim(A.dim), data(dim[0]*dim[1]) {
   for (int64_t i=0; i<A.dim[0]; ++i) {
     for (int64_t j=0; j<A.dim[1]; ++j) {

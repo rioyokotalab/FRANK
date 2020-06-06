@@ -10,7 +10,27 @@
 #include <functional>
 #include <tuple>
 
+
+namespace hicma
+{
+
+class BasisKey {
+ public:
+  const double* data_ptr;
+  std::array<int64_t, 2> dim;
+
+  BasisKey(const MatrixProxy&);
+};
+
+} // namespace hicma
+
+
 namespace std {
+  template <>
+  struct hash<hicma::BasisKey> {
+    size_t operator()(const hicma::BasisKey& key) const;
+  };
+
   template <>
   struct hash<hicma::IndexRange> {
     size_t operator()(const hicma::IndexRange& key) const;
@@ -19,6 +39,8 @@ namespace std {
 
 namespace hicma
 {
+
+bool operator==(const BasisKey& A, const BasisKey& B);
 
 bool operator==(const IndexRange& A, const IndexRange& B);
 
