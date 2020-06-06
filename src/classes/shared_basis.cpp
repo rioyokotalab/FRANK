@@ -45,11 +45,16 @@ define_method(
   return A.get_ptr() == B.get_ptr();
 }
 
-define_method(bool, is_shared_omm, (const Matrix&, const Matrix&)) {
+define_method(bool, is_shared_omm, (const Dense&, const Dense&)) {
   // TODO Might need to find a way to check for regular Dense as well. In LR
   // addition, this could potentiall save a lot of time. For now though, such
   // cases should not happen.
   return false;
+}
+
+define_method(bool, is_shared_omm, (const Matrix& A, const Matrix& B)) {
+  omm_error_handler("is_shared", {A, B}, __FILE__, __LINE__);
+  std::abort();
 }
 
 MatrixProxy share_basis(const Matrix& A) {
