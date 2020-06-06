@@ -2,6 +2,7 @@
 #define hicma_classes_initialization_helpers_matrix_initializer_h
 
 #include "hicma/classes/dense.h"
+#include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/intitialization_helpers/basis_tracker.h"
 #include "hicma/classes/intitialization_helpers/index_range.h"
@@ -14,8 +15,6 @@ namespace hicma
 {
 
 class ClusterTree;
-
-enum { NORMAL_BASIS, SHARED_BASIS };
 
 class MatrixInitializer {
  private:

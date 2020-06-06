@@ -17,6 +17,9 @@ namespace hicma
 class BasisCopyTracker;
 class Dense;
 class ClusterTree;
+class MatrixInitializer;
+
+enum { NORMAL_BASIS, SHARED_BASIS };
 
 class Hierarchical : public Matrix {
  public:
