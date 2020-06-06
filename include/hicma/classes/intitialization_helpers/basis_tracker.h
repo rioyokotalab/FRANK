@@ -13,7 +13,7 @@
 namespace std {
   template <>
   struct hash<hicma::IndexRange> {
-    size_t operator()(const hicma::IndexRange& k) const;
+    size_t operator()(const hicma::IndexRange& key) const;
   };
 }
 
@@ -28,7 +28,7 @@ class BasisTracker {
   std::unordered_map<T, MatrixProxy> bases;
  public:
   bool has_basis(const T& key) const {
-    return bases.find(key) != bases.end();
+    return (bases.find(key) != bases.end());
   }
 
   void register_basis(const T& key, const Matrix& A=Matrix()) {
@@ -40,16 +40,15 @@ class BasisTracker {
   }
 
   const MatrixProxy& operator[](const T& key) const {
-    return bases.at(key);
+    return bases[key];
   }
 
   MatrixProxy& operator[](const T& key) {
-    if (!has_basis(key)) bases[key] = MatrixProxy();
-    return bases.at(key);
+    return bases[key];
   }
 
   MatrixProxy get_shared(const T& key) const {
-    return share_basis(bases.at(key));
+    return share_basis(bases[key]);
   }
 };
 

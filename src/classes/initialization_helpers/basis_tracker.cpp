@@ -10,8 +10,8 @@
 namespace std
 {
 
-size_t hash<hicma::IndexRange>::operator()(const hicma::IndexRange& k) const {
-  return (hash<int64_t>()(k.start) ^ (hash<int64_t>()(k.n) << 1));
+size_t hash<hicma::IndexRange>::operator()(const hicma::IndexRange& key) const {
+  return (hash<int64_t>()(key.start) ^ (hash<int64_t>()(key.n) << 1));
 }
 
 } // namespace std
