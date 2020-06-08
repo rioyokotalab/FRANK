@@ -6,7 +6,7 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/shared_basis.h"
-#include "hicma/classes/intitialization_helpers/basis_copy_tracker.h"
+#include "hicma/classes/intitialization_helpers/basis_tracker.h"
 #include "hicma/util/omm_error_handler.h"
 #include "hicma/util/timer.h"
 
@@ -138,23 +138,26 @@ define_method(
 
 define_method(
   void, trsm_omm,
-  (const Matrix& A, LowRank& B, int uplo, int lr, BasisCopyTracker& tracker)
+  (
+    const Matrix& A, LowRank& B,
+    int uplo, int lr, BasisTracker<BasisKey>& tracker
+  )
 ) {
   // Check if already applied
   // If applied, do nothing
   switch (lr) {
   case TRSM_LEFT:
-    if (tracker.has_col_basis(B.U)) {
+    if (tracker.has_basis(B.U)) {
       return;
     } else {
-      tracker.register_col_basis(B.U);
+      tracker[B.U] = MatrixProxy();
     }
     break;
   case TRSM_RIGHT:
-    if (tracker.has_row_basis(B.V)) {
+    if (tracker.has_basis(B.V)) {
       return;
     } else {
-      tracker.register_row_basis(B.V);
+      tracker[B.V] = MatrixProxy();
     }
     break;
   }
@@ -164,7 +167,7 @@ define_method(
 
 define_method(
   void, trsm_omm,
-  (const Matrix& A, Matrix& B, int uplo, int lr, BasisCopyTracker&)
+  (const Matrix& A, Matrix& B, int uplo, int lr, BasisTracker<BasisKey>&)
 ) {
   trsm(A, B, uplo, lr);
 }

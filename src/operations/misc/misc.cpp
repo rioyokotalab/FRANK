@@ -82,7 +82,7 @@ MatrixProxy get_part(
   bool copy
 ) {
   return get_part_omm(
-    A, node.dim[0], node.dim[1], node.start[0], node.start[1], copy);
+    A, node.rows.n, node.cols.n, node.rows.start, node.cols.start, copy);
 }
 
 define_method(

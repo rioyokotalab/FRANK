@@ -2,6 +2,7 @@
 #define hicma_classes_shared_basis_h
 
 #include "hicma/classes/matrix.h"
+#include "hicma/classes/matrix_proxy.h"
 
 #include <memory>
 
@@ -29,6 +30,8 @@ class SharedBasis : public Matrix {
   SharedBasis& operator=(SharedBasis&& A) = default;
 
   // Constructors
+  SharedBasis(Dense&& representation);
+
   SharedBasis(std::shared_ptr<Dense> representation);
 
   // Utility methods
@@ -36,6 +39,8 @@ class SharedBasis : public Matrix {
 
   std::shared_ptr<Dense> get_ptr() const;
 };
+
+MatrixProxy share_basis(const Matrix& A);
 
 bool is_shared(const Matrix& A, const Matrix& B);
 

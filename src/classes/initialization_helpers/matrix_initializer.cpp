@@ -4,9 +4,13 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/shared_basis.h"
+#include "hicma/classes/intitialization_helpers/basis_tracker.h"
 #include "hicma/classes/intitialization_helpers/cluster_tree.h"
+#include "hicma/functions.h"
 #include "hicma/operations/BLAS.h"
+#include "hicma/operations/randomized_factorizations.h"
 
+#include <algorithm>
 #include <cstdint>
 
 
@@ -28,14 +32,14 @@ void MatrixInitializer::fill_dense_representation(
   Dense& A,
   const ClusterTree& node
 ) const {
-  kernel(A, x, node.start[0], node.start[1]);
+  kernel(A, x, node.rows.start, node.cols.start);
 }
 
 Dense MatrixInitializer::get_dense_representation(
   const ClusterTree& node
 ) const {
-  Dense representation(node.dim[0], node.dim[1]);
-  kernel(representation, x, node.start[0], node.start[1]);
+  Dense representation(node.rows.n, node.cols.n);
+  kernel(representation, x, node.rows.start, node.cols.start);
   return representation;
 }
 
@@ -46,15 +50,15 @@ Dense MatrixInitializer::make_block_row(const ClusterTree& node) const {
   for (const ClusterTree& block : node.get_block_row()) {
     if (is_admissible(block)) {
       admissible_blocks.emplace_back(block);
-      n_cols += block.dim[1];
+      n_cols += block.cols.n;
     }
   }
-  Dense block_row(node.dim[0], n_cols);
+  Dense block_row(node.rows.n, n_cols);
   int64_t col_start = 0;
   for (const ClusterTree& block : admissible_blocks) {
-    Dense part(block_row, block.dim[0], block.dim[1], 0, col_start);
+    Dense part(block_row, block.rows.n, block.cols.n, 0, col_start);
     fill_dense_representation(part, block);
-    col_start += block.dim[1];
+    col_start += block.cols.n;
   }
   return block_row;
 }
@@ -66,15 +70,15 @@ Dense MatrixInitializer::make_block_col(const ClusterTree& node) const {
   for (const ClusterTree& block : node.get_block_col()) {
     if (is_admissible(block)) {
       admissible_blocks.emplace_back(block);
-      n_rows += block.dim[0];
+      n_rows += block.rows.n;
     }
   }
-  Dense block_col(n_rows, node.dim[1]);
+  Dense block_col(n_rows, node.cols.n);
   int64_t row_start = 0;
   for (const ClusterTree& block : admissible_blocks) {
-    Dense part(block_col, block.dim[0], block.dim[1], row_start, 0);
+    Dense part(block_col, block.rows.n, block.cols.n, row_start, 0);
     fill_dense_representation(part, block);
-    row_start += block.dim[0];
+    row_start += block.rows.n;
   }
   return block_col;
 }
@@ -86,30 +90,27 @@ LowRank MatrixInitializer::get_compressed_representation(
   if (basis_type == NORMAL_BASIS) {
     out = LowRank(get_dense_representation(node), rank);
   } else if (basis_type == SHARED_BASIS) {
-    if (col_bases.find({node.level, node.abs_pos[0]}) == col_bases.end()) {
-      Dense row_block = make_block_row(node);
-      // TODO: The following line is probably copying right now as there is now
-      // Dense(Matrix&&) or Dense(MatrixProxy&&) constructor.
-      // TODO Consider making a unified syntax for OMM constructors.
-      col_bases[{node.level, node.abs_pos[0]}] = std::make_shared<Dense>(
-        std::move(LowRank(row_block, rank).U));
+    int64_t sample_size = std::min(std::min(rank+5, node.rows.n), node.cols.n);
+    if (!col_basis.has_basis(node.rows)) {
+      Dense block_row = make_block_row(node);
+      Dense U, _, __;
+      std::tie(U, _, __) = rsvd(block_row, sample_size);
+      U.resize(U.dim[0], rank);
+      col_basis[node.rows] = SharedBasis(std::move(U));
     }
-    if (row_bases.find({node.level, node.abs_pos[1]}) == row_bases.end()) {
-      Dense col_block = make_block_col(node);
-      row_bases[{node.level, node.abs_pos[1]}] = std::make_shared<Dense>(
-        std::move(LowRank(col_block, rank).V));
+    if (!row_basis.has_basis(node.cols)) {
+      Dense block_col = make_block_col(node);
+      Dense _, __, V;
+      std::tie(_, __, V) = rsvd(block_col, sample_size);
+      V.resize(rank, V.dim[1]);
+      row_basis[node.cols] = SharedBasis(std::move(V));
     }
     Dense D = get_dense_representation(node);
     Dense S = gemm(
-      gemm(*col_bases.at({node.level, node.abs_pos[0]}), D, 1, true, false),
-      *row_bases.at({node.level, node.abs_pos[1]}),
+      gemm(col_basis[node.rows], D, 1, true, false), row_basis[node.cols],
       1, false, true
     );
-    out = LowRank(
-      SharedBasis(col_bases.at({node.level, node.abs_pos[0]})),
-      S,
-      SharedBasis(row_bases.at({node.level, node.abs_pos[1]}))
-    );
+    out = LowRank(col_basis[node.rows], S, row_basis[node.cols]);
   }
   return out;
 }
@@ -119,7 +120,7 @@ bool MatrixInitializer::is_admissible(const ClusterTree& node) const {
   // Main admissibility condition
   admissible &= (node.dist_to_diag() > admis);
   // Vectors are never admissible
-  admissible &= (node.dim[0] > 1 && node.dim[1] > 1);
+  admissible &= (node.rows.n > 1 && node.cols.n > 1);
   return admissible;
 }
 

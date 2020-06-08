@@ -8,7 +8,6 @@
 #include <cstdint>
 #include <random>
 #include <vector>
-#include <iostream>
 
 
 namespace hicma
