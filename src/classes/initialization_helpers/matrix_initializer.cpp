@@ -83,34 +83,44 @@ Dense MatrixInitializer::make_block_col(const ClusterTree& node) const {
   return block_col;
 }
 
+void MatrixInitializer::make_shared_col_basis(const ClusterTree& node) {
+  int64_t sample_size = std::min(std::min(rank+5, node.rows.n), node.cols.n);
+  Dense block_row = make_block_row(node);
+  Dense U, _, __;
+  std::tie(U, _, __) = rsvd(block_row, sample_size);
+  U.resize(U.dim[0], rank);
+  col_basis[node.rows] = SharedBasis(std::move(U));
+}
+
+void MatrixInitializer::make_shared_row_basis(const ClusterTree& node) {
+  int64_t sample_size = std::min(std::min(rank+5, node.rows.n), node.cols.n);
+  Dense block_col = make_block_col(node);
+  Dense _, __, V;
+  std::tie(_, __, V) = rsvd(block_col, sample_size);
+  V.resize(rank, V.dim[1]);
+  row_basis[node.cols] = SharedBasis(std::move(V));
+}
+
+LowRank MatrixInitializer::make_shared_basis(const ClusterTree& node) {
+  if (!col_basis.has_basis(node.rows)) make_shared_col_basis(node);
+  if (!row_basis.has_basis(node.cols)) make_shared_row_basis(node);
+  Dense D = get_dense_representation(node);
+  Dense S = gemm(
+    gemm(col_basis[node.rows], D, 1, true, false), row_basis[node.cols],
+    1, false, true
+  );
+  return LowRank(col_basis[node.rows], S, row_basis[node.cols]);
+}
+
 LowRank MatrixInitializer::get_compressed_representation(
   const ClusterTree& node
 ) {
+  // TODO This function still relies on ClusterTree to be symmetric!
   LowRank out;
   if (basis_type == NORMAL_BASIS) {
     out = LowRank(get_dense_representation(node), rank);
   } else if (basis_type == SHARED_BASIS) {
-    int64_t sample_size = std::min(std::min(rank+5, node.rows.n), node.cols.n);
-    if (!col_basis.has_basis(node.rows)) {
-      Dense block_row = make_block_row(node);
-      Dense U, _, __;
-      std::tie(U, _, __) = rsvd(block_row, sample_size);
-      U.resize(U.dim[0], rank);
-      col_basis[node.rows] = SharedBasis(std::move(U));
-    }
-    if (!row_basis.has_basis(node.cols)) {
-      Dense block_col = make_block_col(node);
-      Dense _, __, V;
-      std::tie(_, __, V) = rsvd(block_col, sample_size);
-      V.resize(rank, V.dim[1]);
-      row_basis[node.cols] = SharedBasis(std::move(V));
-    }
-    Dense D = get_dense_representation(node);
-    Dense S = gemm(
-      gemm(col_basis[node.rows], D, 1, true, false), row_basis[node.cols],
-      1, false, true
-    );
-    out = LowRank(col_basis[node.rows], S, row_basis[node.cols]);
+    out = make_shared_basis(node);
   }
   return out;
 }

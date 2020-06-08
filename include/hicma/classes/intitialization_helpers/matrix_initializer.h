@@ -28,6 +28,10 @@ class MatrixInitializer {
   int64_t rank;
   BasisTracker<IndexRange> col_basis, row_basis;
   int basis_type = NORMAL_BASIS;
+
+  LowRank make_shared_basis(const ClusterTree& node);
+  void make_shared_col_basis(const ClusterTree& node);
+  void make_shared_row_basis(const ClusterTree& node);
  public:
 
   // Special member functions
