@@ -3,6 +3,7 @@
 
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
+#include "hicma/classes/intitialization_helpers/matrix_initializer.h"
 
 #include <array>
 #include <cstdint>
@@ -13,25 +14,24 @@
 namespace hicma
 {
 
+class BasisCopyTracker;
 class Dense;
 class ClusterTree;
-class MatrixInitializer;
 
 class Hierarchical : public Matrix {
  public:
   std::array<int64_t, 2> dim = {0, 0};
  private:
   std::vector<MatrixProxy> data;
-
  public:
   // Special member functions
   Hierarchical() = default;
 
   virtual ~Hierarchical() = default;
 
-  Hierarchical(const Hierarchical& A) = default;
+  Hierarchical(const Hierarchical& A);
 
-  Hierarchical& operator=(const Hierarchical& A) = default;
+  Hierarchical& operator=(const Hierarchical& A);
 
   Hierarchical(Hierarchical&& A) = default;
 
@@ -40,16 +40,20 @@ class Hierarchical : public Matrix {
   // Conversion constructors
   Hierarchical(MatrixProxy&&);
 
-  Hierarchical(const Matrix& A, int64_t n_row_blocks, int64_t n_col_blocks);
+  Hierarchical(
+    const Matrix& A, int64_t n_row_blocks, int64_t n_col_blocks, bool copy=true
+  );
+
+  Hierarchical(const Matrix& A, const Hierarchical& like, bool copy=true);
 
   // Additional constructors
+  Hierarchical(const Hierarchical& A, BasisCopyTracker& tracker);
+
   Hierarchical(int64_t n_row_blocks, int64_t n_col_blocks=1);
 
   Hierarchical(
     const ClusterTree& node,
-    const MatrixInitializer& initer,
-    int64_t rank,
-    int64_t admis
+    MatrixInitializer& initer
   );
 
   Hierarchical(
@@ -63,6 +67,7 @@ class Hierarchical : public Matrix {
     int64_t nleaf,
     int64_t admis=1,
     int64_t n_row_blocks=2, int64_t n_col_blocks=2,
+    int basis_type=NORMAL_BASIS,
     int64_t row_start=0, int64_t col_start=0
   );
 
@@ -87,8 +92,6 @@ class Hierarchical : public Matrix {
   void restore_col(const Hierarchical& Sp, const Hierarchical& QL);
 
   void col_qr(int64_t j, Hierarchical& Q, Hierarchical &R);
-
-  bool is_admissible(const ClusterTree& node, int64_t dist_to_diag);
 };
 
 } // namespace hicma

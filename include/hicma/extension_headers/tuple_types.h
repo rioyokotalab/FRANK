@@ -1,4 +1,4 @@
-#if !defined(hicma_extension_headers_tuple_types_h)
+#ifndef hicma_extension_headers_tuple_types_h
 #define hicma_extension_headers_tuple_types_h
 
 #include <cstdint>

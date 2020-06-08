@@ -4,9 +4,7 @@
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
-#include "hicma/classes/low_rank_shared.h"
 #include "hicma/classes/matrix.h"
-#include "hicma/classes/no_copy_split.h"
 #include "hicma/operations/arithmetic.h"
 #include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
@@ -64,14 +62,14 @@ define_method(
 define_method(
   DoublePair, collect_diff_norm_omm, (const Hierarchical& A, const Matrix& B)
 ) {
-  NoCopySplit BH(B, A.dim[0], A.dim[1]);
+  Hierarchical BH(B, A.dim[0], A.dim[1], false);
   return collect_diff_norm_omm(A, BH);
 }
 
 define_method(
   DoublePair, collect_diff_norm_omm, (const Matrix& A, const Hierarchical& B)
 ) {
-  NoCopySplit AH(A, B.dim[0], B.dim[1]);
+  Hierarchical AH(A, B.dim[0], B.dim[1], false);
   return collect_diff_norm_omm(AH, B);
 }
 
@@ -93,37 +91,6 @@ define_method(
   } else {
     return collect_diff_norm_omm(Dense(A), Dense(B));
   }
-}
-
-define_method(
-  DoublePair, collect_diff_norm_omm, (const Dense& A, const LowRankShared& B)
-) {
-  return collect_diff_norm_omm(A, Dense(B));
-}
-
-define_method(
-  DoublePair, collect_diff_norm_omm, (const LowRankShared& A, const Dense& B)
-) {
-  return collect_diff_norm_omm(Dense(A), B);
-}
-
-define_method(
-  DoublePair, collect_diff_norm_omm, (const LowRank& A, const LowRankShared& B)
-) {
-  return collect_diff_norm_omm(Dense(A), Dense(B));
-}
-
-define_method(
-  DoublePair, collect_diff_norm_omm, (const LowRankShared& A, const LowRank& B)
-) {
-  return collect_diff_norm_omm(Dense(A), Dense(B));
-}
-
-define_method(
-  DoublePair, collect_diff_norm_omm,
-  (const LowRankShared& A, const LowRankShared& B)
-) {
-  return collect_diff_norm_omm(Dense(A), Dense(B));
 }
 
 define_method(

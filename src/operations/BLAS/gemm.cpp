@@ -4,10 +4,8 @@
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
-#include "hicma/classes/low_rank_shared.h"
 #include "hicma/classes/matrix.h"
-#include "hicma/classes/no_copy_split.h"
-#include "hicma/classes/uniform_hierarchical.h"
+#include "hicma/classes/shared_basis.h"
 #include "hicma/gpu_batch/batch.h"
 #include "hicma/operations/arithmetic.h"
 #include "hicma/operations/misc.h"
@@ -138,12 +136,42 @@ define_method(
 define_method(
   void, gemm_omm,
   (
+    const SharedBasis& A, const SharedBasis& B, Matrix& C,
+    double alpha, double beta
+  )
+) {
+  gemm(*A.get_ptr(), *B.get_ptr(), C, alpha, beta);
+}
+
+define_method(
+  void, gemm_omm,
+  (
+    const SharedBasis& A, const Matrix& B, Matrix& C,
+    double alpha, double beta
+  )
+) {
+  gemm(*A.get_ptr(), B, C, alpha, beta);
+}
+
+define_method(
+  void, gemm_omm,
+  (
+    const Matrix& A, const SharedBasis& B, Matrix& C,
+    double alpha, double beta
+  )
+) {
+  gemm(A, *B.get_ptr(), C, alpha, beta);
+}
+
+define_method(
+  void, gemm_omm,
+  (
     const LowRank& A, const Dense& B, Dense& C,
     double alpha, double beta
   )
 ) {
-  Dense SxVxB = gemm(A.S(), gemm(A.V(), B));
-  gemm(A.U(), SxVxB, C, alpha, beta);
+  Dense SxVxB = gemm(A.S, gemm(A.V, B));
+  gemm(A.U, SxVxB, C, alpha, beta);
 }
 
 define_method(
@@ -153,8 +181,8 @@ define_method(
     double alpha, double beta
   )
 ) {
-  Dense AxUxS = gemm(gemm(A, B.U()), B.S());
-  gemm(AxUxS, B.V(), C, alpha, beta);
+  Dense AxUxS = gemm(gemm(A, B.U), B.S);
+  gemm(AxUxS, B.V, C, alpha, beta);
 }
 
 define_method(
@@ -164,8 +192,8 @@ define_method(
     double alpha, double beta
   )
 ) {
-  Dense UxSxVxUxS = gemm(A.U(), gemm(gemm(A.S(), gemm(A.V(), B.U())), B.S()));
-  gemm(UxSxVxUxS, B.V(), C, alpha, beta);
+  Dense UxSxVxUxS = gemm(A.U, gemm(gemm(A.S, gemm(A.V, B.U)), B.S));
+  gemm(UxSxVxUxS, B.V, C, alpha, beta);
 }
 
 define_method(
@@ -175,7 +203,7 @@ define_method(
     double alpha, double beta
   )
 ) {
-  C.S() *= beta;
+  C.S *= beta;
   C += LowRank(gemm(A, B, alpha), C.rank);
 }
 
@@ -186,9 +214,9 @@ define_method(
     double alpha, double beta
   )
 ) {
-  Dense AVxB = gemm(A.V(), B, alpha);
-  LowRank AxB(A.U(), A.S(), AVxB);
-  C.S() *= beta;
+  Dense AVxB = gemm(A.V, B, alpha);
+  LowRank AxB(A.U, A.S, AVxB);
+  C.S *= beta;
   C += AxB;
 }
 
@@ -199,9 +227,9 @@ define_method(
     double alpha, double beta
   )
 ) {
-  Dense AxBU = gemm(A, B.U(), alpha);
-  LowRank AxB(AxBU, B.S(), B.V());
-  C.S() *= beta;
+  Dense AxBU = gemm(A, B.U, alpha);
+  LowRank AxB(AxBU, B.S, B.V);
+  C.S *= beta;
   C += AxB;
 }
 
@@ -212,9 +240,9 @@ define_method(
     double alpha, double beta
   )
 ) {
-  Dense AVxB = gemm(A.V(), B, alpha);
-  LowRank AxB(A.U(), A.S(), AVxB);
-  C.S() *= beta;
+  Dense AVxB = gemm(A.V, B, alpha);
+  LowRank AxB(A.U, A.S, AVxB);
+  C.S *= beta;
   C += AxB;
 }
 
@@ -225,9 +253,9 @@ define_method(
     double alpha, double beta
   )
 ) {
-  Dense AxBU = gemm(A, B.U(), alpha);
-  LowRank AxB(AxBU, B.S(), B.V());
-  C.S() *= beta;
+  Dense AxBU = gemm(A, B.U, alpha);
+  LowRank AxB(AxBU, B.S, B.V);
+  C.S *= beta;
   C += AxB;
 }
 
@@ -258,9 +286,9 @@ define_method(
   )
 ) {
   assert(A.rank == B.rank);
-  Dense SxVxUxS = gemm(gemm(A.S(), gemm(A.V(), B.U())), B.S(), alpha);
-  LowRank AxB(A.U(), SxVxUxS, B.V());
-  C.S() *= beta;
+  Dense SxVxUxS = gemm(gemm(A.S, gemm(A.V, B.U)), B.S, alpha);
+  LowRank AxB(A.U, SxVxUxS, B.V);
+  C.S *= beta;
   C += AxB;
 }
 
@@ -291,8 +319,8 @@ define_method(
     double alpha, double beta
   )
 ) {
-  NoCopySplit AH(A, C.dim[0], 1);
-  NoCopySplit BH(B, 1, C.dim[1]);
+  Hierarchical AH(A, C.dim[0], 1, false);
+  Hierarchical BH(B, 1, C.dim[1], false);
   gemm(AH, BH, C, alpha, beta);
 }
 
@@ -303,8 +331,8 @@ define_method(
     double alpha, double beta
   )
 ) {
-  Dense SxVxUxS = gemm(gemm(A.S(), gemm(A.V(), B.U())), B.S(), alpha);
-  LowRank AxB(A.U(), SxVxUxS, B.V());
+  Dense SxVxUxS = gemm(gemm(A.S, gemm(A.V, B.U)), B.S, alpha);
+  LowRank AxB(A.U, SxVxUxS, B.V);
   C *= beta;
   C += AxB;
 }
@@ -317,7 +345,7 @@ define_method(
   )
 ) {
   assert(A.dim[0] == C.dim[0]);
-  NoCopySplit BH(B, A.dim[1], C.dim[1]);
+  Hierarchical BH(B, A.dim[1], C.dim[1], false);
   gemm(A, BH, C, alpha, beta);
 }
 
@@ -329,7 +357,7 @@ define_method(
   )
 ) {
   assert(A.dim[0] == C.dim[0]);
-  NoCopySplit BH(B, A.dim[1], C.dim[1]);
+  Hierarchical BH(B, A.dim[1], C.dim[1], false);
   gemm(A, BH, C, alpha, beta);
 }
 
@@ -341,7 +369,7 @@ define_method(
   )
 ) {
   assert(B.dim[1] == C.dim[1]);
-  NoCopySplit AH(A, C.dim[0], B.dim[0]);
+  Hierarchical AH(A, C.dim[0], B.dim[0], false);
   gemm(AH, B, C, alpha, beta);
 }
 
@@ -353,7 +381,7 @@ define_method(
   )
 ) {
   assert(B.dim[1] == C.dim[1]);
-  NoCopySplit AH(A, C.dim[0], B.dim[0]);
+  Hierarchical AH(A, C.dim[0], B.dim[0], false);
   gemm(AH, B, C, alpha, beta);
 }
 
@@ -365,7 +393,7 @@ define_method(
   )
 ) {
   assert(A.dim[1] == B.dim[0]);
-  NoCopySplit CH(C, A.dim[0], B.dim[1]);
+  Hierarchical CH(C, A.dim[0], B.dim[1], false);
   gemm(A, B, CH, alpha, beta);
 }
 
@@ -376,8 +404,8 @@ define_method(
     double alpha, double beta
   )
 ) {
-  NoCopySplit AH(A, 1, B.dim[0]);
-  NoCopySplit CH(C, 1, B.dim[1]);
+  Hierarchical AH(A, 1, B.dim[0], false);
+  Hierarchical CH(C, 1, B.dim[1], false);
   gemm(AH, B, CH, alpha, beta);
 }
 
@@ -388,8 +416,8 @@ define_method(
     double alpha, double beta
   )
 ) {
-  NoCopySplit BH(B, A.dim[1], 1);
-  NoCopySplit CH(C, A.dim[0], 1);
+  Hierarchical BH(B, A.dim[1], 1, false);
+  Hierarchical CH(C, A.dim[0], 1, false);
   gemm(A, BH, CH, alpha, beta);
 }
 
@@ -400,8 +428,8 @@ define_method(
     double alpha, double beta
   )
 ) {
-  NoCopySplit AH(A, 1, B.dim[0]);
-  NoCopySplit CH(C, 1, B.dim[1]);
+  Hierarchical AH(A, 1, B.dim[0], false);
+  Hierarchical CH(C, 1, B.dim[1], false);
   gemm(AH, B, CH, alpha, beta);
 }
 
@@ -412,220 +440,9 @@ define_method(
     double alpha, double beta
   )
 ) {
-  NoCopySplit BH(B, A.dim[1], 1);
-  NoCopySplit CH(C, A.dim[0], 1);
+  Hierarchical BH(B, A.dim[1], 1, false);
+  Hierarchical CH(C, A.dim[0], 1, false);
   gemm(A, BH, CH, alpha, beta);
-}
-
-define_method(
-  void, gemm_omm,
-  (
-    const LowRankShared& A, const Dense& B, Dense& C,
-    double alpha, double beta
-  )
-) {
-  Dense SxVxB = gemm(A.S, gemm(A.V, B));
-  gemm(A.U, SxVxB, C, alpha, beta);
-}
-
-define_method(
-  void, gemm_omm,
-  (
-    const LowRankShared& A, const LowRankShared& B, Dense& C,
-    double alpha, double beta
-  )
-) {
-  // TODO Exactly the same as gemm(LR, LR, D)! Consider making LRS a child of LR
-  Dense UxSxVxUxS = gemm(A.U, gemm(gemm(A.S, gemm(A.V, B.U)), B.S));
-  gemm(UxSxVxUxS, B.V, C, alpha, beta);
-}
-
-define_method(
-  void, gemm_omm,
-  (
-    const LowRankShared& A, const LowRankShared& B, LowRankShared& C,
-    double alpha, double beta
-  )
-) {
-  assert(C.U == A.U);
-  assert(C.V == B.V);
-  Dense SxVxU = gemm(A.S, gemm(A.V, B.U));
-  gemm(SxVxU, B.S, C.S, alpha, beta);
-}
-
-declare_method(
-  void, gemm_regular_only_omm,
-  (
-    virtual_<const Matrix&>, virtual_<const Matrix&>, virtual_<Matrix&>,
-    double, double
-  )
-)
-
-void gemm_regular_only(
-  const Matrix& A, const Matrix& B, Matrix& C, double alpha, double beta
-) {
-  gemm_regular_only_omm(A, B, C, alpha, beta);
-}
-
-define_method(
-  void, gemm_regular_only_omm,
-  (
-    const UniformHierarchical& A, const Dense& B, Dense& C,
-    double alpha, double beta
-  )
-) {
-  gemm(A, B, C, alpha, beta);
-}
-
-define_method(
-  void, gemm_regular_only_omm,
-  (
-    const UniformHierarchical& A, const Hierarchical& B, Hierarchical& C,
-    double alpha, double beta
-  )
-) {
-  for (int64_t i=0; i<C.dim[0]; i++) {
-    for (int64_t j=0; j<C.dim[1]; j++) {
-      gemm_regular_only(A(i,0), B(0, j), C(i, j), alpha, beta);
-      for (int64_t k=1; k<A.dim[1]; k++) {
-        gemm_regular_only(A(i, k), B(k, j), C(i, j), alpha, 1);
-      }
-    }
-  }
-}
-
-define_method(
-  void, gemm_regular_only_omm,
-  (
-    [[maybe_unused]] const LowRankShared& A, [[maybe_unused]] const Dense& B,
-    Dense& C,
-    [[maybe_unused]] double alpha, double beta
-  )
-) {
-  // Only apply beta
-  C *= beta;
-}
-
-define_method(
-  void, gemm_regular_only_omm,
-  (
-    const Dense& A, const Dense& B, Dense& C,
-    double alpha, double beta
-  )
-) {
-  gemm(A, B, C, alpha, beta);
-}
-
-define_method(
-  void, gemm_regular_only_omm,
-  (
-    const Matrix& A, const Matrix& B, Matrix& C,
-    [[maybe_unused]] double alpha, [[maybe_unused]] double beta
-  )
-) {
-  omm_error_handler("gemm_regular_only", {A, B, C}, __FILE__, __LINE__);
-  std::abort();
-}
-
-declare_method(
-  bool, gemm_shared_only_omm,
-  (
-    virtual_<const Matrix&>, virtual_<const Matrix&>, virtual_<Matrix&>,
-    double, double
-  )
-)
-
-bool gemm_shared_only(
-  const Matrix& A, const Matrix& B, Matrix& C, double alpha, double beta
-) {
-  return gemm_shared_only_omm(A, B, C, alpha, beta);
-}
-
-define_method(
-  bool, gemm_shared_only_omm,
-  (
-    const LowRankShared& A, const Dense& B, Dense& C,
-    double alpha, double beta
-  )
-) {
-  gemm(A.S, B, C, alpha, beta);
-  return true;
-}
-
-define_method(
-  bool, gemm_shared_only_omm,
-  (
-    [[maybe_unused]] const Dense& A, [[maybe_unused]] const Matrix& B,
-    [[maybe_unused]] Matrix& C,
-    [[maybe_unused]] double alpha, [[maybe_unused]] double beta
-  )
-) {
-  // Do nothing
-  return false;
-}
-
-define_method(
-  bool, gemm_shared_only_omm,
-  (
-    [[maybe_unused]] const UniformHierarchical& A,
-    [[maybe_unused]] const Matrix& B,
-    [[maybe_unused]] Matrix& C,
-    [[maybe_unused]] double alpha, [[maybe_unused]] double beta
-  )
-) {
-  // Do nothing
-  return false;
-}
-
-define_method(
-  bool, gemm_shared_only_omm,
-  (
-    const Matrix& A, const Matrix& B, Matrix& C,
-    [[maybe_unused]] double alpha, [[maybe_unused]] double beta
-  )
-) {
-  omm_error_handler("gemm_shared_only", {A, B, C}, __FILE__, __LINE__);
-  std::abort();
-}
-
-define_method(
-  void, gemm_omm,
-  (
-    const UniformHierarchical& A, const Dense& B, Dense& C,
-    double alpha, double beta
-  )
-) {
-  C *= beta;
-  NoCopySplit BH(B, A.dim[1], 1);
-  NoCopySplit CH(C, A.dim[0], 1);
-  // This function causes the recursion
-  gemm_regular_only(A, BH, CH, alpha, 1);
-  Hierarchical RowBasisB(1, A.dim[1]);
-  // Loop over columns of output
-  // Put together shared RowBasis and column of B once
-  // Use result multiple times (faster) to get column of C
-  for (int64_t j=0; j<CH.dim[1]; j++) {
-    // TODO Create RowColBasis class and define interactions for it.
-    // The following loop really should be handled in those interactions.
-    // This loop is main reason for speed-up: multiplication with BH only here,
-    // rest is smaller stuff with rank as one of dimensios
-    for (int64_t k=0; k<A.dim[1]; k++) {
-      RowBasisB[k] = gemm(A.get_row_basis(k), BH(k, j));
-    }
-    for (int64_t i=0; i<CH.dim[0]; i++) {
-      Hierarchical SRowBasisB(1, RowBasisB.dim[1]);
-      for (int64_t k=0; k<A.dim[1]; k++) {
-        SRowBasisB[k] = Dense(
-          get_n_cols(A.get_col_basis(i)), get_n_cols(RowBasisB[k]));
-        // Returns whether an operations took place (false when Dense/UH)
-        bool shared = gemm_shared_only(
-          A(i, k), RowBasisB[k], SRowBasisB[k], 1, 0);
-        if (shared) {
-          gemm(A.get_col_basis(i), SRowBasisB[k], CH(i, j), alpha, 1);
-        }
-      }
-    }
-  }
 }
 
 // Fallback default, abort with error message
@@ -654,12 +471,42 @@ define_method(
   Dense, gemm_omm,
   (
     const Dense& A, const Dense& B,
-    double alpha, bool TransA,  bool TransB
+    double alpha, bool TransA, bool TransB
   )
 ) {
   Dense out(A.dim[TransA ? 1 : 0], B.dim[TransB ? 0 : 1]);
   gemm(A, B, out, TransA, TransB, alpha, 0);
   return out;
+}
+
+define_method(
+  Dense, gemm_omm,
+  (
+    const SharedBasis& A, const SharedBasis& B,
+    double alpha, bool TransA, bool TransB
+  )
+) {
+  return gemm(*A.get_ptr(), *B.get_ptr(), alpha, TransA, TransB);
+}
+
+define_method(
+  Dense, gemm_omm,
+  (
+    const SharedBasis& A, const Matrix& B,
+    double alpha, bool TransA, bool TransB
+  )
+) {
+  return gemm(*A.get_ptr(), B, alpha, TransA, TransB);
+}
+
+define_method(
+  Dense, gemm_omm,
+  (
+    const Matrix& A, const SharedBasis& B,
+    double alpha, bool TransA, bool TransB
+  )
+) {
+  return gemm(A, *B.get_ptr(), alpha, TransA, TransB);
 }
 
 define_method(
@@ -673,8 +520,8 @@ define_method(
   assert(TransA == false);
   assert(TransB == false);
   Dense out(get_n_rows(A), B.dim[1]);
-  NoCopySplit outH(out, A.dim[0], 1);
-  NoCopySplit BH(B, A.dim[1], 1);
+  Hierarchical outH(out, A.dim[0], 1, false);
+  Hierarchical BH(B, A.dim[1], 1, false);
   gemm(A, BH, outH, alpha, 0);
   return out;
 }
@@ -690,8 +537,8 @@ define_method(
   assert(TransA == false);
   assert(TransB == false);
   Dense out(A.dim[0], get_n_cols(B));
-  NoCopySplit outH(out, 1, B.dim[1]);
-  NoCopySplit AH(A, 1, B.dim[0]);
+  Hierarchical outH(out, 1, B.dim[1], false);
+  Hierarchical AH(A, 1, B.dim[0], false);
   gemm(AH, B, outH, alpha, 0);
   return out;
 }

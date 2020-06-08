@@ -27,11 +27,11 @@ define_method(void, transpose_omm, (Dense& A)) {
 
 define_method(void, transpose_omm, (LowRank& A)) {
   using std::swap;
-  transpose(A.U());
-  transpose(A.S());
-  transpose(A.V());
+  transpose(A.U);
+  transpose(A.S);
+  transpose(A.V);
   swap(A.dim[0], A.dim[1]);
-  swap(A.U(), A.V());
+  swap(A.U, A.V);
 }
 
 define_method(void, transpose_omm, (Hierarchical& A)) {

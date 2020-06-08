@@ -5,6 +5,7 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
+#include "hicma/classes/intitialization_helpers/basis_copy_tracker.h"
 #include "hicma/classes/intitialization_helpers/cluster_tree.h"
 #include "hicma/classes/intitialization_helpers/matrix_initializer.h"
 #include "hicma/functions.h"
@@ -28,6 +29,46 @@ using yorel::yomm2::virtual_;
 namespace hicma
 {
 
+Hierarchical::Hierarchical(const Hierarchical& A) : Matrix(A) {
+  BasisCopyTracker tracker;
+  *this = Hierarchical(A, tracker);
+}
+
+declare_method(
+  MatrixProxy, copy_block, (virtual_<const Matrix&>, BasisCopyTracker&)
+)
+define_method(
+  MatrixProxy, copy_block, (const Hierarchical& A, BasisCopyTracker& tracker)
+) {
+  return Hierarchical(A, tracker);
+}
+define_method(
+  MatrixProxy, copy_block,
+  (const Dense& A, [[maybe_unused]] BasisCopyTracker& tracker)
+) {
+  return A;
+}
+define_method(
+  MatrixProxy, copy_block, (const LowRank& A, BasisCopyTracker& tracker)
+) {
+  return tracker.tracked_copy(A);
+}
+
+Hierarchical::Hierarchical(
+  const Hierarchical& A, BasisCopyTracker& tracker
+) : Matrix(A), dim(A.dim), data(dim[0]*dim[1]) {
+  for (int64_t i=0; i<A.dim[0]; ++i) {
+    for (int64_t j=0; j<A.dim[1]; ++j) {
+      (*this)(i, j) = copy_block(A(i, j), tracker);
+    }
+  }
+}
+
+Hierarchical& Hierarchical::operator=(const Hierarchical& A) {
+  *this = Hierarchical(A);
+  return *this;
+}
+
 declare_method(Hierarchical&&, move_from_hierarchical, (virtual_<Matrix&>))
 
 Hierarchical::Hierarchical(MatrixProxy&& A)
@@ -43,43 +84,23 @@ define_method(Hierarchical&&, move_from_hierarchical, (Matrix& A)) {
 }
 
 Hierarchical::Hierarchical(
-  const Matrix& A, int64_t n_row_blocks, int64_t n_col_blocks
+  const Matrix& A, int64_t n_row_blocks, int64_t n_col_blocks, bool copy
 ) : dim{n_row_blocks, n_col_blocks}, data(dim[0]*dim[1])
 {
   ClusterTree node(get_n_rows(A), get_n_cols(A), dim[0], dim[1]);
-  fill_hierarchical_from(*this, A, node);
-}
-
-define_method(
-  void, fill_hierarchical_from,
-  (Hierarchical& H, const Dense& A, const ClusterTree& node)
-) {
-  timing::start("fill_hierarchical_from(D)");
   for (const ClusterTree& child : node) {
-    H[child] = A.get_part(
-      child.dim[0], child.dim[1], child.start[0], child.start[1]);
+    (*this)[child] = get_part(A, child, copy);
   }
-  timing::stop("fill_hierarchical_from(D)");
 }
 
-define_method(
-  void, fill_hierarchical_from,
-  (Hierarchical& H, const LowRank& A, const ClusterTree& node)
-) {
-  timing::start("fill_hierarchical_from(LR)");
+Hierarchical::Hierarchical(const Matrix& A, const Hierarchical& like, bool copy)
+: dim(like.dim), data(dim[0]*dim[1]) {
+  assert(get_n_rows(A) == get_n_rows(like));
+  assert(get_n_cols(A) == get_n_cols(like));
+  ClusterTree node(like);
   for (const ClusterTree& child : node) {
-    H[child] = A.get_part(
-      child.dim[0], child.dim[1], child.start[0], child.start[1]);
+    (*this)[child] = get_part(A, child, copy);
   }
-  timing::stop("fill_hierarchical_from(LR)");
-}
-
-define_method(
-  void, fill_hierarchical_from,
-  (Hierarchical& H, const Matrix& A, [[maybe_unused]] const ClusterTree& node)
-) {
-  omm_error_handler("fill_hierarchical_from", {H, A}, __FILE__, __LINE__);
-  std::abort();
 }
 
 Hierarchical::Hierarchical(int64_t n_row_blocks, int64_t n_col_blocks)
@@ -87,18 +108,16 @@ Hierarchical::Hierarchical(int64_t n_row_blocks, int64_t n_col_blocks)
 
 Hierarchical::Hierarchical(
   const ClusterTree& node,
-  const MatrixInitializer& initer,
-  int64_t rank,
-  int64_t admis
+  MatrixInitializer& initer
 ) : dim(node.block_dim), data(dim[0]*dim[1]) {
   for (const ClusterTree& child : node) {
-    if (is_admissible(child, admis)) {
-      (*this)[child] = LowRank(initer.get_dense_representation(child), rank);
+    if (initer.is_admissible(child)) {
+      (*this)[child] = initer.get_compressed_representation(child);
     } else {
       if (child.is_leaf()) {
         (*this)[child] = initer.get_dense_representation(child);
       } else {
-        (*this)[child] = Hierarchical(child, initer, rank, admis);
+        (*this)[child] = Hierarchical(child, initer);
       }
     }
   }
@@ -116,15 +135,17 @@ Hierarchical::Hierarchical(
   int64_t nleaf,
   int64_t admis,
   int64_t n_row_blocks, int64_t n_col_blocks,
+  int basis_type,
   int64_t row_start, int64_t col_start
-) : Hierarchical(
-      ClusterTree(
-        n_rows, n_cols, n_row_blocks, n_col_blocks, row_start, col_start, nleaf
-      ),
-      MatrixInitializer(func, x),
-      rank, admis
-    )
-{}
+) {
+  MatrixInitializer initer(func, x, admis, rank, basis_type);
+  *this = Hierarchical(
+    ClusterTree(
+      n_rows, n_cols, n_row_blocks, n_col_blocks, row_start, col_start, nleaf
+    ),
+    initer
+  );
+}
 
 const MatrixProxy& Hierarchical::operator[](const ClusterTree& node) const {
   return (*this)(node.rel_pos[0], node.rel_pos[1]);
@@ -246,17 +267,6 @@ void Hierarchical::col_qr(int64_t j, Hierarchical& Q, Hierarchical &R) {
     qr(Aj, SpQj, R(0, 0));
     Q.restore_col(SpQj, QL);
   }
-}
-
-bool Hierarchical::is_admissible(
-  const ClusterTree& node, int64_t dist_to_diag
-) {
-  bool admissible = true;
-  // Main admissibility condition
-  admissible &= (node.dist_to_diag() > dist_to_diag);
-  // Vectors are never admissible
-  admissible &= (node.dim[0] > 1 && node.dim[1] > 1);
-  return admissible;
 }
 
 } // namespace hicma

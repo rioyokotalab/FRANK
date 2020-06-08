@@ -13,7 +13,8 @@ namespace hicma
 
 ClusterTree::ClusterTree(const ClusterTree& A)
 : dim(A.dim), block_dim(A.block_dim), start(A.start), nleaf(A.nleaf),
-  rel_pos(A.rel_pos), abs_pos(A.abs_pos), parent(nullptr), children(A.children)
+  level(A.level), rel_pos(A.rel_pos), abs_pos(A.abs_pos), parent(nullptr),
+  children(A.children)
 {
   for (ClusterTree& child_node : children) {
     child_node.parent = this;
@@ -25,11 +26,12 @@ ClusterTree::ClusterTree(
   int64_t n_row_blocks, int64_t n_col_blocks,
   int64_t i_start, int64_t j_start,
   int64_t nleaf,
+  int64_t level,
   int64_t i_rel, int64_t j_rel,
   int64_t i_abs, int64_t j_abs,
   ClusterTree* parent
 ) : dim{n_rows, n_cols}, block_dim{n_row_blocks, n_col_blocks},
-    start{i_start, j_start}, nleaf(nleaf), rel_pos{i_rel, j_rel},
+    start{i_start, j_start}, nleaf(nleaf), level(level), rel_pos{i_rel, j_rel},
     abs_pos{i_abs, j_abs}, parent(parent)
 {
   if (parent == nullptr || !is_leaf()) {
@@ -53,6 +55,7 @@ ClusterTree::ClusterTree(
           n_row_blocks, n_col_blocks,
           child_row_start, child_col_start,
           nleaf,
+          level+1,
           i, j, child_i_abs, child_j_abs,
           this
         );
@@ -88,11 +91,12 @@ ClusterTree& ClusterTree::operator()(int64_t i, int64_t j) {
 ClusterTree::ClusterTree(
   const Hierarchical& like,
   int64_t i_start, int64_t j_start,
+  int64_t level,
   int64_t i_rel, int64_t j_rel,
   int64_t i_abs, int64_t j_abs,
   ClusterTree* parent
 ) : dim{get_n_rows(like), get_n_cols(like)},
-    block_dim{like.dim[0], like.dim[1]}, start{i_start, j_start},
+    block_dim{like.dim[0], like.dim[1]}, start{i_start, j_start}, level(level),
     rel_pos{i_rel, j_rel}, abs_pos{i_abs, j_abs}, parent(parent)
 {
   children.reserve(block_dim[0]*block_dim[1]);
@@ -109,6 +113,7 @@ ClusterTree::ClusterTree(
         0, 0,
         row_start, col_start,
         nleaf,
+        level+1,
         i, j, child_i_abs, child_j_abs,
         this
       );

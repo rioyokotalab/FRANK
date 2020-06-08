@@ -65,7 +65,8 @@ define_method(DenseIndexSetPair, one_sided_id_omm, (Dense& A, int64_t k)) {
   // First case applies also when A.dim[1] > A.dim[0] end k == A.dim[0]
   if (k < std::min(A.dim[0], A.dim[1]) || A.dim[1] > A.dim[0]) {
     Dense R11, T;
-    // TODO Find more abstract way for this. NoCopySplit with designed subnodes?
+    // TODO Find more abstract way for this.
+    // Hierarchical with designed subnodes?
     std::tie(R11, T) = get_R11_R12(R, k);
     trsm(R11, T, TRSM_UPPER);
     col_basis = interleave_id(T, selected_cols);

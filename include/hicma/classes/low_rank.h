@@ -3,6 +3,7 @@
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/matrix.h"
+#include "hicma/classes/matrix_proxy.h"
 
 #include <array>
 #include <cstdint>
@@ -12,9 +13,9 @@ namespace hicma
 {
 
 class LowRank : public Matrix {
- private:
-  Dense _U, _S, _V;
  public:
+  MatrixProxy U, V;
+  Dense S;
   std::array<int64_t, 2> dim = {0, 0};
   int64_t rank = 0;
 
@@ -31,26 +32,17 @@ class LowRank : public Matrix {
 
   LowRank& operator=(LowRank&& A) = default;
 
-  // Getters and setters
-  virtual Dense& U();
-  virtual const Dense& U() const;
-
-  virtual Dense& S();
-  virtual const Dense& S() const;
-
-  virtual Dense& V();
-  virtual const Dense& V() const;
-
   // Additional constructors
   LowRank(int64_t n_rows, int64_t n_cols, int64_t k);
 
   LowRank(const Dense& A, int64_t k);
 
-  LowRank(const Dense& U, const Dense& S, const Dense& V);
+  LowRank(const Matrix& U, const Dense& S, const Matrix& V, bool copy_S=false);
 
   LowRank(
+    const LowRank& A,
     int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start,
-    const LowRank& A
+    bool copy=false
   );
 
   // Utility methods
@@ -59,10 +51,6 @@ class LowRank : public Matrix {
   void mergeS(const LowRank& A, const LowRank& B);
 
   void mergeV(const LowRank& A, const LowRank& B);
-
-  LowRank get_part(
-    int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start
-  ) const;
 };
 
 } // namespace hicma

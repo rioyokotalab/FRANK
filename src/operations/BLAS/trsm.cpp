@@ -5,7 +5,8 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
-#include "hicma/classes/no_copy_split.h"
+#include "hicma/classes/shared_basis.h"
+#include "hicma/classes/intitialization_helpers/basis_copy_tracker.h"
 #include "hicma/util/omm_error_handler.h"
 #include "hicma/util/timer.h"
 
@@ -84,40 +85,33 @@ define_method(
 
 define_method(void, trsm_omm, (const Dense& A, Dense& B, int uplo, int lr)) {
   timing::start("DTRSM");
-  switch (uplo) {
-  case TRSM_UPPER:
-    cblas_dtrsm(
-      CblasRowMajor,
-      lr==TRSM_LEFT?CblasLeft:CblasRight, CblasUpper,
-      CblasNoTrans, CblasNonUnit,
-      B.dim[0], B.dim[1],
-      1,
-      &A, A.stride,
-      &B, B.stride
-    );
-    break;
-  case TRSM_LOWER:
-    cblas_dtrsm(
-      CblasRowMajor,
-      lr==TRSM_LEFT?CblasLeft:CblasRight, CblasLower,
-      CblasNoTrans, CblasUnit,
-      B.dim[0], B.dim[1],
-      1,
-      &A, A.stride,
-      &B, B.stride
-    );
-    break;
-  }
+  cblas_dtrsm(
+    CblasRowMajor,
+    lr==TRSM_LEFT?CblasLeft:CblasRight,
+    uplo==TRSM_UPPER?CblasUpper:CblasLower,
+    CblasNoTrans,
+    uplo==TRSM_UPPER?CblasNonUnit:CblasUnit,
+    B.dim[0], B.dim[1],
+    1,
+    &A, A.stride,
+    &B, B.stride
+  );
   timing::stop("DTRSM");
 }
 
+define_method(
+  void, trsm_omm, (const Matrix& A, SharedBasis& B, int uplo, int lr)
+) {
+  trsm(A, *B.get_ptr(), uplo, lr);
+}
+
 define_method(void, trsm_omm, (const Matrix& A, LowRank& B, int uplo, int lr)) {
-  switch (uplo) {
-  case TRSM_UPPER:
-    trsm(A, B.V(), uplo, lr);
+  switch (lr) {
+  case TRSM_LEFT:
+    trsm(A, B.U, uplo, lr);
     break;
-  case TRSM_LOWER:
-    trsm(A, B.U(), uplo, lr);
+  case TRSM_RIGHT:
+    trsm(A, B.V, uplo, lr);
     break;
   }
 }
@@ -126,15 +120,8 @@ define_method(
   void, trsm_omm,
   (const Hierarchical& A, Dense& B, int uplo, int lr)
 ) {
-  NoCopySplit BH(B, lr==TRSM_LEFT?A.dim[0]:1, lr==TRSM_LEFT?1:A.dim[1]);
-  switch (uplo) {
-  case TRSM_UPPER:
-    trsm(A, BH, uplo, lr);
-    break;
-  case TRSM_LOWER:
-    trsm(A, BH, uplo, lr);
-    break;
-  }
+  Hierarchical BH(B, lr==TRSM_LEFT?A.dim[0]:1, lr==TRSM_LEFT?1:A.dim[1], false);
+  trsm(A, BH, uplo, lr);
 }
 
 // Fallback default, abort with error message
@@ -147,6 +134,39 @@ define_method(
 ) {
   omm_error_handler("trsm", {A, B}, __FILE__, __LINE__);
   std::abort();
+}
+
+define_method(
+  void, trsm_omm,
+  (const Matrix& A, LowRank& B, int uplo, int lr, BasisCopyTracker& tracker)
+) {
+  // Check if already applied
+  // If applied, do nothing
+  switch (lr) {
+  case TRSM_LEFT:
+    if (tracker.has_col_basis(B.U)) {
+      return;
+    } else {
+      tracker.register_col_basis(B.U);
+    }
+    break;
+  case TRSM_RIGHT:
+    if (tracker.has_row_basis(B.V)) {
+      return;
+    } else {
+      tracker.register_row_basis(B.V);
+    }
+    break;
+  }
+  // If not applied, use regular trsm to apply
+  trsm(A, B, uplo, lr);
+}
+
+define_method(
+  void, trsm_omm,
+  (const Matrix& A, Matrix& B, int uplo, int lr, BasisCopyTracker&)
+) {
+  trsm(A, B, uplo, lr);
 }
 
 } // namespace hicma
