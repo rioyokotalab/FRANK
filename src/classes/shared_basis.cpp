@@ -2,34 +2,60 @@
 #include "hicma/extension_headers/classes.h"
 
 #include "hicma/classes/dense.h"
+#include "hicma/classes/matrix.h"
+#include "hicma/classes/matrix_proxy.h"
 #include "hicma/util/omm_error_handler.h"
 
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
 
+#include <cstdint>
+#include <cstdlib>
 #include <memory>
+#include <utility>
+#include <vector>
 
 
 namespace hicma
 {
 
 SharedBasis::SharedBasis(const SharedBasis& A)
-: Matrix(A), representation(std::make_shared<Dense>(*A.representation)) {}
+: Matrix(A), transfer_matrix(std::make_shared<Dense>(*A.transfer_matrix)),
+  sub_bases(A.sub_bases)
+{}
 
 SharedBasis& SharedBasis::operator=(const SharedBasis& A) {
   Matrix::operator=(A);
-  representation = std::make_shared<Dense>(*A.representation);
+  transfer_matrix = std::make_shared<Dense>(*A.transfer_matrix);
+  sub_bases = A.sub_bases;
   return *this;
 }
 
 SharedBasis::SharedBasis(Dense&& A)
-: representation(std::make_shared<Dense>(std::move(A))) {}
+: transfer_matrix(std::make_shared<Dense>(std::move(A))) {}
 
-SharedBasis::SharedBasis(std::shared_ptr<Dense> A) : representation(A) {}
+SharedBasis::SharedBasis(std::shared_ptr<Dense> A) : transfer_matrix(A) {}
 
-SharedBasis SharedBasis::share() const { return SharedBasis(representation); }
+SharedBasis& SharedBasis::operator[](int64_t i) {
+  return sub_bases[i];
+}
 
-std::shared_ptr<Dense> SharedBasis::get_ptr() const { return representation; }
+const SharedBasis& SharedBasis::operator[](int64_t i) const {
+  return sub_bases[i];
+}
+
+int64_t SharedBasis::num_child_basis() const { return sub_bases.size(); }
+
+SharedBasis SharedBasis::share() const {
+  SharedBasis new_shared(transfer_matrix);
+  new_shared.sub_bases = std::vector<SharedBasis>(num_child_basis());
+  for (int64_t i=0; i<new_shared.num_child_basis(); ++i) {
+    new_shared[i] = (*this)[i].share();
+  }
+  return new_shared;
+}
+
+std::shared_ptr<Dense> SharedBasis::get_ptr() const { return transfer_matrix; }
 
 declare_method(
   bool, is_shared_omm, (virtual_<const Matrix&>, virtual_<const Matrix&>)
@@ -42,7 +68,14 @@ bool is_shared(const Matrix& A, const Matrix& B) {
 define_method(
   bool, is_shared_omm, (const SharedBasis& A, const SharedBasis& B)
 ) {
-  return A.get_ptr() == B.get_ptr();
+  bool shared = A.get_ptr() == B.get_ptr();
+  shared &= A.num_child_basis() == B.num_child_basis();
+  if (shared) {
+    for (int64_t i=0; i<A.num_child_basis(); ++i) {
+      shared &= is_shared(A[i], B[i]);
+    }
+  }
+  return shared;
 }
 
 define_method(bool, is_shared_omm, (const Dense&, const Dense&)) {
@@ -66,6 +99,8 @@ define_method(MatrixProxy, share_basis_omm, (const SharedBasis& A)) {
 }
 
 define_method(MatrixProxy, share_basis_omm, (const Dense& A)) {
+  // TODO Having this work for Dense might not be desirable (see is_shared check
+  // above)
   return Dense(A, A.dim[0], A.dim[1], 0, 0);
 }
 
