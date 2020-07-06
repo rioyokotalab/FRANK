@@ -95,12 +95,11 @@ define_method(void, fill_dense_from, (const Matrix& A, Matrix& B)) {
 }
 
 Dense::Dense(int64_t n_rows, int64_t n_cols)
-: dim{n_rows, n_cols}, stride(dim[1]),
-  data(std::make_shared<std::vector<double>>(dim[0]*dim[1])),
-  rel_start{0, 0}, data_ptr(&(*data)[0])
-{
+: dim{n_rows, n_cols}, stride(dim[1]) {
   timing::start("Dense alloc");
   (*data).resize(dim[0]*dim[1], 0);
+  rel_start = {0, 0};
+  data_ptr = &(*data)[0];
   timing::stop("Dense alloc");
 }
 
@@ -205,13 +204,14 @@ void Dense::resize(int64_t dim0, int64_t dim1) {
       // TODO this is the only place where data is used directly now. Would be
       // better not to use it and somehow use the regular index operator
       // efficiently.
-      // TODO This might/will cause issues when rel_start != {0, 0}
       (*data)[i*dim1+j] = (*this)(i, j);
     }
   }
   dim = {dim0, dim1};
   stride = dim[1];
   (*data).resize(dim[0]*dim[1]);
+  data_ptr = &(*data)[0];
+  rel_start = {0, 0};
   timing::stop("Dense resize");
 }
 
