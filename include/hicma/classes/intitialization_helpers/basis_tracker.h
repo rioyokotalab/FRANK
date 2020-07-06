@@ -3,7 +3,7 @@
 
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
-#include "hicma/classes/shared_basis.h"
+#include "hicma/classes/nested_basis.h"
 #include "hicma/classes/intitialization_helpers/index_range.h"
 
 #include <cstdint>

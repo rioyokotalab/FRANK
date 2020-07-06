@@ -3,7 +3,7 @@
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
-#include "hicma/classes/shared_basis.h"
+#include "hicma/classes/nested_basis.h"
 #include "hicma/classes/intitialization_helpers/basis_tracker.h"
 #include "hicma/classes/intitialization_helpers/cluster_tree.h"
 #include "hicma/functions.h"

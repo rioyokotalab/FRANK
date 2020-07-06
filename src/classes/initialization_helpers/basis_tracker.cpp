@@ -2,7 +2,7 @@
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/matrix.h"
-#include "hicma/classes/shared_basis.h"
+#include "hicma/classes/nested_basis.h"
 #include "hicma/classes/intitialization_helpers/index_range.h"
 #include "hicma/util/omm_error_handler.h"
 

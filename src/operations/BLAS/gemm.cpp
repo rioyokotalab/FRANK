@@ -5,7 +5,7 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
-#include "hicma/classes/shared_basis.h"
+#include "hicma/classes/nested_basis.h"
 #include "hicma/gpu_batch/batch.h"
 #include "hicma/operations/arithmetic.h"
 #include "hicma/operations/misc.h"

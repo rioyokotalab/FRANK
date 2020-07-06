@@ -7,7 +7,7 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
-#include "hicma/classes/shared_basis.h"
+#include "hicma/classes/nested_basis.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/LAPACK.h"
 #include "hicma/operations/arithmetic.h"
