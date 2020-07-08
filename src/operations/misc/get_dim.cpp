@@ -32,7 +32,16 @@ define_method(int64_t, get_n_rows_omm, (const Hierarchical& A)) {
 }
 
 define_method(int64_t, get_n_rows_omm, (const SharedBasis& A)) {
-  return get_n_rows(*A.get_ptr());
+  // TODO This can be made simpler if we store Vt instead of V
+  int64_t out = 0;
+  if (A.col_basis && A.num_child_basis() > 0) {
+    for (int64_t i=0; i<A.num_child_basis(); ++i) {
+      out += get_n_rows(A[i]);
+    }
+  } else {
+    out = get_n_rows(*A.get_ptr());
+  }
+  return out;
 }
 
 define_method(int64_t, get_n_rows_omm, (const Matrix& A)) {
@@ -56,7 +65,16 @@ define_method(int64_t, get_n_cols_omm, (const Hierarchical& A)) {
 }
 
 define_method(int64_t, get_n_cols_omm, (const SharedBasis& A)) {
-  return get_n_cols(*A.get_ptr());
+  // TODO This can be made simpler if we store Vt instead of V
+  int64_t out = 0;
+  if (!A.col_basis && A.num_child_basis() > 0) {
+    for (int64_t j=0; j<A.num_child_basis(); ++j) {
+      out += get_n_cols(A[j]);
+    }
+  } else {
+    out = get_n_cols(*A.get_ptr());
+  }
+  return out;
 }
 
 define_method(int64_t, get_n_cols_omm, (const Matrix& A)) {

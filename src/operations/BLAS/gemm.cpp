@@ -94,6 +94,110 @@ define_method(
   timing::stop("DGEMM");
 }
 
+define_method(
+  void, gemm_trans_omm,
+  (
+    const SharedBasis& A, const Dense& B, Dense& C,
+    bool TransA, bool TransB,
+    double alpha, double beta
+  )
+) {
+  // TODO Find way to remove if check?
+  if (A.num_child_basis() == 0) {
+      gemm(*A.get_ptr(), B, C, TransA, TransB, alpha, beta);
+  } else {
+    // TODO Allow transpose for B?
+    assert(!TransB);
+    if ((A.is_col_basis() && TransA) || (A.is_row_basis() && !TransA)) {
+      // TODO Won't work for sub-bases of different sizes
+      Hierarchical BH(B, A.num_child_basis(), 1, false);
+      Dense AsubB((*A.get_ptr()).dim[A.is_col_basis() ? 0 : 1], B.dim[1]);
+      Hierarchical AsubBH(AsubB, A.num_child_basis(), 1, false);
+      for (int64_t i=0; i<A.num_child_basis(); ++i) {
+        gemm(A[i], BH[i], AsubBH[i], TransA, false, 1, 0);
+      }
+      gemm(*A.get_ptr(), AsubB, C, TransA, false, alpha, beta);
+    } else if ((A.is_col_basis() && !TransA) || (A.is_row_basis() || TransA)) {
+      Dense AtransferB = gemm(*A.get_ptr(), B, 1, TransA, false);
+      // TODO Won't work for sub-bases of different sizes
+      Hierarchical CH(C, A.num_child_basis(), 1, false);
+      Hierarchical AtransferBH(AtransferB, A.num_child_basis(), 1, false);
+      for (int64_t i=0; i<A.num_child_basis(); ++i) {
+        gemm(A[i], AtransferBH[i], CH[i], TransA, false, alpha, beta);
+      }
+    }
+  }
+}
+
+define_method(
+  void, gemm_trans_omm,
+  (
+    const Dense& A, const SharedBasis& B, Dense& C,
+    bool TransA, bool TransB,
+    double alpha, double beta
+  )
+) {
+  if (B.num_child_basis() == 0) {
+    gemm(A, *B.get_ptr(), C, TransA, TransB, alpha, beta);
+  } else {
+    // TODO Allow transpose for A?
+    assert(!TransA);
+    if ((B.is_col_basis() && !TransB) || (B.is_row_basis() && TransB)) {
+      // TODO Won't work for sub-bases of different sizes
+      Hierarchical AH(A, 1, B.num_child_basis(), false);
+      Dense ABsub(A.dim[0], (*B.get_ptr()).dim[B.is_col_basis() ? 0 : 1]);
+      Hierarchical ABsubH(ABsub, 1, B.num_child_basis(), false);
+      for (int64_t j=0; j<B.num_child_basis(); ++j) {
+        gemm(AH[j], B[j], ABsubH[j], false, TransB, 1, 0);
+      }
+      gemm(ABsub, *B.get_ptr(), C, false, TransB, alpha, beta);
+    } else if ((B.is_col_basis() && TransB) || (B.is_row_basis() && !TransB)) {
+      Dense ABtransfer = gemm(A, *B.get_ptr(), 1, false, TransB);
+      // TODO Won't work for sub-bases of different sizes
+      Hierarchical CH(C, 1, B.num_child_basis(), false);
+      Hierarchical AtransferBH(ABtransfer, 1, B.num_child_basis(), false);
+      for (int64_t j=0; j<B.num_child_basis(); ++j) {
+        gemm(AtransferBH[j], B[j], CH[j], false, TransB, alpha, beta);
+      }
+    }
+  }
+}
+
+define_method(
+  void, gemm_trans_omm,
+  (
+    const SharedBasis& A, const SharedBasis& B, Dense& C,
+    bool TransA, bool TransB,
+    double alpha, double beta
+  )
+) {
+  // TODO For now only allow this case
+  assert(!TransA && !TransB);
+  assert(A.is_row_basis() && B.is_col_basis());
+  if (A.num_child_basis() == 0 && B.num_child_basis() == 0) {
+    gemm(*A.get_ptr(), *B.get_ptr(), C, TransA, TransB, alpha, beta);
+  } else {
+    assert(A.num_child_basis() == B.num_child_basis());
+    // TODO Assumes evenly sized subbases
+    Hierarchical AsubBsubt(A.num_child_basis(), B.num_child_basis());
+    // TODO A lot of this code could be simplified if there was a Zero class or
+    // if Dense had a is_zero property.
+    for (int64_t i=0; i<A.num_child_basis(); ++i) {
+      AsubBsubt(i, i) = gemm(A[i], B[i]);
+    }
+    Dense AsubBsubtBtransfer(
+      get_n_cols(*A.get_ptr()), get_n_cols(*B.get_ptr())
+    );
+    Hierarchical AsubBsubtBtransferH(
+      AsubBsubtBtransfer, A.num_child_basis(), 1, false
+    );
+    Hierarchical AtransferH(*A.get_ptr(), 1, A.num_child_basis(), false);
+    for (int64_t i=0; i<A.num_child_basis(); ++i) {
+      gemm(AtransferH[i], AsubBsubtBtransferH[i], C, alpha, i==0? beta : 0);
+    }
+  }
+}
+
 // Fallback default, abort with error message
 define_method(
   void, gemm_trans_omm,
@@ -140,7 +244,8 @@ define_method(
     double alpha, double beta
   )
 ) {
-  gemm(*A.get_ptr(), *B.get_ptr(), C, alpha, beta);
+  // Refer to the transposed implementation
+  gemm(A, B, C, false, false, alpha, beta);
 }
 
 define_method(
@@ -150,7 +255,8 @@ define_method(
     double alpha, double beta
   )
 ) {
-  gemm(*A.get_ptr(), B, C, alpha, beta);
+  // Refer to the transposed implementation
+  gemm(A, B, C, false, false, alpha, beta);
 }
 
 define_method(
@@ -160,7 +266,8 @@ define_method(
     double alpha, double beta
   )
 ) {
-  gemm(A, *B.get_ptr(), C, alpha, beta);
+  // Refer to the transposed implementation
+  gemm(A, B, C, false, false, alpha, beta);
 }
 
 define_method(
@@ -486,7 +593,12 @@ define_method(
     double alpha, bool TransA, bool TransB
   )
 ) {
-  return gemm(*A.get_ptr(), *B.get_ptr(), alpha, TransA, TransB);
+  Dense out(
+    TransA ? get_n_cols(A) : get_n_rows(A),
+    TransB ? get_n_rows(B) : get_n_cols(B)
+  );
+  gemm(A, B, out, TransA, TransB, alpha, 0);
+  return out;
 }
 
 define_method(
@@ -496,7 +608,13 @@ define_method(
     double alpha, bool TransA, bool TransB
   )
 ) {
-  return gemm(*A.get_ptr(), B, alpha, TransA, TransB);
+  Dense out(
+    TransA ? get_n_cols(A) : get_n_rows(A),
+    TransB ? get_n_rows(B) : get_n_cols(B)
+  );
+  gemm(A, B, out, TransA, TransB, alpha, 0);
+  gemm(A, B, out, TransA, TransB, alpha, 0);
+  return out;
 }
 
 define_method(
@@ -506,7 +624,13 @@ define_method(
     double alpha, bool TransA, bool TransB
   )
 ) {
-  return gemm(A, *B.get_ptr(), alpha, TransA, TransB);
+  Dense out(
+    TransA ? get_n_cols(A) : get_n_rows(A),
+    TransB ? get_n_rows(B) : get_n_cols(B)
+  );
+  gemm(A, B, out, TransA, TransB, alpha, 0);
+  gemm(A, B, out, TransA, TransB, alpha, 0);
+  return out;
 }
 
 define_method(

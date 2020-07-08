@@ -157,13 +157,17 @@ Hierarchical::Hierarchical(
   int64_t row_start, int64_t col_start
 ) {
   MatrixInitializer initer(func, x, admis, rank, basis_type);
-  *this = Hierarchical(
-    ClusterTree(
-      {row_start, n_rows}, {col_start, n_cols},
-      n_row_blocks, n_col_blocks, nleaf
-    ),
-    initer
+  ClusterTree cluster_tree(
+    {row_start, n_rows}, {col_start, n_cols}, n_row_blocks, n_col_blocks, nleaf
   );
+  if (basis_type == SHARED_BASIS) {
+    // TODO Admissibility is checked later AGAIN (avoid?). Possible solutions:
+    //  - Add appropirate booleans to ClusterTree
+    //  - Use Tracker in MatrixInitializer
+    initer.create_nested_basis(cluster_tree);
+  }
+  // TODO The following two should be combined into a single call
+  *this = Hierarchical(cluster_tree, initer);
 }
 
 const MatrixProxy& Hierarchical::operator[](const ClusterTree& node) const {

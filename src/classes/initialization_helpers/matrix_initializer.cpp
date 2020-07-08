@@ -8,10 +8,14 @@
 #include "hicma/classes/intitialization_helpers/cluster_tree.h"
 #include "hicma/functions.h"
 #include "hicma/operations/BLAS.h"
+#include "hicma/operations/LAPACK.h"
 #include "hicma/operations/randomized_factorizations.h"
 
 #include <algorithm>
+#include <cassert>
 #include <cstdint>
+
+#include <iostream>
 
 
 namespace hicma
@@ -33,6 +37,12 @@ void MatrixInitializer::fill_dense_representation(
   const ClusterTree& node
 ) const {
   kernel(A, x, node.rows.start, node.cols.start);
+}
+
+void MatrixInitializer::fill_dense_representation(
+  Dense& A, const IndexRange& row_range, const IndexRange& col_range
+) const {
+  kernel(A, x, row_range.start, col_range.start);
 }
 
 Dense MatrixInitializer::get_dense_representation(
@@ -83,30 +93,11 @@ Dense MatrixInitializer::make_block_col(const ClusterTree& node) const {
   return block_col;
 }
 
-void MatrixInitializer::make_shared_col_basis(const ClusterTree& node) {
-  int64_t sample_size = std::min(std::min(rank+5, node.rows.n), node.cols.n);
-  Dense block_row = make_block_row(node);
-  Dense U, _, __;
-  std::tie(U, _, __) = rsvd(block_row, sample_size);
-  U.resize(U.dim[0], rank);
-  col_basis[node.rows] = SharedBasis(std::move(U));
-}
-
-void MatrixInitializer::make_shared_row_basis(const ClusterTree& node) {
-  int64_t sample_size = std::min(std::min(rank+5, node.rows.n), node.cols.n);
-  Dense block_col = make_block_col(node);
-  Dense _, __, V;
-  std::tie(_, __, V) = rsvd(block_col, sample_size);
-  V.resize(rank, V.dim[1]);
-  row_basis[node.cols] = SharedBasis(std::move(V));
-}
-
 LowRank MatrixInitializer::make_shared_basis(const ClusterTree& node) {
-  if (!col_basis.has_basis(node.rows)) make_shared_col_basis(node);
-  if (!row_basis.has_basis(node.cols)) make_shared_row_basis(node);
   Dense D = get_dense_representation(node);
+  Dense UtD = gemm(col_basis[node.rows], D, 1, true, false);
   Dense S = gemm(
-    gemm(col_basis[node.rows], D, 1, true, false), row_basis[node.cols],
+    UtD, row_basis[node.cols],
     1, false, true
   );
   return LowRank(col_basis[node.rows], S, row_basis[node.cols]);
@@ -123,6 +114,154 @@ LowRank MatrixInitializer::get_compressed_representation(
     out = make_shared_basis(node);
   }
   return out;
+}
+
+void MatrixInitializer::find_admissible_blocks(
+  const ClusterTree& node
+) {
+  assert(basis_type == SHARED_BASIS);
+  for (const ClusterTree& child : node) {
+    if (is_admissible(child)) {
+      col_tracker.register_range(child.cols, child.rows);
+      row_tracker.register_range(child.rows, child.cols);
+    } else {
+      if (!child.is_leaf()) {
+        find_admissible_blocks(child);
+      }
+    }
+  }
+}
+
+void MatrixInitializer::construct_nested_col_basis(NestedTracker& tracker) {
+  // If any children exist, complete the set of children so index range is
+  // covered.
+  if (!tracker.children.empty()) {
+    // Gather uncovered index ranges
+    tracker.complete_index_range();
+    // Recursively make lower-level basis for these ranges
+    for (NestedTracker& child : tracker.children) {
+      construct_nested_col_basis(child);
+    }
+  }
+  // Make block row using associated ranges
+  int64_t n_cols = 0;
+  for (const IndexRange& range : tracker.associated_ranges) {
+    n_cols += range.n;
+  }
+  Dense block_row(tracker.index_range.n, n_cols);
+  int64_t col_start = 0;
+  for (const IndexRange& range : tracker.associated_ranges) {
+    Dense part(block_row, tracker.index_range.n, range.n, 0, col_start);
+    fill_dense_representation(part, tracker.index_range, range);
+    col_start += range.n;
+  }
+  // If there are children, use the now complete set to update the block row
+  // NOTE This assumes constant rank!
+  if (!tracker.children.empty()) {
+    Dense compressed_block_row(tracker.children.size()*rank, block_row.dim[1]);
+    // Created slices of appropriate size
+    // NOTE Assumes same size of all subblocks
+    Hierarchical block_rowH(
+      block_row, tracker.children.size(), 1, false
+    );
+    Hierarchical compressed_block_rowH(
+      compressed_block_row, tracker.children.size(), 1, false
+    );
+    // Multiply transpose of subbases to the slices
+    for (uint64_t i=0; i < tracker.children.size(); ++i) {
+      gemm(
+        col_basis[tracker.children[i].index_range], block_rowH[i],
+        compressed_block_rowH[i],
+        true, false, 1, 0
+      );
+    }
+    // Replace block row with its compressed form
+    block_row = std::move(compressed_block_row);
+  }
+  // Get column basis of (possibly compressed) block row
+  int64_t sample_size = std::min(
+    std::min(rank+5, tracker.index_range.n), n_cols
+  );
+  Dense U, _, __;
+  std::tie(U, _, __) = svd(block_row);
+  U.resize(U.dim[0], rank);
+  std::vector<MatrixProxy> child_bases;
+  for (NestedTracker& child : tracker.children) {
+    child_bases.push_back(share_basis(col_basis[child.index_range]));
+  }
+  col_basis[tracker.index_range] = SharedBasis(std::move(U), child_bases, true);
+}
+
+void MatrixInitializer::construct_nested_row_basis(NestedTracker& tracker) {
+  // If any children exist, complete the set of children so index range is
+  // covered.
+  if (!tracker.children.empty()) {
+    // Gather uncovered index ranges
+    tracker.complete_index_range();
+    // Recursively make lower-level basis for these ranges
+    for (NestedTracker& child : tracker.children) {
+      construct_nested_row_basis(child);
+    }
+  }
+  // Make block col using associated ranges
+  int64_t n_rows = 0;
+  for (const IndexRange& range : tracker.associated_ranges) {
+    n_rows += range.n;
+  }
+  Dense block_col(n_rows, tracker.index_range.n);
+  int64_t row_start = 0;
+  for (const IndexRange& range : tracker.associated_ranges) {
+    Dense part(block_col, range.n, tracker.index_range.n, row_start, 0);
+    fill_dense_representation(part, range, tracker.index_range);
+    row_start += range.n;
+  }
+  // If there are children, use the now complete set to update the block row
+  // NOTE This assumes constant rank!
+  if (!tracker.children.empty()) {
+    Dense compressed_block_col(block_col.dim[0], tracker.children.size()*rank);
+    // Created slices of appropriate size
+    // NOTE Assumes same size of all subblocks
+    Hierarchical block_colH(
+      block_col, 1, tracker.children.size(), false
+    );
+    Hierarchical compressed_block_colH(
+      compressed_block_col, 1, tracker.children.size(), false
+    );
+    // Multiply transpose of subbases to the slices
+    for (uint64_t j=0; j < tracker.children.size(); ++j) {
+      gemm(
+        block_colH[j], row_basis[tracker.children[j].index_range],
+        compressed_block_colH[j],
+        false, true, 1, 0
+      );
+    }
+    // Replace block row with its compressed form
+    block_col = std::move(compressed_block_col);
+  }
+  // Get column basis of (possibly compressed) block row
+  int64_t sample_size = std::min(
+    n_rows, std::min(rank+5, tracker.index_range.n)
+  );
+  Dense _, __, V;
+  std::tie(_, __, V) = svd(block_col);
+  V.resize(rank, V.dim[1]);
+  std::vector<MatrixProxy> child_bases;
+  for (NestedTracker& child : tracker.children) {
+    child_bases.push_back(share_basis(row_basis[child.index_range]));
+  }
+  row_basis[tracker.index_range] = SharedBasis(std::move(V), child_bases, false);
+}
+
+void MatrixInitializer::create_nested_basis(const ClusterTree& node) {
+  assert(basis_type == SHARED_BASIS);
+  find_admissible_blocks(node);
+  // NOTE Root level does not need basis, so loop over children
+  for (NestedTracker& child : row_tracker.children) {
+    construct_nested_col_basis(child);
+  }
+  for (NestedTracker& child : col_tracker.children) {
+    construct_nested_row_basis(child);
+  }
 }
 
 bool MatrixInitializer::is_admissible(const ClusterTree& node) const {

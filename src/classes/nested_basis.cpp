@@ -21,41 +21,49 @@ namespace hicma
 
 SharedBasis::SharedBasis(const SharedBasis& A)
 : Matrix(A), transfer_matrix(std::make_shared<Dense>(*A.transfer_matrix)),
-  sub_bases(A.sub_bases)
+  sub_bases(A.sub_bases), col_basis(A.col_basis)
 {}
 
 SharedBasis& SharedBasis::operator=(const SharedBasis& A) {
   Matrix::operator=(A);
   transfer_matrix = std::make_shared<Dense>(*A.transfer_matrix);
   sub_bases = A.sub_bases;
+  col_basis = A.col_basis;
   return *this;
 }
 
-SharedBasis::SharedBasis(Dense&& A)
-: transfer_matrix(std::make_shared<Dense>(std::move(A))) {}
+SharedBasis::SharedBasis(
+  Dense&& A, std::vector<MatrixProxy>& sub_bases,bool is_col_basis
+) : transfer_matrix(std::make_shared<Dense>(std::move(A))),
+    sub_bases(std::move(sub_bases)), col_basis(is_col_basis)
+{}
 
-SharedBasis::SharedBasis(std::shared_ptr<Dense> A) : transfer_matrix(A) {}
-
-SharedBasis& SharedBasis::operator[](int64_t i) {
+MatrixProxy& SharedBasis::operator[](int64_t i) {
   return sub_bases[i];
 }
 
-const SharedBasis& SharedBasis::operator[](int64_t i) const {
+const MatrixProxy& SharedBasis::operator[](int64_t i) const {
   return sub_bases[i];
 }
 
 int64_t SharedBasis::num_child_basis() const { return sub_bases.size(); }
 
 SharedBasis SharedBasis::share() const {
-  SharedBasis new_shared(transfer_matrix);
-  new_shared.sub_bases = std::vector<SharedBasis>(num_child_basis());
+  SharedBasis new_shared;
+  new_shared.transfer_matrix = transfer_matrix;
+  new_shared.sub_bases = std::vector<MatrixProxy>(num_child_basis());
   for (int64_t i=0; i<new_shared.num_child_basis(); ++i) {
-    new_shared[i] = (*this)[i].share();
+    new_shared[i] = share_basis((*this)[i]);
   }
+  new_shared.col_basis = col_basis;
   return new_shared;
 }
 
 std::shared_ptr<Dense> SharedBasis::get_ptr() const { return transfer_matrix; }
+
+bool SharedBasis::is_col_basis() const { return col_basis; }
+
+bool SharedBasis::is_row_basis() const { return !col_basis; }
 
 declare_method(
   bool, is_shared_omm, (virtual_<const Matrix&>, virtual_<const Matrix&>)
