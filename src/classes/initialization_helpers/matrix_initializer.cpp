@@ -8,7 +8,6 @@
 #include "hicma/classes/intitialization_helpers/cluster_tree.h"
 #include "hicma/functions.h"
 #include "hicma/operations/BLAS.h"
-#include "hicma/operations/LAPACK.h"
 #include "hicma/operations/randomized_factorizations.h"
 
 #include <algorithm>
@@ -53,42 +52,34 @@ Dense MatrixInitializer::get_dense_representation(
   return representation;
 }
 
-Dense MatrixInitializer::make_block_row(const ClusterTree& node) const {
+Dense MatrixInitializer::make_block_row(const NestedTracker& tracker) const {
   // Create row block without admissible blocks
   int64_t n_cols = 0;
-  std::vector<std::reference_wrapper<const ClusterTree>> admissible_blocks;
-  for (const ClusterTree& block : node.get_block_row()) {
-    if (is_admissible(block)) {
-      admissible_blocks.emplace_back(block);
-      n_cols += block.cols.n;
-    }
+  for (const IndexRange& range : tracker.associated_ranges) {
+    n_cols += range.n;
   }
-  Dense block_row(node.rows.n, n_cols);
+  Dense block_row(tracker.index_range.n, n_cols);
   int64_t col_start = 0;
-  for (const ClusterTree& block : admissible_blocks) {
-    Dense part(block_row, block.rows.n, block.cols.n, 0, col_start);
-    fill_dense_representation(part, block);
-    col_start += block.cols.n;
+  for (const IndexRange& range : tracker.associated_ranges) {
+    Dense part(block_row, tracker.index_range.n, range.n, 0, col_start);
+    fill_dense_representation(part, tracker.index_range, range);
+    col_start += range.n;
   }
   return block_row;
 }
 
-Dense MatrixInitializer::make_block_col(const ClusterTree& node) const {
+Dense MatrixInitializer::make_block_col(const NestedTracker& tracker) const {
   // Create col block without admissible blocks
   int64_t n_rows = 0;
-  std::vector<std::reference_wrapper<const ClusterTree>> admissible_blocks;
-  for (const ClusterTree& block : node.get_block_col()) {
-    if (is_admissible(block)) {
-      admissible_blocks.emplace_back(block);
-      n_rows += block.rows.n;
-    }
+  for (const IndexRange& range : tracker.associated_ranges) {
+    n_rows += range.n;
   }
-  Dense block_col(n_rows, node.cols.n);
+  Dense block_col(n_rows, tracker.index_range.n);
   int64_t row_start = 0;
-  for (const ClusterTree& block : admissible_blocks) {
-    Dense part(block_col, block.rows.n, block.cols.n, row_start, 0);
-    fill_dense_representation(part, block);
-    row_start += block.rows.n;
+  for (const IndexRange& range : tracker.associated_ranges) {
+    Dense part(block_col, range.n, tracker.index_range.n, row_start, 0);
+    fill_dense_representation(part, range, tracker.index_range);
+    row_start += range.n;
   }
   return block_col;
 }
@@ -144,17 +135,7 @@ void MatrixInitializer::construct_nested_col_basis(NestedTracker& tracker) {
     }
   }
   // Make block row using associated ranges
-  int64_t n_cols = 0;
-  for (const IndexRange& range : tracker.associated_ranges) {
-    n_cols += range.n;
-  }
-  Dense block_row(tracker.index_range.n, n_cols);
-  int64_t col_start = 0;
-  for (const IndexRange& range : tracker.associated_ranges) {
-    Dense part(block_row, tracker.index_range.n, range.n, 0, col_start);
-    fill_dense_representation(part, tracker.index_range, range);
-    col_start += range.n;
-  }
+  Dense block_row = make_block_row(tracker);
   // If there are children, use the now complete set to update the block row
   // NOTE This assumes constant rank!
   if (!tracker.children.empty()) {
@@ -179,11 +160,9 @@ void MatrixInitializer::construct_nested_col_basis(NestedTracker& tracker) {
     block_row = std::move(compressed_block_row);
   }
   // Get column basis of (possibly compressed) block row
-  int64_t sample_size = std::min(
-    std::min(rank+5, tracker.index_range.n), n_cols
-  );
+  int64_t sample_size = std::min(rank+5, tracker.index_range.n);
   Dense U, _, __;
-  std::tie(U, _, __) = svd(block_row);
+  std::tie(U, _, __) = rsvd(block_row, sample_size);
   U.resize(U.dim[0], rank);
   std::vector<MatrixProxy> child_bases;
   for (NestedTracker& child : tracker.children) {
@@ -204,17 +183,7 @@ void MatrixInitializer::construct_nested_row_basis(NestedTracker& tracker) {
     }
   }
   // Make block col using associated ranges
-  int64_t n_rows = 0;
-  for (const IndexRange& range : tracker.associated_ranges) {
-    n_rows += range.n;
-  }
-  Dense block_col(n_rows, tracker.index_range.n);
-  int64_t row_start = 0;
-  for (const IndexRange& range : tracker.associated_ranges) {
-    Dense part(block_col, range.n, tracker.index_range.n, row_start, 0);
-    fill_dense_representation(part, range, tracker.index_range);
-    row_start += range.n;
-  }
+  Dense block_col = make_block_col(tracker);
   // If there are children, use the now complete set to update the block row
   // NOTE This assumes constant rank!
   if (!tracker.children.empty()) {
@@ -239,11 +208,9 @@ void MatrixInitializer::construct_nested_row_basis(NestedTracker& tracker) {
     block_col = std::move(compressed_block_col);
   }
   // Get column basis of (possibly compressed) block row
-  int64_t sample_size = std::min(
-    n_rows, std::min(rank+5, tracker.index_range.n)
-  );
+  int64_t sample_size = std::min(rank+5, tracker.index_range.n);
   Dense _, __, V;
-  std::tie(_, __, V) = svd(block_col);
+  std::tie(_, __, V) = rsvd(block_col, sample_size);
   V.resize(rank, V.dim[1]);
   std::vector<MatrixProxy> child_bases;
   for (NestedTracker& child : tracker.children) {

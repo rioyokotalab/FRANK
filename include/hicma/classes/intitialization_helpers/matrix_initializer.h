@@ -75,9 +75,9 @@ class MatrixInitializer {
 
   virtual Dense get_dense_representation(const ClusterTree& node) const;
 
-  Dense make_block_row(const ClusterTree& node) const;
+  Dense make_block_row(const NestedTracker& tracker) const;
 
-  Dense make_block_col(const ClusterTree& node) const;
+  Dense make_block_col(const NestedTracker& tracker) const;
 
   virtual LowRank get_compressed_representation(const ClusterTree& node);
 
