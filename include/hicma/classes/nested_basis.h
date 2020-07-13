@@ -53,7 +53,11 @@ class SharedBasis : public Matrix {
 
   SharedBasis share() const;
 
-  std::shared_ptr<Dense> get_ptr() const;
+  Dense& transfer_mat();
+
+  const Dense& transfer_mat() const;
+
+  bool is_shared(const SharedBasis& A) const;
 
   bool is_col_basis() const;
 

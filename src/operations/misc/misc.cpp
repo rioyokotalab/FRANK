@@ -104,7 +104,7 @@ define_method(
     bool copy
   )
 ) {
-  return get_part(*A.get_ptr(), n_rows, n_cols, row_start, col_start, copy);
+  return get_part(A.transfer_mat(), n_rows, n_cols, row_start, col_start, copy);
 }
 
 define_method(

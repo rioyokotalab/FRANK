@@ -56,7 +56,7 @@ define_method(void, init_basis_key, (BasisKey& key, const Dense& A)) {
 }
 
 define_method(void, init_basis_key, (BasisKey& key, const SharedBasis& A)) {
-  init_basis_key(key, *A.get_ptr());
+  init_basis_key(key, A.transfer_mat());
 }
 
 define_method(void, init_basis_key, (BasisKey&, const Matrix& A)) {

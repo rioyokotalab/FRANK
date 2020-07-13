@@ -39,7 +39,7 @@ define_method(int64_t, get_n_rows_omm, (const SharedBasis& A)) {
       out += get_n_rows(A[i]);
     }
   } else {
-    out = get_n_rows(*A.get_ptr());
+    out = get_n_rows(A.transfer_mat());
   }
   return out;
 }
@@ -72,7 +72,7 @@ define_method(int64_t, get_n_cols_omm, (const SharedBasis& A)) {
       out += get_n_cols(A[j]);
     }
   } else {
-    out = get_n_cols(*A.get_ptr());
+    out = get_n_cols(A.transfer_mat());
   }
   return out;
 }

@@ -59,7 +59,20 @@ SharedBasis SharedBasis::share() const {
   return new_shared;
 }
 
-std::shared_ptr<Dense> SharedBasis::get_ptr() const { return transfer_matrix; }
+bool SharedBasis::is_shared(const SharedBasis& A) const {
+  bool shared = transfer_matrix == A.transfer_matrix;
+  shared &= num_child_basis() == A.num_child_basis();
+  if (shared) {
+    for (int64_t i=0; i<num_child_basis(); ++i) {
+      shared &= hicma::is_shared((*this)[i], A[i]);
+    }
+  }
+  return shared;
+}
+
+Dense& SharedBasis::transfer_mat() { return *transfer_matrix; }
+
+const Dense& SharedBasis::transfer_mat() const { return *transfer_matrix; }
 
 bool SharedBasis::is_col_basis() const { return col_basis; }
 
@@ -76,14 +89,7 @@ bool is_shared(const Matrix& A, const Matrix& B) {
 define_method(
   bool, is_shared_omm, (const SharedBasis& A, const SharedBasis& B)
 ) {
-  bool shared = A.get_ptr() == B.get_ptr();
-  shared &= A.num_child_basis() == B.num_child_basis();
-  if (shared) {
-    for (int64_t i=0; i<A.num_child_basis(); ++i) {
-      shared &= is_shared(A[i], B[i]);
-    }
-  }
-  return shared;
+  return A.is_shared(B);
 }
 
 define_method(bool, is_shared_omm, (const Dense&, const Dense&)) {
