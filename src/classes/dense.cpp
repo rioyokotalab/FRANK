@@ -5,6 +5,7 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
+#include "hicma/classes/nested_basis.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
@@ -76,6 +77,32 @@ define_method(void, fill_dense_from, (const Hierarchical& A, Dense& B)) {
 define_method(void, fill_dense_from, (const LowRank& A, Dense& B)) {
   timing::start("make_dense(LR)");
   gemm(gemm(A.U, A.S), A.V, B, 1, 0);
+  timing::stop("make_dense(LR)");
+}
+
+define_method(void, fill_dense_from, (const SharedBasis& A, Dense& B)) {
+  timing::start("make_dense(LR)");
+  // Only use transfer matrix if there are no children
+  if (A.num_child_basis() == 0) return fill_dense_from(A.transfer_mat(), B);
+  Hierarchical AtransH(
+    A.transfer_mat(),
+    A.is_col_basis() ? A.num_child_basis() : 1,
+    A.is_row_basis() ? A.num_child_basis() : 1,
+    false
+  );
+  Hierarchical BH(
+    B,
+    A.is_col_basis() ? A.num_child_basis() : 1,
+    A.is_row_basis() ? A.num_child_basis() : 1,
+    false
+  );
+  for (int64_t i=0; i<A.num_child_basis(); ++i) {
+    if (A.is_col_basis()) {
+      gemm(A[i], AtransH[i], BH[i], false, false, 1, 0);
+    } else if (A.is_row_basis()) {
+      gemm(AtransH[i], A[i], BH[i], false, false, 1, 0);
+    }
+  }
   timing::stop("make_dense(LR)");
 }
 
