@@ -35,7 +35,19 @@ size_t hash<hicma::IndexRange>::operator()(const hicma::IndexRange& key) const {
 bool less<hicma::IndexRange>::operator()(
   const hicma::IndexRange& a, const hicma::IndexRange& b
 ) const {
-  return (a.n <= b.n) && (a.start < b.start);
+  // No empty ranges
+  assert(a.n != 0);
+  assert(b.n != 0);
+  // No half-overlapping ranges
+  assert(!((a.start < b.start) && (a.start+a.n > b.start)));
+  bool out = false;
+  // a is earlier separate range
+  out |= (a.start + a.n <= b.start);
+  // Same start, but b is smaller part of a
+  out |= ((a.start == b.start) && (a.n > b.n));
+  // b starts later, but is smaller part of a
+  out |= ((a.start < b.start) && (a.start + a.n >= b.start + b.n));
+  return out;
 }
 
 } // namespace std
@@ -69,7 +81,6 @@ define_method(void, init_basis_key, (BasisKey&, const Matrix& A)) {
 }
 
 bool operator==(const BasisKey& A, const BasisKey& B) {
-  // return true;
   return (A.data_ptr == B.data_ptr) && (A.dim == B.dim);
 }
 
