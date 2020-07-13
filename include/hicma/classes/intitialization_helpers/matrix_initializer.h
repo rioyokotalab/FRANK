@@ -32,8 +32,6 @@ class MatrixInitializer {
   NestedTracker col_tracker, row_tracker;
   int basis_type = NORMAL_BASIS;
 
-  LowRank make_shared_basis(const ClusterTree& node);
-
   void find_admissible_blocks(const ClusterTree& node);
 
   void construct_nested_col_basis(NestedTracker& row_tracker);

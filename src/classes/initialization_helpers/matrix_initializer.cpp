@@ -84,16 +84,6 @@ Dense MatrixInitializer::make_block_col(const NestedTracker& tracker) const {
   return block_col;
 }
 
-LowRank MatrixInitializer::make_shared_basis(const ClusterTree& node) {
-  Dense D = get_dense_representation(node);
-  Dense UtD = gemm(col_basis[node.rows], D, 1, true, false);
-  Dense S = gemm(
-    UtD, row_basis[node.cols],
-    1, false, true
-  );
-  return LowRank(col_basis[node.rows], S, row_basis[node.cols]);
-}
-
 LowRank MatrixInitializer::get_compressed_representation(
   const ClusterTree& node
 ) {
@@ -102,7 +92,10 @@ LowRank MatrixInitializer::get_compressed_representation(
   if (basis_type == NORMAL_BASIS) {
     out = LowRank(get_dense_representation(node), rank);
   } else if (basis_type == SHARED_BASIS) {
-    out = make_shared_basis(node);
+    Dense D = get_dense_representation(node);
+    Dense UtD = gemm(col_basis[node.rows], D, 1, true, false);
+    Dense S = gemm(UtD, row_basis[node.cols], 1, false, true);
+    out = LowRank(col_basis[node.rows], S, row_basis[node.cols]);
   }
   return out;
 }
