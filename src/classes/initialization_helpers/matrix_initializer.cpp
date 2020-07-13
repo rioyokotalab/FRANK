@@ -52,38 +52,6 @@ Dense MatrixInitializer::get_dense_representation(
   return representation;
 }
 
-Dense MatrixInitializer::make_block_row(const NestedTracker& tracker) const {
-  // Create row block without admissible blocks
-  int64_t n_cols = 0;
-  for (const IndexRange& range : tracker.associated_ranges) {
-    n_cols += range.n;
-  }
-  Dense block_row(tracker.index_range.n, n_cols);
-  int64_t col_start = 0;
-  for (const IndexRange& range : tracker.associated_ranges) {
-    Dense part(block_row, tracker.index_range.n, range.n, 0, col_start);
-    fill_dense_representation(part, tracker.index_range, range);
-    col_start += range.n;
-  }
-  return block_row;
-}
-
-Dense MatrixInitializer::make_block_col(const NestedTracker& tracker) const {
-  // Create col block without admissible blocks
-  int64_t n_rows = 0;
-  for (const IndexRange& range : tracker.associated_ranges) {
-    n_rows += range.n;
-  }
-  Dense block_col(n_rows, tracker.index_range.n);
-  int64_t row_start = 0;
-  for (const IndexRange& range : tracker.associated_ranges) {
-    Dense part(block_col, range.n, tracker.index_range.n, row_start, 0);
-    fill_dense_representation(part, range, tracker.index_range);
-    row_start += range.n;
-  }
-  return block_col;
-}
-
 LowRank MatrixInitializer::get_compressed_representation(
   const ClusterTree& node
 ) {
@@ -114,6 +82,43 @@ void MatrixInitializer::find_admissible_blocks(
       }
     }
   }
+}
+
+void MatrixInitializer::create_nested_basis(const ClusterTree& node) {
+  assert(basis_type == SHARED_BASIS);
+  find_admissible_blocks(node);
+  // NOTE Root level does not need basis, so loop over children
+  for (NestedTracker& child : row_tracker.children) {
+    construct_nested_col_basis(child);
+  }
+  for (NestedTracker& child : col_tracker.children) {
+    construct_nested_row_basis(child);
+  }
+}
+
+bool MatrixInitializer::is_admissible(const ClusterTree& node) const {
+  bool admissible = true;
+  // Main admissibility condition
+  admissible &= (node.dist_to_diag() > admis);
+  // Vectors are never admissible
+  admissible &= (node.rows.n > 1 && node.cols.n > 1);
+  return admissible;
+}
+
+Dense MatrixInitializer::make_block_row(const NestedTracker& tracker) const {
+  // Create row block without admissible blocks
+  int64_t n_cols = 0;
+  for (const IndexRange& range : tracker.associated_ranges) {
+    n_cols += range.n;
+  }
+  Dense block_row(tracker.index_range.n, n_cols);
+  int64_t col_start = 0;
+  for (const IndexRange& range : tracker.associated_ranges) {
+    Dense part(block_row, tracker.index_range.n, range.n, 0, col_start);
+    fill_dense_representation(part, tracker.index_range, range);
+    col_start += range.n;
+  }
+  return block_row;
 }
 
 void MatrixInitializer::construct_nested_col_basis(NestedTracker& tracker) {
@@ -164,6 +169,22 @@ void MatrixInitializer::construct_nested_col_basis(NestedTracker& tracker) {
   col_basis[tracker.index_range] = SharedBasis(std::move(U), child_bases, true);
 }
 
+Dense MatrixInitializer::make_block_col(const NestedTracker& tracker) const {
+  // Create col block without admissible blocks
+  int64_t n_rows = 0;
+  for (const IndexRange& range : tracker.associated_ranges) {
+    n_rows += range.n;
+  }
+  Dense block_col(n_rows, tracker.index_range.n);
+  int64_t row_start = 0;
+  for (const IndexRange& range : tracker.associated_ranges) {
+    Dense part(block_col, range.n, tracker.index_range.n, row_start, 0);
+    fill_dense_representation(part, range, tracker.index_range);
+    row_start += range.n;
+  }
+  return block_col;
+}
+
 void MatrixInitializer::construct_nested_row_basis(NestedTracker& tracker) {
   // If any children exist, complete the set of children so index range is
   // covered.
@@ -210,27 +231,6 @@ void MatrixInitializer::construct_nested_row_basis(NestedTracker& tracker) {
     child_bases.push_back(share_basis(row_basis[child.index_range]));
   }
   row_basis[tracker.index_range] = SharedBasis(std::move(V), child_bases, false);
-}
-
-void MatrixInitializer::create_nested_basis(const ClusterTree& node) {
-  assert(basis_type == SHARED_BASIS);
-  find_admissible_blocks(node);
-  // NOTE Root level does not need basis, so loop over children
-  for (NestedTracker& child : row_tracker.children) {
-    construct_nested_col_basis(child);
-  }
-  for (NestedTracker& child : col_tracker.children) {
-    construct_nested_row_basis(child);
-  }
-}
-
-bool MatrixInitializer::is_admissible(const ClusterTree& node) const {
-  bool admissible = true;
-  // Main admissibility condition
-  admissible &= (node.dist_to_diag() > admis);
-  // Vectors are never admissible
-  admissible &= (node.rows.n > 1 && node.cols.n > 1);
-  return admissible;
 }
 
 } // namespace hicma

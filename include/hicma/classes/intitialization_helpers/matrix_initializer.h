@@ -34,7 +34,10 @@ class MatrixInitializer {
 
   void find_admissible_blocks(const ClusterTree& node);
 
+  Dense make_block_row(const NestedTracker& tracker) const;
   void construct_nested_col_basis(NestedTracker& row_tracker);
+
+  Dense make_block_col(const NestedTracker& tracker) const;
   void construct_nested_row_basis(NestedTracker& col_tracker);
  public:
 
@@ -73,13 +76,7 @@ class MatrixInitializer {
 
   virtual Dense get_dense_representation(const ClusterTree& node) const;
 
-  Dense make_block_row(const NestedTracker& tracker) const;
-
-  Dense make_block_col(const NestedTracker& tracker) const;
-
   virtual LowRank get_compressed_representation(const ClusterTree& node);
-
-  void register_admissible_block(const ClusterTree& node);
 
   void create_nested_basis(const ClusterTree& node);
 
