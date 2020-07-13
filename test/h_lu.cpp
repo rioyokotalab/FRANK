@@ -28,13 +28,14 @@ int main(int argc, char** argv) {
   admis = N / nleaf; // Full rank
   Dense x(random_uniform, std::vector<std::vector<double>>(), N);
   Dense b(N);
-  // timing::start("Dense tree");
-  // Hierarchical D(laplacend, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
-  // timing::stop("Dense tree");
-  // timing::start("Verification time");
-  // print("Compression Accuracy");
-  // print("Rel. L2 Error", l2_error(A, D), false);
-  // timing::stop("Verification time");
+  timing::start("Dense tree");
+  Dense D(laplacend, randx, N, N);
+  print("Compression factor", double(get_memory_usage(D)) / double(get_memory_usage(A)));
+  timing::stop("Dense tree");
+  timing::start("Verification time");
+  print("Compression Accuracy");
+  print("Rel. L2 Error", l2_error(A, D), false);
+  timing::stop("Verification time");
   print("Time");
   gemm(A, x, b, 1, 1);
   gemm_batch();
