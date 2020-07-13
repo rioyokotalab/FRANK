@@ -46,6 +46,10 @@ namespace hicma
 
 declare_method(void, init_basis_key, (BasisKey&, virtual_<const Matrix&>))
 
+BasisKey::BasisKey(const Matrix& A) {
+  init_basis_key(*this, A);
+}
+
 BasisKey::BasisKey(const MatrixProxy& A) {
   init_basis_key(*this, A);
 }

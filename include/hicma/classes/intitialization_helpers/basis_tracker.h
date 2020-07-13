@@ -21,6 +21,8 @@ class BasisKey {
   const double* data_ptr;
   std::array<int64_t, 2> dim;
 
+  BasisKey(const Matrix&);
+
   BasisKey(const MatrixProxy&);
 };
 
