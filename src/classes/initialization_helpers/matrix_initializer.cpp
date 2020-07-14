@@ -14,8 +14,6 @@
 #include <cassert>
 #include <cstdint>
 
-#include <iostream>
-
 
 namespace hicma
 {
