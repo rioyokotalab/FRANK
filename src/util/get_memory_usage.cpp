@@ -58,8 +58,7 @@ define_method(
 ) {
   // If transfer matrix is already registered, return 0
   if (tracker.has_basis(A.transfer_mat())) return 0;
-  // Otherwise register with tracker, calculate size and recurse
-  tracker[A.transfer_mat()] = MatrixProxy();
+  // Otherwise calculate size and recurse
   unsigned long memory_usage = get_memory_usage(
     A.transfer_mat(), tracker, include_structure
   );
