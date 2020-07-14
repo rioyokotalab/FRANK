@@ -42,6 +42,9 @@ class Dense : public Matrix {
   // Additional constructors
   Dense(int64_t n_rows, int64_t n_cols=1);
 
+  // TODO Add overload where vector doesn't need to be passed. That function
+  // should forward to this one with a 0-sized vector. This is to make
+  // initialization with functions like identity and random_uniform easier.
   Dense(
     void (*func)(
       Dense& A, const std::vector<std::vector<double>>& x,
