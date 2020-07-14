@@ -24,6 +24,7 @@ using yorel::yomm2::virtual_;
 #include <cstdlib>
 #include <tuple>
 #include <utility>
+#include <vector>
 
 
 namespace hicma
@@ -35,40 +36,53 @@ Hierarchical::Hierarchical(const Hierarchical& A) : Matrix(A) {
 }
 
 declare_method(
-  MatrixProxy, copy_block, (virtual_<const Matrix&>, BasisTracker<BasisKey>&)
+  MatrixProxy, tracked_copy, (virtual_<const Matrix&>, BasisTracker<BasisKey>&)
 )
 
 define_method(
-  MatrixProxy, copy_block,
+  MatrixProxy, tracked_copy,
   (const Hierarchical& A, BasisTracker<BasisKey>& tracker)
 ) {
   return Hierarchical(A, tracker);
 }
 
 define_method(
-  MatrixProxy, copy_block,
+  MatrixProxy, tracked_copy,
   (const Dense& A, [[maybe_unused]] BasisTracker<BasisKey>& tracker)
 ) {
-  return A;
+  if (!tracker.has_basis(A)) {
+    tracker[A] = A;
+  }
+  return share_basis(tracker[A]);
 }
 
 define_method(
-  MatrixProxy, copy_block, (const LowRank& A, BasisTracker<BasisKey>& tracker)
+  MatrixProxy, tracked_copy,
+  (const SharedBasis& A, [[maybe_unused]] BasisTracker<BasisKey>& tracker)
 ) {
-  if (!tracker.has_basis(A.U)) {
-    tracker[A.U] = A.U;
+  if (!tracker.has_basis(A)) {
+    std::vector<MatrixProxy> new_sub_bases(A.num_child_basis());
+    for (int64_t i=0; i<A.num_child_basis(); ++i) {
+      new_sub_bases[i] = tracked_copy(A[i], tracker);
+    }
+    tracker[A] = SharedBasis(
+      Dense(A.transfer_mat()), new_sub_bases, A.is_col_basis());
   }
-  if (!tracker.has_basis(A.V)) {
-    tracker[A.V] = A.V;
-  }
-  return LowRank(tracker[A.U], A.S, tracker[A.V], true);
+  return share_basis(tracker[A]);
 }
 
 define_method(
-  MatrixProxy, copy_block,
+  MatrixProxy, tracked_copy, (const LowRank& A, BasisTracker<BasisKey>& tracker)
+) {
+  return LowRank(
+    tracked_copy(A.U, tracker), A.S, tracked_copy(A.V, tracker), true);
+}
+
+define_method(
+  MatrixProxy, tracked_copy,
   (const Matrix& A, [[maybe_unused]] BasisTracker<BasisKey>& tracker)
 ) {
-  omm_error_handler("copy_block", {A}, __FILE__, __LINE__);
+  omm_error_handler("tracked_copy", {A}, __FILE__, __LINE__);
   std::abort();
 }
 
@@ -77,7 +91,7 @@ Hierarchical::Hierarchical(
 ) : Matrix(A), dim(A.dim), data(dim[0]*dim[1]) {
   for (int64_t i=0; i<A.dim[0]; ++i) {
     for (int64_t j=0; j<A.dim[1]; ++j) {
-      (*this)(i, j) = copy_block(A(i, j), tracker);
+      (*this)(i, j) = tracked_copy(A(i, j), tracker);
     }
   }
 }
