@@ -38,6 +38,7 @@ declare_method(
 define_method(
   void, decuple_col_basis, (LowRank& A, BasisTracker<BasisKey>& tracker)
 ) {
+  // TODO This procedure ignores subbases
   timing::start("decoupling");
   if (!tracker.has_basis(A.U)) {
     tracker[A.U] = A.U;
@@ -57,6 +58,7 @@ declare_method(
 define_method(
   void, decuple_row_basis, (LowRank& A, BasisTracker<BasisKey>& tracker)
 ) {
+  // TODO This procedure ignores subbases
   timing::start("decoupling");
   if (!tracker.has_basis(A.V)) {
     tracker[A.V] = A.V;
