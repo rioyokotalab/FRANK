@@ -160,6 +160,9 @@ void MatrixInitializer::construct_nested_col_basis(NestedTracker& tracker) {
   // Get column basis of (possibly compressed) block row
   int64_t sample_size = std::min(rank+5, tracker.index_range.n);
   Dense U, _, __;
+  // TODO For very small ranks the following line can cause problems! Only
+  // happens with block_row, not with block_col. TSQR is better than small fat
+  // QR it seems.
   std::tie(U, _, __) = rsvd(block_row, sample_size);
   U.resize(U.dim[0], rank);
   std::vector<MatrixProxy> child_bases;
