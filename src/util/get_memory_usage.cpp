@@ -51,7 +51,7 @@ define_method(
 define_method(
   unsigned long, get_memory_usage_omm,
   (
-    const SharedBasis& A,
+    const NestedBasis& A,
     BasisTracker<BasisKey>& tracker,
     bool include_structure
   )
@@ -66,7 +66,7 @@ define_method(
     memory_usage += get_memory_usage(A[i], tracker, include_structure);
   }
   if (include_structure) {
-    memory_usage += sizeof(SharedBasis);
+    memory_usage += sizeof(NestedBasis);
   }
   return memory_usage;
 }

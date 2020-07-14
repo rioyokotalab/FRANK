@@ -42,8 +42,8 @@ define_method(std::string, type_omm, ([[maybe_unused]] const Hierarchical& A)) {
   return "Hierarchical";
 }
 
-define_method(std::string, type_omm, ([[maybe_unused]] const SharedBasis& A)) {
-  return "SharedBasis";
+define_method(std::string, type_omm, ([[maybe_unused]] const NestedBasis& A)) {
+  return "NestedBasis";
 }
 
 define_method(std::string, type_omm, ([[maybe_unused]] const Matrix&)) {

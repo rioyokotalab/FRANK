@@ -1,5 +1,5 @@
-#ifndef hicma_classes_shared_basis_h
-#define hicma_classes_shared_basis_h
+#ifndef hicma_classes_nested_basis_h
+#define hicma_classes_nested_basis_h
 
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
@@ -15,7 +15,7 @@ namespace hicma
 
 class Dense;
 
-class SharedBasis : public Matrix {
+class NestedBasis : public Matrix {
  private:
   std::shared_ptr<Dense> transfer_matrix;
   std::vector<MatrixProxy> sub_bases;
@@ -25,20 +25,20 @@ class SharedBasis : public Matrix {
   bool col_basis;
 
   // Special member functions
-  SharedBasis() = default;
+  NestedBasis() = default;
 
-  virtual ~SharedBasis() = default;
+  virtual ~NestedBasis() = default;
 
-  SharedBasis(const SharedBasis& A);
+  NestedBasis(const NestedBasis& A);
 
-  SharedBasis& operator=(const SharedBasis& A);
+  NestedBasis& operator=(const NestedBasis& A);
 
-  SharedBasis(SharedBasis&& A) = default;
+  NestedBasis(NestedBasis&& A) = default;
 
-  SharedBasis& operator=(SharedBasis&& A) = default;
+  NestedBasis& operator=(NestedBasis&& A) = default;
 
   // Constructors
-  SharedBasis(
+  NestedBasis(
     Dense&& representation,
     std::vector<MatrixProxy>& sub_bases,
     bool is_col_basis
@@ -51,13 +51,13 @@ class SharedBasis : public Matrix {
 
   int64_t num_child_basis() const;
 
-  SharedBasis share() const;
+  NestedBasis share() const;
 
   Dense& transfer_mat();
 
   const Dense& transfer_mat() const;
 
-  bool is_shared(const SharedBasis& A) const;
+  bool is_shared(const NestedBasis& A) const;
 
   bool is_col_basis() const;
 
@@ -70,4 +70,4 @@ bool is_shared(const Matrix& A, const Matrix& B);
 
 } // namespace hicma
 
-#endif // hicma_classes_shared_basis_h
+#endif // hicma_classes_nested_basis_h

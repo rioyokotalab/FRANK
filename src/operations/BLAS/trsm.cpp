@@ -100,7 +100,7 @@ define_method(void, trsm_omm, (const Dense& A, Dense& B, int uplo, int lr)) {
 }
 
 define_method(
-  void, trsm_omm, (const Matrix& A, SharedBasis& B, int uplo, int lr)
+  void, trsm_omm, (const Matrix& A, NestedBasis& B, int uplo, int lr)
 ) {
   trsm(A, B.transfer_mat(), uplo, lr);
 }

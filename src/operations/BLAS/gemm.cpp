@@ -97,7 +97,7 @@ define_method(
 define_method(
   void, gemm_trans_omm,
   (
-    const SharedBasis& A, const Dense& B, Dense& C,
+    const NestedBasis& A, const Dense& B, Dense& C,
     bool TransA, bool TransB,
     double alpha, double beta
   )
@@ -132,7 +132,7 @@ define_method(
 define_method(
   void, gemm_trans_omm,
   (
-    const Dense& A, const SharedBasis& B, Dense& C,
+    const Dense& A, const NestedBasis& B, Dense& C,
     bool TransA, bool TransB,
     double alpha, double beta
   )
@@ -166,7 +166,7 @@ define_method(
 define_method(
   void, gemm_trans_omm,
   (
-    const SharedBasis& A, const SharedBasis& B, Dense& C,
+    const NestedBasis& A, const NestedBasis& B, Dense& C,
     bool TransA, bool TransB,
     double alpha, double beta
   )
@@ -240,7 +240,7 @@ define_method(
 define_method(
   void, gemm_omm,
   (
-    const SharedBasis& A, const SharedBasis& B, Matrix& C,
+    const NestedBasis& A, const NestedBasis& B, Matrix& C,
     double alpha, double beta
   )
 ) {
@@ -251,7 +251,7 @@ define_method(
 define_method(
   void, gemm_omm,
   (
-    const SharedBasis& A, const Matrix& B, Matrix& C,
+    const NestedBasis& A, const Matrix& B, Matrix& C,
     double alpha, double beta
   )
 ) {
@@ -262,7 +262,7 @@ define_method(
 define_method(
   void, gemm_omm,
   (
-    const Matrix& A, const SharedBasis& B, Matrix& C,
+    const Matrix& A, const NestedBasis& B, Matrix& C,
     double alpha, double beta
   )
 ) {
@@ -589,7 +589,7 @@ define_method(
 define_method(
   Dense, gemm_omm,
   (
-    const SharedBasis& A, const SharedBasis& B,
+    const NestedBasis& A, const NestedBasis& B,
     double alpha, bool TransA, bool TransB
   )
 ) {
@@ -604,7 +604,7 @@ define_method(
 define_method(
   Dense, gemm_omm,
   (
-    const SharedBasis& A, const Matrix& B,
+    const NestedBasis& A, const Matrix& B,
     double alpha, bool TransA, bool TransB
   )
 ) {
@@ -620,7 +620,7 @@ define_method(
 define_method(
   Dense, gemm_omm,
   (
-    const Matrix& A, const SharedBasis& B,
+    const Matrix& A, const NestedBasis& B,
     double alpha, bool TransA, bool TransB
   )
 ) {

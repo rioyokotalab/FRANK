@@ -31,7 +31,7 @@ define_method(int64_t, get_n_rows_omm, (const Hierarchical& A)) {
   return n_rows;
 }
 
-define_method(int64_t, get_n_rows_omm, (const SharedBasis& A)) {
+define_method(int64_t, get_n_rows_omm, (const NestedBasis& A)) {
   // TODO This can be made simpler if we store Vt instead of V
   int64_t out = 0;
   if (A.col_basis && A.num_child_basis() > 0) {
@@ -64,7 +64,7 @@ define_method(int64_t, get_n_cols_omm, (const Hierarchical& A)) {
   return n_cols;
 }
 
-define_method(int64_t, get_n_cols_omm, (const SharedBasis& A)) {
+define_method(int64_t, get_n_cols_omm, (const NestedBasis& A)) {
   // TODO This can be made simpler if we store Vt instead of V
   int64_t out = 0;
   if (!A.col_basis && A.num_child_basis() > 0) {

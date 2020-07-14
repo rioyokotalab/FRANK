@@ -19,12 +19,12 @@ using yorel::yomm2::virtual_;
 namespace hicma
 {
 
-SharedBasis::SharedBasis(const SharedBasis& A)
+NestedBasis::NestedBasis(const NestedBasis& A)
 : Matrix(A), transfer_matrix(std::make_shared<Dense>(*A.transfer_matrix)),
   sub_bases(A.sub_bases), col_basis(A.col_basis)
 {}
 
-SharedBasis& SharedBasis::operator=(const SharedBasis& A) {
+NestedBasis& NestedBasis::operator=(const NestedBasis& A) {
   Matrix::operator=(A);
   transfer_matrix = std::make_shared<Dense>(*A.transfer_matrix);
   sub_bases = A.sub_bases;
@@ -32,24 +32,24 @@ SharedBasis& SharedBasis::operator=(const SharedBasis& A) {
   return *this;
 }
 
-SharedBasis::SharedBasis(
+NestedBasis::NestedBasis(
   Dense&& A, std::vector<MatrixProxy>& sub_bases,bool is_col_basis
 ) : transfer_matrix(std::make_shared<Dense>(std::move(A))),
     sub_bases(std::move(sub_bases)), col_basis(is_col_basis)
 {}
 
-MatrixProxy& SharedBasis::operator[](int64_t i) {
+MatrixProxy& NestedBasis::operator[](int64_t i) {
   return sub_bases[i];
 }
 
-const MatrixProxy& SharedBasis::operator[](int64_t i) const {
+const MatrixProxy& NestedBasis::operator[](int64_t i) const {
   return sub_bases[i];
 }
 
-int64_t SharedBasis::num_child_basis() const { return sub_bases.size(); }
+int64_t NestedBasis::num_child_basis() const { return sub_bases.size(); }
 
-SharedBasis SharedBasis::share() const {
-  SharedBasis new_shared;
+NestedBasis NestedBasis::share() const {
+  NestedBasis new_shared;
   new_shared.transfer_matrix = transfer_matrix;
   new_shared.sub_bases = std::vector<MatrixProxy>(num_child_basis());
   for (int64_t i=0; i<new_shared.num_child_basis(); ++i) {
@@ -59,7 +59,7 @@ SharedBasis SharedBasis::share() const {
   return new_shared;
 }
 
-bool SharedBasis::is_shared(const SharedBasis& A) const {
+bool NestedBasis::is_shared(const NestedBasis& A) const {
   bool shared = transfer_matrix == A.transfer_matrix;
   shared &= num_child_basis() == A.num_child_basis();
   if (shared) {
@@ -70,13 +70,13 @@ bool SharedBasis::is_shared(const SharedBasis& A) const {
   return shared;
 }
 
-Dense& SharedBasis::transfer_mat() { return *transfer_matrix; }
+Dense& NestedBasis::transfer_mat() { return *transfer_matrix; }
 
-const Dense& SharedBasis::transfer_mat() const { return *transfer_matrix; }
+const Dense& NestedBasis::transfer_mat() const { return *transfer_matrix; }
 
-bool SharedBasis::is_col_basis() const { return col_basis; }
+bool NestedBasis::is_col_basis() const { return col_basis; }
 
-bool SharedBasis::is_row_basis() const { return !col_basis; }
+bool NestedBasis::is_row_basis() const { return !col_basis; }
 
 declare_method(
   bool, is_shared_omm, (virtual_<const Matrix&>, virtual_<const Matrix&>)
@@ -87,7 +87,7 @@ bool is_shared(const Matrix& A, const Matrix& B) {
 }
 
 define_method(
-  bool, is_shared_omm, (const SharedBasis& A, const SharedBasis& B)
+  bool, is_shared_omm, (const NestedBasis& A, const NestedBasis& B)
 ) {
   return A.is_shared(B);
 }
@@ -108,7 +108,7 @@ MatrixProxy share_basis(const Matrix& A) {
   return share_basis_omm(A);
 }
 
-define_method(MatrixProxy, share_basis_omm, (const SharedBasis& A)) {
+define_method(MatrixProxy, share_basis_omm, (const NestedBasis& A)) {
   return A.share();
 }
 

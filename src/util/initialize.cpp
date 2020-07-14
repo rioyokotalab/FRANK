@@ -13,7 +13,7 @@ register_class(Matrix)
 register_class(Dense, Matrix)
 register_class(LowRank, Matrix)
 register_class(Hierarchical, Matrix)
-register_class(SharedBasis, Matrix)
+register_class(NestedBasis, Matrix)
 
 void initialize() {
   // Update virtual tables for open multi methods

@@ -58,14 +58,14 @@ define_method(
 
 define_method(
   MatrixProxy, tracked_copy,
-  (const SharedBasis& A, [[maybe_unused]] BasisTracker<BasisKey>& tracker)
+  (const NestedBasis& A, [[maybe_unused]] BasisTracker<BasisKey>& tracker)
 ) {
   if (!tracker.has_basis(A)) {
     std::vector<MatrixProxy> new_sub_bases(A.num_child_basis());
     for (int64_t i=0; i<A.num_child_basis(); ++i) {
       new_sub_bases[i] = tracked_copy(A[i], tracker);
     }
-    tracker[A] = SharedBasis(
+    tracker[A] = NestedBasis(
       Dense(A.transfer_mat()), new_sub_bases, A.is_col_basis());
   }
   return share_basis(tracker[A]);

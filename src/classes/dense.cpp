@@ -80,7 +80,7 @@ define_method(void, fill_dense_from, (const LowRank& A, Dense& B)) {
   timing::stop("make_dense(LR)");
 }
 
-define_method(void, fill_dense_from, (const SharedBasis& A, Dense& B)) {
+define_method(void, fill_dense_from, (const NestedBasis& A, Dense& B)) {
   timing::start("make_dense(LR)");
   // Only use transfer matrix if there are no children
   if (A.num_child_basis() == 0) return fill_dense_from(A.transfer_mat(), B);

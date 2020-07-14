@@ -166,7 +166,7 @@ void MatrixInitializer::construct_nested_col_basis(NestedTracker& tracker) {
   for (NestedTracker& child : tracker.children) {
     child_bases.push_back(share_basis(col_basis[child.index_range]));
   }
-  col_basis[tracker.index_range] = SharedBasis(std::move(U), child_bases, true);
+  col_basis[tracker.index_range] = NestedBasis(std::move(U), child_bases, true);
 }
 
 Dense MatrixInitializer::make_block_col(const NestedTracker& tracker) const {
@@ -230,7 +230,7 @@ void MatrixInitializer::construct_nested_row_basis(NestedTracker& tracker) {
   for (NestedTracker& child : tracker.children) {
     child_bases.push_back(share_basis(row_basis[child.index_range]));
   }
-  row_basis[tracker.index_range] = SharedBasis(std::move(V), child_bases, false);
+  row_basis[tracker.index_range] = NestedBasis(std::move(V), child_bases, false);
 }
 
 } // namespace hicma
