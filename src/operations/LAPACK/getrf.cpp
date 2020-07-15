@@ -32,11 +32,11 @@ namespace hicma
 std::tuple<MatrixProxy, MatrixProxy> getrf(Matrix& A) { return getrf_omm(A); }
 
 declare_method(
-  void, decuple_col_basis, (virtual_<Matrix&>, BasisTracker<BasisKey>&)
+  void, decouple_col_basis, (virtual_<Matrix&>, BasisTracker<BasisKey>&)
 )
 
 define_method(
-  void, decuple_col_basis, (LowRank& A, BasisTracker<BasisKey>& tracker)
+  void, decouple_col_basis, (LowRank& A, BasisTracker<BasisKey>& tracker)
 ) {
   // TODO This procedure ignores subbases
   timing::start("decoupling");
@@ -47,16 +47,16 @@ define_method(
   timing::stop("decoupling");
 }
 
-define_method(void, decuple_col_basis, (Matrix&, BasisTracker<BasisKey>&)) {
+define_method(void, decouple_col_basis, (Matrix&, BasisTracker<BasisKey>&)) {
   // Do nothing
 }
 
 declare_method(
-  void, decuple_row_basis, (virtual_<Matrix&>, BasisTracker<BasisKey>&)
+  void, decouple_row_basis, (virtual_<Matrix&>, BasisTracker<BasisKey>&)
 )
 
 define_method(
-  void, decuple_row_basis, (LowRank& A, BasisTracker<BasisKey>& tracker)
+  void, decouple_row_basis, (LowRank& A, BasisTracker<BasisKey>& tracker)
 ) {
   // TODO This procedure ignores subbases
   timing::start("decoupling");
@@ -67,7 +67,7 @@ define_method(
   timing::stop("decoupling");
 }
 
-define_method(void, decuple_row_basis, (Matrix&, BasisTracker<BasisKey>&)) {
+define_method(void, decouple_row_basis, (Matrix&, BasisTracker<BasisKey>&)) {
   // Do nothing
 }
 
@@ -81,7 +81,7 @@ define_method(MatrixPair, getrf_omm, (Hierarchical& A)) {
     BasisTracker<BasisKey> trsm_tracker;
     for (int64_t i_c=i+1; i_c<L.dim[0]; i_c++) {
       L(i_c, i) = std::move(A(i_c, i));
-      decuple_row_basis(L(i_c, i), basis_tracker);
+      decouple_row_basis(L(i_c, i), basis_tracker);
       trsm_omm(A(i, i), L(i_c, i), TRSM_UPPER, TRSM_RIGHT, trsm_tracker);
     }
     for (int64_t j=i+1; j<A.dim[1]; j++) {
@@ -95,7 +95,7 @@ define_method(MatrixPair, getrf_omm, (Hierarchical& A)) {
     // Decouple column basis of lower part after operations so that bases are
     // shared during the gemm call (faster LR+=LR)
     for (int64_t i_c=i+1; i_c<L.dim[0]; i_c++) {
-      decuple_col_basis(L(i_c, i), basis_tracker);
+      decouple_col_basis(L(i_c, i), basis_tracker);
     }
   }
   return {std::move(L), std::move(A)};
