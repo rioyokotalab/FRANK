@@ -68,6 +68,7 @@ BasisKey::BasisKey(const MatrixProxy& A) {
 
 define_method(void, init_basis_key, (BasisKey& key, const Dense& A)) {
   key.data_ptr = &A;
+  key.D = share_basis(A);
   key.dim = A.dim;
 }
 
