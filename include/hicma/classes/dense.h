@@ -84,6 +84,8 @@ class Dense : public Matrix {
   Dense transpose() const;
 
   void transpose();
+
+  bool is_shared() const;
 };
 
 } // namespace hicma

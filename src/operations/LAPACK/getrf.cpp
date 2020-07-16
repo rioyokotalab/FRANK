@@ -32,19 +32,64 @@ namespace hicma
 std::tuple<MatrixProxy, MatrixProxy> getrf(Matrix& A) { return getrf_omm(A); }
 
 declare_method(
+  MatrixProxy, decouple_basis, (virtual_<Matrix&>, BasisTracker<BasisKey>&)
+)
+
+define_method(
+  MatrixProxy, decouple_basis, (Dense& A, BasisTracker<BasisKey>& tracker)
+) {
+  timing::start("decoupling");
+  MatrixProxy out;
+  // Try to avoid any copy by checking whether the basis is actually shared
+  if (A.is_shared()) {
+    if (!tracker.has_basis(A)) {
+      tracker[A] = A;
+    }
+    out = share_basis(tracker[A]);
+  } else {
+    out = std::move(A);
+  }
+  timing::stop("decoupling");
+  return out;
+}
+
+define_method(
+  MatrixProxy, decouple_basis, (NestedBasis& A, BasisTracker<BasisKey>& tracker)
+) {
+  timing::start("decoupling");
+  MatrixProxy out;
+  if (tracker.has_basis(A)) {
+    out = share_basis(tracker[A]);
+  } else {
+    for (int64_t i=0; i<A.num_child_basis(); ++i) {
+      A[i] = decouple_basis(A[i], tracker);
+    }
+    if (A.transfer_mat().is_shared()) {
+      tracker[A] = A;
+      out = share_basis(tracker[A]);
+    } else {
+      out = std::move(A);
+    }
+  }
+  timing::stop("decoupling");
+  return out;
+}
+
+define_method(
+  MatrixProxy, decouple_basis, (Matrix& A, BasisTracker<BasisKey>&)
+) {
+  omm_error_handler("decouple_basis", {A}, __FILE__, __LINE__);
+  abort();
+}
+
+declare_method(
   void, decouple_col_basis, (virtual_<Matrix&>, BasisTracker<BasisKey>&)
 )
 
 define_method(
   void, decouple_col_basis, (LowRank& A, BasisTracker<BasisKey>& tracker)
 ) {
-  // TODO This procedure ignores subbases
-  timing::start("decoupling");
-  if (!tracker.has_basis(A.U)) {
-    tracker[A.U] = A.U;
-  }
-  A.U = share_basis(tracker[A.U]);
-  timing::stop("decoupling");
+  A.U = decouple_basis(A.U, tracker);
 }
 
 define_method(void, decouple_col_basis, (Matrix&, BasisTracker<BasisKey>&)) {
@@ -58,13 +103,7 @@ declare_method(
 define_method(
   void, decouple_row_basis, (LowRank& A, BasisTracker<BasisKey>& tracker)
 ) {
-  // TODO This procedure ignores subbases
-  timing::start("decoupling");
-  if (!tracker.has_basis(A.V)) {
-    tracker[A.V] = A.V;
-  }
-  A.V = share_basis(tracker[A.V]);
-  timing::stop("decoupling");
+  A.V = decouple_basis(A.V, tracker);
 }
 
 define_method(void, decouple_row_basis, (Matrix&, BasisTracker<BasisKey>&)) {

@@ -218,7 +218,7 @@ const double* Dense::operator&() const { return data_ptr; }
 int64_t Dense::size() const { return dim[0] * dim[1]; }
 
 void Dense::resize(int64_t dim0, int64_t dim1) {
-  assert(data.use_count() == 1);
+  assert(!is_shared());
   assert(dim0 <= dim[0]);
   assert(dim1 <= dim[1]);
   timing::start("Dense resize");
@@ -254,7 +254,7 @@ Dense Dense::transpose() const {
 
 void Dense::transpose() {
   // TODO Consider removing this function!
-  assert(data.use_count() == 1);
+  assert(!is_shared());
   assert(stride == dim[1]);
   Dense Copy(*this);
   std::swap(dim[0], dim[1]);
@@ -265,5 +265,7 @@ void Dense::transpose() {
     }
   }
 }
+
+bool Dense::is_shared() const { return (data.use_count() > 1); }
 
 } // namespace hicma
