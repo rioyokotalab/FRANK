@@ -1,6 +1,7 @@
 #ifndef hicma_classes_nested_basis_h
 #define hicma_classes_nested_basis_h
 
+#include "hicma/classes/dense.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
 
@@ -13,13 +14,12 @@
 namespace hicma
 {
 
-class Dense;
-
 class NestedBasis : public Matrix {
  private:
-  std::shared_ptr<Dense> transfer_matrix;
   std::vector<MatrixProxy> sub_bases;
  public:
+  Dense transfer_matrix;
+
   // TODO This is a stop-gap solution. Maybe we should generally store Vt
   // instead of V to make this unnecessary!
   bool col_basis;
@@ -53,11 +53,7 @@ class NestedBasis : public Matrix {
 
   NestedBasis share() const;
 
-  Dense& transfer_mat();
-
-  const Dense& transfer_mat() const;
-
-  bool is_shared(const NestedBasis& A) const;
+  bool is_shared_with(const NestedBasis& A) const;
 
   bool is_col_basis() const;
 

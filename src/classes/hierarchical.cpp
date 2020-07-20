@@ -66,7 +66,7 @@ define_method(
       new_sub_bases[i] = tracked_copy(A[i], tracker);
     }
     tracker[A] = NestedBasis(
-      Dense(A.transfer_mat()), new_sub_bases, A.is_col_basis());
+      Dense(A.transfer_matrix), new_sub_bases, A.is_col_basis());
   }
   return share_basis(tracker[A]);
 }

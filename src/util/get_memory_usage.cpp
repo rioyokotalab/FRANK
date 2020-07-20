@@ -57,10 +57,10 @@ define_method(
   )
 ) {
   // If transfer matrix is already registered, return 0
-  if (tracker.has_basis(A.transfer_mat())) return 0;
+  if (tracker.has_basis(A.transfer_matrix)) return 0;
   // Otherwise calculate size and recurse
   unsigned long memory_usage = get_memory_usage(
-    A.transfer_mat(), tracker, include_structure
+    A.transfer_matrix, tracker, include_structure
   );
   for (int64_t i=0; i<A.num_child_basis(); ++i) {
     memory_usage += get_memory_usage(A[i], tracker, include_structure);

@@ -86,6 +86,8 @@ class Dense : public Matrix {
   void transpose();
 
   bool is_shared() const;
+
+  bool is_shared_with(const Dense& A) const;
 };
 
 } // namespace hicma

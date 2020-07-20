@@ -73,7 +73,7 @@ define_method(void, init_basis_key, (BasisKey& key, const Dense& A)) {
 }
 
 define_method(void, init_basis_key, (BasisKey& key, const NestedBasis& A)) {
-  init_basis_key(key, A.transfer_mat());
+  init_basis_key(key, A.transfer_matrix);
 }
 
 define_method(void, init_basis_key, (BasisKey&, const Matrix& A)) {

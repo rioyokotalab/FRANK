@@ -83,9 +83,9 @@ define_method(void, fill_dense_from, (const LowRank& A, Dense& B)) {
 define_method(void, fill_dense_from, (const NestedBasis& A, Dense& B)) {
   timing::start("make_dense(LR)");
   // Only use transfer matrix if there are no children
-  if (A.num_child_basis() == 0) return fill_dense_from(A.transfer_mat(), B);
+  if (A.num_child_basis() == 0) return fill_dense_from(A.transfer_matrix, B);
   Hierarchical AtransH(
-    A.transfer_mat(),
+    A.transfer_matrix,
     A.is_col_basis() ? A.num_child_basis() : 1,
     A.is_row_basis() ? A.num_child_basis() : 1,
     false
@@ -267,5 +267,13 @@ void Dense::transpose() {
 }
 
 bool Dense::is_shared() const { return (data.use_count() > 1); }
+
+bool Dense::is_shared_with(const Dense& A) const {
+  bool shared = (data == A.data);
+  shared &= (data_ptr == A.data_ptr);
+  shared &= (rel_start == A.rel_start);
+  shared &= (dim == A.dim);
+  return shared;
+}
 
 } // namespace hicma

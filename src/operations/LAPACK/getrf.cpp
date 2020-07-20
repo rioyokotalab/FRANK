@@ -64,7 +64,7 @@ define_method(
     for (int64_t i=0; i<A.num_child_basis(); ++i) {
       A[i] = decouple_basis(A[i], tracker);
     }
-    if (A.transfer_mat().is_shared()) {
+    if (A.transfer_matrix.is_shared()) {
       tracker[A] = A;
       out = share_basis(tracker[A]);
     } else {

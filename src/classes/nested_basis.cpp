@@ -20,22 +20,27 @@ namespace hicma
 {
 
 NestedBasis::NestedBasis(const NestedBasis& A)
-: Matrix(A), transfer_matrix(std::make_shared<Dense>(*A.transfer_matrix)),
-  sub_bases(A.sub_bases), col_basis(A.col_basis)
+: Matrix(A),
+  sub_bases(A.sub_bases),
+  transfer_matrix(
+    A.transfer_matrix,
+    A.transfer_matrix.dim[0], A.transfer_matrix.dim[1], 0, 0, true
+  ),
+  col_basis(A.col_basis)
 {}
 
 NestedBasis& NestedBasis::operator=(const NestedBasis& A) {
   Matrix::operator=(A);
-  transfer_matrix = std::make_shared<Dense>(*A.transfer_matrix);
+  transfer_matrix = Dense(A.transfer_matrix);
   sub_bases = A.sub_bases;
   col_basis = A.col_basis;
   return *this;
 }
 
 NestedBasis::NestedBasis(
-  Dense&& A, std::vector<MatrixProxy>& sub_bases,bool is_col_basis
-) : transfer_matrix(std::make_shared<Dense>(std::move(A))),
-    sub_bases(std::move(sub_bases)), col_basis(is_col_basis)
+  Dense&& A, std::vector<MatrixProxy>& sub_bases, bool is_col_basis
+) : sub_bases(std::move(sub_bases)), transfer_matrix(std::move(A)),
+    col_basis(is_col_basis)
 {}
 
 MatrixProxy& NestedBasis::operator[](int64_t i) {
@@ -50,7 +55,9 @@ int64_t NestedBasis::num_child_basis() const { return sub_bases.size(); }
 
 NestedBasis NestedBasis::share() const {
   NestedBasis new_shared;
-  new_shared.transfer_matrix = transfer_matrix;
+  new_shared.transfer_matrix = Dense(
+    transfer_matrix, transfer_matrix.dim[0], transfer_matrix.dim[1], 0, 0, false
+  );
   new_shared.sub_bases = std::vector<MatrixProxy>(num_child_basis());
   for (int64_t i=0; i<new_shared.num_child_basis(); ++i) {
     new_shared[i] = share_basis((*this)[i]);
@@ -59,8 +66,8 @@ NestedBasis NestedBasis::share() const {
   return new_shared;
 }
 
-bool NestedBasis::is_shared(const NestedBasis& A) const {
-  bool shared = transfer_matrix == A.transfer_matrix;
+bool NestedBasis::is_shared_with(const NestedBasis& A) const {
+  bool shared = transfer_matrix.is_shared_with(A.transfer_matrix);
   shared &= num_child_basis() == A.num_child_basis();
   if (shared) {
     for (int64_t i=0; i<num_child_basis(); ++i) {
@@ -69,10 +76,6 @@ bool NestedBasis::is_shared(const NestedBasis& A) const {
   }
   return shared;
 }
-
-Dense& NestedBasis::transfer_mat() { return *transfer_matrix; }
-
-const Dense& NestedBasis::transfer_mat() const { return *transfer_matrix; }
 
 bool NestedBasis::is_col_basis() const { return col_basis; }
 
@@ -89,7 +92,7 @@ bool is_shared(const Matrix& A, const Matrix& B) {
 define_method(
   bool, is_shared_omm, (const NestedBasis& A, const NestedBasis& B)
 ) {
-  return A.is_shared(B);
+  return A.is_shared_with(B);
 }
 
 define_method(bool, is_shared_omm, (const Dense&, const Dense&)) {
