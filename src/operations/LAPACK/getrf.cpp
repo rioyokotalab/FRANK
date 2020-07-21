@@ -30,23 +30,20 @@ namespace hicma
 {
 
 std::tuple<MatrixProxy, MatrixProxy> getrf(Matrix& A) {
-  clear_decouple_tracker();
+  clear_trackers();
   return getrf_omm(A);
 }
 
 define_method(MatrixPair, getrf_omm, (Hierarchical& A)) {
   Hierarchical L(A.dim[0], A.dim[1]);
-  // TODO This will only work for matrices with a single layer! The basis
-  // tracker would need to be shared from outside the functions...
-  BasisTracker<BasisKey> trsm_tracker;
   for (int64_t i=0; i<A.dim[0]; i++) {
     std::tie(L(i, i), A(i, i)) = getrf_omm(A(i, i));
     for (int64_t i_c=i+1; i_c<L.dim[0]; i_c++) {
       L(i_c, i) = std::move(A(i_c, i));
-      trsm_omm(A(i, i), L(i_c, i), TRSM_UPPER, TRSM_RIGHT, trsm_tracker);
+      trsm(A(i, i), L(i_c, i), TRSM_UPPER, TRSM_RIGHT);
     }
     for (int64_t j=i+1; j<A.dim[1]; j++) {
-      trsm_omm(L(i, i), A(i, j), TRSM_LOWER, TRSM_LEFT, trsm_tracker);
+      trsm(L(i, i), A(i, j), TRSM_LOWER, TRSM_LEFT);
     }
     for (int64_t i_c=i+1; i_c<L.dim[0]; i_c++) {
       for (int64_t k=i+1; k<A.dim[1]; k++) {

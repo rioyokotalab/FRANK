@@ -147,7 +147,27 @@ define_method(
   abort();
 }
 
-void clear_decouple_tracker() { decouple_tracker.clear(); }
+std::map<std::string, BasisTracker<BasisKey>> generic_trackers;
+
+bool basis_is_tracked(std::string tracker, MatrixProxy& basis) {
+  if (generic_trackers.find(tracker) == generic_trackers.end()) {
+    return false;
+  } else {
+    return generic_trackers[tracker].has_basis(basis);
+  }
+}
+
+void register_basis(std::string tracker, MatrixProxy& basis) {
+  if (generic_trackers.find(tracker) == generic_trackers.end()) {
+    generic_trackers[tracker] = BasisTracker<BasisKey>();
+  }
+  generic_trackers[tracker][basis] = MatrixProxy();
+}
+
+void clear_trackers() {
+  decouple_tracker.clear();
+  generic_trackers.clear();
+}
 
 NestedTracker::NestedTracker(const IndexRange& index_range)
 : index_range(index_range) {}

@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <functional>
 #include <set>
+#include <string>
 #include <tuple>
 #include <vector>
 
@@ -32,7 +33,11 @@ class BasisKey {
 
 MatrixProxy decouple_basis(MatrixProxy& basis);
 
-void clear_decouple_tracker();
+bool basis_is_tracked(std::string tracker, MatrixProxy& basis);
+
+void register_basis(std::string tracker, MatrixProxy& basis);
+
+void clear_trackers();
 
 } // namespace hicma
 

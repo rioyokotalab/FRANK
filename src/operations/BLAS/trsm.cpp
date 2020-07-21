@@ -108,10 +108,20 @@ define_method(
 define_method(void, trsm_omm, (const Matrix& A, LowRank& B, int uplo, int lr)) {
   switch (lr) {
   case TRSM_LEFT:
+    B.U = decouple_basis(B.U);
+    if (basis_is_tracked("TRSM", B.U)) {
+      return;
+    }
     trsm(A, B.U, uplo, lr);
+    register_basis("TRSM", B.U);
     break;
   case TRSM_RIGHT:
+    B.V = decouple_basis(B.V);
+    if (basis_is_tracked("TRSM", B.V)) {
+      return;
+    }
     trsm(A, B.V, uplo, lr);
+    register_basis("TRSM", B.V);
     break;
   }
 }
@@ -134,44 +144,6 @@ define_method(
 ) {
   omm_error_handler("trsm", {A, B}, __FILE__, __LINE__);
   std::abort();
-}
-
-define_method(
-  void, trsm_omm,
-  (
-    const Matrix& A, LowRank& B,
-    int uplo, int lr, BasisTracker<BasisKey>& tracker
-  )
-) {
-  // Check if already applied
-  // If applied, do nothing
-  switch (lr) {
-  case TRSM_LEFT:
-    B.U = decouple_basis(B.U);
-    if (tracker.has_basis(B.U)) {
-      return;
-    } else {
-      tracker[B.U] = MatrixProxy();
-    }
-    break;
-  case TRSM_RIGHT:
-    B.V = decouple_basis(B.V);
-    if (tracker.has_basis(B.V)) {
-      return;
-    } else {
-      tracker[B.V] = MatrixProxy();
-    }
-    break;
-  }
-  // If not applied, use regular trsm to apply
-  trsm(A, B, uplo, lr);
-}
-
-define_method(
-  void, trsm_omm,
-  (const Matrix& A, Matrix& B, int uplo, int lr, BasisTracker<BasisKey>&)
-) {
-  trsm(A, B, uplo, lr);
 }
 
 } // namespace hicma

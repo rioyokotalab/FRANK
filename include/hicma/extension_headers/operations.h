@@ -70,14 +70,6 @@ declare_method(
   (virtual_<const Matrix&>, virtual_<Matrix&>, int, int)
 )
 
-declare_method(
-  void, trsm_omm,
-  (
-    virtual_<const Matrix&>, virtual_<Matrix&>,
-    int, int, BasisTracker<BasisKey>&
-  )
-)
-
 // LAPACK
 declare_method(DenseIndexSetPair, geqp3_omm, (virtual_<Matrix&>))
 
