@@ -5,6 +5,7 @@
 #include "hicma/classes/nested_basis.h"
 #include "hicma/classes/intitialization_helpers/index_range.h"
 #include "hicma/util/omm_error_handler.h"
+#include "hicma/util/timer.h"
 
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
@@ -89,6 +90,64 @@ bool operator==(const IndexRange& A, const IndexRange& B) {
   return (A.start == B.start) && (A.n == B.n);
 }
 
+declare_method(
+  MatrixProxy, decouple_basis_omm, (virtual_<Matrix&>)
+)
+
+BasisTracker<BasisKey> decouple_tracker;
+
+MatrixProxy decouple_basis(MatrixProxy& basis) {
+  return decouple_basis_omm(basis);
+}
+
+define_method(
+  MatrixProxy, decouple_basis_omm, (Dense& A)
+) {
+  timing::start("decoupling");
+  MatrixProxy out;
+  // Try to avoid any copy by checking whether the basis is actually shared
+  if (A.is_shared()) {
+    if (!decouple_tracker.has_basis(A)) {
+      decouple_tracker[A] = A;
+    }
+    out = share_basis(decouple_tracker[A]);
+  } else {
+    out = std::move(A);
+  }
+  timing::stop("decoupling");
+  return out;
+}
+
+define_method(
+  MatrixProxy, decouple_basis_omm, (NestedBasis& A)
+) {
+  timing::start("decoupling");
+  MatrixProxy out;
+  if (decouple_tracker.has_basis(A)) {
+    out = share_basis(decouple_tracker[A]);
+  } else {
+    for (int64_t i=0; i<A.num_child_basis(); ++i) {
+      A[i] = decouple_basis_omm(A[i]);
+    }
+    if (A.transfer_matrix.is_shared()) {
+      decouple_tracker[A] = A;
+      out = share_basis(decouple_tracker[A]);
+    } else {
+      out = std::move(A);
+    }
+  }
+  timing::stop("decoupling");
+  return out;
+}
+
+define_method(
+  MatrixProxy, decouple_basis_omm, (Matrix& A)
+) {
+  omm_error_handler("decouple_basis", {A}, __FILE__, __LINE__);
+  abort();
+}
+
+void clear_decouple_tracker() { decouple_tracker.clear(); }
 
 NestedTracker::NestedTracker(const IndexRange& index_range)
 : index_range(index_range) {}

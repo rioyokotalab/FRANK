@@ -147,6 +147,7 @@ define_method(
   // If applied, do nothing
   switch (lr) {
   case TRSM_LEFT:
+    B.U = decouple_basis(B.U);
     if (tracker.has_basis(B.U)) {
       return;
     } else {
@@ -154,6 +155,7 @@ define_method(
     }
     break;
   case TRSM_RIGHT:
+    B.V = decouple_basis(B.V);
     if (tracker.has_basis(B.V)) {
       return;
     } else {

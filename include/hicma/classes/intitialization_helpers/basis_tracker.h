@@ -30,6 +30,10 @@ class BasisKey {
   BasisKey(const MatrixProxy&);
 };
 
+MatrixProxy decouple_basis(MatrixProxy& basis);
+
+void clear_decouple_tracker();
+
 } // namespace hicma
 
 
@@ -70,13 +74,11 @@ class BasisTracker {
     return (bases.find(key) != bases.end());
   }
 
-  const MatrixProxy& operator[](const T& key) const {
-    return bases[key];
-  }
+  const MatrixProxy& operator[](const T& key) const { return bases[key]; }
 
-  MatrixProxy& operator[](const T& key) {
-    return bases[key];
-  }
+  MatrixProxy& operator[](const T& key) { return bases[key]; }
+
+  void clear() { bases.clear(); }
 };
 
 class NestedTracker {
