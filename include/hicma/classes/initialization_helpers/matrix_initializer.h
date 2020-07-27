@@ -5,8 +5,8 @@
 // TODO Note that this include is only for the enum (NORMAL_BASIS)
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
-#include "hicma/classes/intitialization_helpers/basis_tracker.h"
-#include "hicma/classes/intitialization_helpers/index_range.h"
+#include "hicma/classes/initialization_helpers/basis_tracker.h"
+#include "hicma/classes/initialization_helpers/index_range.h"
 
 #include <cstdint>
 #include <tuple>

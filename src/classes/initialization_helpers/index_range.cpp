@@ -1,4 +1,4 @@
-#include "hicma/classes/intitialization_helpers/index_range.h"
+#include "hicma/classes/initialization_helpers/index_range.h"
 
 #include "hicma/classes/hierarchical.h"
 #include "hicma/operations/misc.h"

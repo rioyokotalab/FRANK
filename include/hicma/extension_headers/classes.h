@@ -5,7 +5,7 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
-#include "hicma/classes/intitialization_helpers/cluster_tree.h"
+#include "hicma/classes/initialization_helpers/cluster_tree.h"
 
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;

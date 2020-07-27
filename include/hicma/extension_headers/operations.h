@@ -4,7 +4,7 @@
 #include "hicma/classes/dense.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
-#include "hicma/classes/intitialization_helpers/basis_tracker.h"
+#include "hicma/classes/initialization_helpers/basis_tracker.h"
 #include "hicma/extension_headers/tuple_types.h"
 
 #include "yorel/yomm2/cute.hpp"

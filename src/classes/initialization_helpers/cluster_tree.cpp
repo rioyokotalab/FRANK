@@ -1,4 +1,4 @@
-#include "hicma/classes/intitialization_helpers/cluster_tree.h"
+#include "hicma/classes/initialization_helpers/cluster_tree.h"
 
 #include "hicma/classes/hierarchical.h"
 #include "hicma/operations/misc.h"
