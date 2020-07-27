@@ -20,12 +20,6 @@ class ClusterTree;
 
 class MatrixInitializer {
  private:
-  void (*kernel)(
-    Dense& A,
-    const std::vector<std::vector<double>>& x,
-    int64_t row_start, int64_t col_start
-  ) = nullptr;
-  const std::vector<std::vector<double>>& x;
   int64_t admis;
   int64_t rank;
   BasisTracker<IndexRange> col_basis, row_basis;
@@ -56,27 +50,21 @@ class MatrixInitializer {
 
   // Additional constructors
   MatrixInitializer(
-    void (*kernel)(
-      Dense& A, const std::vector<std::vector<double>>& x,
-      int64_t row_start, int64_t col_start
-    ),
-    const std::vector<std::vector<double>>& x,
-    int64_t admis, int64_t rank,
-    int basis_type
+    int64_t admis, int64_t rank, int basis_type
   );
 
   // Utility methods
   virtual void fill_dense_representation(
     Dense& A, const ClusterTree& node
-  ) const;
+  ) const = 0;
 
   virtual void fill_dense_representation(
     Dense& A, const IndexRange& row_range, const IndexRange& col_range
-  ) const;
+  ) const = 0;
 
-  virtual Dense get_dense_representation(const ClusterTree& node) const;
+  virtual Dense get_dense_representation(const ClusterTree& node) const = 0;
 
-  virtual LowRank get_compressed_representation(const ClusterTree& node);
+  LowRank get_compressed_representation(const ClusterTree& node);
 
   void create_nested_basis(const ClusterTree& node);
 

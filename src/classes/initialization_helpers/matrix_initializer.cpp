@@ -19,36 +19,8 @@ namespace hicma
 {
 
 MatrixInitializer::MatrixInitializer(
-  void (*kernel)(
-    Dense& A,
-    const std::vector<std::vector<double>>& x,
-    int64_t row_start, int64_t col_start
-  ),
-  const std::vector<std::vector<double>>& x,
-  int64_t admis, int64_t rank,
-  int basis_type
-) : kernel(kernel), x(x), admis(admis), rank(rank), basis_type(basis_type) {}
-
-void MatrixInitializer::fill_dense_representation(
-  Dense& A,
-  const ClusterTree& node
-) const {
-  kernel(A, x, node.rows.start, node.cols.start);
-}
-
-void MatrixInitializer::fill_dense_representation(
-  Dense& A, const IndexRange& row_range, const IndexRange& col_range
-) const {
-  kernel(A, x, row_range.start, col_range.start);
-}
-
-Dense MatrixInitializer::get_dense_representation(
-  const ClusterTree& node
-) const {
-  Dense representation(node.rows.n, node.cols.n);
-  kernel(representation, x, node.rows.start, node.cols.start);
-  return representation;
-}
+  int64_t admis, int64_t rank, int basis_type
+) : admis(admis), rank(rank), basis_type(basis_type) {}
 
 LowRank MatrixInitializer::get_compressed_representation(
   const ClusterTree& node

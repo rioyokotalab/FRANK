@@ -8,6 +8,8 @@
 #include "hicma/classes/initialization_helpers/basis_tracker.h"
 #include "hicma/classes/initialization_helpers/cluster_tree.h"
 #include "hicma/classes/initialization_helpers/matrix_initializer.h"
+#include "hicma/classes/initialization_helpers/matrix_initializer_block.h"
+#include "hicma/classes/initialization_helpers/matrix_initializer_kernel.h"
 #include "hicma/functions.h"
 #include "hicma/gpu_batch/batch.h"
 #include "hicma/operations/BLAS.h"
@@ -170,7 +172,7 @@ Hierarchical::Hierarchical(
   int basis_type,
   int64_t row_start, int64_t col_start
 ) {
-  MatrixInitializer initer(func, x, admis, rank, basis_type);
+  MatrixInitializerKernel initer(func, x, admis, rank, basis_type);
   ClusterTree cluster_tree(
     {row_start, n_rows}, {col_start, n_cols}, n_row_blocks, n_col_blocks, nleaf
   );
@@ -181,6 +183,26 @@ Hierarchical::Hierarchical(
     initer.create_nested_basis(cluster_tree);
   }
   // TODO The following two should be combined into a single call
+  *this = Hierarchical(cluster_tree, initer);
+}
+
+Hierarchical::Hierarchical(
+  Dense&& A,
+  int64_t rank,
+  int64_t nleaf,
+  int64_t admis,
+  int64_t n_row_blocks, int64_t n_col_blocks,
+  int basis_type,
+  int64_t row_start, int64_t col_start
+) {
+  ClusterTree cluster_tree(
+    {row_start, A.dim[0]}, {col_start, A.dim[1]},
+    n_row_blocks, n_col_blocks, nleaf
+  );
+  MatrixInitializerBlock initer(std::move(A), admis, rank, basis_type);
+  if (basis_type == SHARED_BASIS) {
+    initer.create_nested_basis(cluster_tree);
+  }
   *this = Hierarchical(cluster_tree, initer);
 }
 
