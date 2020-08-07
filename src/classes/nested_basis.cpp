@@ -95,6 +95,14 @@ define_method(
   return A.is_shared_with(B);
 }
 
+define_method(bool, is_shared_omm, (const NestedBasis&, const Dense&)) {
+  return false;
+}
+
+define_method(bool, is_shared_omm, (const Dense&, const NestedBasis&)) {
+  return false;
+}
+
 define_method(bool, is_shared_omm, (const Dense&, const Dense&)) {
   // TODO Might need to find a way to check for regular Dense as well. In LR
   // addition, this could potentiall save a lot of time. For now though, such

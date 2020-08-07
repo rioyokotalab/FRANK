@@ -8,6 +8,7 @@
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
 #include "hicma/classes/nested_basis.h"
+#include "hicma/classes/initialization_helpers/basis_tracker.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/LAPACK.h"
 #include "hicma/operations/arithmetic.h"
@@ -156,10 +157,40 @@ define_method(Matrix&, addition_omm, (LowRank& A, const LowRank& B)) {
   if (is_shared(A.U, B.U) && is_shared(A.V, B.V)) {
     A.S += B.S;
     return A;
-  } else if (is_shared(A.U, B.U) != is_shared(A.V, B.V)) {
-    // TODO Not implemented for semi-shared basis (strong admissiblity requires
-    // this!)
-    abort();
+  } else if (!is_shared(A.U, B.U) && is_shared(A.V, B.V)) {
+    // TODO Only implemented for single layer atm, as in strong-admis UBLR
+    if (!concatenated_basis_done(A.U, B.U)) {
+      // Concatenate U's
+      // TODO Inefficient, double copy
+      Hierarchical concatU(1, 2);
+      concatU[0] = A.U;
+      concatU[1] = get_part(B.U, get_n_rows(B.U), get_n_cols(B.U), 0, 0, false);
+      register_concatenated_basis(A.U, B.U, Dense(concatU));
+    }
+    A.U = share_basis(get_concatenated_basis(A.U, B.U));
+    // Concatenate S's
+    Hierarchical concatS(2, 1);
+    concatS[0] = std::move(A.S);
+    concatS[1] = get_part(B.S, get_n_rows(B.S), get_n_cols(B.S), 0, 0, false);
+    A.S = Dense(concatS);
+    return A;
+  } else if (is_shared(A.U, B.U) && !is_shared(A.V, B.V)) {
+    // TODO Only implemented for single layer atm, as in strong-admis UBLR
+    if (!concatenated_basis_done(A.V, B.V)) {
+      // Concatenate U's
+      // TODO Inefficient, double copy
+      Hierarchical concatV(2, 1);
+      concatV[0] = A.V;
+      concatV[1] = get_part(B.V, get_n_rows(B.V), get_n_cols(B.V), 0, 0, false);
+      register_concatenated_basis(A.V, B.V, Dense(concatV));
+    }
+    A.V = share_basis(get_concatenated_basis(A.V, B.V));
+    // Concatenate S's
+    Hierarchical concatS(1, 2);
+    concatS[0] = std::move(A.S);
+    concatS[1] = get_part(B.S, get_n_rows(B.S), get_n_cols(B.S), 0, 0, false);
+    A.S = Dense(concatS);
+    return A;
   }
   if (getCounter("LR_ADDITION_COUNTER") == 1) updateCounter("LR-addition", 1);
   if (getCounter("LRA") == 0) {

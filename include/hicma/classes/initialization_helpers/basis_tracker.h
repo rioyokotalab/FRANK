@@ -17,6 +17,8 @@
 namespace hicma
 {
 
+class Dense;
+
 class BasisKey {
  public:
   const double* data_ptr;
@@ -44,6 +46,16 @@ MatrixProxy& get_tracked_content(std::string tracker, const Matrix& key);
 void clear_tracker(std::string tracker);
 
 void clear_trackers();
+
+bool concatenated_basis_done(const Matrix& A, const Matrix& B);
+
+void register_concatenated_basis(
+  const Matrix& A, const Matrix& B, const Dense& basis
+);
+
+MatrixProxy& get_concatenated_basis(
+  const Matrix& A, const Matrix& B
+);
 
 } // namespace hicma
 
@@ -76,18 +88,18 @@ bool operator==(const BasisKey& A, const BasisKey& B);
 
 bool operator==(const IndexRange& A, const IndexRange& B);
 
-template<class T>
+template<class Key, class Content = MatrixProxy>
 class BasisTracker {
  private:
-  std::unordered_map<T, MatrixProxy> bases;
+  std::unordered_map<Key, Content> bases;
  public:
-  bool has_basis(const T& key) const {
+  bool has_basis(const Key& key) const {
     return (bases.find(key) != bases.end());
   }
 
-  const MatrixProxy& operator[](const T& key) const { return bases[key]; }
+  const Content& operator[](const Key& key) const { return bases[key]; }
 
-  MatrixProxy& operator[](const T& key) { return bases[key]; }
+  Content& operator[](const Key& key) { return bases[key]; }
 
   void clear() { bases.clear(); }
 };

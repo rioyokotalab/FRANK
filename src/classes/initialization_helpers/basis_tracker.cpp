@@ -177,6 +177,34 @@ void clear_trackers() {
   generic_trackers.clear();
 }
 
+BasisTracker<BasisKey, BasisTracker<BasisKey>> concatenated_bases;
+
+bool concatenated_basis_done(const Matrix& A, const Matrix& B) {
+  bool out;
+  if (!concatenated_bases.has_basis(A)) {
+    out = false;
+  } else {
+    if (concatenated_bases[A].has_basis(B)) {
+      out = true;
+    } else {
+      out = false;
+    }
+  }
+  return out;
+}
+
+void register_concatenated_basis(
+  const Matrix& A, const Matrix& B, const Dense& basis
+) {
+  concatenated_bases[A][B] = basis;
+}
+
+MatrixProxy& get_concatenated_basis(
+  const Matrix& A, const Matrix& B
+) {
+  return concatenated_bases[A][B];
+}
+
 NestedTracker::NestedTracker(const IndexRange& index_range)
 : index_range(index_range) {}
 
