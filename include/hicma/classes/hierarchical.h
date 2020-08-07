@@ -14,8 +14,6 @@ namespace hicma
 {
 
 class BasisKey;
-template<class T>
-class BasisTracker;
 class Dense;
 class ClusterTree;
 class MatrixInitializer;
@@ -51,8 +49,6 @@ class Hierarchical : public Matrix {
   Hierarchical(const Matrix& A, const Hierarchical& like, bool copy=true);
 
   // Additional constructors
-  Hierarchical(const Hierarchical& A, BasisTracker<BasisKey>& tracker);
-
   Hierarchical(int64_t n_row_blocks, int64_t n_col_blocks=1);
 
   Hierarchical(

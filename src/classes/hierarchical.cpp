@@ -32,75 +32,64 @@ using yorel::yomm2::virtual_;
 namespace hicma
 {
 
-Hierarchical::Hierarchical(const Hierarchical& A) : Matrix(A) {
-  BasisTracker<BasisKey> tracker;
-  *this = Hierarchical(A, tracker);
-}
-
 declare_method(
-  MatrixProxy, tracked_copy, (virtual_<const Matrix&>, BasisTracker<BasisKey>&)
+  MatrixProxy, tracked_copy, (virtual_<const Matrix&>)
 )
 
-define_method(
-  MatrixProxy, tracked_copy,
-  (const Hierarchical& A, BasisTracker<BasisKey>& tracker)
-) {
-  return Hierarchical(A, tracker);
-}
-
-define_method(
-  MatrixProxy, tracked_copy,
-  (const Dense& A, [[maybe_unused]] BasisTracker<BasisKey>& tracker)
-) {
-  if (!tracker.has_basis(A)) {
-    tracker[A] = A;
-  }
-  return share_basis(tracker[A]);
-}
-
-define_method(
-  MatrixProxy, tracked_copy,
-  (const NestedBasis& A, [[maybe_unused]] BasisTracker<BasisKey>& tracker)
-) {
-  if (!tracker.has_basis(A)) {
-    std::vector<MatrixProxy> new_sub_bases(A.num_child_basis());
-    for (int64_t i=0; i<A.num_child_basis(); ++i) {
-      new_sub_bases[i] = tracked_copy(A[i], tracker);
-    }
-    tracker[A] = NestedBasis(
-      Dense(A.transfer_matrix), new_sub_bases, A.is_col_basis());
-  }
-  return share_basis(tracker[A]);
-}
-
-define_method(
-  MatrixProxy, tracked_copy, (const LowRank& A, BasisTracker<BasisKey>& tracker)
-) {
-  return LowRank(
-    tracked_copy(A.U, tracker), A.S, tracked_copy(A.V, tracker), true);
-}
-
-define_method(
-  MatrixProxy, tracked_copy,
-  (const Matrix& A, [[maybe_unused]] BasisTracker<BasisKey>& tracker)
-) {
-  omm_error_handler("tracked_copy", {A}, __FILE__, __LINE__);
-  std::abort();
-}
-
-Hierarchical::Hierarchical(
-  const Hierarchical& A, BasisTracker<BasisKey>& tracker
-) : Matrix(A), dim(A.dim), data(dim[0]*dim[1]) {
-  for (int64_t i=0; i<A.dim[0]; ++i) {
-    for (int64_t j=0; j<A.dim[1]; ++j) {
-      (*this)(i, j) = tracked_copy(A(i, j), tracker);
-    }
-  }
+Hierarchical::Hierarchical(const Hierarchical& A)
+: Hierarchical(tracked_copy(A)) {
+  clear_tracker("hierarchical_copy");
 }
 
 Hierarchical& Hierarchical::operator=(const Hierarchical& A) {
-  *this = Hierarchical(A);
+  *this = tracked_copy(A);
+  clear_tracker("hierarchical_copy");
   return *this;
+}
+
+define_method(
+  MatrixProxy, tracked_copy,
+  (const Hierarchical& A)
+) {
+  Hierarchical out(A.dim[0], A.dim[1]);
+  for (int64_t i=0; i<A.dim[0]; ++i) {
+    for (int64_t j=0; j<A.dim[1]; ++j) {
+      out(i, j) = tracked_copy(A(i, j));
+    }
+  }
+  return out;
+}
+
+define_method(MatrixProxy, tracked_copy, (const Dense& A)) {
+  if (!matrix_is_tracked("hierarchical_copy", A)) {
+    register_matrix("hierarchical_copy", A, A);
+  }
+  return share_basis(get_tracked_content("hierarchical_copy", A));
+}
+
+define_method(MatrixProxy, tracked_copy, (const NestedBasis& A)) {
+  if (!matrix_is_tracked("hierarchical_copy", A)) {
+    std::vector<MatrixProxy> new_sub_bases(A.num_child_basis());
+    for (int64_t i=0; i<A.num_child_basis(); ++i) {
+      new_sub_bases[i] = tracked_copy(A[i]);
+    }
+    register_matrix(
+      "hierarchical_copy", A,
+      NestedBasis(Dense(A.transfer_matrix), new_sub_bases, A.is_col_basis())
+    );
+  }
+  return share_basis(get_tracked_content("hierarchical_copy", A));
+}
+
+define_method(
+  MatrixProxy, tracked_copy, (const LowRank& A)
+) {
+  return LowRank(tracked_copy(A.U), A.S, tracked_copy(A.V), true);
+}
+
+define_method(MatrixProxy, tracked_copy, (const Matrix& A)) {
+  omm_error_handler("tracked_copy", {A}, __FILE__, __LINE__);
+  std::abort();
 }
 
 declare_method(Hierarchical&&, move_from_hierarchical, (virtual_<Matrix&>))

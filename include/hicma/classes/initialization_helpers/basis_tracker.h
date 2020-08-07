@@ -33,9 +33,15 @@ class BasisKey {
 
 MatrixProxy decouple_basis(MatrixProxy& basis);
 
-bool basis_is_tracked(std::string tracker, MatrixProxy& basis);
+bool matrix_is_tracked(std::string tracker, const Matrix& key);
 
-void register_basis(std::string tracker, MatrixProxy& basis);
+void register_matrix(
+  std::string tracker, const Matrix& key, MatrixProxy content=MatrixProxy()
+);
+
+MatrixProxy& get_tracked_content(std::string tracker, const Matrix& key);
+
+void clear_tracker(std::string tracker);
 
 void clear_trackers();
 

@@ -149,20 +149,28 @@ define_method(
 
 std::map<std::string, BasisTracker<BasisKey>> generic_trackers;
 
-bool basis_is_tracked(std::string tracker, MatrixProxy& basis) {
+bool matrix_is_tracked(std::string tracker, const Matrix& key) {
   if (generic_trackers.find(tracker) == generic_trackers.end()) {
     return false;
   } else {
-    return generic_trackers[tracker].has_basis(basis);
+    return generic_trackers[tracker].has_basis(key);
   }
 }
 
-void register_basis(std::string tracker, MatrixProxy& basis) {
+void register_matrix(
+  std::string tracker, const Matrix& key, MatrixProxy content
+) {
   if (generic_trackers.find(tracker) == generic_trackers.end()) {
     generic_trackers[tracker] = BasisTracker<BasisKey>();
   }
-  generic_trackers[tracker][basis] = MatrixProxy();
+  generic_trackers[tracker][key] = std::move(content);
 }
+
+MatrixProxy& get_tracked_content(std::string tracker, const Matrix& key) {
+  return generic_trackers[tracker][key];
+}
+
+void clear_tracker(std::string tracker) { generic_trackers.erase(tracker); }
 
 void clear_trackers() {
   decouple_tracker.clear();

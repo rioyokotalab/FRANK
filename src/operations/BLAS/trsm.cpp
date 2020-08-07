@@ -109,19 +109,19 @@ define_method(void, trsm_omm, (const Matrix& A, LowRank& B, int uplo, int lr)) {
   switch (lr) {
   case TRSM_LEFT:
     B.U = decouple_basis(B.U);
-    if (basis_is_tracked("TRSM", B.U)) {
+    if (matrix_is_tracked("TRSM", B.U)) {
       return;
     }
     trsm(A, B.U, uplo, lr);
-    register_basis("TRSM", B.U);
+    register_matrix("TRSM", B.U);
     break;
   case TRSM_RIGHT:
     B.V = decouple_basis(B.V);
-    if (basis_is_tracked("TRSM", B.V)) {
+    if (matrix_is_tracked("TRSM", B.V)) {
       return;
     }
     trsm(A, B.V, uplo, lr);
-    register_basis("TRSM", B.V);
+    register_matrix("TRSM", B.V);
     break;
   }
 }

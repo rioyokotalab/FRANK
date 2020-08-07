@@ -22,24 +22,19 @@ namespace hicma
 {
 
 unsigned long get_memory_usage(const Matrix& A, bool include_structure) {
-  BasisTracker<BasisKey> tracker;
-  return get_memory_usage(A, tracker, include_structure);
-}
-
-unsigned long get_memory_usage(
-  const Matrix& A, BasisTracker<BasisKey>& tracker, bool include_structure
-) {
-  return get_memory_usage_omm(A, tracker, include_structure);
+  unsigned long memory_usage = get_memory_usage_omm(A, include_structure);
+  clear_tracker("memory_usage");
+  return memory_usage;
 }
 
 define_method(
   unsigned long, get_memory_usage_omm,
-  (const Dense& A, BasisTracker<BasisKey>& tracker, bool include_structure)
+  (const Dense& A, bool include_structure)
 ) {
   // If already tracked, return size 0
-  if (tracker.has_basis(A)) return 0;
+  if (matrix_is_tracked("memory_usage", A)) return 0;
   // Otherwise register with tracker and calculate size
-  tracker[A] = MatrixProxy();
+  register_matrix("memory_usage", A);
   unsigned long memory_usage = 0;
   memory_usage += A.dim[0]*A.dim[1]*sizeof(A[0]);
   if (include_structure) {
@@ -50,20 +45,16 @@ define_method(
 
 define_method(
   unsigned long, get_memory_usage_omm,
-  (
-    const NestedBasis& A,
-    BasisTracker<BasisKey>& tracker,
-    bool include_structure
-  )
+  (const NestedBasis& A, bool include_structure)
 ) {
   // If transfer matrix is already registered, return 0
-  if (tracker.has_basis(A.transfer_matrix)) return 0;
+  if (matrix_is_tracked("memory_usage", A.transfer_matrix)) return 0;
   // Otherwise calculate size and recurse
   unsigned long memory_usage = get_memory_usage(
-    A.transfer_matrix, tracker, include_structure
+    A.transfer_matrix, include_structure
   );
   for (int64_t i=0; i<A.num_child_basis(); ++i) {
-    memory_usage += get_memory_usage(A[i], tracker, include_structure);
+    memory_usage += get_memory_usage_omm(A[i], include_structure);
   }
   if (include_structure) {
     memory_usage += sizeof(NestedBasis);
@@ -73,12 +64,12 @@ define_method(
 
 define_method(
   unsigned long, get_memory_usage_omm,
-  (const LowRank& A, BasisTracker<BasisKey>& tracker, bool include_structure)
+  (const LowRank& A, bool include_structure)
 ) {
   unsigned long memory_usage = 0;
-  memory_usage += get_memory_usage(A.U, tracker, include_structure);
-  memory_usage += get_memory_usage(A.S, tracker, include_structure);
-  memory_usage += get_memory_usage(A.V, tracker, include_structure);
+  memory_usage += get_memory_usage_omm(A.U, include_structure);
+  memory_usage += get_memory_usage_omm(A.S, include_structure);
+  memory_usage += get_memory_usage_omm(A.V, include_structure);
   if (include_structure) {
     memory_usage += sizeof(LowRank) - 3*sizeof(Dense);
   }
@@ -87,16 +78,12 @@ define_method(
 
 define_method(
   unsigned long, get_memory_usage_omm,
-  (
-    const Hierarchical& A,
-    BasisTracker<BasisKey>& tracker,
-    bool include_structure
-  )
+  (const Hierarchical& A, bool include_structure)
 ) {
   unsigned long memory_usage = 0;
   for (int64_t i=0; i<A.dim[0]; ++i) {
     for (int64_t j=0; j<A.dim[1]; ++j) {
-      memory_usage += get_memory_usage(A(i, j), tracker, include_structure);
+      memory_usage += get_memory_usage_omm(A(i, j), include_structure);
     }
   }
   if (include_structure) {
@@ -108,13 +95,9 @@ define_method(
 
 define_method(
   unsigned long, get_memory_usage_omm,
-  (
-    const Matrix& A,
-    [[maybe_unused]] BasisTracker<BasisKey>& tracker,
-    [[maybe_unused]] bool include_structure
-  )
+  (const Matrix& A, [[maybe_unused]] bool include_structure)
 ) {
-  omm_error_handler("get_memor_usage", {A}, __FILE__, __LINE__);
+  omm_error_handler("get_memory_usage", {A}, __FILE__, __LINE__);
   std::abort();
 }
 
