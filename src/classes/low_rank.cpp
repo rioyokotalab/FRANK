@@ -29,12 +29,24 @@ LowRank::LowRank(int64_t n_rows, int64_t n_cols, int64_t k)
   V = Dense(k, dim[1]);
 }
 
-LowRank::LowRank(const Dense& A, int64_t k)
+LowRank::LowRank(const Dense& A, int64_t k, svdType type)
 : Matrix(A), dim{A.dim[0], A.dim[1]} {
   // Rank with oversampling limited by dimensions
   rank = std::min(std::min(k+5, dim[0]), dim[1]);
   Dense U_full, V_full;
-  std::tie(U_full, S, V_full) = rsvd(A, rank);
+  switch (type){
+    case powIt:         std::tie(U_full, S, V_full) = rsvd_pow(A, rank, 2);
+                      break;
+
+    case powOrtho:    std::tie(U_full, S, V_full) = rsvd_powOrtho(A, rank, 2);
+                      break;
+
+    case singlePass:  std::tie(U_full, S, V_full) = rsvd_singlePass(A, rank);
+                      break;
+
+    default:          std::tie(U_full, S, V_full) = rsvd(A, rank);
+  }
+  //std::tie(U_full, S, V_full) = rsvd(A, rank);
   U_full.resize(dim[0], k);
   U = std::move(U_full);
   V_full.resize(k, dim[1]);

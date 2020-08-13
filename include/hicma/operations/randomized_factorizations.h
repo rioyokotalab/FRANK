@@ -21,6 +21,12 @@ std::tuple<Dense, Dense, Dense> rsvd(const Dense&, int64_t sample_size);
 
 std::tuple<Dense, Dense, Dense> old_rsvd(const Dense&, int64_t sample_size);
 
+std::tuple<Dense, Dense, Dense> rsvd_pow(const Dense& A, int64_t sample_size, int64_t q);
+
+std::tuple<Dense, Dense, Dense> rsvd_powOrtho(const Dense& A, int64_t sample_size, int64_t q);
+
+std::tuple<Dense, Dense, Dense> rsvd_singlePass(const Dense&, int64_t sample_size);
+
 } // namespace hicma
 
 #endif // hicma_oprations_randomized_factorizations_h

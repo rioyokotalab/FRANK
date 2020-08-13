@@ -12,6 +12,8 @@
 namespace hicma
 {
 
+enum svdType {basic, powIt, powOrtho, singlePass};
+
 class LowRank : public Matrix {
  public:
   MatrixProxy U, V;
@@ -35,7 +37,7 @@ class LowRank : public Matrix {
   // Additional constructors
   LowRank(int64_t n_rows, int64_t n_cols, int64_t k);
 
-  LowRank(const Dense& A, int64_t k);
+  LowRank(const Dense& A, int64_t k, svdType type=basic);
 
   LowRank(const Matrix& U, const Dense& S, const Matrix& V, bool copy_S=false);
 
