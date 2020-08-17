@@ -431,7 +431,7 @@ define_method(void, rq_omm, (Dense& A, Dense& R, Dense& Q)) {
   LAPACKE_dorgrq(
     LAPACK_ROW_MAJOR,
     A.dim[0], A.dim[1], A.dim[0],
-    &A, A.dim[1],
+    &A, A.stride,
     &tau[0]
   );
   Q = std::move(A);
