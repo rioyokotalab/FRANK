@@ -96,7 +96,7 @@ declare_method(
 
 BasisTracker<BasisKey> decouple_tracker;
 
-MatrixProxy decouple_basis(MatrixProxy& basis) {
+MatrixProxy decouple_basis(Matrix& basis) {
   return decouple_basis_omm(basis);
 }
 
@@ -127,14 +127,9 @@ define_method(
     out = share_basis(decouple_tracker[A]);
   } else {
     for (int64_t i=0; i<A.num_child_basis(); ++i) {
-      A[i] = decouple_basis_omm(A[i]);
+      A[i] = decouple_basis(A[i]);
     }
-    if (A.transfer_matrix.is_shared()) {
-      decouple_tracker[A] = A;
-      out = share_basis(decouple_tracker[A]);
-    } else {
-      out = std::move(A);
-    }
+    out = decouple_basis(A.transfer_matrix);
   }
   timing::stop("decoupling");
   return out;
