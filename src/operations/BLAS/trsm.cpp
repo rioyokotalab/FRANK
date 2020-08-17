@@ -102,6 +102,7 @@ define_method(void, trsm_omm, (const Dense& A, Dense& B, int uplo, int lr)) {
 define_method(
   void, trsm_omm, (const Matrix& A, NestedBasis& B, int uplo, int lr)
 ) {
+  // TODO Only works for single layer!
   trsm(A, B.transfer_matrix, uplo, lr);
 }
 
