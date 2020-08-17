@@ -44,6 +44,8 @@ class NestedBasis : public Matrix {
     bool is_col_basis
   );
 
+  NestedBasis(const Dense& representation, bool is_col_basis);
+
   // Utility methods
   MatrixProxy& operator[](int64_t i);
 

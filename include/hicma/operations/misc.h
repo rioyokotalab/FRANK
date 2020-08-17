@@ -12,6 +12,7 @@ namespace hicma
 
 class ClusterTree;
 class Dense;
+class Hierarchical;
 class Matrix;
 
 int64_t get_n_rows(const Matrix&);
@@ -45,6 +46,8 @@ MatrixProxy get_part(
 );
 
 double norm(const Matrix&);
+
+void recompress(Hierarchical& A, int64_t start);
 
 void transpose(Matrix&);
 

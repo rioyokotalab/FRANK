@@ -7,6 +7,7 @@
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/initialization_helpers/basis_tracker.h"
 #include "hicma/operations/BLAS.h"
+#include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
 #include "hicma/util/timer.h"
 
@@ -50,6 +51,8 @@ define_method(MatrixPair, getrf_omm, (Hierarchical& A)) {
         gemm(L(i_c, i), A(i, k), A(i_c, k), -1, 1);
       }
     }
+    // Recompress basis of A which might be less efficient due to gemm calls
+    recompress(A, i+1);
   }
   return {std::move(L), std::move(A)};
 }

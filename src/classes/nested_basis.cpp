@@ -43,6 +43,10 @@ NestedBasis::NestedBasis(
     col_basis(is_col_basis)
 {}
 
+NestedBasis::NestedBasis(const Dense& A, bool is_col_basis)
+: sub_bases(), transfer_matrix(std::move(A)), col_basis(is_col_basis)
+{}
+
 MatrixProxy& NestedBasis::operator[](int64_t i) {
   return sub_bases[i];
 }
