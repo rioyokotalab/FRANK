@@ -25,7 +25,6 @@ int main(int argc, char** argv) {
   timing::stop("CPU compression");
   rsvd_batch();
   // printXML(A);
-  admis = N / nleaf; // Full rank
   Dense x(random_uniform, std::vector<std::vector<double>>(), N);
   Dense b(N);
   timing::start("Dense tree");
