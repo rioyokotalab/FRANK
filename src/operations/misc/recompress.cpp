@@ -113,14 +113,12 @@ void recompress(Hierarchical& A, int64_t start) {
       Dense new_S = gemm(S, V);
       // TODO Assumes all ranks are equal and as before!
       for (uint64_t j=0; j<lr_row.size(); ++j) {
-        MatrixProxy test = *lr_row[j];
         lr_row[j]->U = share_basis(new_U);
         lr_row[j]->S = Dense(
           new_S,
           new_S.dim[0], lr_row[j]->S.dim[1], 0, lr_row[j]->S.dim[1]*j,
           true
         );
-        // print("Recomp error: ", l2_error(test, *lr_row[j]), false);
       }
     }
   }
@@ -148,14 +146,12 @@ void recompress(Hierarchical& A, int64_t start) {
       Dense new_S = gemm(U, S);
       // TODO Assumes all ranks are equal and as before!
       for (uint64_t i=0; i<lr_col.size(); ++i) {
-        MatrixProxy test = *lr_col[i];
         lr_col[i]->V = share_basis(new_V);
         lr_col[i]->S = Dense(
           new_S,
           lr_col[i]->S.dim[0], new_S.dim[1], lr_col[i]->S.dim[0]*i, 0,
           true
         );
-        // print("Recomp error: ", l2_error(test, *lr_col[i]), false);
       }
     }
   }
