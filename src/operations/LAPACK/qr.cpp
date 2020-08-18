@@ -26,6 +26,7 @@
 #include <tuple>
 #include <utility>
 #include <vector>
+#include <iostream>
 
 
 namespace hicma
@@ -34,10 +35,6 @@ namespace hicma
 void qr(Matrix& A, Matrix& Q, Matrix& R) {
   // TODO consider moving assertions here (same in other files)!
   qr_omm(A, Q, R);
-}
-
-bool need_split(const Matrix& A) {
-  return need_split_omm(A);
 }
 
 std::tuple<Dense, Dense> make_left_orthogonal(const Matrix& A) {
@@ -58,6 +55,10 @@ MatrixProxy concat_columns(
   const Matrix& A, const Matrix& splitted, const Matrix& Q, int64_t& currentRow
 ) {
   return concat_columns_omm(A, splitted, Q, currentRow);
+}
+
+void orthogonalize_block_col(int64_t j, const Matrix& A, Matrix& Q, Matrix& R) {
+  orthogonalize_block_col_omm(j, A, Q, R);
 }
 
 
@@ -102,32 +103,32 @@ define_method(
   assert(R.dim[0] == A.dim[1]);
   assert(R.dim[1] == A.dim[1]);
   for (int64_t j=0; j<A.dim[1]; j++) {
+    orthogonalize_block_col(j, A, Q, R(j, j));
     Hierarchical Qj(A.dim[0], 1);
-    for (int64_t i = 0; i < A.dim[0]; i++) {
+    for (int64_t i=0; i<A.dim[0]; i++) {
       Qj(i, 0) = Q(i, j);
     }
-    Hierarchical Rjj(1, 1);
-    Rjj(0, 0) = R(j, j);
-    A.col_qr(j, Qj, Rjj);
-    R(j, j) = Rjj(0, 0);
-    for (int64_t i=0; i<A.dim[0]; i++) {
-      Q(i, j) = Qj(i, 0);
-    }
-    Hierarchical TrQj(Qj);
-    transpose(TrQj);
+    Hierarchical QjT(Qj); transpose(QjT);
     for (int64_t k=j+1; k<A.dim[1]; k++) {
       //Take k-th column
       Hierarchical Ak(A.dim[0], 1);
-      for (int64_t i=0; i<A.dim[0]; i++) {
+      for(int64_t i=0; i<A.dim[0]; i++) {
         Ak(i, 0) = A(i, k);
       }
+      /*
+        The Following 5 lines should be possible using these 2 lines:
+          gemm(QjT, Ak, R(j, k), 1, 1);
+          gemm(Qj, R(j, k), Ak, -1, 1);
+        But somehow it leads to segfaults
+        TODO investigate gemm(H, H, H) behavior
+       */
       Hierarchical Rjk(1, 1);
       Rjk(0, 0) = R(j, k);
-      gemm(TrQj, Ak, Rjk, 1, 1); //Rjk = Q*j^T x A*k
+      gemm(QjT, Ak, Rjk, 1, 1); //Rjk = Q*j^T x A*k
       R(j, k) = Rjk(0, 0);
       gemm(Qj, Rjk, Ak, -1, 1); //A*k = A*k - Q*j x Rjk
       for (int64_t i=0; i<A.dim[0]; i++) {
-        A(i, k) = Ak(i, 0);
+        A(i, k) = std::move(Ak(i, 0));
       }
     }
   }
@@ -136,15 +137,6 @@ define_method(
 define_method(void, qr_omm, (Matrix& A, Matrix& Q, Matrix& R)) {
   omm_error_handler("qr", {A, Q, R}, __FILE__, __LINE__);
   std::abort();
-}
-
-
-define_method(bool, need_split_omm, ([[maybe_unused]] const Hierarchical& A)) {
-  return true;
-}
-
-define_method(bool, need_split_omm, ([[maybe_unused]] const Matrix& A)) {
-  return false;
 }
 
 
@@ -357,6 +349,77 @@ define_method(void, zero_whole_omm, (LowRank& A)) {
 define_method(void, zero_whole_omm, (Matrix& A)) {
   omm_error_handler("zero_whole", {A}, __FILE__, __LINE__);
   std::abort();
+}
+
+
+std::tuple<Hierarchical, Hierarchical> split_block_col(int64_t j, const Hierarchical& A) {
+  assert(type(A(j, j)) == "Hierarchical");
+  int64_t splitRowSize = 0;
+  int64_t splitColSize = 1;
+  for(int64_t i=0; i<A.dim[0]; i++) {
+    update_splitted_size(A(i, j), splitRowSize, splitColSize);
+  }
+  Hierarchical splitA(splitRowSize, splitColSize);
+  Hierarchical QL(A.dim[0], 1);
+  int64_t curRow = 0;
+  for(int64_t i=0; i<A.dim[0]; i++) {
+    QL(i, 0) = split_by_column(A(i, j), splitA, curRow);
+  }
+  return {std::move(splitA), std::move(QL)};
+}
+
+void restore_block_col(int64_t j, const Hierarchical& Q_splitA, const Hierarchical& QL, Hierarchical& Q) {
+  assert(QL.dim[0] == Q.dim[0]);
+  int64_t curRow = 0;
+  for(int64_t i=0; i<Q.dim[0]; i++) {
+    Q(i, j) = concat_columns(Q(i, j), Q_splitA, QL(i, 0), curRow);
+  }
+}
+
+
+define_method(
+  void, orthogonalize_block_col_omm,
+  (int64_t j, const Hierarchical& A, Hierarchical& Q, Dense& R)
+) {
+  Hierarchical Qu(A.dim[0], 1);
+  Hierarchical B(A.dim[0], 1);
+  for(int64_t i=0; i<A.dim[0]; i++) {
+    std::tie(Qu(i, 0), B(i, 0)) = make_left_orthogonal(A(i, j));
+  }
+  Dense DB(B);
+  Dense Qb(DB.dim[0], DB.dim[1]);
+  Dense Rb(DB.dim[1], DB.dim[1]);
+  qr(DB, Qb, Rb);
+  R = std::move(Rb);
+  //Slice Qb based on B
+  Hierarchical HQb(B.dim[0], B.dim[1]);
+  int64_t rowOffset = 0;
+  for(int64_t i=0; i<HQb.dim[0]; i++) {
+    int64_t dim_Bi[2]{get_n_rows(B(i, 0)), get_n_cols(B(i, 0))};
+    Dense Qbi(dim_Bi[0], dim_Bi[1]);
+    for(int64_t row=0; row<dim_Bi[0]; row++) {
+      for(int64_t col=0; col<dim_Bi[1]; col++) {
+        Qbi(row, col) = Qb(rowOffset + row, col);
+      }
+    }
+    HQb(i, 0) = Qbi;
+    rowOffset += dim_Bi[0];
+  }
+  for(int64_t i=0; i<A.dim[0]; i++) {
+    gemm(Qu(i, 0), HQb(i, 0), Q(i, j), 1, 0);
+  }
+}
+
+define_method(
+  void, orthogonalize_block_col_omm,
+  (int64_t j, const Hierarchical& A, Hierarchical& Q, Hierarchical& R)
+) {
+  Hierarchical splitA;
+  Hierarchical QL;
+  std::tie(splitA, QL) = split_block_col(j, A);
+  Hierarchical Q_splitA(splitA);
+  qr(splitA, Q_splitA, R);
+  restore_block_col(j, Q_splitA, QL, Q);
 }
 
 

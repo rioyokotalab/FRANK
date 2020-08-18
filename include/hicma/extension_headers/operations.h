@@ -106,7 +106,6 @@ declare_method(
   void, qr_omm,
   (virtual_<Matrix&>, virtual_<Matrix&>, virtual_<Matrix&>)
 )
-declare_method(bool, need_split_omm, (virtual_<const Matrix&>))
 declare_method(
   DensePair, make_left_orthogonal_omm,
   (virtual_<const Matrix&>)
@@ -125,6 +124,10 @@ declare_method(
     virtual_<const Matrix&>, virtual_<const Matrix&>, virtual_<const Matrix&>,
     int64_t&
   )
+)
+declare_method(
+  void, orthogonalize_block_col_omm,
+  (int64_t, virtual_<const Matrix&>, virtual_<Matrix&>, virtual_<Matrix&>)
 )
 
 declare_method(void, zero_lowtri_omm, (virtual_<Matrix&>))

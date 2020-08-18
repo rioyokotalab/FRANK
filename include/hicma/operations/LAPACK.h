@@ -12,6 +12,7 @@ namespace hicma
 class Matrix;
 class MatrixProxy;
 class Dense;
+class Hierarchical;
 
 std::tuple<Dense, std::vector<int64_t>> geqp3(Matrix& A);
 
@@ -45,21 +46,7 @@ void latms(
 
 void qr(Matrix&, Matrix&, Matrix&);
 
-// TODO Does this need to be in the header?
-bool need_split(const Matrix&);
-
-// TODO Does this need to be in the header?
-std::tuple<Dense, Dense> make_left_orthogonal(const Matrix&);
-
-// TODO Does this need to be in the header?
-void update_splitted_size(const Matrix&, int64_t&, int64_t&);
-
-// TODO Does this need to be in the header?
-MatrixProxy split_by_column(const Matrix&, Matrix&, int64_t&);
-
-// TODO Does this need to be in the header?
-MatrixProxy concat_columns(
-  const Matrix&, const Matrix&, const Matrix&, int64_t&);
+void orthogonalize_block_col(int64_t, const Matrix&, Matrix&, Matrix&);
 
 void zero_lowtri(Matrix&);
 
