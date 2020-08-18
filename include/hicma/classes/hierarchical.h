@@ -88,14 +88,6 @@ class Hierarchical : public Matrix {
 
   MatrixProxy& operator()(int64_t i, int64_t j);
 
-  // Utility methods
-  void blr_col_qr(Hierarchical& Q, Hierarchical& R);
-
-  void split_col(Hierarchical& QL);
-
-  void restore_col(const Hierarchical& Sp, const Hierarchical& QL);
-
-  void col_qr(int64_t j, Hierarchical& Q, Hierarchical &R);
 };
 
 } // namespace hicma
