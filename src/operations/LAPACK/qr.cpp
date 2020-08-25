@@ -104,31 +104,17 @@ define_method(
   assert(R.dim[1] == A.dim[1]);
   for (int64_t j=0; j<A.dim[1]; j++) {
     orthogonalize_block_col(j, A, Q, R(j, j));
-    Hierarchical Qj(A.dim[0], 1);
-    for (int64_t i=0; i<A.dim[0]; i++) {
-      Qj(i, 0) = Q(i, j);
+    Hierarchical QjT(Q.dim[0], 1);
+    for (int64_t i=0; i<Q.dim[0]; i++) {
+      QjT(i, 0) = Q(i, j);
     }
-    Hierarchical QjT(Qj); transpose(QjT);
+    transpose(QjT);
     for (int64_t k=j+1; k<A.dim[1]; k++) {
-      //Take k-th column
-      Hierarchical Ak(A.dim[0], 1);
-      for(int64_t i=0; i<A.dim[0]; i++) {
-        Ak(i, 0) = A(i, k);
+      for(int64_t i=0; i<A.dim[0]; i++) { //Rjk = Q*j^T x A*k
+        gemm(QjT(0, i), A(i, k), R(j, k), 1, 1);
       }
-      /*
-        The Following 5 lines should be possible using these 2 lines:
-          gemm(QjT, Ak, R(j, k), 1, 1);
-          gemm(Qj, R(j, k), Ak, -1, 1);
-        But somehow it leads to segfaults
-        TODO investigate gemm(H, H, H) behavior
-       */
-      Hierarchical Rjk(1, 1);
-      Rjk(0, 0) = R(j, k);
-      gemm(QjT, Ak, Rjk, 1, 1); //Rjk = Q*j^T x A*k
-      R(j, k) = Rjk(0, 0);
-      gemm(Qj, Rjk, Ak, -1, 1); //A*k = A*k - Q*j x Rjk
-      for (int64_t i=0; i<A.dim[0]; i++) {
-        A(i, k) = std::move(Ak(i, 0));
+      for(int64_t i=0; i<A.dim[0]; i++) { //A*k = A*k - Q*j x Rjk
+        gemm(Q(i, j), R(j, k), A(i, k), -1, 1);
       }
     }
   }

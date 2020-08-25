@@ -61,21 +61,17 @@ int main(int argc, char** argv) {
   timing::start("BLR QR decomposition");
   for(int64_t j=0; j<Nc; j++) {
     orthogonalize_block_col(j, A, Q, R(j, j));
-    Hierarchical Qj(Nc, 1);
+    Hierarchical QjT(Nc, 1);
     for(int64_t i=0; i<Nc; i++)
-      Qj(i, 0) = Q(i, j);
-    Hierarchical QjT(Qj); transpose(QjT);
+      QjT(i, 0) = Q(i, j);
+    transpose(QjT);
     //Process next columns
     for(int64_t k=j+1; k<Nc; k++) {
-      //Take k-th column
-      Hierarchical Ak(Nc, 1);
-      for(int64_t i=0; i<Nc; i++) {
-        Ak(i, 0) = A(i, k);
+      for(int64_t i=0; i<A.dim[0]; i++) { //Rjk = Q*j^T x A*k
+        gemm(QjT(0, i), A(i, k), R(j, k), 1, 1);
       }
-      gemm(QjT, Ak, R(j, k), 1, 0); //Rjk = Q*j^T x A*k
-      gemm(Qj, R(j, k), Ak, -1, 1); //A*k = A*k - Q*j x Rjk
-      for(int64_t i=0; i<Nc; i++) {
-        A(i, k) = std::move(Ak(i, 0));
+      for(int64_t i=0; i<A.dim[0]; i++) { //A*k = A*k - Q*j x Rjk
+        gemm(Q(i, j), R(j, k), A(i, k), -1, 1);
       }
     }
   }
