@@ -59,22 +59,7 @@ int main(int argc, char** argv) {
   print("Time");
   resetCounter("LR-addition");
   timing::start("BLR QR decomposition");
-  for(int64_t j=0; j<Nc; j++) {
-    orthogonalize_block_col(j, A, Q, R(j, j));
-    Hierarchical QjT(Nc, 1);
-    for(int64_t i=0; i<Nc; i++)
-      QjT(i, 0) = Q(i, j);
-    transpose(QjT);
-    //Process next columns
-    for(int64_t k=j+1; k<Nc; k++) {
-      for(int64_t i=0; i<A.dim[0]; i++) { //Rjk = Q*j^T x A*k
-        gemm(QjT(0, i), A(i, k), R(j, k), 1, 1);
-      }
-      for(int64_t i=0; i<A.dim[0]; i++) { //A*k = A*k - Q*j x Rjk
-        gemm(Q(i, j), R(j, k), A(i, k), -1, 1);
-      }
-    }
-  }
+  qr(A, Q, R);
   timing::stopAndPrint("BLR QR decomposition", 1);
   printCounter("LR-addition");
 
