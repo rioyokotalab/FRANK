@@ -1,6 +1,7 @@
 #include "hicma/operations/LAPACK.h"
 
 #include "hicma/classes/dense.h"
+#include "hicma/util/pre_scheduler.h"
 #include "hicma/util/timer.h"
 
 #ifdef USE_MKL
@@ -21,24 +22,10 @@ namespace hicma
 std::tuple<Dense, Dense, Dense> svd(Dense& A) {
   timing::start("DGESVD");
   int64_t dim_min = std::min(A.dim[0], A.dim[1]);
-  Dense Sdiag(dim_min, 1);
-  Dense work(dim_min-1, 1);
   Dense U(A.dim[0], dim_min);
-  Dense V(dim_min, A.dim[1]);
-  LAPACKE_dgesvd(
-    LAPACK_ROW_MAJOR,
-    'S', 'S',
-    A.dim[0], A.dim[1],
-    &A, A.stride,
-    &Sdiag,
-    &U, U.stride,
-    &V, V.stride,
-    &work
-  );
   Dense S(dim_min, dim_min);
-  for(int64_t i=0; i<dim_min; i++){
-    S(i, i) = Sdiag[i];
-  }
+  Dense V(dim_min, A.dim[1]);
+  add_svd_task(A, U, S, V);
   timing::stop("DGESVD");
   return {std::move(U), std::move(S), std::move(V)};
 }

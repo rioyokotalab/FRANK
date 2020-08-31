@@ -130,7 +130,7 @@ define_method(MatrixProxy, share_basis_omm, (const NestedBasis& A)) {
 define_method(MatrixProxy, share_basis_omm, (const Dense& A)) {
   // TODO Having this work for Dense might not be desirable (see is_shared check
   // above)
-  return Dense(A, A.dim[0], A.dim[1], 0, 0);
+  return A.share();
 }
 
 define_method(MatrixProxy, share_basis_omm, (const Matrix& A)) {

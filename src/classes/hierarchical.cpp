@@ -16,6 +16,7 @@
 #include "hicma/operations/LAPACK.h"
 #include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
+#include "hicma/util/pre_scheduler.h"
 #include "hicma/util/timer.h"
 
 #include "yorel/yomm2/cute.hpp"
@@ -161,6 +162,7 @@ Hierarchical::Hierarchical(
   int basis_type,
   int64_t row_start, int64_t col_start
 ) {
+  start_schedule();
   MatrixInitializerKernel initer(func, x, admis, rank, basis_type);
   ClusterTree cluster_tree(
     {row_start, n_rows}, {col_start, n_cols}, n_row_blocks, n_col_blocks, nleaf
@@ -173,6 +175,7 @@ Hierarchical::Hierarchical(
   }
   // TODO The following two should be combined into a single call
   *this = Hierarchical(cluster_tree, initer);
+  execute_schedule();
 }
 
 Hierarchical::Hierarchical(

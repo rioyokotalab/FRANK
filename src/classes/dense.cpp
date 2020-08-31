@@ -9,6 +9,7 @@
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
+#include "hicma/util/pre_scheduler.h"
 #include "hicma/util/print.h"
 #include "hicma/util/timer.h"
 
@@ -159,7 +160,7 @@ Dense::Dense(
   int64_t n_rows, int64_t n_cols,
   int64_t row_start, int64_t col_start
 ) : Dense(n_rows, n_cols) {
-  func(*this, x, row_start, col_start);
+  add_kernel_task(func, *this, x, row_start, col_start);
 }
 
 Dense::Dense(
@@ -233,6 +234,8 @@ const double& Dense::operator()(int64_t i, int64_t j) const {
 double* Dense::operator&() { return data_ptr; }
 
 const double* Dense::operator&() const { return data_ptr; }
+
+Dense Dense::share() const { return Dense(*this, dim[0], dim[1], 0, 0, false); }
 
 bool Dense::is_shared() const { return (data.use_count() > 1); }
 

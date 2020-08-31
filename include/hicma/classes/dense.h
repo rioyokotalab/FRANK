@@ -81,6 +81,8 @@ class Dense : public Matrix {
   const double* operator&() const;
 
   // Utility methods
+  Dense share() const;
+
   bool is_shared() const;
 
   bool is_shared_with(const Dense& A) const;

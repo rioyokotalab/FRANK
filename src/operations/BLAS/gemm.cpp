@@ -11,13 +11,9 @@
 #include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
 #include "hicma/util/counter.h"
+#include "hicma/util/pre_scheduler.h"
 #include "hicma/util/timer.h"
 
-#ifdef USE_MKL
-#include <mkl.h>
-#else
-#include <cblas.h>
-#endif
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
 
@@ -66,31 +62,7 @@ define_method(
   )
 ) {
   timing::start("DGEMM");
-  if (B.dim[1] == 1) {
-    cblas_dgemv(
-      CblasRowMajor,
-      CblasNoTrans,
-      A.dim[0], A.dim[1],
-      alpha,
-      &A, A.stride,
-      &B, B.stride,
-      beta,
-      &C, B.stride
-    );
-  }
-  else {
-    int64_t k = TransA ? A.dim[0] : A.dim[1];
-    cblas_dgemm(
-      CblasRowMajor,
-      TransA?CblasTrans:CblasNoTrans, TransB?CblasTrans:CblasNoTrans,
-      C.dim[0], C.dim[1], k,
-      alpha,
-      &A, A.stride,
-      &B, B.stride,
-      beta,
-      &C, C.stride
-    );
-  }
+  add_gemm_task(A, B, C, TransA, TransB, alpha, beta);
   timing::stop("DGEMM");
 }
 

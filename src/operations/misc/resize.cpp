@@ -5,6 +5,7 @@
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
 #include "hicma/util/omm_error_handler.h"
+#include "hicma/util/pre_scheduler.h"
 
 #include "yorel/yomm2/cute.hpp"
 
@@ -25,11 +26,7 @@ define_method(
   assert(n_rows <= A.dim[0]);
   assert(n_cols <= A.dim[1]);
   Dense resized(n_rows, n_cols);
-  for (int64_t i=0; i<n_rows; i++) {
-    for (int64_t j=0; j<n_cols; j++) {
-      resized(i, j) = A(i, j);
-    }
-  }
+  add_resize_task(A, resized, n_rows, n_cols);
   return resized;
 }
 

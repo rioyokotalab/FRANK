@@ -32,7 +32,7 @@ void MatrixInitializerKernel::fill_dense_representation(
 void MatrixInitializerKernel::fill_dense_representation(
   Dense& A, const IndexRange& row_range, const IndexRange& col_range
 ) const {
-  kernel(A, x, row_range.start, col_range.start);
+  add_kernel_task(kernel, A, x, row_range.start, col_range.start);
 }
 
 Dense MatrixInitializerKernel::get_dense_representation(
