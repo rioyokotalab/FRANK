@@ -77,8 +77,6 @@ class Dense : public Matrix {
   const double* operator&() const;
 
   // Utility methods
-  int64_t size() const;
-
   void resize(int64_t dim0, int64_t dim1);
 
   Dense transpose() const;

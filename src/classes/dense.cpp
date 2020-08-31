@@ -219,8 +219,6 @@ double* Dense::operator&() { return data_ptr; }
 
 const double* Dense::operator&() const { return data_ptr; }
 
-int64_t Dense::size() const { return dim[0] * dim[1]; }
-
 void Dense::resize(int64_t dim0, int64_t dim1) {
   assert(!is_shared());
   assert(dim0 <= dim[0]);
