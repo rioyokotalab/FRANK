@@ -1,18 +1,10 @@
 #include "hicma/classes/initialization_helpers/matrix_initializer_kernel.h"
 
 #include "hicma/classes/dense.h"
-#include "hicma/classes/hierarchical.h"
-#include "hicma/classes/low_rank.h"
-#include "hicma/classes/nested_basis.h"
-#include "hicma/classes/initialization_helpers/basis_tracker.h"
 #include "hicma/classes/initialization_helpers/cluster_tree.h"
 #include "hicma/classes/initialization_helpers/matrix_initializer.h"
-#include "hicma/functions.h"
-#include "hicma/operations/BLAS.h"
-#include "hicma/operations/randomized_factorizations.h"
+#include "hicma/util/pre_scheduler.h"
 
-#include <algorithm>
-#include <cassert>
 #include <cstdint>
 
 
@@ -34,7 +26,7 @@ void MatrixInitializerKernel::fill_dense_representation(
   Dense& A,
   const ClusterTree& node
 ) const {
-  kernel(A, x, node.rows.start, node.cols.start);
+  fill_dense_representation(A, node.rows, node.cols);
 }
 
 void MatrixInitializerKernel::fill_dense_representation(
@@ -47,7 +39,7 @@ Dense MatrixInitializerKernel::get_dense_representation(
   const ClusterTree& node
 ) const {
   Dense representation(node.rows.n, node.cols.n);
-  kernel(representation, x, node.rows.start, node.cols.start);
+  fill_dense_representation(representation, node.rows, node.cols);
   return representation;
 }
 

@@ -10,6 +10,7 @@ namespace hicma
 {
 
 class ClusterTree;
+class IndexRange;
 
 class MatrixInitializerBlock : public MatrixInitializer {
  private:
