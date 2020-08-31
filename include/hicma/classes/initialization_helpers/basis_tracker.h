@@ -28,6 +28,19 @@ class BasisKey {
   MatrixProxy D;
   std::array<int64_t, 2> dim;
 
+  // Special member functions
+  BasisKey() = default;
+
+  virtual ~BasisKey() = default;
+
+  BasisKey(const BasisKey& A);
+
+  BasisKey& operator=(const BasisKey& A);
+
+  BasisKey(BasisKey&& A) = default;
+
+  BasisKey& operator=(BasisKey&& A) = default;
+
   BasisKey(const Matrix&);
 
   BasisKey(const MatrixProxy&);

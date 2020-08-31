@@ -57,6 +57,16 @@ bool less<hicma::IndexRange>::operator()(
 namespace hicma
 {
 
+BasisKey::BasisKey(const BasisKey& A)
+: data_ptr(A.data_ptr), D(share_basis(A.D)), dim(A.dim) {}
+
+BasisKey& BasisKey::operator=(const BasisKey& A) {
+  data_ptr = A.data_ptr;
+  D = share_basis(A.D);
+  dim = A.dim;
+  return *this;
+}
+
 declare_method(void, init_basis_key, (BasisKey&, virtual_<const Matrix&>))
 
 BasisKey::BasisKey(const Matrix& A) {
