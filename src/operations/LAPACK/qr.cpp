@@ -103,11 +103,10 @@ define_method(
   assert(R.dim[1] == A.dim[1]);
   for (int64_t j=0; j<A.dim[1]; j++) {
     orthogonalize_block_col(j, A, Q, R(j, j));
-    Hierarchical QjT(Q.dim[0], 1);
+    Hierarchical QjT(1, Q.dim[0]);
     for (int64_t i=0; i<Q.dim[0]; i++) {
-      QjT(i, 0) = Q(i, j);
+      QjT(0, i) = transpose(Q(i, j));
     }
-    transpose(QjT);
     for (int64_t k=j+1; k<A.dim[1]; k++) {
       for(int64_t i=0; i<A.dim[0]; i++) { //Rjk = Q*j^T x A*k
         gemm(QjT(0, i), A(i, k), R(j, k), 1, 1);

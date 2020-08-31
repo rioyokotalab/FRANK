@@ -13,6 +13,7 @@
 #include "hicma/util/timer.h"
 
 #include "yorel/yomm2/cute.hpp"
+using yorel::yomm2::virtual_;
 
 #include <cassert>
 #include <cstdint>
@@ -122,6 +123,20 @@ define_method(void, fill_dense_from, (const Dense& A, Dense& B)) {
 
 define_method(void, fill_dense_from, (const Matrix& A, Matrix& B)) {
   omm_error_handler("fill_dense_from", {A, B}, __FILE__, __LINE__);
+  std::abort();
+}
+
+declare_method(Dense&&, move_from_dense, (virtual_<Matrix&>))
+
+Dense::Dense(MatrixProxy&& A)
+: Dense(move_from_dense(A)) {}
+
+define_method(Dense&&, move_from_dense, (Dense& A)) {
+  return std::move(A);
+}
+
+define_method(Dense&&, move_from_dense, (Matrix& A)) {
+  omm_error_handler("move_from_dense", {A}, __FILE__, __LINE__);
   std::abort();
 }
 
@@ -242,30 +257,6 @@ void Dense::resize(int64_t dim0, int64_t dim1) {
   data_ptr = &(*data)[0];
   rel_start = {0, 0};
   timing::stop("Dense resize");
-}
-
-Dense Dense::transpose() const {
-  Dense A(dim[1], dim[0]);
-  for (int64_t i=0; i<dim[0]; i++) {
-    for (int64_t j=0; j<dim[1]; j++) {
-      A(j,i) = (*this)(i,j);
-    }
-  }
-  return A;
-}
-
-void Dense::transpose() {
-  // TODO Consider removing this function!
-  assert(!is_shared());
-  assert(stride == dim[1]);
-  Dense Copy(*this);
-  std::swap(dim[0], dim[1]);
-  stride = dim[1];
-  for(int64_t i=0; i<dim[0]; i++) {
-    for(int64_t j=0; j<dim[1]; j++) {
-      (*this)(i, j) = Copy(j, i);
-    }
-  }
 }
 
 bool Dense::is_shared() const { return (data.use_count() > 1); }

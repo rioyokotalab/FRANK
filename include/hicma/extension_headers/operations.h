@@ -149,7 +149,7 @@ declare_method(int64_t, get_n_cols_omm, (virtual_<const Matrix&>))
 
 declare_method(double, norm_omm, (virtual_<const Matrix&>))
 
-declare_method(void, transpose_omm, (virtual_<Matrix&>))
+declare_method(MatrixProxy, transpose_omm, (virtual_<const Matrix&>))
 
 } // namespace hicma
 

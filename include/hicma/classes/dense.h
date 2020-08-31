@@ -2,6 +2,7 @@
 #define hicma_classes_dense_h
 
 #include "hicma/classes/matrix.h"
+#include "hicma/classes/matrix_proxy.h"
 
 #include <array>
 #include <cstdint>
@@ -38,6 +39,9 @@ class Dense : public Matrix {
 
   // Explicit conversions using multiple-dispatch function.
   explicit Dense(const Matrix& A);
+
+  // Implicit conversion from temporaries, requires them to actually be D
+  Dense(MatrixProxy&& A);
 
   // Additional constructors
   Dense(int64_t n_rows, int64_t n_cols=1);
@@ -78,10 +82,6 @@ class Dense : public Matrix {
 
   // Utility methods
   void resize(int64_t dim0, int64_t dim1);
-
-  Dense transpose() const;
-
-  void transpose();
 
   bool is_shared() const;
 

@@ -70,8 +70,8 @@ int main(int argc, char** argv) {
   print("Rel. Error (operator norm)", l2_error(QRx, Ax), false);
   //Orthogonality
   Dense Qx = gemm(Q, x);
-  transpose(Q);
-  Dense QtQx = gemm(Q, Qx);
+  Hierarchical Qt = transpose(Q);
+  Dense QtQx = gemm(Qt, Qx);
   print("Orthogonality");
   print("Rel. Error (operator norm)", l2_error(QtQx, x), false);
   return 0;

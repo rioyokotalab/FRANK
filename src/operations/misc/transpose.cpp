@@ -5,48 +5,45 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
+#include "hicma/classes/matrix_proxy.h"
 #include "hicma/util/omm_error_handler.h"
 
 #include "yorel/yomm2/cute.hpp"
 
 #include <cstdint>
-#include <cstdlib>
-#include <utility>
 
 
 namespace hicma
 {
 
-void transpose(Matrix& A) { transpose_omm(A); }
+MatrixProxy transpose(const Matrix& A) { return transpose_omm(A); }
 
-define_method(void, transpose_omm, (Dense& A)) {
-  // This implementation depends heavily on the details of Dense,
-  // thus handled inside the class.
-  A.transpose();
-}
-
-define_method(void, transpose_omm, (LowRank& A)) {
-  using std::swap;
-  transpose(A.U);
-  transpose(A.S);
-  transpose(A.V);
-  swap(A.dim[0], A.dim[1]);
-  swap(A.U, A.V);
-}
-
-define_method(void, transpose_omm, (Hierarchical& A)) {
-  using std::swap;
-  Hierarchical A_trans(A.dim[1], A.dim[0]);
-  for(int64_t i=0; i<A.dim[0]; i++) {
-    for(int64_t j=0; j<A.dim[1]; j++) {
-      swap(A(i, j), A_trans(j, i));
-      transpose(A_trans(j, i));
+define_method(MatrixProxy, transpose_omm, (const Dense& A)) {
+  Dense transposed(A.dim[1], A.dim[0]);
+  for (int64_t i=0; i<A.dim[0]; i++) {
+    for (int64_t j=0; j<A.dim[1]; j++) {
+      transposed(j, i) = A(i, j);
     }
   }
-  swap(A, A_trans);
+  return transposed;
 }
 
-define_method(void, transpose_omm, (Matrix& A)) {
+define_method(MatrixProxy, transpose_omm, (const LowRank& A)) {
+  LowRank transposed(transpose(A.V), transpose(A.S), transpose(A.U), false);
+  return transposed;
+}
+
+define_method(MatrixProxy, transpose_omm, (const Hierarchical& A)) {
+  Hierarchical transposed(A.dim[1], A.dim[0]);
+  for(int64_t i=0; i<A.dim[0]; i++) {
+    for(int64_t j=0; j<A.dim[1]; j++) {
+      transposed(j, i) = transpose(A(i, j));
+    }
+  }
+  return transposed;
+}
+
+define_method(MatrixProxy, transpose_omm, (const Matrix& A)) {
   omm_error_handler("transpose", {A}, __FILE__, __LINE__);
   std::abort();
 }

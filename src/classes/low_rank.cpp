@@ -8,8 +8,10 @@
 #include "hicma/extension_headers/classes.h"
 #include "hicma/operations/randomized_factorizations.h"
 #include "hicma/operations/misc.h"
+#include "hicma/util/omm_error_handler.h"
 
 #include "yorel/yomm2/cute.hpp"
+using yorel::yomm2::virtual_;
 
 #include <algorithm>
 #include <cassert>
@@ -20,6 +22,20 @@
 
 namespace hicma
 {
+
+declare_method(LowRank&&, move_from_low_rank, (virtual_<Matrix&>))
+
+LowRank::LowRank(MatrixProxy&& A)
+: LowRank(move_from_low_rank(A)) {}
+
+define_method(LowRank&&, move_from_low_rank, (LowRank& A)) {
+  return std::move(A);
+}
+
+define_method(LowRank&&, move_from_low_rank, (Matrix& A)) {
+  omm_error_handler("move_from_low_rank", {A}, __FILE__, __LINE__);
+  std::abort();
+}
 
 LowRank::LowRank(int64_t n_rows, int64_t n_cols, int64_t k)
 : dim{n_rows, n_cols}, rank(k)

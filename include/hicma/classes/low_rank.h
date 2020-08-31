@@ -32,6 +32,9 @@ class LowRank : public Matrix {
 
   LowRank& operator=(LowRank&& A) = default;
 
+  // Implicit conversion from temporaries, requires them to actually be LR
+  LowRank(MatrixProxy&& A);
+
   // Additional constructors
   LowRank(int64_t n_rows, int64_t n_cols, int64_t k);
 

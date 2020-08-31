@@ -39,7 +39,7 @@ class Hierarchical : public Matrix {
 
   Hierarchical& operator=(Hierarchical&& A) = default;
 
-  // Conversion constructors
+  // Implicit conversion from temporaries, requires them to actually be H
   Hierarchical(MatrixProxy&&);
 
   Hierarchical(

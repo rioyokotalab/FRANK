@@ -49,7 +49,7 @@ double norm(const Matrix&);
 
 void recompress(Hierarchical& A, int64_t start);
 
-void transpose(Matrix&);
+MatrixProxy transpose(const Matrix&);
 
 } // namespace hicma
 

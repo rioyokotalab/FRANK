@@ -7,6 +7,7 @@
 #include "hicma/classes/matrix.h"
 #include "hicma/functions.h"
 #include "hicma/operations/BLAS.h"
+#include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
 
 #include "yorel/yomm2/cute.hpp"
@@ -95,29 +96,35 @@ std::tuple<Dense, Dense, Dense> id(Matrix& A, int64_t k) {
 
 Dense get_cols(const Dense& A, std::vector<int64_t> Pr) {
   Dense B(A.dim[0], Pr.size());
-  for (int64_t j=0; j<B.dim[1]; ++j) {
-    for (int64_t i=0; i<A.dim[0]; ++i) {
+  for (int64_t i=0; i<A.dim[0]; ++i) {
+    for (int64_t j=0; j<B.dim[1]; ++j) {
       B(i, j) = A(i, Pr[j]);
     }
   }
   return B;
 }
 
-// Fallback default, abort with error message
+Dense get_rows(const Dense& A, std::vector<int64_t> Pr) {
+  Dense B(Pr.size(), A.dim[1]);
+  for (int64_t i=0; i<B.dim[0]; ++i) {
+    for (int64_t j=0; j<A.dim[1]; ++j) {
+      B(i, j) = A(Pr[i], j);
+    }
+  }
+  return B;
+}
+
 define_method(DenseTriplet, id_omm, (Dense& A, int64_t k)) {
   Dense V(k, A.dim[1]);
   Dense Awork(A);
   std::vector<int64_t> selected_cols;
   std::tie(V, selected_cols) = one_sided_id(Awork, k);
   Dense AC = get_cols(A, selected_cols);
-  Dense U(k, A.dim[0]);
-  AC.transpose();
-  Dense ACwork(AC);
-  std::tie(U, selected_cols) = one_sided_id(ACwork, k);
-  A = get_cols(AC, selected_cols);
-  U.transpose();
-  A.transpose();
-  return {std::move(U), std::move(A), std::move(V)};
+  Dense ACwork = transpose(AC);
+  Dense Ut(k, A.dim[0]);
+  std::vector<int64_t> selected_rows;
+  std::tie(Ut, selected_rows) = one_sided_id(ACwork, k);
+  return {transpose(Ut), get_rows(AC, selected_rows), std::move(V)};
 }
 
 // Fallback default, abort with error message

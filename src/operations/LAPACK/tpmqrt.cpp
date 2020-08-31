@@ -51,8 +51,7 @@ define_method(
   (const LowRank& V, const Dense& T, Dense& A, Dense& B, bool trans)
 ) {
   Dense C(A);
-  LowRank Vt(V);
-  transpose(Vt);
+  LowRank Vt = transpose(V);
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(
@@ -81,8 +80,7 @@ define_method(
   (const LowRank& V, const Dense& T, LowRank& A, Dense& B, bool trans)
 ) {
   LowRank C(A);
-  LowRank Vt(V);
-  transpose(Vt);
+  LowRank Vt = transpose(V);
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(
@@ -96,15 +94,14 @@ define_method(
   void, tpmqrt_omm,
   (const Dense& V, const Dense& T, Hierarchical& A, Dense& B, bool trans)
 ) {
-  Dense Vt(V);
-  transpose(Vt);
+  Dense Vt = transpose(V);
   Dense T_upper_tri(T);
   for(int64_t i=0; i<T_upper_tri.dim[0]; i++)
     for(int64_t j=0; j<i; j++)
       T_upper_tri(i, j) = 0.0;
   Hierarchical AH(A);
   gemm(Vt, B, AH, 1, 1); // AH = A + Vt*B
-  if(trans) transpose(T_upper_tri);
+  if(trans) T_upper_tri = transpose(T_upper_tri);
   gemm(T_upper_tri, AH, A, -1, 1); // A = A - (T or Tt)*AH
   Dense VTt = gemm(V, T_upper_tri);
   gemm(VTt, AH, B, -1, 1); // B = B - V*(T or Tt)*AH
@@ -127,8 +124,7 @@ define_method(
   (const Dense& V, const Dense& T, Dense& A, LowRank& B, bool trans)
 ) {
   Dense C(A);
-  Dense Vt(V);
-  transpose(Vt);
+  Dense Vt = transpose(V);
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(
@@ -143,8 +139,7 @@ define_method(
   (const LowRank& V, const Dense& T, Dense& A, LowRank& B, bool trans)
 ) {
   Dense C(A);
-  LowRank Vt(V);
-  transpose(Vt);
+  LowRank Vt = transpose(V);
   gemm(Vt, B, C, 1, 1); //C = A + Y^t * B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(
@@ -159,8 +154,7 @@ define_method(
   (const Dense& V, const Dense& T, LowRank& A, LowRank& B, bool trans)
 ) {
   LowRank C(A);
-  Dense Vt(V);
-  transpose(Vt);
+  Dense Vt = transpose(V);
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(
@@ -175,8 +169,7 @@ define_method(
   (const LowRank& V, const Dense& T, LowRank& A, LowRank& B, bool trans)
 ) {
   LowRank C(A);
-  LowRank Vt(V);
-  transpose(Vt);
+  LowRank Vt = transpose(V);
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(
@@ -191,14 +184,13 @@ define_method(
   (const Dense& V, const Dense& T, Dense& A, Hierarchical& B, bool trans)
 ) {
   Dense C(A);
-  Dense Vt(V);
-  transpose(Vt);
+  Dense Vt = transpose(V);
   Dense T_upper_tri(T);
   for(int64_t i=0; i<T_upper_tri.dim[0]; i++)
     for(int64_t j=0; j<i; j++)
       T_upper_tri(i, j) = 0.0;
   gemm(Vt, B, C, 1, 1); // C = A + Y^t*B
-  if(trans) transpose(T_upper_tri);
+  if(trans) T_upper_tri = transpose(T_upper_tri);
   gemm(T_upper_tri, C, A, -1, 1); // A = A - (T or Tt)*C
   Dense VTt(V.dim[0], T_upper_tri.dim[1]);
   gemm(V, T_upper_tri, VTt, 1, 1);

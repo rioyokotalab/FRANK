@@ -225,7 +225,7 @@ define_method(Matrix&, addition_omm, (LowRank& A, const LowRank& B)) {
 
     // TODO Probably better to do RQ decomposition (maybe make hierarchical
     // version and avoid copies?)
-    transpose(C.V);
+    C.V = transpose(C.V);
     Dense Qv(get_n_rows(C.V), get_n_cols(C.V));
     Dense Rv(get_n_cols(C.V), get_n_cols(C.V));
     qr(C.V, Qv, Rv);
