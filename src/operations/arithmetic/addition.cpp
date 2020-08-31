@@ -142,12 +142,11 @@ std::tuple<Dense, Dense, Dense> merge_S(
 
   Dense Uhat, Shat, Vhat;
   std::tie(Uhat, Shat, Vhat) = svd(M);
-
-  Shat.resize(rank, rank);
-  Uhat.resize(Uhat.dim[0], rank);
-  Vhat.resize(rank, Vhat.dim[1]);
-
-  return {std::move(Uhat), std::move(Shat), std::move(Vhat)};
+  return {
+    resize(Uhat, Uhat.dim[0], rank),
+    resize(Shat, rank, rank),
+    resize(Vhat, rank, Vhat.dim[1])
+  };
 }
 
 define_method(Matrix&, addition_omm, (LowRank& A, const LowRank& B)) {
@@ -235,12 +234,9 @@ define_method(Matrix&, addition_omm, (LowRank& A, const LowRank& B)) {
     Dense RRU, RRS, RRV;
     std::tie(RRU, RRS, RRV) = svd(RuRvT);
 
-    RRS.resize(A.rank, A.rank);
-    A.S = std::move(RRS);
-    RRU.resize(RRU.dim[0], A.rank);
-    gemm(Qu, RRU, A.U, 1, 0);
-    RRV.resize(A.rank, RRV.dim[1]);
-    gemm(RRV, Qv, A.V, false, true, 1, 0);
+    A.S = resize(RRS, A.rank, A.rank);
+    gemm(Qu, resize(RRU, RRU.dim[0], A.rank), A.U, 1, 0);
+    gemm(resize(RRV, A.rank, RRV.dim[1]), Qv, A.V, false, true, 1, 0);
   } else {
     //Bebendorf HMatrix Book p17
     //Rounded addition by exploiting orthogonality

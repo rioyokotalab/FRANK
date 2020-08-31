@@ -81,8 +81,6 @@ class Dense : public Matrix {
   const double* operator&() const;
 
   // Utility methods
-  void resize(int64_t dim0, int64_t dim1);
-
   bool is_shared() const;
 
   bool is_shared_with(const Dense& A) const;

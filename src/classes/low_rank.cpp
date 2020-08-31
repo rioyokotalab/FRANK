@@ -51,11 +51,9 @@ LowRank::LowRank(const Dense& A, int64_t k)
   rank = std::min(std::min(k+5, dim[0]), dim[1]);
   Dense U_full, V_full;
   std::tie(U_full, S, V_full) = rsvd(A, rank);
-  U_full.resize(dim[0], k);
-  U = std::move(U_full);
-  V_full.resize(k, dim[1]);
-  V = std::move(V_full);
-  S.resize(k, k);
+  U = resize(U_full, dim[0], k);
+  V = resize(V_full, k, dim[1]);
+  S = resize(S, k, k);
   rank = k;
 }
 

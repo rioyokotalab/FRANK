@@ -151,6 +151,10 @@ declare_method(double, norm_omm, (virtual_<const Matrix&>))
 
 declare_method(MatrixProxy, transpose_omm, (virtual_<const Matrix&>))
 
+declare_method(
+  MatrixProxy, resize_omm, (virtual_<const Matrix&>, int64_t, int64_t)
+)
+
 } // namespace hicma
 
 #endif // hicma_extension_headers_operations_h

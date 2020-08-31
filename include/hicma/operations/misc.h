@@ -51,6 +51,8 @@ void recompress(Hierarchical& A, int64_t start);
 
 MatrixProxy transpose(const Matrix&);
 
+MatrixProxy resize(const Matrix&, int64_t n_rows, int64_t n_cols);
+
 } // namespace hicma
 
 #endif // hicma_operations_misc_h

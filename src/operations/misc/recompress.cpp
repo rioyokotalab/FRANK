@@ -106,11 +106,10 @@ void recompress(Hierarchical& A, int64_t start) {
       Dense US = gemm(U, lr_rowH);
       Dense new_UD, S, V;
       std::tie(new_UD, S, V) = svd(US);
-      new_UD.resize(new_UD.dim[0], desired_rank);
-      NestedBasis new_U(new_UD, true);
-      S.resize(desired_rank, desired_rank);
-      V.resize(desired_rank, V.dim[1]);
-      Dense new_S = gemm(S, V);
+      NestedBasis new_U(resize(new_UD, new_UD.dim[0], desired_rank), true);
+      Dense new_S = gemm(
+        resize(S, desired_rank, desired_rank), resize(V, desired_rank, V.dim[1])
+      );
       // TODO Assumes all ranks are equal and as before!
       for (uint64_t j=0; j<lr_row.size(); ++j) {
         lr_row[j]->U = share_basis(new_U);
@@ -139,11 +138,10 @@ void recompress(Hierarchical& A, int64_t start) {
       Dense SV = gemm(lr_colH, V);
       Dense U, S, new_VD;
       std::tie(U, S, new_VD) = svd(SV);
-      U.resize(U.dim[0], desired_rank);
-      S.resize(desired_rank, desired_rank);
-      new_VD.resize(desired_rank, new_VD.dim[1]);
-      NestedBasis new_V(new_VD, false);
-      Dense new_S = gemm(U, S);
+      NestedBasis new_V(resize(new_VD, desired_rank, new_VD.dim[1]), false);
+      Dense new_S = gemm(
+        resize(U, U.dim[0], desired_rank), resize(S, desired_rank, desired_rank)
+      );
       // TODO Assumes all ranks are equal and as before!
       for (uint64_t i=0; i<lr_col.size(); ++i) {
         lr_col[i]->V = share_basis(new_V);

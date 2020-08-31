@@ -38,15 +38,14 @@ TEST(DenseTest, resize) {
   hicma::initialize();
   int64_t N = 4092;
   Dense D(random_normal, std::vector<std::vector<double>>(), N, N);
-  Dense D_compare(D);
   timing::stopAndPrint("Init");
   timing::start("Resize");
-  D.resize(N-N/8, N-N/8);
+  Dense D_resized = resize(D, N-N/8, N-N/8);
   timing::stopAndPrint("Resize");
   timing::start("Check results");
-  for (int64_t i=0; i<N-N/8; ++i) {
-    for (int64_t j=0; j<N-N/8; ++j) {
-      ASSERT_EQ(D(i, j), D_compare(i, j));
+  for (int64_t i=0; i<D_resized.dim[0]; ++i) {
+    for (int64_t j=0; j<D_resized.dim[1]; ++j) {
+      ASSERT_EQ(D(i, j), D_resized(i, j));
     }
   }
   timing::stopAndPrint("Check results");

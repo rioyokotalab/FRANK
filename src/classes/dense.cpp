@@ -234,31 +234,6 @@ double* Dense::operator&() { return data_ptr; }
 
 const double* Dense::operator&() const { return data_ptr; }
 
-void Dense::resize(int64_t dim0, int64_t dim1) {
-  assert(!is_shared());
-  assert(dim0 <= dim[0]);
-  assert(dim1 <= dim[1]);
-  timing::start("Dense resize");
-  if (dim0 == dim[0] && dim1 == dim[1]) {
-    timing::stop("Dense resize");
-    return;
-  }
-  for (int64_t i=0; i<dim0; i++) {
-    for (int64_t j=0; j<dim1; j++) {
-      // TODO this is the only place where data is used directly now. Would be
-      // better not to use it and somehow use the regular index operator
-      // efficiently.
-      (*data)[i*dim1+j] = (*this)(i, j);
-    }
-  }
-  dim = {dim0, dim1};
-  stride = dim[1];
-  (*data).resize(dim[0]*dim[1]);
-  data_ptr = &(*data)[0];
-  rel_start = {0, 0};
-  timing::stop("Dense resize");
-}
-
 bool Dense::is_shared() const { return (data.use_count() > 1); }
 
 bool Dense::is_shared_with(const Dense& A) const {

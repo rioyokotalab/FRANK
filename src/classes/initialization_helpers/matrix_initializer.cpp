@@ -8,6 +8,7 @@
 #include "hicma/classes/initialization_helpers/cluster_tree.h"
 #include "hicma/functions.h"
 #include "hicma/operations/BLAS.h"
+#include "hicma/operations/misc.h"
 #include "hicma/operations/randomized_factorizations.h"
 
 #include <algorithm>
@@ -134,7 +135,7 @@ void MatrixInitializer::construct_nested_col_basis(NestedTracker& tracker) {
   // happens with block_row, not with block_col. TSQR is better than small fat
   // QR it seems.
   std::tie(U, _, __) = rsvd(block_row, sample_size);
-  U.resize(U.dim[0], rank);
+  U = resize(U, U.dim[0], rank);
   std::vector<MatrixProxy> child_bases;
   for (NestedTracker& child : tracker.children) {
     child_bases.push_back(share_basis(col_basis[child.index_range]));
@@ -198,7 +199,7 @@ void MatrixInitializer::construct_nested_row_basis(NestedTracker& tracker) {
   int64_t sample_size = std::min(rank+5, tracker.index_range.n);
   Dense _, __, V;
   std::tie(_, __, V) = rsvd(block_col, sample_size);
-  V.resize(rank, V.dim[1]);
+  V = resize(V, rank, V.dim[1]);
   std::vector<MatrixProxy> child_bases;
   for (NestedTracker& child : tracker.children) {
     child_bases.push_back(share_basis(row_basis[child.index_range]));
