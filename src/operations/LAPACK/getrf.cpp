@@ -9,13 +9,9 @@
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
+#include "hicma/util/pre_scheduler.h"
 #include "hicma/util/timer.h"
 
-#ifdef USE_MKL
-#include <mkl.h>
-#else
-#include <lapacke.h>
-#endif
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
 
@@ -32,7 +28,10 @@ namespace hicma
 
 std::tuple<MatrixProxy, MatrixProxy> getrf(Matrix& A) {
   clear_trackers();
-  return getrf_omm(A);
+  start_schedule();
+  std::tuple<MatrixProxy, MatrixProxy> out = getrf_omm(A);
+  execute_schedule();
+  return out;
 }
 
 define_method(MatrixPair, getrf_omm, (Hierarchical& A)) {
@@ -59,21 +58,8 @@ define_method(MatrixPair, getrf_omm, (Hierarchical& A)) {
 
 define_method(MatrixPair, getrf_omm, (Dense& A)) {
   timing::start("DGETRF");
-  std::vector<int> ipiv(std::min(A.dim[0], A.dim[1]));
-  LAPACKE_dgetrf(
-    LAPACK_ROW_MAJOR,
-    A.dim[0], A.dim[1],
-    &A, A.stride,
-    &ipiv[0]
-  );
   Dense L(A.dim[0], A.dim[1]);
-  for (int64_t i=0; i<A.dim[0]; i++) {
-    for (int64_t j=0; j<i; j++) {
-      L(i, j) = A(i, j);
-      A(i, j) = 0;
-    }
-    L(i, i) = 1;
-  }
+  add_getrf_task(A, L);
   timing::stop("DGETRF");
   return {std::move(L), std::move(A)};
 }

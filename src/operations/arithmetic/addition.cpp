@@ -15,6 +15,7 @@
 #include "hicma/operations/misc.h"
 #include "hicma/util/counter.h"
 #include "hicma/util/omm_error_handler.h"
+#include "hicma/util/pre_scheduler.h"
 #include "hicma/util/timer.h"
 
 #include "yorel/yomm2/cute.hpp"
@@ -34,11 +35,7 @@ namespace hicma
 Matrix& operator+=(Matrix& A, const Matrix& B) { return addition_omm(A, B); }
 
 define_method(Matrix&, addition_omm, (Dense& A, const Dense& B)) {
-  for (int64_t i=0; i<A.dim[0]; i++) {
-    for (int64_t j=0; j<A.dim[1]; j++) {
-      A(i, j) += B(i, j);
-    }
-  }
+  add_addition_task(A, B);
   return A;
 }
 
@@ -132,13 +129,9 @@ std::tuple<Dense, Dense, Dense> merge_S(
   Dense InnerUBs = gemm(InnerU, Bs);
 
   // TODO Consider using move for As if possible!
-  Dense M(rank*2, rank*2);
-  for (int64_t i=0; i<rank; i++) {
-    for (int64_t j=0; j<rank; j++) {
-      M(i, j) = As(i, j);
-    }
-  }
-  gemm(InnerUBs, InnerV, M, 1, 1);
+  Dense M = gemm(InnerUBs, InnerV);
+  Hierarchical MH(M, 2, 2, false);
+  MH(0, 0) += As;
 
   Dense Uhat, Shat, Vhat;
   std::tie(Uhat, Shat, Vhat) = svd(M);

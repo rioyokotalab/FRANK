@@ -63,6 +63,22 @@ class Kernel_task : public Task {
   void execute() override;
 };
 
+class Copy_task : public Task {
+ public:
+  int64_t row_start, col_start;
+  Copy_task(const Dense& A, Dense& B, int64_t row_start=0, int64_t col_start=0);
+
+  void execute() override;
+};
+
+class Assign_task : public Task {
+ public:
+  double value;
+  Assign_task(Dense& A, double value);
+
+  void execute() override;
+};
+
 class Resize_task : public Task {
  public:
   int64_t n_rows, n_cols;
@@ -71,9 +87,53 @@ class Resize_task : public Task {
   void execute() override;
 };
 
+class Addition_task : public Task {
+ public:
+  Addition_task(Dense& A, const Dense& B);
+
+  void execute() override;
+};
+
+class Subtraction_task : public Task {
+ public:
+  Subtraction_task(Dense& A, const Dense& B);
+
+  void execute() override;
+};
+
+class Multiplication_task : public Task {
+ public:
+  double factor;
+  Multiplication_task(Dense& A, double factor);
+
+  void execute() override;
+};
+
+class GETRF_task : public Task {
+ public:
+  GETRF_task(Dense& AU, Dense& L);
+
+  void execute() override;
+};
+
 class QR_task : public Task {
  public:
   QR_task(Dense& A, Dense& Q, Dense& R);
+
+  void execute() override;
+};
+
+class RQ_task : public Task {
+ public:
+  RQ_task(Dense& A, Dense& R, Dense& Q);
+
+  void execute() override;
+};
+
+class TRSM_task : public Task {
+ public:
+  int uplo, lr;
+  TRSM_task(const Dense& A, Dense& B, int uplo, int lr);
 
   void execute() override;
 };
@@ -106,11 +166,29 @@ void add_kernel_task(
   int64_t row_start, int64_t col_start
 );
 
+void add_copy_task(
+  const Dense& A, Dense& B, int64_t row_start=0, int64_t col_start=0
+);
+
+void add_assign_task(Dense& A, double value);
+
 void add_resize_task(
   const Dense& A, Dense& resized, int64_t n_rows, int64_t n_cols
 );
 
+void add_addition_task(Dense& A, const Dense& B);
+
+void add_subtraction_task(Dense& A, const Dense& B);
+
+void add_multiplication_task(Dense& A, double factor);
+
+void add_getrf_task(Dense& AU, Dense& L);
+
 void add_qr_task(Dense& A, Dense& Q, Dense& R);
+
+void add_rq_task(Dense& A, Dense& R, Dense& Q);
+
+void add_trsm_task(const Dense& A, Dense& B, int uplo, int lr);
 
 void add_gemm_task(
   const Dense& A, const Dense& B, Dense& C,

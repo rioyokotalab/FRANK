@@ -13,11 +13,6 @@
 #include "hicma/util/pre_scheduler.h"
 #include "hicma/util/timer.h"
 
-#ifdef USE_MKL
-#include <mkl.h>
-#else
-#include <lapacke.h>
-#endif
 #include "yorel/yomm2/cute.hpp"
 
 #include <algorithm>
@@ -393,25 +388,7 @@ define_method(void, rq_omm, (Dense& A, Dense& R, Dense& Q)) {
   assert(Q.dim[0] == A.dim[0]);
   assert(Q.dim[1] == A.dim[1]);
   timing::start("DGERQF");
-  std::vector<double> tau(A.dim[1]);
-  LAPACKE_dgerqf(LAPACK_ROW_MAJOR, A.dim[0], A.dim[1], &A, A.stride, &tau[0]);
-  // TODO Consider making special function for this. Performance heavy and not
-  // always needed. If Q should be applied to something, use directly!
-  // Alternatively, create Dense deriative that remains in elementary reflector
-  // form, uses dormqr instead of gemm and can be transformed to Dense via
-  // dorgqr!
-  for (int64_t i=0; i<R.dim[0]; i++) {
-    for (int64_t j=0; j<R.dim[1]; j++) {
-      if (j>=i) R(i, j) = A(i, A.dim[1]-R.dim[1]+j);
-    }
-  }
-  LAPACKE_dorgrq(
-    LAPACK_ROW_MAJOR,
-    A.dim[0], A.dim[1], A.dim[0],
-    &A, A.stride,
-    &tau[0]
-  );
-  Q = std::move(A);
+  add_rq_task(A, R, Q);
   timing::stop("DGERQF");
 }
 

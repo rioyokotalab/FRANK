@@ -32,11 +32,7 @@ Dense::Dense(const Dense& A)
   timing::start("Dense cctor");
   (*data).resize(dim[0]*dim[1], 0);
   data_ptr = &(*data)[0];
-  for (int64_t i=0; i<dim[0]; i++) {
-    for (int64_t j=0; j<dim[1]; j++) {
-      (*this)(i, j) = A(i, j);
-    }
-  }
+  fill_dense_from(A, *this);
   timing::stop("Dense cctor");
 }
 
@@ -48,11 +44,7 @@ Dense& Dense::operator=(const Dense& A) {
   (*data).resize(dim[0]*dim[1], 0);
   rel_start = {0, 0};
   data_ptr = &(*data)[0];
-  for (int64_t i=0; i<dim[0]; i++) {
-    for (int64_t j=0; j<dim[1]; j++) {
-      (*this)(i, j) = A(i, j);
-    }
-  }
+  fill_dense_from(A, *this);
   timing::stop("Dense copy assignment");
   return *this;
 }
@@ -115,11 +107,7 @@ define_method(void, fill_dense_from, (const NestedBasis& A, Dense& B)) {
 define_method(void, fill_dense_from, (const Dense& A, Dense& B)) {
   assert(A.dim[0] == B.dim[0]);
   assert(A.dim[1] == B.dim[1]);
-  for (int64_t i=0; i<A.dim[0]; i++) {
-    for (int64_t j=0; j<A.dim[1]; j++) {
-      B(i, j) = A(i, j);
-    }
-  }
+  add_copy_task(A, B);
 }
 
 define_method(void, fill_dense_from, (const Matrix& A, Matrix& B)) {
@@ -173,11 +161,7 @@ Dense::Dense(
     data = std::make_shared<std::vector<double>>(n_rows*n_cols);
     rel_start = {0, 0};
     data_ptr = &(*data)[0];
-    for (int64_t i=0; i<dim[0]; i++) {
-      for (int64_t j=0; j<dim[1]; j++) {
-        (*this)(i, j) = A(row_start+i, col_start+j);
-      }
-    }
+    add_copy_task(A, *this, row_start, col_start);
   } else {
     assert(row_start+dim[0] <= A.dim[0]);
     assert(col_start+dim[1] <= A.dim[1]);
@@ -189,11 +173,7 @@ Dense::Dense(
 }
 
 const Dense& Dense::operator=(const double a) {
-  for (int64_t i=0; i<dim[0]; i++) {
-    for (int64_t j=0; j<dim[1]; j++) {
-      (*this)(i, j) = a;
-    }
-  }
+  add_assign_task(*this, a);
   return *this;
 }
 

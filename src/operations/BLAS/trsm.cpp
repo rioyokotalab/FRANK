@@ -8,13 +8,9 @@
 #include "hicma/classes/nested_basis.h"
 #include "hicma/classes/initialization_helpers/basis_tracker.h"
 #include "hicma/util/omm_error_handler.h"
+#include "hicma/util/pre_scheduler.h"
 #include "hicma/util/timer.h"
 
-#ifdef USE_MKL
-#include <mkl.h>
-#else
-#include <cblas.h>
-#endif
 #include "yorel/yomm2/cute.hpp"
 
 #include <cassert>
@@ -85,17 +81,7 @@ define_method(
 
 define_method(void, trsm_omm, (const Dense& A, Dense& B, int uplo, int lr)) {
   timing::start("DTRSM");
-  cblas_dtrsm(
-    CblasRowMajor,
-    lr==TRSM_LEFT?CblasLeft:CblasRight,
-    uplo==TRSM_UPPER?CblasUpper:CblasLower,
-    CblasNoTrans,
-    uplo==TRSM_UPPER?CblasNonUnit:CblasUnit,
-    B.dim[0], B.dim[1],
-    1,
-    &A, A.stride,
-    &B, B.stride
-  );
+  add_trsm_task(A, B, uplo, lr);
   timing::stop("DTRSM");
 }
 
