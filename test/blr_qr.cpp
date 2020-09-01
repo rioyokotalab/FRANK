@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
     A = Hierarchical(cauchy2d, randpts, N, N, rank, Nb, (int64_t)admis, Nc, Nc);
     D = Hierarchical(cauchy2d, randpts, N, N, 0, Nb, Nc, Nc, Nc);
   }
-  Hierarchical Q(Nc, Nc);
+  Hierarchical Q(zeros, std::vector<std::vector<double>>(), N, N, rank, Nb, (int64_t)admis, Nc, Nc);
   Hierarchical R(zeros, std::vector<std::vector<double>>(), N, N, rank, Nb, (int64_t)admis, Nc, Nc);
 
   print("Cond(A)", cond(Dense(A)), false);
@@ -59,37 +59,7 @@ int main(int argc, char** argv) {
   print("Time");
   resetCounter("LR-addition");
   timing::start("BLR QR decomposition");
-  for(int64_t j=0; j<Nc; j++) {
-    Hierarchical Aj(Nc, 1);
-    Hierarchical Qsj(Nc, 1);
-    for(int64_t i=0; i<Nc; i++) {
-      Aj(i, 0) = A(i, j);
-      Qsj(i, 0) = A(i, j);
-    }
-    Hierarchical Rjj(1, 1);
-    Aj.blr_col_qr(Qsj, Rjj);
-    R(j, j) = std::move(Rjj(0, 0));
-    //Copy column of Qsj to Q
-    for(int64_t i = 0; i < Nc; i++) {
-      Q(i, j) = Qsj(i, 0);
-    }
-    //Transpose of Qsj to be used in computing Rjk
-    Hierarchical TrQsj(Qsj);
-    transpose(TrQsj);
-    //Process next columns
-    for(int64_t k=j+1; k<Nc; k++) {
-      //Take k-th column
-      Hierarchical Ak(Nc, 1);
-      for(int64_t i=0; i<Nc; i++) {
-        Ak(i, 0) = A(i, k);
-      }
-      gemm(TrQsj, Ak, R(j, k), 1, 0); //Rjk = Q*j^T x A*k
-      gemm(Qsj, R(j, k), Ak, -1, 1); //A*k = A*k - Q*j x Rjk
-      for(int64_t i=0; i<Nc; i++) {
-        A(i, k) = std::move(Ak(i, 0));
-      }
-    }
-  }
+  qr(A, Q, R);
   timing::stopAndPrint("BLR QR decomposition", 1);
   printCounter("LR-addition");
 

@@ -96,7 +96,7 @@ define_method(
   Dense AD(A);
   Dense S = get_singular_values(AD);
   std::string singular_values = std::to_string(S[0]);
-  for (int64_t i=1; i<A.dim[0]; ++i)
+  for (int64_t i=1; i<S.dim[0]; ++i)
     singular_values += std::string(",") + std::to_string(S[i]);
   tree.put("<xmlattr>.type", type(A));
   tree.put("<xmlattr>.dim0", A.dim[0]);
@@ -115,7 +115,7 @@ define_method(
   Dense A_(A);
   Dense S = get_singular_values(A_);
   std::string singular_values = std::to_string(S[0]);
-  for (int64_t i=1; i<A.dim[0]; ++i)
+  for (int64_t i=1; i<S.dim[0]; ++i)
     singular_values += std::string(",") + std::to_string(S[i]);
   tree.put("<xmlattr>.type", type(A));
   tree.put("<xmlattr>.dim0", A.dim[0]);

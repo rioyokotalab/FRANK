@@ -45,22 +45,6 @@ void latms(
 
 void qr(Matrix&, Matrix&, Matrix&);
 
-// TODO Does this need to be in the header?
-bool need_split(const Matrix&);
-
-// TODO Does this need to be in the header?
-std::tuple<Dense, Dense> make_left_orthogonal(const Matrix&);
-
-// TODO Does this need to be in the header?
-void update_splitted_size(const Matrix&, int64_t&, int64_t&);
-
-// TODO Does this need to be in the header?
-MatrixProxy split_by_column(const Matrix&, Matrix&, int64_t&);
-
-// TODO Does this need to be in the header?
-MatrixProxy concat_columns(
-  const Matrix&, const Matrix&, const Matrix&, int64_t&);
-
 void zero_lowtri(Matrix&);
 
 void zero_whole(Matrix&);
