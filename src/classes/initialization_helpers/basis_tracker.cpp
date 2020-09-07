@@ -67,30 +67,8 @@ BasisKey& BasisKey::operator=(const BasisKey& A) {
   return *this;
 }
 
-declare_method(void, init_basis_key, (BasisKey&, virtual_<const Matrix&>))
-
-BasisKey::BasisKey(const Matrix& A) {
-  init_basis_key(*this, A);
-}
-
-BasisKey::BasisKey(const MatrixProxy& A) {
-  init_basis_key(*this, A);
-}
-
-define_method(void, init_basis_key, (BasisKey& key, const Dense& A)) {
-  key.data_ptr = &A;
-  key.D = share_basis(A);
-  key.dim = A.dim;
-}
-
-define_method(void, init_basis_key, (BasisKey& key, const NestedBasis& A)) {
-  init_basis_key(key, A.transfer_matrix);
-}
-
-define_method(void, init_basis_key, (BasisKey&, const Matrix& A)) {
-  omm_error_handler("init_basis_key", {A}, __FILE__, __LINE__);
-  std::abort();
-}
+BasisKey::BasisKey(const Dense& A)
+: data_ptr(&A), D(A.share()), dim(A.dim) {}
 
 bool operator==(const BasisKey& A, const BasisKey& B) {
   return (A.data_ptr == B.data_ptr) && (A.dim == B.dim);
@@ -100,115 +78,68 @@ bool operator==(const IndexRange& A, const IndexRange& B) {
   return (A.start == B.start) && (A.n == B.n);
 }
 
-declare_method(
-  MatrixProxy, decouple_basis_omm, (virtual_<Matrix&>)
-)
+std::map<std::string, BasisTracker<BasisKey>> single_trackers;
 
-BasisTracker<BasisKey> decouple_tracker;
-
-MatrixProxy decouple_basis(Matrix& basis) {
-  return decouple_basis_omm(basis);
-}
-
-define_method(
-  MatrixProxy, decouple_basis_omm, (Dense& A)
-) {
-  timing::start("decoupling");
-  MatrixProxy out;
-  // Try to avoid any copy by checking whether the basis is actually shared
-  if (A.is_shared()) {
-    if (!decouple_tracker.has_basis(A)) {
-      decouple_tracker[A] = A;
-    }
-    out = share_basis(decouple_tracker[A]);
-  } else {
-    out = std::move(A);
-  }
-  timing::stop("decoupling");
-  return out;
-}
-
-define_method(
-  MatrixProxy, decouple_basis_omm, (NestedBasis& A)
-) {
-  timing::start("decoupling");
-  MatrixProxy out;
-  if (decouple_tracker.has_basis(A)) {
-    out = share_basis(decouple_tracker[A]);
-  } else {
-    for (int64_t i=0; i<A.num_child_basis(); ++i) {
-      A[i] = decouple_basis(A[i]);
-    }
-    out = decouple_basis(A.transfer_matrix);
-  }
-  timing::stop("decoupling");
-  return out;
-}
-
-define_method(
-  MatrixProxy, decouple_basis_omm, (Matrix& A)
-) {
-  omm_error_handler("decouple_basis", {A}, __FILE__, __LINE__);
-  abort();
-}
-
-std::map<std::string, BasisTracker<BasisKey>> generic_trackers;
-
-bool matrix_is_tracked(std::string tracker, const Matrix& key) {
-  if (generic_trackers.find(tracker) == generic_trackers.end()) {
+bool matrix_is_tracked(std::string tracker, const Dense& key) {
+  if (single_trackers.find(tracker) == single_trackers.end()) {
     return false;
   } else {
-    return generic_trackers[tracker].has_basis(key);
+    return single_trackers[tracker].has_basis(key);
   }
 }
 
 void register_matrix(
-  std::string tracker, const Matrix& key, MatrixProxy content
+  std::string tracker, const Dense& key, Dense&& content
 ) {
-  if (generic_trackers.find(tracker) == generic_trackers.end()) {
-    generic_trackers[tracker] = BasisTracker<BasisKey>();
+  if (single_trackers.find(tracker) == single_trackers.end()) {
+    single_trackers[tracker] = BasisTracker<BasisKey>();
   }
-  generic_trackers[tracker][key] = std::move(content);
+  single_trackers[tracker][key] = std::move(content);
 }
 
-MatrixProxy& get_tracked_content(std::string tracker, const Matrix& key) {
-  return generic_trackers[tracker][key];
+Dense& get_tracked_content(std::string tracker, const Dense& key) {
+  return single_trackers[tracker][key];
 }
 
-void clear_tracker(std::string tracker) { generic_trackers.erase(tracker); }
+std::map<
+  std::string, BasisTracker<BasisKey, BasisTracker<BasisKey>>
+> double_trackers;
+
+bool matrix_is_tracked(
+  std::string tracker, const Dense& key1, const Dense& key2
+) {
+  if (double_trackers.find(tracker) == double_trackers.end()) {
+    return false;
+  } else {
+    if (!double_trackers[tracker].has_basis(key1)) return false;
+    if (!double_trackers[tracker][key1].has_basis(key2)) return false;
+    return true;
+  }
+}
+
+void register_matrix(
+  std::string tracker, const Dense& key1, const Dense& key2, Dense&& content
+) {
+  if (double_trackers.find(tracker) == double_trackers.end()) {
+    double_trackers[tracker] = BasisTracker<BasisKey, BasisTracker<BasisKey>>();
+  }
+  double_trackers[tracker][key1][key2] = std::move(content);
+}
+
+Dense& get_tracked_content(
+  std::string tracker, const Dense& key1, const Dense& key2
+) {
+  return double_trackers[tracker][key1][key2];
+}
+
+void clear_tracker(std::string tracker) { single_trackers.erase(tracker); }
 
 void clear_trackers() {
-  decouple_tracker.clear();
-  generic_trackers.clear();
+  single_trackers.clear();
+  double_trackers.clear();
 }
 
 BasisTracker<BasisKey, BasisTracker<BasisKey>> concatenated_bases;
-
-bool concatenated_basis_done(const Matrix& A, const Matrix& B) {
-  bool out;
-  if (!concatenated_bases.has_basis(A)) {
-    out = false;
-  } else {
-    if (concatenated_bases[A].has_basis(B)) {
-      out = true;
-    } else {
-      out = false;
-    }
-  }
-  return out;
-}
-
-void register_concatenated_basis(
-  const Matrix& A, const Matrix& B, const Dense& basis
-) {
-  concatenated_bases[A][B] = basis;
-}
-
-MatrixProxy& get_concatenated_basis(
-  const Matrix& A, const Matrix& B
-) {
-  return concatenated_bases[A][B];
-}
 
 NestedTracker::NestedTracker(const IndexRange& index_range)
 : index_range(index_range) {}

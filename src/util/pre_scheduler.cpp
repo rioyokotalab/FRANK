@@ -2,6 +2,7 @@
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/nested_basis.h"
+#include "hicma/classes/initialization_helpers/basis_tracker.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
@@ -383,9 +384,13 @@ void add_rq_task(Dense& A, Dense& R, Dense& Q) {
 }
 
 void add_trsm_task(const Dense& A, Dense& B, int uplo, int lr) {
-  // TODO Check for duplicate/shared tasks
-  std::shared_ptr<Task> task = std::make_shared<TRSM_task>(A, B, uplo, lr);
-  add_task(task);
+  if (!matrix_is_tracked("trsm_task", A, B)) {
+    std::shared_ptr<TRSM_task> task = std::make_shared<TRSM_task>(
+      A, B, uplo, lr
+    );
+    add_task(task);
+    register_matrix("trsm_task", A, B);
+  }
 }
 
 void add_gemm_task(

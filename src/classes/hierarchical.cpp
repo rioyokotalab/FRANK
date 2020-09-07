@@ -63,23 +63,21 @@ define_method(
 
 define_method(MatrixProxy, tracked_copy, (const Dense& A)) {
   if (!matrix_is_tracked("hierarchical_copy", A)) {
-    register_matrix("hierarchical_copy", A, A);
+    register_matrix("hierarchical_copy", A, Dense(A));
   }
-  return share_basis(get_tracked_content("hierarchical_copy", A));
+  return get_tracked_content("hierarchical_copy", A).share();
 }
 
 define_method(MatrixProxy, tracked_copy, (const NestedBasis& A)) {
-  if (!matrix_is_tracked("hierarchical_copy", A)) {
-    std::vector<MatrixProxy> new_sub_bases(A.num_child_basis());
-    for (int64_t i=0; i<A.num_child_basis(); ++i) {
-      new_sub_bases[i] = tracked_copy(A[i]);
-    }
-    register_matrix(
-      "hierarchical_copy", A,
-      NestedBasis(Dense(A.transfer_matrix), new_sub_bases, A.is_col_basis())
-    );
+  std::vector<MatrixProxy> new_sub_bases(A.num_child_basis());
+  for (int64_t i=0; i<A.num_child_basis(); ++i) {
+    new_sub_bases[i] = tracked_copy(A[i]);
   }
-  return share_basis(get_tracked_content("hierarchical_copy", A));
+  return NestedBasis(
+    tracked_copy(A.transfer_matrix),
+    new_sub_bases,
+    A.is_col_basis()
+  );
 }
 
 define_method(

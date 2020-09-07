@@ -89,26 +89,24 @@ define_method(
   void, trsm_omm, (const Matrix& A, NestedBasis& B, int uplo, int lr)
 ) {
   // TODO Only works for single layer!
+  if (B.num_child_basis() != 0) abort();
+  // Decouple basis
+  // TODO Use different/more general tracker (like "copy")?
+  // TODO Maybe this should not be in TRSM but in the main getrf?
+  if (!matrix_is_tracked("decoupling", B.transfer_matrix)) {
+    register_matrix("decoupling", B.transfer_matrix, Dense(B.transfer_matrix));
+  }
+  B.transfer_matrix = get_tracked_content("decoupling", B.transfer_matrix).share();
   trsm(A, B.transfer_matrix, uplo, lr);
 }
 
 define_method(void, trsm_omm, (const Matrix& A, LowRank& B, int uplo, int lr)) {
   switch (lr) {
   case TRSM_LEFT:
-    B.U = decouple_basis(B.U);
-    if (matrix_is_tracked("TRSM", B.U)) {
-      return;
-    }
     trsm(A, B.U, uplo, lr);
-    register_matrix("TRSM", B.U);
     break;
   case TRSM_RIGHT:
-    B.V = decouple_basis(B.V);
-    if (matrix_is_tracked("TRSM", B.V)) {
-      return;
-    }
     trsm(A, B.V, uplo, lr);
-    register_matrix("TRSM", B.V);
     break;
   }
 }

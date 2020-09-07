@@ -41,34 +41,34 @@ class BasisKey {
 
   BasisKey& operator=(BasisKey&& A) = default;
 
-  BasisKey(const Matrix&);
-
-  BasisKey(const MatrixProxy&);
+  BasisKey(const Dense&);
 };
 
-MatrixProxy decouple_basis(Matrix& basis);
-
-bool matrix_is_tracked(std::string tracker, const Matrix& key);
+bool matrix_is_tracked(std::string tracker, const Dense& key);
 
 void register_matrix(
-  std::string tracker, const Matrix& key, MatrixProxy content=MatrixProxy()
+  std::string tracker, const Dense& key, Dense&& content=Dense()
 );
 
-MatrixProxy& get_tracked_content(std::string tracker, const Matrix& key);
+Dense& get_tracked_content(std::string tracker, const Dense& key);
+
+bool matrix_is_tracked(
+  std::string tracker, const Dense& key1, const Dense& key2
+);
+
+void register_matrix(
+  std::string tracker,
+  const Dense& key1, const Dense& key2,
+  Dense&& content=Dense()
+);
+
+Dense& get_tracked_content(
+  std::string tracker, const Dense& key1, const Dense& key2
+);
 
 void clear_tracker(std::string tracker);
 
 void clear_trackers();
-
-bool concatenated_basis_done(const Matrix& A, const Matrix& B);
-
-void register_concatenated_basis(
-  const Matrix& A, const Matrix& B, const Dense& basis
-);
-
-MatrixProxy& get_concatenated_basis(
-  const Matrix& A, const Matrix& B
-);
 
 } // namespace hicma
 
@@ -101,7 +101,7 @@ bool operator==(const BasisKey& A, const BasisKey& B);
 
 bool operator==(const IndexRange& A, const IndexRange& B);
 
-template<class Key, class Content = MatrixProxy>
+template<class Key, class Content = Dense>
 class BasisTracker {
  private:
   std::unordered_map<Key, Content> bases;

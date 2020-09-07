@@ -22,7 +22,7 @@ class MatrixInitializer {
  private:
   int64_t admis;
   int64_t rank;
-  BasisTracker<IndexRange> col_basis, row_basis;
+  BasisTracker<IndexRange, NestedBasis> col_basis, row_basis;
   NestedTracker col_tracker, row_tracker;
   int basis_type = NORMAL_BASIS;
 
