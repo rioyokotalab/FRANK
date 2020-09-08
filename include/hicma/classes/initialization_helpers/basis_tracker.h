@@ -104,17 +104,15 @@ bool operator==(const IndexRange& A, const IndexRange& B);
 template<class Key, class Content = Dense>
 class BasisTracker {
  private:
-  std::unordered_map<Key, Content> bases;
+  std::unordered_map<Key, Content> map;
  public:
-  bool has_basis(const Key& key) const {
-    return (bases.find(key) != bases.end());
-  }
+  bool has_key(const Key& key) const { return map.find(key) != map.end(); }
 
-  const Content& operator[](const Key& key) const { return bases[key]; }
+  const Content& operator[](const Key& key) const { return map[key]; }
 
-  Content& operator[](const Key& key) { return bases[key]; }
+  Content& operator[](const Key& key) { return map[key]; }
 
-  void clear() { bases.clear(); }
+  void clear() { map.clear(); }
 };
 
 class NestedTracker {

@@ -84,7 +84,7 @@ bool matrix_is_tracked(std::string tracker, const Dense& key) {
   if (single_trackers.find(tracker) == single_trackers.end()) {
     return false;
   } else {
-    return single_trackers[tracker].has_basis(key);
+    return single_trackers[tracker].has_key(key);
   }
 }
 
@@ -111,8 +111,8 @@ bool matrix_is_tracked(
   if (double_trackers.find(tracker) == double_trackers.end()) {
     return false;
   } else {
-    if (!double_trackers[tracker].has_basis(key1)) return false;
-    if (!double_trackers[tracker][key1].has_basis(key2)) return false;
+    if (!double_trackers[tracker].has_key(key1)) return false;
+    if (!double_trackers[tracker][key1].has_key(key2)) return false;
     return true;
   }
 }
