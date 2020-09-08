@@ -321,74 +321,55 @@ void add_kernel_task(
   Dense& A, const std::vector<std::vector<double>>& x,
   int64_t row_start, int64_t col_start
 ) {
-  std::shared_ptr<Task> task = std::make_shared<Kernel_task>(
-    kernel, A, x, row_start, col_start
-  );
-  add_task(task);
+  add_task(std::make_shared<Kernel_task>(kernel, A, x, row_start, col_start));
 }
 
 void add_copy_task(
   const Dense& A, Dense& B, int64_t row_start, int64_t col_start
 ) {
-  std::shared_ptr<Task> task = std::make_shared<Copy_task>(
-    A, B, row_start, col_start
-  );
-  add_task(task);
+  add_task(std::make_shared<Copy_task>(A, B, row_start, col_start));
 }
 
 void add_assign_task(Dense& A, double value) {
-  std::shared_ptr<Task> task = std::make_shared<Assign_task>(A, value);
-  add_task(task);
+  add_task(std::make_shared<Assign_task>(A, value));
 }
 
 void add_resize_task(
   const Dense& A, Dense& resized, int64_t n_rows, int64_t n_cols
 ) {
-  std::shared_ptr<Task> task = std::make_shared<Resize_task>(
-    A, resized, n_rows, n_cols
-  );
-  add_task(task);
+  add_task(std::make_shared<Resize_task>(A, resized, n_rows, n_cols));
 }
 
 void add_addition_task(Dense& A, const Dense& B) {
-  std::shared_ptr<Task> task = std::make_shared<Addition_task>(A, B);
-  add_task(task);
+  add_task(std::make_shared<Addition_task>(A, B));
 }
 
 void add_subtraction_task(Dense& A, const Dense& B) {
-  std::shared_ptr<Task> task = std::make_shared<Subtraction_task>(A, B);
-  add_task(task);
+  add_task(std::make_shared<Subtraction_task>(A, B));
 }
 
 void add_multiplication_task(Dense& A, double factor) {
-  std::shared_ptr<Task> task = std::make_shared<Multiplication_task>(A, factor);
-  add_task(task);
+  add_task(std::make_shared<Multiplication_task>(A, factor));
 }
 
 void add_getrf_task(Dense& AU, Dense& L) {
   // TODO Check for duplicate/shared tasks
-  std::shared_ptr<Task> task = std::make_shared<GETRF_task>(AU, L);
-  add_task(task);
+  add_task(std::make_shared<GETRF_task>(AU, L));
 }
 
 void add_qr_task(Dense& A, Dense& Q, Dense& R) {
   // TODO Check for duplicate/shared tasks
-  std::shared_ptr<Task> task = std::make_shared<QR_task>(A, Q, R);
-  add_task(task);
+  add_task(std::make_shared<QR_task>(A, Q, R));
 }
 
 void add_rq_task(Dense& A, Dense& R, Dense& Q) {
   // TODO Check for duplicate/shared tasks
-  std::shared_ptr<Task> task = std::make_shared<RQ_task>(A, R, Q);
-  add_task(task);
+  add_task(std::make_shared<RQ_task>(A, R, Q));
 }
 
 void add_trsm_task(const Dense& A, Dense& B, int uplo, int lr) {
   if (!matrix_is_tracked("trsm_task", A, B)) {
-    std::shared_ptr<TRSM_task> task = std::make_shared<TRSM_task>(
-      A, B, uplo, lr
-    );
-    add_task(task);
+    add_task(std::make_shared<TRSM_task>(A, B, uplo, lr));
     register_matrix("trsm_task", A, B);
   }
 }
@@ -398,16 +379,12 @@ void add_gemm_task(
   bool TransA, bool TransB, double alpha, double beta
 ) {
   // TODO Check for duplicate/shared tasks
-  std::shared_ptr<Task> task = std::make_shared<GEMM_task>(
-    A, B, C, TransA, TransB, alpha, beta
-  );
-  add_task(task);
+  add_task(std::make_shared<GEMM_task>(A, B, C, TransA, TransB, alpha, beta));
 }
 
 void add_svd_task(Dense& A, Dense& U, Dense& S, Dense& V) {
   // TODO Check for duplicate/shared tasks
-  std::shared_ptr<Task> task = std::make_shared<SVD_task>(A, U, S, V);
-  add_task(task);
+  add_task(std::make_shared<SVD_task>(A, U, S, V));
 }
 
 void start_schedule() {
