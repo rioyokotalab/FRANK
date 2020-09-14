@@ -1,9 +1,11 @@
 #include "hicma/util/pre_scheduler.h"
 
 #include "hicma/classes/dense.h"
+#include "hicma/classes/hierarchical.h"
 #include "hicma/classes/nested_basis.h"
 #include "hicma/classes/initialization_helpers/basis_tracker.h"
 #include "hicma/operations/BLAS.h"
+#include "hicma/operations/LAPACK.h"
 #include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
 
@@ -16,6 +18,7 @@ using yorel::yomm2::virtual_;
 #include <functional>
 #include <list>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #ifdef USE_MKL
@@ -302,6 +305,56 @@ void SVD_task::execute() {
   }
 }
 
+Recompress_col_task::Recompress_col_task(
+  Dense& newU, const Dense& AU, const Dense& BU, Dense& AS, const Dense& BS
+) : Task({AU, BU, BS}, {newU, AS}) {}
+
+void Recompress_col_task::execute() {
+  Dense& AU = constant[0];
+  Dense& BU = constant[1];
+  Hierarchical US(1, modified.size()-1);
+  for (uint64_t i=1; i<modified.size(); ++i) {
+    // TODO Assumes equal size of Ss
+    US[i-1] = gemm(AU, modified[i]);
+    gemm(BU, constant[i+1], US[i-1], 1, 1);
+  }
+  Dense newU, S, V, USD(US);
+  std::tie(newU, S, V) = svd(USD);
+  Copy_task(newU, modified[0]).execute();
+  Dense SV = gemm(
+    resize(S, AU.dim[1], AU.dim[1]), resize(V, AU.dim[1], V.dim[1])
+  );
+  Hierarchical smallVH(SV, 1, modified.size()-1, false);
+  for (uint64_t i=1; i<modified.size(); ++i) {
+    Copy_task(Dense(std::move(smallVH[i-1])), modified[i]).execute();
+  }
+}
+
+Recompress_row_task::Recompress_row_task(
+  Dense& newV, const Dense& AV, const Dense& BV, Dense& AS, const Dense& BS
+) : Task({AV, BV, BS}, {newV, AS}) {}
+
+void Recompress_row_task::execute() {
+  Dense& AV = constant[0];
+  Dense& BV = constant[1];
+  Hierarchical SV(modified.size()-1, 1);
+  for (uint64_t i=1; i<modified.size(); ++i) {
+    // TODO Assumes equal size of Ss
+    SV[i-1] = gemm(modified[i], AV);
+    gemm(constant[i+1], BV, SV[i-1], 1, 1);
+  }
+  Dense U, S, newV, SVD(SV);
+  std::tie(U, S, newV) = svd(SVD);
+  Copy_task(newV, modified[0]).execute();
+  Dense US = gemm(
+    resize(U, U.dim[0], AV.dim[0]), resize(S, AV.dim[0], AV.dim[0])
+  );
+  Hierarchical USH(US, modified.size()-1, 1, false);
+  for (uint64_t i=1; i<modified.size(); ++i) {
+    Copy_task(Dense(std::move(USH[i-1])), modified[i]).execute();
+  }
+}
+
 std::list<std::shared_ptr<Task>> tasks;
 bool schedule_started = false;
 
@@ -374,17 +427,84 @@ void add_trsm_task(const Dense& A, Dense& B, int uplo, int lr) {
   }
 }
 
+BasisTracker<
+  BasisKey, BasisTracker<BasisKey, std::shared_ptr<GEMM_task>>
+> gemm_tracker;
+
 void add_gemm_task(
   const Dense& A, const Dense& B, Dense& C,
   bool TransA, bool TransB, double alpha, double beta
 ) {
-  // TODO Check for duplicate/shared tasks
-  add_task(std::make_shared<GEMM_task>(A, B, C, TransA, TransB, alpha, beta));
+  // TODO Only add relevant gemm tasks to tracker?
+  // TODO Track tasks objects themselves?
+  if (
+    beta == 0
+    && schedule_started
+    && !C.is_submatrix()
+    && gemm_tracker.has_key(A) && gemm_tracker[A].has_key(B)
+    && gemm_tracker[A][B]->alpha == alpha
+    && gemm_tracker[A][B]->TransA == TransA
+    && gemm_tracker[A][B]->TransB == TransB
+  ) {
+    C = gemm_tracker[A][B]->modified[0].share();
+    return;
+  }
+  std::shared_ptr<GEMM_task> task = std::make_shared<GEMM_task>(
+    A, B, C, TransA, TransB, alpha, beta
+  );
+  if (beta == 0 && schedule_started && !C.is_submatrix()) {
+    gemm_tracker[A][B] = task;
+  }
+  add_task(task);
 }
 
 void add_svd_task(Dense& A, Dense& U, Dense& S, Dense& V) {
   // TODO Check for duplicate/shared tasks
   add_task(std::make_shared<SVD_task>(A, U, S, V));
+}
+
+BasisTracker<
+  BasisKey, BasisTracker<BasisKey, std::shared_ptr<Recompress_col_task>>
+> recompress_col_tracker;
+
+void add_recompress_col_task(
+  Dense& newU, const Dense& AU, const Dense& BU, Dense& AS, const Dense& BS
+) {
+  assert(schedule_started);
+  if (
+    recompress_col_tracker.has_key(AU) && recompress_col_tracker[AU].has_key(BU)
+  ) {
+    recompress_col_tracker[AU][BU]->modified.push_back(AS.share());
+    recompress_col_tracker[AU][BU]->constant.push_back(BS.share());
+    newU = recompress_col_tracker[AU][BU]->modified[0].share();
+  } else {
+    recompress_col_tracker[AU][BU] = std::make_shared<Recompress_col_task>(
+      newU, AU, BU, AS, BS
+    );
+    add_task(recompress_col_tracker[AU][BU]);
+  }
+}
+
+BasisTracker<
+  BasisKey, BasisTracker<BasisKey, std::shared_ptr<Recompress_row_task>>
+> recompress_row_tracker;
+
+void add_recompress_row_task(
+  Dense& newV, const Dense& AV, const Dense& BV, Dense& AS, const Dense& BS
+) {
+  assert(schedule_started);
+  if (
+    recompress_row_tracker.has_key(AV) && recompress_row_tracker[AV].has_key(BV)
+  ) {
+    recompress_row_tracker[AV][BV]->modified.push_back(AS.share());
+    recompress_row_tracker[AV][BV]->constant.push_back(BS.share());
+    newV = recompress_row_tracker[AV][BV]->modified[0].share();
+  } else {
+    recompress_row_tracker[AV][BV] = std::make_shared<Recompress_row_task>(
+      newV, AV, BV, AS, BS
+    );
+    add_task(recompress_row_tracker[AV][BV]);
+  }
 }
 
 void start_schedule() {
@@ -394,11 +514,11 @@ void start_schedule() {
 }
 
 void execute_schedule() {
+  schedule_started = false;
   while (!tasks.empty()) {
     tasks.front()->execute();
     tasks.pop_front();
   }
-  schedule_started = false;
 }
 
 } // namespace hicma

@@ -47,7 +47,9 @@ MatrixProxy get_part(
 
 double norm(const Matrix&);
 
-void recompress(Hierarchical& A, int64_t start);
+void recompress_col(Matrix& AU, const Matrix& BU, Dense& AS, const Dense& BS);
+
+void recompress_row(Matrix& AV, const Matrix& BV, Dense& AS, const Dense& BS);
 
 MatrixProxy transpose(const Matrix&);
 

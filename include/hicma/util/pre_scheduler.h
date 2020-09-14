@@ -157,6 +157,26 @@ class SVD_task : public Task {
   void execute() override;
 };
 
+class Recompress_col_task : public Task {
+ public:
+  bool is_col;
+  Recompress_col_task(
+    Dense& newU, const Dense& AU, const Dense& BU, Dense& AS, const Dense& BS
+  );
+
+  void execute() override;
+};
+
+class Recompress_row_task : public Task {
+ public:
+  bool is_col;
+  Recompress_row_task(
+    Dense& newV, const Dense& AV, const Dense& BV, Dense& AS, const Dense& BS
+  );
+
+  void execute() override;
+};
+
 void add_kernel_task(
   void (*kernel)(
     Dense& A, const std::vector<std::vector<double>>& x,
@@ -196,6 +216,14 @@ void add_gemm_task(
 );
 
 void add_svd_task(Dense& A, Dense& U, Dense& S, Dense& V);
+
+void add_recompress_col_task(
+  Dense& newU, const Dense& AU, const Dense& BU, Dense& AS, const Dense& BS
+);
+
+void add_recompress_row_task(
+  Dense& newV, const Dense& AV, const Dense& BV, Dense& AS, const Dense& BS
+);
 
 void start_schedule();
 

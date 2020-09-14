@@ -227,4 +227,11 @@ bool Dense::is_shared_with(const Dense& A) const {
   return shared;
 }
 
+bool Dense::is_submatrix() const {
+  bool out = (rel_start == std::array<int64_t, 2>{0, 0});
+  // TODO Think about int64_t!
+  out &= (data->size() == uint64_t(dim[0] * dim[1]));
+  return !out;
+}
+
 } // namespace hicma

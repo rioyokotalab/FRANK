@@ -86,6 +86,8 @@ class Dense : public Matrix {
   bool is_shared() const;
 
   bool is_shared_with(const Dense& A) const;
+
+  bool is_submatrix() const;
 };
 
 } // namespace hicma

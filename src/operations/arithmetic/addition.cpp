@@ -150,9 +150,11 @@ define_method(Matrix&, addition_omm, (LowRank& A, const LowRank& B)) {
     A.S += B.S;
     return A;
   } else if (!is_shared(A.U, B.U) && is_shared(A.V, B.V)) {
-    abort();
+    recompress_col(A.U, B.U, A.S, B.S);
+    return A;
   } else if (is_shared(A.U, B.U) && !is_shared(A.V, B.V)) {
-    abort();
+    recompress_row(A.V, B.V, A.S, B.S);
+    return A;
   }
   if (getCounter("LR_ADDITION_COUNTER") == 1) updateCounter("LR-addition", 1);
   if (getCounter("LRA") == 0) {

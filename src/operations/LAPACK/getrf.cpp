@@ -50,8 +50,6 @@ define_method(MatrixPair, getrf_omm, (Hierarchical& A)) {
         gemm(L(i_c, i), A(i, k), A(i_c, k), -1, 1);
       }
     }
-    // Recompress basis of A which might be less efficient due to gemm calls
-    recompress(A, i+1);
   }
   return {std::move(L), std::move(A)};
 }
