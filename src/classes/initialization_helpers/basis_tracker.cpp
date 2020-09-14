@@ -139,8 +139,6 @@ void clear_trackers() {
   double_trackers.clear();
 }
 
-BasisTracker<BasisKey, BasisTracker<BasisKey>> concatenated_bases;
-
 NestedTracker::NestedTracker(const IndexRange& index_range)
 : index_range(index_range) {}
 

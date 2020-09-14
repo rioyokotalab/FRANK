@@ -2,7 +2,7 @@
 #define hicma_classes_initialization_helpers_basis_tracker_h
 
 #include "hicma/classes/matrix.h"
-#include "hicma/classes/matrix_proxy.h"
+#include "hicma/classes/dense.h"
 #include "hicma/classes/nested_basis.h"
 #include "hicma/classes/initialization_helpers/index_range.h"
 
@@ -25,7 +25,7 @@ class BasisKey {
   // Hold a shared version of the origin of the key. This way we can avoid the
   // memory from being released as long as the key is in use. Important since we
   // use the pointer to hash and compare the keys.
-  MatrixProxy D;
+  Dense D;
   std::array<int64_t, 2> dim;
 
   // Special member functions
