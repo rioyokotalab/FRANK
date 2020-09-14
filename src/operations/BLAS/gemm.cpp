@@ -76,7 +76,7 @@ define_method(
 ) {
   // TODO Find way to remove if check?
   if (A.num_child_basis() == 0) {
-      gemm(A.transfer_matrix, B, C, TransA, TransB, alpha, beta);
+    gemm(A.transfer_matrix, B, C, TransA, TransB, alpha, beta);
   } else {
     // TODO Allow transpose for B?
     assert(!TransB);
@@ -271,6 +271,8 @@ define_method(
     double alpha, double beta
   )
 ) {
+  // TODO Many optimizations possible here with shared basis
+  // Even in non-shared case, UxS, SxV may be optimized across blocks!
   Dense UxSxVxUxS = gemm(A.U, gemm(gemm(A.S, gemm(A.V, B.U)), B.S));
   gemm(UxSxVxUxS, B.V, C, alpha, beta);
 }
@@ -585,7 +587,6 @@ define_method(
     TransB ? get_n_rows(B) : get_n_cols(B)
   );
   gemm(A, B, out, TransA, TransB, alpha, 0);
-  gemm(A, B, out, TransA, TransB, alpha, 0);
   return out;
 }
 
@@ -600,7 +601,6 @@ define_method(
     TransA ? get_n_cols(A) : get_n_rows(A),
     TransB ? get_n_rows(B) : get_n_cols(B)
   );
-  gemm(A, B, out, TransA, TransB, alpha, 0);
   gemm(A, B, out, TransA, TransB, alpha, 0);
   return out;
 }
