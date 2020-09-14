@@ -249,8 +249,8 @@ define_method(
     double alpha, double beta
   )
 ) {
-  Dense SxVxB = gemm(A.S, gemm(A.V, B));
-  gemm(A.U, SxVxB, C, alpha, beta);
+  Dense SxVxB = gemm(A.S, gemm(A.V, B, alpha));
+  gemm(A.U, SxVxB, C, 1, beta);
 }
 
 define_method(
@@ -260,8 +260,8 @@ define_method(
     double alpha, double beta
   )
 ) {
-  Dense AxUxS = gemm(gemm(A, B.U), B.S);
-  gemm(AxUxS, B.V, C, alpha, beta);
+  Dense AxUxS = gemm(gemm(A, B.U, alpha), B.S);
+  gemm(AxUxS, B.V, C, 1, beta);
 }
 
 define_method(
@@ -367,7 +367,7 @@ define_method(
   )
 ) {
   assert(A.rank == B.rank);
-  Dense SxVxUxS = gemm(gemm(A.S, gemm(A.V, B.U)), B.S, alpha);
+  Dense SxVxUxS = gemm(gemm(A.S, gemm(A.V, B.U, alpha)), B.S);
   LowRank AxB(A.U, SxVxUxS, B.V);
   C.S *= beta;
   C += AxB;
@@ -412,7 +412,7 @@ define_method(
     double alpha, double beta
   )
 ) {
-  Dense SxVxUxS = gemm(gemm(A.S, gemm(A.V, B.U)), B.S, alpha);
+  Dense SxVxUxS = gemm(gemm(A.S, gemm(A.V, B.U, alpha)), B.S);
   LowRank AxB(A.U, SxVxUxS, B.V);
   C *= beta;
   C += AxB;
