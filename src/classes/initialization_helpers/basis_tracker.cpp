@@ -14,6 +14,7 @@ using yorel::yomm2::virtual_;
 #include <cassert>
 #include <cstdint>
 #include <functional>
+#include <utility>
 
 
 namespace std
