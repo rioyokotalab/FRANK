@@ -54,7 +54,7 @@ class DataHandler {
     if (starpu_is_initialized()) {
       starpu_matrix_data_register(
         &handle, STARPU_MAIN_RAM,
-        (uintptr_t)&data[0], n_cols, n_rows, n_cols, sizeof(data[0])
+        (uintptr_t)&data[0], n_cols, n_cols, n_rows, sizeof(data[0])
       );
     }
   }
