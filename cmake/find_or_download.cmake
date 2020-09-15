@@ -1,5 +1,5 @@
 function(find_or_download PACKAGE)
-    set(options EXACT INSTALL_WITH_HiCMA)
+    set(options EXACT PKG_CONFIG INSTALL_WITH_HiCMA)
     set(oneValueArgs VERSION)
     cmake_parse_arguments(ARGS
         "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN}
@@ -69,11 +69,20 @@ function(find_or_download PACKAGE)
             )
         endif()
 
-        # Update search path and use regular find_package to add dependency
-        find_package(${PACKAGE}
-            ${ARGS_VERSION} ${EXACT} REQUIRED NO_DEFAULT_PATH
-            PATHS "${DEPENDENCY_INSTALL_PREFIX}"
-        )
+        if(${ARGS_PKG_CONFIG})
+            find_package(PkgConfig REQUIRED)
+            set(ENV{PKG_CONFIG_PATH} ${DEPENDENCY_INSTALL_PREFIX}/lib/pkgconfig)
+            message("$ENV{PKG_CONFIG_PATH}")
+            pkg_check_modules(${PACKAGE}
+                REQUIRED IMPORTED_TARGET ${PACKAGE}-${ARGS_VERSION}
+            )
+        else()
+            # Update search path and use regular find_package to add dependency
+            find_package(${PACKAGE}
+                ${ARGS_VERSION} ${EXACT} REQUIRED NO_DEFAULT_PATH
+                PATHS "${DEPENDENCY_INSTALL_PREFIX}"
+            )
+        endif()
         message(STATUS "Using ${PACKAGE} from ${DEPENDENCY_INSTALL_PREFIX}.")
     endif()
 endfunction()

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.6)
 
 project(HICMA
     LANGUAGES CXX
@@ -48,6 +48,9 @@ find_package(OpenMP)
 if(OpenMP_FOUND)
     list(APPEND HICMA_OPTIONS ${OpenMP_CXX_FLAGS})
 endif()
+
+find_or_download(starpu PKG_CONFIG VERSION 1.3)
+list(APPEND HICMA_DEPENDENCIES PkgConfig::starpu)
 
 # Boost
 find_or_download(Boost VERSION 1.65.0 EXACT)
