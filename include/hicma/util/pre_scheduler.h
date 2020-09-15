@@ -79,14 +79,6 @@ class Assign_task : public Task {
   void execute() override;
 };
 
-class Resize_task : public Task {
- public:
-  int64_t n_rows, n_cols;
-  Resize_task(const Dense& A, Dense& resized, int64_t n_rows, int64_t n_cols);
-
-  void execute() override;
-};
-
 class Addition_task : public Task {
  public:
   Addition_task(Dense& A, const Dense& B);
@@ -191,10 +183,6 @@ void add_copy_task(
 );
 
 void add_assign_task(Dense& A, double value);
-
-void add_resize_task(
-  const Dense& A, Dense& resized, int64_t n_rows, int64_t n_cols
-);
 
 void add_addition_task(Dense& A, const Dense& B);
 

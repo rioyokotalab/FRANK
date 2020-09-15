@@ -92,18 +92,6 @@ void Assign_task::execute() {
   }
 }
 
-Resize_task::Resize_task(
-  const Dense& A, Dense& resized, int64_t n_rows, int64_t n_cols
-) : Task({A}, {resized}), n_rows(n_rows), n_cols(n_cols) {}
-
-void Resize_task::execute() {
-  for (int64_t i=0; i<n_rows; i++) {
-    for (int64_t j=0; j<n_cols; j++) {
-      modified[0](i, j) = constant[0](i, j);
-    }
-  }
-}
-
 Addition_task::Addition_task(Dense& A, const Dense& B)
 : Task({B}, {A}) {}
 
@@ -385,12 +373,6 @@ void add_copy_task(
 
 void add_assign_task(Dense& A, double value) {
   add_task(std::make_shared<Assign_task>(A, value));
-}
-
-void add_resize_task(
-  const Dense& A, Dense& resized, int64_t n_rows, int64_t n_cols
-) {
-  add_task(std::make_shared<Resize_task>(A, resized, n_rows, n_cols));
 }
 
 void add_addition_task(Dense& A, const Dense& B) {
