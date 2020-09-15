@@ -13,6 +13,7 @@
 #include "hicma/util/print.h"
 #include "hicma/util/timer.h"
 
+#include "starpu.h"
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
 
@@ -26,11 +27,50 @@ using yorel::yomm2::virtual_;
 namespace hicma
 {
 
+class DataHandler {
+ private:
+  std::vector<double> data;
+  starpu_data_handle_t handle;
+ public:
+  // Special member functions
+  DataHandler() = default;
+
+  virtual ~DataHandler() {
+    if (starpu_is_initialized()) {
+      starpu_data_unregister_submit(handle);
+    }
+  }
+
+  DataHandler(const DataHandler& A) = delete;
+
+  DataHandler& operator=(const DataHandler& A) = delete;
+
+  DataHandler(DataHandler&& A) = delete;
+
+  DataHandler& operator=(DataHandler&& A) = delete;
+
+  DataHandler(int64_t n_rows, int64_t n_cols, double val=0)
+  : data(n_rows*n_cols, val) {
+    if (starpu_is_initialized()) {
+      starpu_matrix_data_register(
+        &handle, STARPU_MAIN_RAM,
+        (uintptr_t)&data[0], n_cols, n_rows, n_cols, sizeof(data[0])
+      );
+    }
+  }
+
+  double& operator[](int64_t i) { return data[i]; }
+
+  const double& operator[](int64_t i) const { return data[i]; }
+
+  uint64_t size() const { return data.size(); }
+};
+
 Dense::Dense(const Dense& A)
 : Matrix(A), dim{A.dim[0], A.dim[1]}, stride(A.dim[1]), rel_start{0, 0}
 {
   timing::start("Dense cctor");
-  (*data).resize(dim[0]*dim[1], 0);
+  data = std::make_shared<DataHandler>(dim[0], dim[1], 0);
   data_ptr = &(*data)[0];
   fill_dense_from(A, *this);
   timing::stop("Dense cctor");
@@ -41,7 +81,7 @@ Dense& Dense::operator=(const Dense& A) {
   Matrix::operator=(A);
   dim = A.dim;
   stride = A.stride;
-  (*data).resize(dim[0]*dim[1], 0);
+  data = std::make_shared<DataHandler>(dim[0], dim[1], 0);
   rel_start = {0, 0};
   data_ptr = &(*data)[0];
   fill_dense_from(A, *this);
@@ -51,7 +91,7 @@ Dense& Dense::operator=(const Dense& A) {
 
 Dense::Dense(const Matrix& A)
 : Matrix(A), dim{get_n_rows(A), get_n_cols(A)}, stride(dim[1]),
-  data(std::make_shared<std::vector<double>>(dim[0]*dim[1], 0)),
+  data(std::make_shared<DataHandler>(dim[0], dim[1], 0)),
   rel_start{0, 0}, data_ptr(&(*data)[0])
 {
   fill_dense_from(A, *this);
@@ -132,7 +172,7 @@ define_method(Dense&&, move_from_dense, (Matrix& A)) {
 Dense::Dense(int64_t n_rows, int64_t n_cols)
 : dim{n_rows, n_cols}, stride(dim[1]) {
   timing::start("Dense alloc");
-  (*data).resize(dim[0]*dim[1], 0);
+  data = std::make_shared<DataHandler>(dim[0], dim[1], 0);
   rel_start = {0, 0};
   data_ptr = &(*data)[0];
   timing::stop("Dense alloc");
@@ -158,7 +198,7 @@ Dense::Dense(
 ) : dim{n_rows, n_cols} {
   if (copy) {
     stride = dim[1];
-    data = std::make_shared<std::vector<double>>(n_rows*n_cols);
+    data = std::make_shared<DataHandler>(n_rows, n_cols);
     rel_start = {0, 0};
     data_ptr = &(*data)[0];
     add_copy_task(A, *this, row_start, col_start);

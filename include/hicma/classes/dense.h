@@ -13,13 +13,14 @@
 namespace hicma
 {
 
+class DataHandler;
+
 class Dense : public Matrix {
  public:
   std::array<int64_t, 2> dim = {0, 0};
   int64_t stride = 0;
  private:
-  std::shared_ptr<std::vector<double>> data
-    = std::make_shared<std::vector<double>>();
+  std::shared_ptr<DataHandler> data;
   std::array<int64_t, 2> rel_start = {0, 0};
  protected:
   double* data_ptr = nullptr;
