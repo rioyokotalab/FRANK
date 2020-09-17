@@ -423,24 +423,25 @@ void GETRF_task::execute() {
 
 QR_task::QR_task(Dense& A, Dense& Q, Dense& R) : Task({}, {A, Q, R}) {}
 
-void QR_task::execute() {
-  Dense& A = modified[0];
-  Dense& Q = modified[1];
-  Dense& R = modified[2];
-  int64_t k = std::min(A.dim[0], A.dim[1]);
+void qr_cpu_func(
+  double* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
+  double* Q, uint64_t Q_dim0, uint64_t Q_dim1, uint64_t Q_stride,
+  double* R, uint64_t, uint64_t, uint64_t R_stride
+) {
+  uint64_t k = std::min(A_dim0, A_dim1);
   std::vector<double> tau(k);
-  for (int64_t i=0; i<std::min(Q.dim[0], Q.dim[1]); i++) Q(i, i) = 1.0;
-  LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, A.dim[0], A.dim[1], &A, A.stride, &tau[0]);
+  for (uint64_t i=0; i<std::min(Q_dim0, Q_dim1); i++) Q[i*Q_stride+i] = 1.0;
+  LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, A_dim0, A_dim1, A, A_stride, &tau[0]);
   // TODO Consider using A for the dorgqr and moving to Q afterwards! That
   // also simplify this loop.
-  for(int64_t i=0; i<Q.dim[0]; i++) {
-    for(int64_t j=i; j<Q.dim[1]; j++) {
-      R(i, j) = A(i, j);
+  for(uint64_t i=0; i<Q_dim0; i++) {
+    for(uint64_t j=i; j<Q_dim1; j++) {
+      R[i*R_stride+j] = A[i*A_stride+j];
     }
   }
-  for(int64_t i=0; i<Q.dim[0]; i++) {
-    for(int64_t j=0; j<std::min(i, Q.dim[1]); j++) {
-      Q(i, j) = A(i, j);
+  for(uint64_t i=0; i<Q_dim0; i++) {
+    for(uint64_t j=0; j<std::min(i, Q_dim1); j++) {
+      Q[i*Q_stride+j] = A[i*A_stride+j];
     }
   }
   // TODO Consider making special function for this. Performance heavy
@@ -449,8 +450,61 @@ void QR_task::execute() {
   // reflector form, uses dormqr instead of gemm and can be transformed to
   // Dense via dorgqr!
   LAPACKE_dorgqr(
-    LAPACK_ROW_MAJOR, Q.dim[0], Q.dim[1], k, &Q, Q.stride, &tau[0]
+    LAPACK_ROW_MAJOR, Q_dim0, Q_dim1, k, Q, Q_stride, &tau[0]
   );
+}
+
+void qr_cpu_starpu_interface(void* buffers[], void*) {
+  double* A = (double*)STARPU_MATRIX_GET_PTR(buffers[0]);
+  uint64_t A_dim0 = STARPU_MATRIX_GET_NY(buffers[0]);
+  uint64_t A_dim1 = STARPU_MATRIX_GET_NX(buffers[0]);
+  uint64_t A_stride = STARPU_MATRIX_GET_LD(buffers[0]);
+  double* Q = (double*)STARPU_MATRIX_GET_PTR(buffers[1]);
+  uint64_t Q_dim0 = STARPU_MATRIX_GET_NY(buffers[1]);
+  uint64_t Q_dim1 = STARPU_MATRIX_GET_NX(buffers[1]);
+  uint64_t Q_stride = STARPU_MATRIX_GET_LD(buffers[1]);
+  double* R = (double*)STARPU_MATRIX_GET_PTR(buffers[2]);
+  uint64_t R_dim0 = STARPU_MATRIX_GET_NY(buffers[2]);
+  uint64_t R_dim1 = STARPU_MATRIX_GET_NX(buffers[2]);
+  uint64_t R_stride = STARPU_MATRIX_GET_LD(buffers[2]);
+  qr_cpu_func(
+    A, A_dim0, A_dim1, A_stride,
+    Q, Q_dim0, Q_dim1, Q_stride,
+    R, R_dim0, R_dim1, R_stride
+  );
+}
+
+struct starpu_codelet qr_cl;
+
+void make_qr_codelet() {
+  starpu_codelet_init(&qr_cl);
+  qr_cl.cpu_funcs[0] = qr_cpu_starpu_interface;
+  qr_cl.cpu_funcs_name[0] = "qr_cpu_func";
+  qr_cl.name = "QR";
+  qr_cl.nbuffers = 3;
+  qr_cl.modes[0] = STARPU_RW;
+  qr_cl.modes[1] = STARPU_W;
+  qr_cl.modes[2] = STARPU_W;
+}
+
+void QR_task::execute() {
+  Dense& A = modified[0];
+  Dense& Q = modified[1];
+  Dense& R = modified[2];
+  if (schedule_started) {
+    struct starpu_task* task = starpu_task_create();
+    task->cl = &qr_cl;
+    task->handles[0] = starpu_data_lookup(&A);
+    task->handles[1] = starpu_data_lookup(&Q);
+    task->handles[2] = starpu_data_lookup(&R);
+    STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "qr_task");
+  } else {
+    qr_cpu_func(
+      &A, A.dim[0], A.dim[1], A.stride,
+      &Q, Q.dim[0], Q.dim[1], Q.stride,
+      &R, R.dim[0], R.dim[1], R.stride
+    );
+  }
 }
 
 RQ_task::RQ_task(Dense& A, Dense& R, Dense& Q) : Task({}, {A, R, Q}) {}
@@ -772,6 +826,7 @@ void initialize_starpu() {
   make_subtraction_codelet();
   make_multiplication_codelet();
   make_getrf_codelet();
+  make_qr_codelet();
 }
 
 void clear_task_trackers() {
