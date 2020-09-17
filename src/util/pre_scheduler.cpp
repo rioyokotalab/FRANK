@@ -168,14 +168,50 @@ void Copy_task::execute() {
 }
 
 Assign_task::Assign_task(Dense& A, double value)
-: Task({}, {A}), value(value) {}
+: Task({}, {A}), args{value} {}
+
+void assign_cpu_func(
+  double* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
+  assign_args& args
+) {
+  for (uint64_t i=0; i<A_dim0; i++) {
+    for (uint64_t j=0; j<A_dim1; j++) {
+      A[i*A_stride+j] = args.value;
+    }
+  }
+}
+
+void assign_cpu_starpu_interface(void* buffers[], void* cl_args) {
+  double* A = (double *)STARPU_MATRIX_GET_PTR(buffers[0]);
+  uint64_t A_dim0 = STARPU_MATRIX_GET_NY(buffers[0]);
+  uint64_t A_dim1 = STARPU_MATRIX_GET_NX(buffers[0]);
+  uint64_t A_stride = STARPU_MATRIX_GET_LD(buffers[0]);
+  struct assign_args* args = (assign_args*)cl_args;
+  assign_cpu_func(A, A_dim0, A_dim1, A_stride, *args);
+}
+
+struct starpu_codelet assign_cl;
+
+void make_assign_codelet() {
+  starpu_codelet_init(&assign_cl);
+  assign_cl.cpu_funcs[0] = assign_cpu_starpu_interface;
+  assign_cl.cpu_funcs_name[0] = "assign_cpu_func";
+  assign_cl.name = "Assign";
+  assign_cl.nbuffers = 1;
+  assign_cl.modes[0] = STARPU_W;
+}
 
 void Assign_task::execute() {
   Dense& A = modified[0];
-  for (int64_t i=0; i<A.dim[0]; i++) {
-    for (int64_t j=0; j<A.dim[1]; j++) {
-      A(i, j) = value;
-    }
+  if (schedule_started) {
+    struct starpu_task* task = starpu_task_create();
+    task->cl = &assign_cl;
+    task->cl_arg = &args;
+    task->cl_arg_size = sizeof(args);
+    task->handles[0] = starpu_data_lookup(&A);
+    STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "assign_task");
+  } else {
+    assign_cpu_func(&A, A.dim[0], A.dim[1], A.stride, args);
   }
 }
 
@@ -622,6 +658,7 @@ void initialize_starpu() {
   STARPU_CHECK_RETURN_VALUE(starpu_init(NULL), "init");
   make_kernel_codelet();
   make_copy_codelet();
+  make_assign_codelet();
   make_addition_codelet();
 }
 

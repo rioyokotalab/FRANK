@@ -78,9 +78,11 @@ class Copy_task : public Task {
   void execute() override;
 };
 
+struct assign_args { double value; };
+
 class Assign_task : public Task {
  public:
-  double value;
+  assign_args args;
   Assign_task(Dense& A, double value);
 
   void execute() override;
