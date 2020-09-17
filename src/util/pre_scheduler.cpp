@@ -316,14 +316,50 @@ void Subtraction_task::execute() {
 }
 
 Multiplication_task::Multiplication_task(Dense& A, double factor)
-: Task({}, {A}), factor(factor) {}
+: Task({}, {A}), args{factor} {}
+
+void multiplication_cpu_func(
+  double* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
+  multiplication_args& args
+) {
+  for (uint64_t i=0; i<A_dim0; i++) {
+    for (uint64_t j=0; j<A_dim1; j++) {
+      A[i*A_stride+j] *= args.factor;
+    }
+  }
+}
+
+void multiplication_cpu_starpu_interface(void* buffers[], void* cl_args) {
+  double* A = (double *)STARPU_MATRIX_GET_PTR(buffers[0]);
+  uint64_t A_dim0 = STARPU_MATRIX_GET_NY(buffers[0]);
+  uint64_t A_dim1 = STARPU_MATRIX_GET_NX(buffers[0]);
+  uint64_t A_stride = STARPU_MATRIX_GET_LD(buffers[0]);
+  struct multiplication_args* args = (multiplication_args*)cl_args;
+  multiplication_cpu_func(A, A_dim0, A_dim1, A_stride, *args);
+}
+
+struct starpu_codelet multiplication_cl;
+
+void make_multiplication_codelet() {
+  starpu_codelet_init(&multiplication_cl);
+  multiplication_cl.cpu_funcs[0] = multiplication_cpu_starpu_interface;
+  multiplication_cl.cpu_funcs_name[0] = "multiplication_cpu_func";
+  multiplication_cl.name = "Multiplication";
+  multiplication_cl.nbuffers = 1;
+  multiplication_cl.modes[0] = STARPU_W;
+}
 
 void Multiplication_task::execute() {
   Dense& A = modified[0];
-  for (int64_t i=0; i<A.dim[0]; i++) {
-    for (int64_t j=0; j<A.dim[1]; j++) {
-      A(i, j) *= factor;
-    }
+  if (schedule_started) {
+    struct starpu_task* task = starpu_task_create();
+    task->cl = &multiplication_cl;
+    task->cl_arg = &args;
+    task->cl_arg_size = sizeof(args);
+    task->handles[0] = starpu_data_lookup(&A);
+    STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "multiplication_task");
+  } else {
+    multiplication_cpu_func(&A, A.dim[0], A.dim[1], A.stride, args);
   }
 }
 
@@ -698,6 +734,7 @@ void initialize_starpu() {
   make_assign_codelet();
   make_addition_codelet();
   make_subtraction_codelet();
+  make_multiplication_codelet();
 }
 
 void clear_task_trackers() {

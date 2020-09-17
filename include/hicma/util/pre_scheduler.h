@@ -102,9 +102,11 @@ class Subtraction_task : public Task {
   void execute() override;
 };
 
+struct multiplication_args { double factor; };
+
 class Multiplication_task : public Task {
  public:
-  double factor;
+  multiplication_args args;
   Multiplication_task(Dense& A, double factor);
 
   void execute() override;
