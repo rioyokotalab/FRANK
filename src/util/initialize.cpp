@@ -1,7 +1,10 @@
 #include "hicma/util/initialize.h"
 
 #include "hicma/classes.h"
+#include "hicma/classes/initialization_helpers/basis_tracker.h"
+#include "hicma/util/pre_scheduler.h"
 
+#include "starpu.h"
 #include "yorel/yomm2/cute.hpp"
 
 
@@ -15,8 +18,18 @@ register_class(LowRank, Matrix)
 register_class(Hierarchical, Matrix)
 register_class(NestedBasis, Matrix)
 
+void shutdown() {
+  clear_trackers();
+  clear_task_trackers();
+  starpu_shutdown();
+}
+
 class Runtime {
  public:
+  Runtime() { initialize_starpu(); }
+
+  ~Runtime() { shutdown(); }
+
   void start() {
   // Update virtual tables for open multi methods
     yorel::yomm2::update_methods();

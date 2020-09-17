@@ -573,11 +573,21 @@ void start_schedule() {
 }
 
 void execute_schedule() {
-  schedule_started = false;
-  while (!tasks.empty()) {
-    tasks.front()->execute();
-    tasks.pop_front();
+  for (decltype(tasks)::iterator it=tasks.begin(); it!=tasks.end(); ++it) {
+    (**it).execute();
   }
+  starpu_task_wait_for_all();
+  tasks.clear();
+  schedule_started = false;
+}
+
+void initialize_starpu() {
+  STARPU_CHECK_RETURN_VALUE(starpu_init(NULL), "init");
+}
+
+void clear_task_trackers() {
+  recompress_col_tracker.clear();
+  recompress_row_tracker.clear();
 }
 
 } // namespace hicma
