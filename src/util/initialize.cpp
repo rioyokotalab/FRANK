@@ -15,9 +15,16 @@ register_class(LowRank, Matrix)
 register_class(Hierarchical, Matrix)
 register_class(NestedBasis, Matrix)
 
-void initialize() {
+class Runtime {
+ public:
+  void start() {
   // Update virtual tables for open multi methods
-  yorel::yomm2::update_methods();
-}
+    yorel::yomm2::update_methods();
+  }
+};
+
+static Runtime runtime;
+
+void initialize() { runtime.start(); }
 
 } // namespace hicma
