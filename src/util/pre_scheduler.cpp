@@ -246,7 +246,7 @@ void make_addition_codelet() {
   addition_cl.cpu_funcs[0] = addition_cpu_starpu_interface;
   addition_cl.cpu_funcs_name[0] = "addition_cpu_func";
   addition_cl.name = "Addition";
-  addition_cl.nbuffers = 1;
+  addition_cl.nbuffers = 2;
   addition_cl.modes[0] = STARPU_RW;
   addition_cl.modes[1] = STARPU_R;
 }
