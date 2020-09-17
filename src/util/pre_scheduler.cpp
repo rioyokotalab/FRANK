@@ -365,22 +365,59 @@ void Multiplication_task::execute() {
 
 GETRF_task::GETRF_task(Dense& AU, Dense& L) : Task({}, {AU, L}) {}
 
+void getrf_cpu_func(
+  double* AU, uint64_t AU_dim0, uint64_t AU_dim1, uint64_t AU_stride,
+  double* L, uint64_t L_stride
+) {
+  std::vector<int> ipiv(std::min(AU_dim0, AU_dim1));
+  LAPACKE_dgetrf(
+    LAPACK_ROW_MAJOR,
+    AU_dim0, AU_dim1,
+    AU, AU_stride,
+    &ipiv[0]
+  );
+  for (uint64_t i=0; i<AU_dim0; i++) {
+    for (uint64_t j=0; j<i; j++) {
+      L[i*L_stride+j] = AU[i*AU_stride+j];
+      AU[i*AU_stride+j] = 0;
+    }
+    L[i*L_stride+i] = 1;
+  }
+}
+
+void getrf_cpu_starpu_interface(void* buffers[], void*) {
+  double* AU = (double*)STARPU_MATRIX_GET_PTR(buffers[0]);
+  uint64_t AU_dim0 = STARPU_MATRIX_GET_NY(buffers[0]);
+  uint64_t AU_dim1 = STARPU_MATRIX_GET_NX(buffers[0]);
+  uint64_t AU_stride = STARPU_MATRIX_GET_LD(buffers[0]);
+  double* L = (double*)STARPU_MATRIX_GET_PTR(buffers[1]);
+  uint64_t L_stride = STARPU_MATRIX_GET_LD(buffers[1]);
+  getrf_cpu_func(AU, AU_dim0, AU_dim1, AU_stride, L, L_stride);
+}
+
+struct starpu_codelet getrf_cl;
+
+void make_getrf_codelet() {
+  starpu_codelet_init(&getrf_cl);
+  getrf_cl.cpu_funcs[0] = getrf_cpu_starpu_interface;
+  getrf_cl.cpu_funcs_name[0] = "getrf_cpu_func";
+  getrf_cl.name = "GETRF";
+  getrf_cl.nbuffers = 2;
+  getrf_cl.modes[0] = STARPU_RW;
+  getrf_cl.modes[1] = STARPU_W;
+}
+
 void GETRF_task::execute() {
   Dense& AU = modified[0];
   Dense& L = modified[1];
-  std::vector<int> ipiv(std::min(AU.dim[0], AU.dim[1]));
-  LAPACKE_dgetrf(
-    LAPACK_ROW_MAJOR,
-    AU.dim[0], AU.dim[1],
-    &AU, AU.stride,
-    &ipiv[0]
-  );
-  for (int64_t i=0; i<AU.dim[0]; i++) {
-    for (int64_t j=0; j<i; j++) {
-      L(i, j) = AU(i, j);
-      AU(i, j) = 0;
-    }
-    L(i, i) = 1;
+  if (schedule_started) {
+    struct starpu_task* task = starpu_task_create();
+    task->cl = &getrf_cl;
+    task->handles[0] = starpu_data_lookup(&AU);
+    task->handles[1] = starpu_data_lookup(&L);
+    STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "getrf_task");
+  } else {
+    getrf_cpu_func(&AU, AU.dim[0], AU.dim[1], AU.stride, &L, L.stride);
   }
 }
 
@@ -611,7 +648,6 @@ void add_multiplication_task(Dense& A, double factor) {
 }
 
 void add_getrf_task(Dense& AU, Dense& L) {
-  // TODO Check for duplicate/shared tasks
   add_task(std::make_shared<GETRF_task>(AU, L));
 }
 
@@ -735,6 +771,7 @@ void initialize_starpu() {
   make_addition_codelet();
   make_subtraction_codelet();
   make_multiplication_codelet();
+  make_getrf_codelet();
 }
 
 void clear_task_trackers() {
