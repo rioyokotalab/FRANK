@@ -591,57 +591,157 @@ void RQ_task::execute() {
 }
 
 TRSM_task::TRSM_task(const Dense& A, Dense& B, int uplo, int lr)
-: Task({A}, {B}), uplo(uplo), lr(lr) {}
+: Task({A}, {B}), args{uplo, lr} {}
+
+void trsm_cpu_func(
+  const double* A, uint64_t A_stride,
+  double* B, uint64_t B_dim0, uint64_t B_dim1, uint64_t B_stride,
+  trsm_args& args
+) {
+  cblas_dtrsm(
+    CblasRowMajor,
+    args.lr==TRSM_LEFT?CblasLeft:CblasRight,
+    args.uplo==TRSM_UPPER?CblasUpper:CblasLower,
+    CblasNoTrans,
+    args.uplo==TRSM_UPPER?CblasNonUnit:CblasUnit,
+    B_dim0, B_dim1,
+    1,
+    A, A_stride,
+    B, B_stride
+  );
+}
+
+void trsm_cpu_starpu_interface(void* buffers[], void* cl_args) {
+  const double* A = (double *)STARPU_MATRIX_GET_PTR(buffers[0]);
+  uint64_t A_stride = STARPU_MATRIX_GET_LD(buffers[0]);
+  double* B = (double *)STARPU_MATRIX_GET_PTR(buffers[1]);
+  uint64_t B_dim0 = STARPU_MATRIX_GET_NY(buffers[1]);
+  uint64_t B_dim1 = STARPU_MATRIX_GET_NX(buffers[1]);
+  uint64_t B_stride = STARPU_MATRIX_GET_LD(buffers[1]);
+  struct trsm_args* args = (trsm_args*)cl_args;
+  trsm_cpu_func(A, A_stride, B, B_dim0, B_dim1, B_stride, *args);
+}
+
+struct starpu_codelet trsm_cl;
+
+void make_trsm_codelet() {
+  starpu_codelet_init(&trsm_cl);
+  trsm_cl.cpu_funcs[0] = trsm_cpu_starpu_interface;
+  trsm_cl.cpu_funcs_name[0] = "trsm_cpu_func";
+  trsm_cl.name = "TRSM";
+  trsm_cl.nbuffers = 2;
+  trsm_cl.modes[0] = STARPU_R;
+  trsm_cl.modes[1] = STARPU_RW;
+}
 
 void TRSM_task::execute() {
   const Dense& A = constant[0];
   Dense& B = modified[0];
-  cblas_dtrsm(
-    CblasRowMajor,
-    lr==TRSM_LEFT?CblasLeft:CblasRight,
-    uplo==TRSM_UPPER?CblasUpper:CblasLower,
-    CblasNoTrans,
-    uplo==TRSM_UPPER?CblasNonUnit:CblasUnit,
-    B.dim[0], B.dim[1],
-    1,
-    &A, A.stride,
-    &B, B.stride
-  );
+  if (schedule_started) {
+    struct starpu_task* task = starpu_task_create();
+    task->cl = &trsm_cl;
+    task->cl_arg = &args;
+    task->cl_arg_size = sizeof(args);
+    task->handles[0] = starpu_data_lookup(&A);
+    task->handles[1] = starpu_data_lookup(&B);
+    STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "trsm_task");
+  } else {
+    trsm_cpu_func(&A, A.stride, &B, B.dim[0], B.dim[1], B.stride, args);
+  }
 }
 
 GEMM_task::GEMM_task(
   const Dense& A, const Dense& B, Dense& C,
   bool TransA, bool TransB, double alpha, double beta
-) : Task({A, B}, {C}),
-    TransA(TransA), TransB(TransB), alpha(alpha), beta(beta) {}
+) : Task({A, B}, {C}), args{TransA, TransB, alpha, beta} {}
+
+void gemm_cpu_func(
+  const double* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
+  const double* B, uint64_t, uint64_t B_dim1, uint64_t B_stride,
+  double* C, uint64_t C_dim0, uint64_t C_dim1, uint64_t C_stride,
+  gemm_args& args
+) {
+  if (B_dim1 == 1) {
+    cblas_dgemv(
+      CblasRowMajor,
+      CblasNoTrans,
+      A_dim0, A_dim1,
+      args.alpha,
+      A, A_stride,
+      B, B_stride,
+      args.beta,
+      C, C_stride
+    );
+  }
+  else {
+    int64_t k = args.TransA ? A_dim0 : A_dim1;
+    cblas_dgemm(
+      CblasRowMajor,
+      args.TransA?CblasTrans:CblasNoTrans, args.TransB?CblasTrans:CblasNoTrans,
+      C_dim0, C_dim1, k,
+      args.alpha,
+      A, A_stride,
+      B, B_stride,
+      args.beta,
+      C, C_stride
+    );
+  }
+}
+
+void gemm_cpu_starpu_interface(void* buffers[], void* cl_args) {
+  const double* A = (double *)STARPU_MATRIX_GET_PTR(buffers[0]);
+  uint64_t A_dim0 = STARPU_MATRIX_GET_NY(buffers[0]);
+  uint64_t A_dim1 = STARPU_MATRIX_GET_NX(buffers[0]);
+  uint64_t A_stride = STARPU_MATRIX_GET_LD(buffers[0]);
+  const double* B = (double *)STARPU_MATRIX_GET_PTR(buffers[1]);
+  uint64_t B_dim0 = STARPU_MATRIX_GET_NY(buffers[1]);
+  uint64_t B_dim1 = STARPU_MATRIX_GET_NX(buffers[1]);
+  uint64_t B_stride = STARPU_MATRIX_GET_LD(buffers[1]);
+  double* C = (double *)STARPU_MATRIX_GET_PTR(buffers[2]);
+  uint64_t C_dim0 = STARPU_MATRIX_GET_NY(buffers[2]);
+  uint64_t C_dim1 = STARPU_MATRIX_GET_NX(buffers[2]);
+  uint64_t C_stride = STARPU_MATRIX_GET_LD(buffers[2]);
+  struct gemm_args* args = (gemm_args*)cl_args;
+  gemm_cpu_func(
+    A, A_dim0, A_dim1, A_stride,
+    B, B_dim0, B_dim1, B_stride,
+    C, C_dim0, C_dim1, C_stride,
+    *args
+  );
+}
+
+struct starpu_codelet gemm_cl;
+
+void make_gemm_codelet() {
+  starpu_codelet_init(&gemm_cl);
+  gemm_cl.cpu_funcs[0] = gemm_cpu_starpu_interface;
+  gemm_cl.cpu_funcs_name[0] = "gemm_cpu_func";
+  gemm_cl.name = "GEMM";
+  gemm_cl.nbuffers = 3;
+  gemm_cl.modes[0] = STARPU_R;
+  gemm_cl.modes[1] = STARPU_R;
+  gemm_cl.modes[2] = STARPU_RW;
+}
 
 void GEMM_task::execute() {
   const Dense& A = constant[0];
   const Dense& B = constant[1];
   Dense& C = modified[0];
-  if (B.dim[1] == 1) {
-    cblas_dgemv(
-      CblasRowMajor,
-      CblasNoTrans,
-      A.dim[0], A.dim[1],
-      alpha,
-      &A, A.stride,
-      &B, B.stride,
-      beta,
-      &C, B.stride
-    );
-  }
-  else {
-    int64_t k = TransA ? A.dim[0] : A.dim[1];
-    cblas_dgemm(
-      CblasRowMajor,
-      TransA?CblasTrans:CblasNoTrans, TransB?CblasTrans:CblasNoTrans,
-      C.dim[0], C.dim[1], k,
-      alpha,
-      &A, A.stride,
-      &B, B.stride,
-      beta,
-      &C, C.stride
+  if (schedule_started) {
+    struct starpu_task* task = starpu_task_create();
+    task->cl = &gemm_cl;
+    task->cl_arg = &args;
+    task->cl_arg_size = sizeof(args);
+    task->handles[0] = starpu_data_lookup(&A);
+    task->handles[1] = starpu_data_lookup(&B);
+    task->handles[2] = starpu_data_lookup(&C);
+    STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "gemm_task");
+  } else {
+    gemm_cpu_func(
+      &A, A.dim[0], A.dim[1], A.stride,
+      &B, B.dim[0], B.dim[1], B.stride,
+      &C, C.dim[0], C.dim[1], C.stride,
+      args
     );
   }
 }
@@ -791,9 +891,9 @@ void add_gemm_task(
     && schedule_started
     && !C.is_submatrix()
     && gemm_tracker.has_key(A) && gemm_tracker[A].has_key(B)
-    && gemm_tracker[A][B]->alpha == alpha
-    && gemm_tracker[A][B]->TransA == TransA
-    && gemm_tracker[A][B]->TransB == TransB
+    && gemm_tracker[A][B]->args.alpha == alpha
+    && gemm_tracker[A][B]->args.TransA == TransA
+    && gemm_tracker[A][B]->args.TransB == TransB
   ) {
     C = gemm_tracker[A][B]->modified[0].share();
     return;
@@ -882,6 +982,8 @@ void initialize_starpu() {
   make_getrf_codelet();
   make_qr_codelet();
   make_rq_codelet();
+  make_trsm_codelet();
+  make_gemm_codelet();
 }
 
 void clear_task_trackers() {

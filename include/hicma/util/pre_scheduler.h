@@ -133,18 +133,21 @@ class RQ_task : public Task {
   void execute() override;
 };
 
+struct trsm_args { int uplo; int lr; };
+
 class TRSM_task : public Task {
  public:
-  int uplo, lr;
+  trsm_args args;
   TRSM_task(const Dense& A, Dense& B, int uplo, int lr);
 
   void execute() override;
 };
 
+struct gemm_args { bool TransA; bool TransB; double alpha; double beta; };
+
 class GEMM_task : public Task {
  public:
-  bool TransA, TransB;
-  double alpha, beta;
+  gemm_args args;
   GEMM_task(
     const Dense& A, const Dense& B, Dense& C,
     bool TransA, bool TransB, double alpha, double beta
