@@ -749,25 +749,88 @@ void GEMM_task::execute() {
 SVD_task::SVD_task(Dense& A, Dense& U, Dense& S, Dense& V)
 : Task({}, {A, U, S, V}) {}
 
+void svd_cpu_func(
+  double* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
+  double* U, uint64_t, uint64_t, uint64_t U_stride,
+  double* S, uint64_t S_dim0, uint64_t, uint64_t S_stride,
+  double* V, uint64_t, uint64_t, uint64_t V_stride
+) {
+  std::vector<double> Sdiag(S_dim0, 0);
+  std::vector<double> work(S_dim0-1, 0);
+  LAPACKE_dgesvd(
+    LAPACK_ROW_MAJOR,
+    'S', 'S',
+    A_dim0, A_dim1,
+    A, A_stride,
+    &Sdiag[0],
+    U, U_stride,
+    V, V_stride,
+    &work[0]
+  );
+  for(uint64_t i=0; i<S_dim0; i++){
+    S[i*S_stride+i] = Sdiag[i];
+  }
+}
+
+void svd_cpu_starpu_interface(void* buffers[], void*) {
+  double* A = (double *)STARPU_MATRIX_GET_PTR(buffers[0]);
+  uint64_t A_dim0 = STARPU_MATRIX_GET_NY(buffers[0]);
+  uint64_t A_dim1 = STARPU_MATRIX_GET_NX(buffers[0]);
+  uint64_t A_stride = STARPU_MATRIX_GET_LD(buffers[0]);
+  double* U = (double *)STARPU_MATRIX_GET_PTR(buffers[1]);
+  uint64_t U_dim0 = STARPU_MATRIX_GET_NY(buffers[1]);
+  uint64_t U_dim1 = STARPU_MATRIX_GET_NX(buffers[1]);
+  uint64_t U_stride = STARPU_MATRIX_GET_LD(buffers[1]);
+  double* S = (double *)STARPU_MATRIX_GET_PTR(buffers[2]);
+  uint64_t S_dim0 = STARPU_MATRIX_GET_NY(buffers[2]);
+  uint64_t S_dim1 = STARPU_MATRIX_GET_NX(buffers[2]);
+  uint64_t S_stride = STARPU_MATRIX_GET_LD(buffers[2]);
+  double* V = (double *)STARPU_MATRIX_GET_PTR(buffers[3]);
+  uint64_t V_dim0 = STARPU_MATRIX_GET_NY(buffers[3]);
+  uint64_t V_dim1 = STARPU_MATRIX_GET_NX(buffers[3]);
+  uint64_t V_stride = STARPU_MATRIX_GET_LD(buffers[3]);
+  svd_cpu_func(
+    A, A_dim0, A_dim1, A_stride,
+    U, U_dim0, U_dim1, U_stride,
+    S, S_dim0, S_dim1, S_stride,
+    V, V_dim0, V_dim1, V_stride
+  );
+}
+
+struct starpu_codelet svd_cl;
+
+void make_svd_codelet() {
+  starpu_codelet_init(&svd_cl);
+  svd_cl.cpu_funcs[0] = svd_cpu_starpu_interface;
+  svd_cl.cpu_funcs_name[0] = "svd_cpu_func";
+  svd_cl.name = "SVD";
+  svd_cl.nbuffers = 4;
+  svd_cl.modes[0] = STARPU_RW;
+  svd_cl.modes[1] = STARPU_W;
+  svd_cl.modes[2] = STARPU_W;
+  svd_cl.modes[3] = STARPU_W;
+}
+
 void SVD_task::execute() {
   Dense& A = modified[0];
   Dense& U = modified[1];
   Dense& S = modified[2];
   Dense& V = modified[3];
-  Dense Sdiag(S.dim[0], 1);
-  Dense work(S.dim[0]-1, 1);
-  LAPACKE_dgesvd(
-    LAPACK_ROW_MAJOR,
-    'S', 'S',
-    A.dim[0], A.dim[1],
-    &A, A.stride,
-    &Sdiag,
-    &U, U.stride,
-    &V, V.stride,
-    &work
-  );
-  for(int64_t i=0; i<S.dim[0]; i++){
-    S(i, i) = Sdiag[i];
+  if (schedule_started) {
+    struct starpu_task* task = starpu_task_create();
+    task->cl = &svd_cl;
+    task->handles[0] = starpu_data_lookup(&A);
+    task->handles[1] = starpu_data_lookup(&U);
+    task->handles[2] = starpu_data_lookup(&S);
+    task->handles[3] = starpu_data_lookup(&V);
+    STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "svd_task");
+  } else {
+    svd_cpu_func(
+      &A, A.dim[0], A.dim[1], A.stride,
+      &U, U.dim[0], U.dim[1], U.stride,
+      &S, S.dim[0], S.dim[1], S.stride,
+      &V, V.dim[0], V.dim[1], V.stride
+    );
   }
 }
 
@@ -984,6 +1047,7 @@ void initialize_starpu() {
   make_rq_codelet();
   make_trsm_codelet();
   make_gemm_codelet();
+  make_svd_codelet();
 }
 
 void clear_task_trackers() {
