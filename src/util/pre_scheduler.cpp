@@ -106,23 +106,64 @@ void Kernel_task::execute() {
 
 Copy_task::Copy_task(
   const Dense& A, Dense& B, int64_t row_start, int64_t col_start
-) : Task({A}, {B}), row_start(row_start), col_start(col_start) {}
+) : Task({A}, {B}), args{row_start, col_start} {}
+
+void copy_cpu_func(
+  const double* A, uint64_t A_stride,
+  double* B, uint64_t B_dim0, uint64_t B_dim1, uint64_t B_stride,
+  copy_args& args
+) {
+  if (args.row_start == 0 && args.col_start == 0) {
+    for (uint64_t i=0; i<B_dim0; i++) {
+      for (uint64_t j=0; j<B_dim1; j++) {
+        B[i*B_stride+j] = A[i*A_stride+j];
+      }
+    }
+  } else {
+    for (uint64_t i=0; i<B_dim0; i++) {
+      for (uint64_t j=0; j<B_dim1; j++) {
+        B[i*B_stride+j] = A[(args.row_start+i)*A_stride+args.col_start+j];
+      }
+    }
+  }
+}
+
+void copy_cpu_starpu_interface(void* buffers[], void* cl_args) {
+  const double* A = (double *)STARPU_MATRIX_GET_PTR(buffers[0]);
+  uint64_t A_stride = STARPU_MATRIX_GET_LD(buffers[0]);
+  double* B = (double *)STARPU_MATRIX_GET_PTR(buffers[1]);
+  uint64_t B_dim0 = STARPU_MATRIX_GET_NY(buffers[1]);
+  uint64_t B_dim1 = STARPU_MATRIX_GET_NX(buffers[1]);
+  uint64_t B_stride = STARPU_MATRIX_GET_LD(buffers[1]);
+  struct copy_args* args = (copy_args*)cl_args;
+  copy_cpu_func(A, A_stride, B, B_dim0, B_dim1, B_stride, *args);
+}
+
+struct starpu_codelet copy_cl;
+
+void make_copy_codelet() {
+  starpu_codelet_init(&copy_cl);
+  copy_cl.cpu_funcs[0] = copy_cpu_starpu_interface;
+  copy_cl.cpu_funcs_name[0] = "copy_cpu_func";
+  copy_cl.name = "Copy";
+  copy_cl.nbuffers = 2;
+  copy_cl.modes[0] = STARPU_R;
+  copy_cl.modes[1] = STARPU_W;
+}
 
 void Copy_task::execute() {
   const Dense& A = constant[0];
   Dense& B = modified[0];
-  if (row_start == 0 && col_start == 0) {
-    for (int64_t i=0; i<B.dim[0]; i++) {
-      for (int64_t j=0; j<B.dim[1]; j++) {
-        B(i, j) = A(i, j);
-      }
-    }
+  if (schedule_started) {
+    struct starpu_task* task = starpu_task_create();
+    task->cl = &copy_cl;
+    task->cl_arg = &args;
+    task->cl_arg_size = sizeof(args);
+    task->handles[0] = starpu_data_lookup(&A);
+    task->handles[1] = starpu_data_lookup(&B);
+    STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "copy_task");
   } else {
-    for (int64_t i=0; i<B.dim[0]; i++) {
-      for (int64_t j=0; j<B.dim[1]; j++) {
-        B(i, j) = A(row_start+i, col_start+j);
-      }
-    }
+    copy_cpu_func(&A, A.stride, &B, B.dim[0], B.dim[1], B.stride, args);
   }
 }
 

@@ -68,9 +68,11 @@ class Kernel_task : public Task {
   void execute() override;
 };
 
+struct copy_args { int64_t row_start, col_start; };
+
 class Copy_task : public Task {
  public:
-  int64_t row_start, col_start;
+  copy_args args;
   Copy_task(const Dense& A, Dense& B, int64_t row_start=0, int64_t col_start=0);
 
   void execute() override;
