@@ -268,13 +268,50 @@ void Addition_task::execute() {
 Subtraction_task::Subtraction_task(Dense& A, const Dense& B)
 : Task({B}, {A}) {}
 
+void subtraction_cpu_func(
+  double* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
+  const double* B, uint64_t B_stride
+) {
+  for (uint64_t i=0; i<A_dim0; i++) {
+    for (uint64_t j=0; j<A_dim1; j++) {
+      A[i*A_stride+j] -= B[i*B_stride+j];
+    }
+  }
+}
+
+void subtraction_cpu_starpu_interface(void* buffers[], void*) {
+  double* A = (double *)STARPU_MATRIX_GET_PTR(buffers[0]);
+  uint64_t A_dim0 = STARPU_MATRIX_GET_NY(buffers[0]);
+  uint64_t A_dim1 = STARPU_MATRIX_GET_NX(buffers[0]);
+  uint64_t A_stride = STARPU_MATRIX_GET_LD(buffers[0]);
+  const double* B = (double *)STARPU_MATRIX_GET_PTR(buffers[1]);
+  uint64_t B_stride = STARPU_MATRIX_GET_LD(buffers[1]);
+  subtraction_cpu_func(A, A_dim0, A_dim1, A_stride, B, B_stride);
+}
+
+struct starpu_codelet subtraction_cl;
+
+void make_subtraction_codelet() {
+  starpu_codelet_init(&subtraction_cl);
+  subtraction_cl.cpu_funcs[0] = subtraction_cpu_starpu_interface;
+  subtraction_cl.cpu_funcs_name[0] = "subtraction_cpu_func";
+  subtraction_cl.name = "Subtraction";
+  subtraction_cl.nbuffers = 1;
+  subtraction_cl.modes[0] = STARPU_RW;
+  subtraction_cl.modes[1] = STARPU_R;
+}
+
 void Subtraction_task::execute() {
   Dense& A = modified[0];
   const Dense& B = constant[0];
-  for (int64_t i=0; i<A.dim[0]; i++) {
-    for (int64_t j=0; j<A.dim[1]; j++) {
-      A(i, j) -= B(i, j);
-    }
+  if (schedule_started) {
+    struct starpu_task* task = starpu_task_create();
+    task->cl = &subtraction_cl;
+    task->handles[0] = starpu_data_lookup(&A);
+    task->handles[1] = starpu_data_lookup(&B);
+    STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "subtraction_task");
+  } else {
+    subtraction_cpu_func(&A, A.dim[0], A.dim[1], A.stride, &B, B.stride);
   }
 }
 
@@ -660,6 +697,7 @@ void initialize_starpu() {
   make_copy_codelet();
   make_assign_codelet();
   make_addition_codelet();
+  make_subtraction_codelet();
 }
 
 void clear_task_trackers() {
