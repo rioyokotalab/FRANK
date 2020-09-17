@@ -42,18 +42,23 @@ class Task {
   );
 };
 
-class Kernel_task : public Task {
- public:
+struct kernel_args {
   void (*kernel)(
-    Dense& A,
+    double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
     const std::vector<std::vector<double>>& x,
     int64_t row_start, int64_t col_start
   ) = nullptr;
   const std::vector<std::vector<double>>& x;
   int64_t row_start, col_start;
+};
+
+class Kernel_task : public Task {
+ public:
+  kernel_args args;
   Kernel_task(
     void (*kernel)(
-      Dense& A, const std::vector<std::vector<double>>& x,
+      double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+      const std::vector<std::vector<double>>& x,
       int64_t row_start, int64_t col_start
     ),
     Dense& A, const std::vector<std::vector<double>>& x,
@@ -171,7 +176,8 @@ class Recompress_row_task : public Task {
 
 void add_kernel_task(
   void (*kernel)(
-    Dense& A, const std::vector<std::vector<double>>& x,
+    double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+    const std::vector<std::vector<double>>& x,
     int64_t row_start, int64_t col_start
   ),
   Dense& A, const std::vector<std::vector<double>>& x,

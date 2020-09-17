@@ -1,6 +1,5 @@
 #include "hicma/functions.h"
 
-#include "hicma/classes/dense.h"
 #include "hicma/operations/misc.h"
 
 #include <algorithm>
@@ -14,29 +13,32 @@ namespace hicma
 {
 
 void zeros(
-  Dense& A, [[maybe_unused]] const std::vector<std::vector<double>>& x,
+  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  [[maybe_unused]] const std::vector<std::vector<double>>& x,
   [[maybe_unused]] int64_t row_start, [[maybe_unused]] int64_t col_start
 ) {
-  for (int64_t i=0; i<A.dim[0]; i++) {
-    for (int64_t j=0; j<A.dim[1]; j++) {
-      A(i, j) = 0;
+  for (uint64_t i=0; i<A_rows; i++) {
+    for (uint64_t j=0; j<A_cols; j++) {
+      A[i*A_stride+j] = 0;
     }
   }
 }
 
 void identity(
-  Dense& A, [[maybe_unused]] const std::vector<std::vector<double>>& x,
+  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  [[maybe_unused]] const std::vector<std::vector<double>>& x,
   int64_t row_start, int64_t col_start
 ) {
-  for (int64_t i=0; i<A.dim[0]; i++) {
-    for (int64_t j=0; j<A.dim[1]; j++) {
-      A(i, j) = row_start+i == col_start+j ? 1 : 0;
+  for (uint64_t i=0; i<A_rows; i++) {
+    for (uint64_t j=0; j<A_cols; j++) {
+      A[i*A_stride+j] = row_start+i == col_start+j ? 1 : 0;
     }
   }
 }
 
 void random_normal(
-  Dense& A, [[maybe_unused]] const std::vector<std::vector<double>>& x,
+  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  [[maybe_unused]] const std::vector<std::vector<double>>& x,
   [[maybe_unused]] int64_t row_start, [[maybe_unused]] int64_t col_start
 ) {
   std::random_device rd;
@@ -44,15 +46,16 @@ void random_normal(
   // TODO Remove random seed when experiments end
   gen.seed(0);
   std::normal_distribution<double> dist(0.0, 1.0);
-  for (int64_t i=0; i<A.dim[0]; i++) {
-    for (int64_t j=0; j<A.dim[1]; j++) {
-      A(i, j) = dist(gen);
+  for (uint64_t i=0; i<A_rows; i++) {
+    for (uint64_t j=0; j<A_cols; j++) {
+      A[i*A_stride+j] = dist(gen);
     }
   }
 }
 
 void random_uniform(
-  Dense& A, [[maybe_unused]] const std::vector<std::vector<double>>& x,
+  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  [[maybe_unused]] const std::vector<std::vector<double>>& x,
   [[maybe_unused]] int64_t row_start, [[maybe_unused]] int64_t col_start
 ) {
   std::random_device rd;
@@ -60,45 +63,46 @@ void random_uniform(
   // TODO Remove random seed when experiments end
   gen.seed(0);
   std::uniform_real_distribution<double> dist(0.0, 1.0);
-  for (int64_t i=0; i<A.dim[0]; i++) {
-    for (int64_t j=0; j<A.dim[1]; j++) {
-      A(i, j) = dist(gen);
+  for (uint64_t i=0; i<A_rows; i++) {
+    for (uint64_t j=0; j<A_cols; j++) {
+      A[i*A_stride+j] = dist(gen);
     }
   }
 }
 
 void arange(
-  Dense& A, [[maybe_unused]] const std::vector<std::vector<double>>& x,
+  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  [[maybe_unused]] const std::vector<std::vector<double>>& x,
   [[maybe_unused]] int64_t row_start, [[maybe_unused]] int64_t col_start
 ) {
-  for (int64_t i=0; i<A.dim[0]; i++) {
-    for (int64_t j=0; j<A.dim[1]; j++) {
-      A(i, j) = (double)(i*A.dim[1]+j);
+  for (uint64_t i=0; i<A_rows; i++) {
+    for (uint64_t j=0; j<A_cols; j++) {
+      A[i*A_stride+j] = (double)(i*A_cols+j);
     }
   }
 }
 
 void cauchy2d(
-  Dense& A,
+  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
   const std::vector<std::vector<double>>& x,
   int64_t row_start, int64_t col_start
 ) {
-  for (int64_t i=0; i<A.dim[0]; i++) {
-    for (int64_t j=0; j<A.dim[1]; j++) {
+  for (uint64_t i=0; i<A_rows; i++) {
+    for (uint64_t j=0; j<A_cols; j++) {
       // double sgn = (arc4random() % 2 ? 1.0 : -1.0);
       double rij = (x[0][i+row_start] - x[1][j+col_start]) + 1e-2;
-      A(i, j) = 1.0 / rij;
+      A[i*A_stride+j] = 1.0 / rij;
     }
   }
 }
 
 void laplacend(
-  Dense& A,
+  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
   const std::vector<std::vector<double>>& x,
   int64_t row_start, int64_t col_start
 ) {
-  for (int64_t i=0; i<A.dim[0]; i++) {
-    for (int64_t j=0; j<A.dim[1]; j++) {
+  for (uint64_t i=0; i<A_rows; i++) {
+    for (uint64_t j=0; j<A_cols; j++) {
       double rij = 0.0;
       for(size_t k=0; k<x.size(); k++) {
         rij += (
@@ -106,18 +110,18 @@ void laplacend(
           * (x[k][i+row_start] - x[k][j+col_start])
         );
       }
-      A(i, j) = 1 / (std::sqrt(rij) + 1e-3);
+      A[i*A_stride+j] = 1 / (std::sqrt(rij) + 1e-3);
     }
   }
 }
 
 void helmholtznd(
-  Dense& A,
+  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
   const std::vector<std::vector<double>>& x,
   int64_t row_start, int64_t col_start
 ) {
-  for (int64_t i=0; i<A.dim[0]; i++) {
-    for (int64_t j=0; j<A.dim[1]; j++) {
+  for (uint64_t i=0; i<A_rows; i++) {
+    for (uint64_t j=0; j<A_cols; j++) {
       double rij = 0.0;
       for(size_t k=0; k<x.size(); k++) {
         rij += (
@@ -125,7 +129,7 @@ void helmholtznd(
           * (x[k][i+row_start] - x[k][j+col_start])
         );
       }
-      A(i, j) = std::exp(-1.0 * rij) / (std::sqrt(rij) + 1e-3);
+      A[i*A_stride+j] = std::exp(-1.0 * rij) / (std::sqrt(rij) + 1e-3);
     }
   }
 }

@@ -8,52 +8,50 @@
 namespace hicma
 {
 
-class Dense;
-
 void zeros(
-  Dense& A,
+  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
   const std::vector<std::vector<double>>& x,
   int64_t row_start, int64_t col_start
 );
 
 void identity(
-  Dense& A,
+  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
   const std::vector<std::vector<double>>& x,
   int64_t row_start, int64_t col_start
 );
 
 void random_normal(
-  Dense& A,
+  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
   const std::vector<std::vector<double>>& x,
   int64_t row_start, int64_t col_start
 );
 
 void random_uniform(
-  Dense& A,
+  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
   const std::vector<std::vector<double>>& x,
   int64_t row_start, int64_t col_start
 );
 
 void arange(
-  Dense& A,
+  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
   const std::vector<std::vector<double>>& x,
   int64_t row_start, int64_t col_start
 );
 
 void cauchy2d(
-  Dense& A,
+  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
   const std::vector<std::vector<double>>& x,
   int64_t row_start, int64_t col_start
 );
 
 void laplacend(
-  Dense& A,
+  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
   const std::vector<std::vector<double>>& x,
   int64_t row_start, int64_t col_start
 );
 
 void helmholtznd(
-  Dense& A,
+  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
   const std::vector<std::vector<double>>& x,
   int64_t row_start, int64_t col_start
 );

@@ -13,7 +13,7 @@ namespace hicma
 
 MatrixInitializerKernel::MatrixInitializerKernel(
   void (*kernel)(
-    Dense& A,
+    double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
     const std::vector<std::vector<double>>& x,
     int64_t row_start, int64_t col_start
   ),

@@ -52,7 +52,8 @@ class Dense : public Matrix {
   // initialization with functions like identity and random_uniform easier.
   Dense(
     void (*func)(
-      Dense& A, const std::vector<std::vector<double>>& x,
+      double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+      const std::vector<std::vector<double>>& x,
       int64_t row_start, int64_t col_start
     ),
     const std::vector<std::vector<double>>& x,

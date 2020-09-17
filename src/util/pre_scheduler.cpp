@@ -9,6 +9,7 @@
 #include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
 
+#include "starpu.h"
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
 
@@ -44,18 +45,63 @@ Task::Task(
   }
 }
 
+std::list<std::shared_ptr<Task>> tasks;
+bool schedule_started = false;
+
+void add_task(std::shared_ptr<Task> task) {
+  if (schedule_started) {
+    tasks.push_back(task);
+  } else {
+    task->execute();
+  }
+}
+
 Kernel_task::Kernel_task(
   void (*kernel)(
-    Dense& A, const std::vector<std::vector<double>>& x,
+    double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+    const std::vector<std::vector<double>>& x,
     int64_t row_start, int64_t col_start
   ),
   Dense& A, const std::vector<std::vector<double>>& x,
   int64_t row_start, int64_t col_start
-) : Task({}, {A}),
-    kernel(kernel), x(x), row_start(row_start), col_start(col_start) {}
+) : Task({}, {A}), args{kernel, x, row_start, col_start} {}
+
+void kernel_cpu_starpu_interface(void* buffers[], void* cl_args) {
+  double* A = (double *)STARPU_MATRIX_GET_PTR(buffers[0]);
+  uint64_t A_dim0 = STARPU_MATRIX_GET_NY(buffers[0]);
+  uint64_t A_dim1 = STARPU_MATRIX_GET_NX(buffers[0]);
+  uint64_t A_stride = STARPU_MATRIX_GET_LD(buffers[0]);
+  struct kernel_args* args = (kernel_args*)cl_args;
+  args->kernel(
+    A, A_dim0, A_dim1, A_stride, args->x, args->row_start, args->col_start
+  );
+}
+
+struct starpu_codelet kernel_cl;
+
+void make_kernel_codelet() {
+  starpu_codelet_init(&kernel_cl);
+  kernel_cl.cpu_funcs[0] = kernel_cpu_starpu_interface;
+  kernel_cl.cpu_funcs_name[0] = "kernel_cpu_func";
+  kernel_cl.name = "Kernel";
+  kernel_cl.nbuffers = 1;
+  kernel_cl.modes[0] = STARPU_W;
+}
 
 void Kernel_task::execute() {
-  kernel(modified[0], x, row_start, col_start);
+  Dense& A = modified[0];
+  if (schedule_started) {
+    struct starpu_task* task = starpu_task_create();
+    task->cl = &kernel_cl;
+    task->cl_arg = &args;
+    task->cl_arg_size = sizeof(args);
+    task->handles[0] = starpu_data_lookup(&A);
+    STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "kernel_task");
+  } else {
+    args.kernel(
+      &A, A.dim[0], A.dim[1], A.stride, args.x, args.row_start, args.col_start
+  );
+  }
 }
 
 Copy_task::Copy_task(
@@ -343,20 +389,10 @@ void Recompress_row_task::execute() {
   }
 }
 
-std::list<std::shared_ptr<Task>> tasks;
-bool schedule_started = false;
-
-void add_task(std::shared_ptr<Task> task) {
-  if (schedule_started) {
-    tasks.push_back(task);
-  } else {
-    task->execute();
-  }
-}
-
 void add_kernel_task(
   void (*kernel)(
-    Dense& A, const std::vector<std::vector<double>>& x,
+    double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+    const std::vector<std::vector<double>>& x,
     int64_t row_start, int64_t col_start
   ),
   Dense& A, const std::vector<std::vector<double>>& x,

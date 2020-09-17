@@ -19,7 +19,7 @@ class IndexRange;
 class MatrixInitializerKernel : public MatrixInitializer {
  private:
   void (*kernel)(
-    Dense& A,
+    double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
     const std::vector<std::vector<double>>& x,
     int64_t row_start, int64_t col_start
   ) = nullptr;
@@ -42,7 +42,8 @@ class MatrixInitializerKernel : public MatrixInitializer {
   // Additional constructors
   MatrixInitializerKernel(
     void (*kernel)(
-      Dense& A, const std::vector<std::vector<double>>& x,
+      double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+      const std::vector<std::vector<double>>& x,
       int64_t row_start, int64_t col_start
     ),
     const std::vector<std::vector<double>>& x,

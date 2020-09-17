@@ -10,7 +10,6 @@
 #include "hicma/classes/initialization_helpers/matrix_initializer.h"
 #include "hicma/classes/initialization_helpers/matrix_initializer_block.h"
 #include "hicma/classes/initialization_helpers/matrix_initializer_kernel.h"
-#include "hicma/functions.h"
 #include "hicma/gpu_batch/batch.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/LAPACK.h"
@@ -147,7 +146,7 @@ Hierarchical::Hierarchical(
 
 Hierarchical::Hierarchical(
   void (*func)(
-    Dense& A,
+    double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
     const std::vector<std::vector<double>>& x,
     int64_t row_start, int64_t col_start
   ),
@@ -160,7 +159,7 @@ Hierarchical::Hierarchical(
   int basis_type,
   int64_t row_start, int64_t col_start
 ) {
-  start_schedule();
+  // start_schedule();
   MatrixInitializerKernel initer(func, x, admis, rank, basis_type);
   ClusterTree cluster_tree(
     {row_start, n_rows}, {col_start, n_cols}, n_row_blocks, n_col_blocks, nleaf
@@ -173,7 +172,7 @@ Hierarchical::Hierarchical(
   }
   // TODO The following two should be combined into a single call
   *this = Hierarchical(cluster_tree, initer);
-  execute_schedule();
+  // execute_schedule();
 }
 
 Hierarchical::Hierarchical(
