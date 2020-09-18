@@ -41,13 +41,6 @@ class LowRank : public Matrix {
   LowRank(const Dense& A, int64_t k);
 
   LowRank(const Matrix& U, const Dense& S, const Matrix& V, bool copy_S=false);
-
-  // Utility methods
-  void mergeU(const LowRank& A, const LowRank& B);
-
-  void mergeS(const LowRank& A, const LowRank& B);
-
-  void mergeV(const LowRank& A, const LowRank& B);
 };
 
 } // namespace hicma

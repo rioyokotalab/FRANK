@@ -162,46 +162,50 @@ define_method(Matrix&, addition_omm, (LowRank& A, const LowRank& B)) {
     if (A.rank+B.rank >= std::min(A.dim[0], A.dim[1])) {
       A = LowRank(Dense(A) + Dense(B), A.rank);
     } else {
-      LowRank C(A.dim[0], A.dim[1], A.rank+B.rank);
-      C.mergeU(A, B);
-      C.mergeS(A, B);
-      C.mergeV(A, B);
+      Hierarchical U_merge(1, 2);
+      U_merge[0] = std::move(A.U);
+      U_merge[1] = share_basis(B.U);
+      Hierarchical V_merge(2, 1);
+      V_merge[0] = std::move(A.V);
+      V_merge[1] = share_basis(B.V);
+      Hierarchical S_merge(2, 2);
+      S_merge(0, 0) = std::move(A.S);
+      S_merge(0, 1) = Dense(A.rank, B.rank);
+      S_merge(1, 0) = Dense(B.rank, A.rank);
+      S_merge(1, 1) = B.S.share();
       A.rank += B.rank;
-      A.U = std::move(C.U);
-      A.S = std::move(C.S);
-      A.V = std::move(C.V);
+      A.U = Dense(U_merge);
+      A.S = Dense(S_merge);
+      A.V = Dense(V_merge);
     }
   } else if (getCounter("LRA") == 1) {
     //Bebendorf HMatrix Book p16
     //Rounded Addition
-    LowRank C(A.dim[0], A.dim[1], A.rank+B.rank);
-    C.mergeU(A, B);
-    C.mergeS(A, B);
-    C.mergeV(A, B);
+    Dense U_combined = gemm(A.U, A.S);
+    gemm(B.U, B.S, U_combined, 1, 1);
 
-    // TODO No need to save C.U first, just do two opertions and save into a
-    // Hierarchical
-    C.U = gemm(C.U, C.S);
-
-    Dense Qu(get_n_rows(C.U), get_n_cols(C.U));
-    Dense Ru(get_n_cols(C.U), get_n_cols(C.U));
-    qr(C.U, Qu, Ru);
+    Dense Qu(U_combined.dim[0], U_combined.dim[1]);
+    Dense Ru(U_combined.dim[1], U_combined.dim[1]);
+    qr(U_combined, Qu, Ru);
 
     // TODO Probably better to do RQ decomposition (maybe make hierarchical
     // version and avoid copies?)
-    C.V = transpose(C.V);
-    Dense Qv(get_n_rows(C.V), get_n_cols(C.V));
-    Dense Rv(get_n_cols(C.V), get_n_cols(C.V));
-    qr(C.V, Qv, Rv);
+    Hierarchical V_mergeH(2, 1);
+    V_mergeH[0] = std::move(A.V);
+    V_mergeH[1] = share_basis(B.V);
+    Dense V_merge(V_mergeH);
+    Dense Rv(V_merge.dim[0], V_merge.dim[0]);
+    Dense Qv(V_merge.dim[0], V_merge.dim[1]);
+    rq(V_merge, Rv, Qv);
 
-    Dense RuRvT = gemm(Ru, Rv, 1, false, true);
+    Dense RuRv = gemm(Ru, Rv, 1);
 
     Dense RRU, RRS, RRV;
-    std::tie(RRU, RRS, RRV) = svd(RuRvT);
+    std::tie(RRU, RRS, RRV) = svd(RuRv);
 
     A.S = resize(RRS, A.rank, A.rank);
-    gemm(Qu, resize(RRU, RRU.dim[0], A.rank), A.U, 1, 0);
-    gemm(resize(RRV, A.rank, RRV.dim[1]), Qv, A.V, false, true, 1, 0);
+    A.U = gemm(Qu, resize(RRU, RRU.dim[0], A.rank));
+    A.V = gemm(resize(RRV, A.rank, RRV.dim[1]), Qv);
   } else {
     //Bebendorf HMatrix Book p17
     //Rounded addition by exploiting orthogonality

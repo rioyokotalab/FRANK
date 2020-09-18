@@ -14,9 +14,8 @@
 using yorel::yomm2::virtual_;
 
 #include <algorithm>
-#include <cassert>
+#include <cstdlib>
 #include <cstdint>
-#include <memory>
 #include <tuple>
 #include <utility>
 
@@ -56,42 +55,6 @@ LowRank::LowRank(const Dense& A, int64_t k)
   V = resize(V_full, k, dim[1]);
   S = resize(S, k, k);
   rank = k;
-}
-
-void LowRank::mergeU(const LowRank& A, const LowRank& B) {
-  assert(rank == A.rank + B.rank);
-  Hierarchical U_new(1, 2);
-  U_new[0] = share_basis(A.U);
-  U_new[1] = share_basis(B.U);
-  U = Dense(U_new);
-}
-
-void LowRank::mergeS(const LowRank& A, const LowRank& B) {
-  assert(rank == A.rank + B.rank);
-  for (int64_t i=0; i<A.rank; i++) {
-    for (int64_t j=0; j<A.rank; j++) {
-      S(i,j) = A.S(i,j);
-    }
-    for (int64_t j=0; j<B.rank; j++) {
-      S(i,j+A.rank) = 0;
-    }
-  }
-  for (int64_t i=0; i<B.rank; i++) {
-    for (int64_t j=0; j<A.rank; j++) {
-      S(i+A.rank,j) = 0;
-    }
-    for (int64_t j=0; j<B.rank; j++) {
-      S(i+A.rank,j+A.rank) = B.S(i,j);
-    }
-  }
-}
-
-void LowRank::mergeV(const LowRank& A, const LowRank& B) {
-  assert(rank == A.rank + B.rank);
-  Hierarchical V_new(2, 1);
-  V_new[0] = share_basis(A.V);
-  V_new[1] = share_basis(B.V);
-  V = Dense(V_new);
 }
 
 LowRank::LowRank(
