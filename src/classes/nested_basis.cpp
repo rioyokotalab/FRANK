@@ -19,24 +19,6 @@ using yorel::yomm2::virtual_;
 namespace hicma
 {
 
-NestedBasis::NestedBasis(const NestedBasis& A)
-: Matrix(A),
-  sub_bases(A.sub_bases),
-  transfer_matrix(
-    A.transfer_matrix,
-    A.transfer_matrix.dim[0], A.transfer_matrix.dim[1], 0, 0, true
-  ),
-  col_basis(A.col_basis)
-{}
-
-NestedBasis& NestedBasis::operator=(const NestedBasis& A) {
-  Matrix::operator=(A);
-  transfer_matrix = Dense(A.transfer_matrix);
-  sub_bases = A.sub_bases;
-  col_basis = A.col_basis;
-  return *this;
-}
-
 NestedBasis::NestedBasis(
   Dense&& A, std::vector<MatrixProxy>& sub_bases, bool is_col_basis
 ) : sub_bases(std::move(sub_bases)), transfer_matrix(std::move(A)),
@@ -59,9 +41,7 @@ int64_t NestedBasis::num_child_basis() const { return sub_bases.size(); }
 
 NestedBasis NestedBasis::share() const {
   NestedBasis new_shared;
-  new_shared.transfer_matrix = Dense(
-    transfer_matrix, transfer_matrix.dim[0], transfer_matrix.dim[1], 0, 0, false
-  );
+  new_shared.transfer_matrix = transfer_matrix.share();
   new_shared.sub_bases = std::vector<MatrixProxy>(num_child_basis());
   for (int64_t i=0; i<new_shared.num_child_basis(); ++i) {
     new_shared[i] = share_basis((*this)[i]);

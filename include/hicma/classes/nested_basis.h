@@ -29,9 +29,9 @@ class NestedBasis : public Matrix {
 
   virtual ~NestedBasis() = default;
 
-  NestedBasis(const NestedBasis& A);
+  NestedBasis(const NestedBasis& A) = default;
 
-  NestedBasis& operator=(const NestedBasis& A);
+  NestedBasis& operator=(const NestedBasis& A) = default;
 
   NestedBasis(NestedBasis&& A) = default;
 

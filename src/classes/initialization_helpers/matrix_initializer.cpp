@@ -85,11 +85,13 @@ Dense MatrixInitializer::make_block_row(const NestedTracker& tracker) const {
   }
   Dense block_row(tracker.index_range.n, n_cols);
   int64_t col_start = 0;
-  for (const IndexRange& range : tracker.associated_ranges) {
-    Dense part(block_row, tracker.index_range.n, range.n, 0, col_start);
-    fill_dense_representation(part, tracker.index_range, range);
-    col_start += range.n;
-  }
+  // TODO Currently not working!
+  abort();
+  // for (const IndexRange& range : tracker.associated_ranges) {
+  //   Dense part(block_row, tracker.index_range.n, range.n, 0, col_start);
+  //   fill_dense_representation(part, tracker.index_range, range);
+  //   col_start += range.n;
+  // }
   return block_row;
 }
 
@@ -150,11 +152,13 @@ Dense MatrixInitializer::make_block_col(const NestedTracker& tracker) const {
   }
   Dense block_col(n_rows, tracker.index_range.n);
   int64_t row_start = 0;
-  for (const IndexRange& range : tracker.associated_ranges) {
-    Dense part(block_col, range.n, tracker.index_range.n, row_start, 0);
-    fill_dense_representation(part, range, tracker.index_range);
-    row_start += range.n;
-  }
+  // TODO Currently not working!
+  abort();
+  // for (const IndexRange& range : tracker.associated_ranges) {
+  //   Dense part(block_col, range.n, tracker.index_range.n, row_start, 0);
+  //   fill_dense_representation(part, range, tracker.index_range);
+  //   row_start += range.n;
+  // }
   return block_col;
 }
 

@@ -190,27 +190,6 @@ Dense::Dense(
   add_kernel_task(func, *this, x, row_start, col_start);
 }
 
-Dense::Dense(
-  const Dense& A,
-  int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start,
-  bool copy
-) : dim{n_rows, n_cols} {
-  if (copy) {
-    stride = dim[1];
-    data = std::make_shared<DataHandler>(n_rows, n_cols);
-    rel_start = {0, 0};
-    data_ptr = &(*data)[0];
-    add_copy_task(A, *this, row_start, col_start);
-  } else {
-    assert(row_start+dim[0] <= A.dim[0]);
-    assert(col_start+dim[1] <= A.dim[1]);
-    stride = A.stride;
-    data = A.data;
-    rel_start = {A.rel_start[0]+row_start, A.rel_start[1]+col_start};
-    data_ptr = &(*data)[rel_start[0]*stride+rel_start[1]];
-  }
-}
-
 const Dense& Dense::operator=(const double a) {
   add_assign_task(*this, a);
   return *this;
@@ -254,7 +233,15 @@ double* Dense::operator&() { return data_ptr; }
 
 const double* Dense::operator&() const { return data_ptr; }
 
-Dense Dense::share() const { return Dense(*this, dim[0], dim[1], 0, 0, false); }
+Dense Dense::share() const {
+  Dense out;
+  out.dim = dim;
+  out.stride = stride;
+  out.data = data;
+  out.rel_start = rel_start;
+  out.data_ptr = data_ptr;
+  return out;
+}
 
 bool Dense::is_shared() const { return (data.use_count() > 1); }
 
@@ -279,14 +266,28 @@ std::vector<MatrixProxy> Dense::split(
   bool copy
 ) const {
   std::vector<MatrixProxy> out(row_ranges.size()*col_ranges.size());
-  for (uint64_t i=0; i<row_ranges.size(); ++i) {
-    for (uint64_t j=0; j<col_ranges.size(); ++j) {
-      out[i*col_ranges.size()+j] = Dense(
-        *this,
-        row_ranges[i].n, col_ranges[j].n,
-        row_ranges[i].start, col_ranges[j].start,
-        copy
-      );
+  if (copy) {
+    for (uint64_t i=0; i<row_ranges.size(); ++i) {
+      for (uint64_t j=0; j<col_ranges.size(); ++j) {
+        Dense child(row_ranges[i].n, col_ranges[j].n);
+        add_copy_task(*this, child, row_ranges[i].start, col_ranges[j].start);
+        out[i*col_ranges.size()+j] = std::move(child);
+      }
+    }
+  } else {
+    for (uint64_t i=0; i<row_ranges.size(); ++i) {
+      for (uint64_t j=0; j<col_ranges.size(); ++j) {
+        Dense child;
+        child.dim = {row_ranges[i].n, col_ranges[j].n};
+        child.stride = stride;
+        child.data = data;
+        child.rel_start[0] = rel_start[0] + row_ranges[i].start;
+        child.rel_start[1] = rel_start[1] + col_ranges[j].start;
+        child.data_ptr = &(*child.data)[
+          child.rel_start[0]*child.stride + child.rel_start[1]
+        ];
+        out[i*col_ranges.size()+j] = std::move(child);
+      }
     }
   }
   return out;
