@@ -735,6 +735,8 @@ void GEMM_task::execute() {
     task->handles[0] = starpu_data_lookup(&A);
     task->handles[1] = starpu_data_lookup(&B);
     task->handles[2] = starpu_data_lookup(&C);
+    // Effectively write only, this might be important for dependencies
+    if (args.beta == 0) STARPU_TASK_SET_MODE(task, STARPU_W, 2);
     STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "gemm_task");
   } else {
     gemm_cpu_func(
@@ -1026,6 +1028,7 @@ void start_schedule() {
 }
 
 void execute_schedule() {
+  // starpu_resume();
   for (decltype(tasks)::iterator it=tasks.begin(); it!=tasks.end(); ++it) {
     (**it).execute();
   }
@@ -1048,6 +1051,7 @@ void initialize_starpu() {
   make_trsm_codelet();
   make_gemm_codelet();
   make_svd_codelet();
+  // starpu_pause();
 }
 
 void clear_task_trackers() {
