@@ -112,11 +112,9 @@ void MatrixInitializer::construct_nested_col_basis(NestedTracker& tracker) {
     Dense compressed_block_row(tracker.children.size()*rank, block_row.dim[1]);
     // Created slices of appropriate size
     // NOTE Assumes same size of all subblocks
-    Hierarchical block_rowH(
-      block_row, tracker.children.size(), 1, false
-    );
-    Hierarchical compressed_block_rowH(
-      compressed_block_row, tracker.children.size(), 1, false
+    Hierarchical block_rowH = split(block_row, tracker.children.size(), 1);
+    Hierarchical compressed_block_rowH = split(
+      compressed_block_row, tracker.children.size(), 1
     );
     // Multiply transpose of subbases to the slices
     for (uint64_t i=0; i < tracker.children.size(); ++i) {
@@ -179,11 +177,9 @@ void MatrixInitializer::construct_nested_row_basis(NestedTracker& tracker) {
     Dense compressed_block_col(block_col.dim[0], tracker.children.size()*rank);
     // Created slices of appropriate size
     // NOTE Assumes same size of all subblocks
-    Hierarchical block_colH(
-      block_col, 1, tracker.children.size(), false
-    );
-    Hierarchical compressed_block_colH(
-      compressed_block_col, 1, tracker.children.size(), false
+    Hierarchical block_colH = split(block_col, 1, tracker.children.size());
+    Hierarchical compressed_block_colH = split(
+      compressed_block_col, 1, tracker.children.size()
     );
     // Multiply transpose of subbases to the slices
     for (uint64_t j=0; j < tracker.children.size(); ++j) {

@@ -1,6 +1,7 @@
 #ifndef hicma_operations_misc_h
 #define hicma_operations_misc_h
 
+#include "hicma/classes/hierarchical.h"
 #include "hicma/classes/matrix_proxy.h"
 
 #include <cstdint>
@@ -32,18 +33,11 @@ int64_t getMortonIndex(std::vector<int64_t> index, int64_t level);
 std::vector<double> equallySpacedVector(
   int64_t N, double minVal, double maxVal);
 
-MatrixProxy get_part(
-  const Matrix& A,
-  int64_t n_rows, int64_t n_cols,
-  int64_t row_start, int64_t col_start,
-  bool copy=false
+Hierarchical split(
+  const Matrix& A, int64_t n_row_blocks, int64_t n_col_blocks, bool copy=false
 );
 
-MatrixProxy get_part(
-  const Matrix& A,
-  const ClusterTree& node,
-  bool copy=false
-);
+Hierarchical split(const Matrix& A, const Hierarchical& like, bool copy=false);
 
 double norm(const Matrix&);
 

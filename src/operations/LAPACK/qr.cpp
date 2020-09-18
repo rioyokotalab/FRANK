@@ -143,7 +143,7 @@ define_method(
   MatrixProxy, split_by_column_omm,
   (const Dense& A, Hierarchical& storage, int64_t& currentRow)
 ) {
-  Hierarchical splitted(A, 1, storage.dim[1]);
+  Hierarchical splitted = split(A, 1, storage.dim[1], true);
   for(int64_t i=0; i<storage.dim[1]; i++)
     storage(currentRow, i) = splitted(0, i);
   currentRow++;
@@ -161,7 +161,7 @@ define_method(
   Dense RS = gemm(Ru, _A.S);
   Dense RSV = gemm(RS, _A.V);
   //Split R*S*V
-  Hierarchical splitted(RSV, 1, storage.dim[1]);
+  Hierarchical splitted = split(RSV, 1, storage.dim[1], true);
   for(int64_t i=0; i<storage.dim[1]; i++) {
     storage(currentRow, i) = splitted(0, i);
   }

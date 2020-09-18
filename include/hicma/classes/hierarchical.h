@@ -42,12 +42,6 @@ class Hierarchical : public Matrix {
   // Implicit conversion from temporaries, requires them to actually be H
   Hierarchical(MatrixProxy&&);
 
-  Hierarchical(
-    const Matrix& A, int64_t n_row_blocks, int64_t n_col_blocks, bool copy=true
-  );
-
-  Hierarchical(const Matrix& A, const Hierarchical& like, bool copy=true);
-
   // Additional constructors
   Hierarchical(int64_t n_row_blocks, int64_t n_col_blocks=1);
 

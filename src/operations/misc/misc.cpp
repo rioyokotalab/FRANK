@@ -2,9 +2,11 @@
 #include "hicma/extension_headers/classes.h"
 
 #include "hicma/classes/dense.h"
+#include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/nested_basis.h"
+#include "hicma/classes/initialization_helpers/index_range.h"
 #include "hicma/operations/LAPACK.h"
 #include "hicma/util/omm_error_handler.h"
 
@@ -67,65 +69,78 @@ std::vector<double> equallySpacedVector(int64_t N, double minVal, double maxVal)
   return res;
 }
 
-MatrixProxy get_part(
-  const Matrix& A,
-  int64_t n_rows, int64_t n_cols,
-  int64_t row_start, int64_t col_start,
-  bool copy
+Hierarchical split(
+  const Matrix& A, int64_t n_row_blocks, int64_t n_col_blocks, bool copy
 ) {
-  return get_part_omm(A, n_rows, n_cols, row_start, col_start, copy);
+  return split_omm(
+    A,
+    IndexRange(0, get_n_rows(A)).split(n_row_blocks),
+    IndexRange(0, get_n_cols(A)).split(n_col_blocks),
+    copy
+  );
 }
 
-MatrixProxy get_part(
-  const Matrix& A,
-  const ClusterTree& node,
-  bool copy
-) {
-  return get_part_omm(
-    A, node.rows.n, node.cols.n, node.rows.start, node.cols.start, copy);
+Hierarchical split(const Matrix& A, const Hierarchical& like, bool copy) {
+  assert(get_n_rows(A) == get_n_rows(like));
+  assert(get_n_cols(A) == get_n_cols(like));
+  return split_omm(
+    A,
+    IndexRange(0, get_n_rows(A)).split_like(like, ALONG_COL),
+    IndexRange(0, get_n_cols(A)).split_like(like, ALONG_ROW),
+    copy
+  );
 }
 
 define_method(
-  MatrixProxy, get_part_omm,
+  Hierarchical, split_omm,
   (
     const Dense& A,
-    int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start,
+    const std::vector<IndexRange>& row_splits,
+    const std::vector<IndexRange>& col_splits,
     bool copy
   )
 ) {
-  return Dense(A, n_rows, n_cols, row_start, col_start, copy);
+  Hierarchical out(row_splits.size(), col_splits.size());
+  std::vector<MatrixProxy> result = A.split(row_splits, col_splits, copy);
+  for (int64_t i=0; i<out.dim[0]; ++i) {
+    for (int64_t j=0; j<out.dim[1]; ++j) {
+      out(i, j) = std::move(result[i*out.dim[1]+j]);
+    }
+  }
+  return out;
 }
 
 define_method(
-  MatrixProxy, get_part_omm,
-  (
-    const NestedBasis& A,
-    int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start,
-    bool copy
-  )
-) {
-  return get_part(A.transfer_matrix, n_rows, n_cols, row_start, col_start, copy);
-}
-
-define_method(
-  MatrixProxy, get_part_omm,
+  Hierarchical, split_omm,
   (
     const LowRank& A,
-    int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start,
+    const std::vector<IndexRange>& row_splits,
+    const std::vector<IndexRange>& col_splits,
     bool copy
   )
 ) {
-  return LowRank(A, n_rows, n_cols, row_start, col_start, copy);
+  Hierarchical out(row_splits.size(), col_splits.size());
+  Hierarchical U_splits = split_omm(
+    A.U, row_splits, {IndexRange(0, get_n_cols(A.U))}, copy
+  );
+  Hierarchical V_splits = split_omm(
+    A.V, {IndexRange(0, get_n_rows(A.V))}, col_splits, copy
+  );
+  for (uint64_t i=0; i<row_splits.size(); ++i) {
+    for (uint64_t j=0; j<col_splits.size(); ++j) {
+      out(i, j) = LowRank(U_splits[i], A.S, V_splits[j]);
+    }
+  }
+  return out;
 }
 
 define_method(
-  MatrixProxy, get_part_omm,
+  Hierarchical, split_omm,
   (
     const Matrix& A,
-    [[maybe_unused]] int64_t n_rows, [[maybe_unused]] int64_t n_cols,
-    [[maybe_unused]] int64_t row_start, [[maybe_unused]] int64_t col_start,
-    [[maybe_unused]] bool copy
-  )
+    [[maybe_unused]] const std::vector<IndexRange>&,
+    [[maybe_unused]] const std::vector<IndexRange>&,
+    [[maybe_unused]] bool)
 ) {
   omm_error_handler("get_part", {A}, __FILE__, __LINE__);
   std::abort();

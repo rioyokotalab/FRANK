@@ -7,6 +7,7 @@
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/nested_basis.h"
 #include "hicma/classes/initialization_helpers/basis_tracker.h"
+#include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
 #include "hicma/util/pre_scheduler.h"
 #include "hicma/util/timer.h"
@@ -115,7 +116,9 @@ define_method(
   void, trsm_omm,
   (const Hierarchical& A, Dense& B, int uplo, int lr)
 ) {
-  Hierarchical BH(B, lr==TRSM_LEFT?A.dim[0]:1, lr==TRSM_LEFT?1:A.dim[1], false);
+  Hierarchical BH = split(
+    B, lr==TRSM_LEFT?A.dim[0]:1, lr==TRSM_LEFT?1:A.dim[1]
+  );
   trsm(A, BH, uplo, lr);
 }
 

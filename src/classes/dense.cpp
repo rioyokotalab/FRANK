@@ -6,6 +6,7 @@
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
 #include "hicma/classes/nested_basis.h"
+#include "hicma/classes/initialization_helpers/index_range.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
@@ -99,7 +100,7 @@ Dense::Dense(const Matrix& A)
 
 define_method(void, fill_dense_from, (const Hierarchical& A, Dense& B)) {
   timing::start("make_dense(H)");
-  Hierarchical BH(B, A, false);
+  Hierarchical BH = split(B, A);
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {
       fill_dense_from(A(i, j), BH(i, j));
@@ -122,17 +123,15 @@ define_method(void, fill_dense_from, (const NestedBasis& A, Dense& B)) {
     timing::stop("make_dense(NestedBasis)");
     return;
   }
-  Hierarchical AtransH(
+  Hierarchical AtransH = split(
     A.transfer_matrix,
     A.is_col_basis() ? A.num_child_basis() : 1,
-    A.is_row_basis() ? A.num_child_basis() : 1,
-    false
+    A.is_row_basis() ? A.num_child_basis() : 1
   );
-  Hierarchical BH(
+  Hierarchical BH = split(
     B,
     A.is_col_basis() ? A.num_child_basis() : 1,
-    A.is_row_basis() ? A.num_child_basis() : 1,
-    false
+    A.is_row_basis() ? A.num_child_basis() : 1
   );
   for (int64_t i=0; i<A.num_child_basis(); ++i) {
     if (A.is_col_basis()) {
@@ -272,6 +271,25 @@ bool Dense::is_submatrix() const {
   // TODO Think about int64_t!
   out &= (data->size() == uint64_t(dim[0] * dim[1]));
   return !out;
+}
+
+std::vector<MatrixProxy> Dense::split(
+  const std::vector<IndexRange>& row_ranges,
+  const std::vector<IndexRange>& col_ranges,
+  bool copy
+) const {
+  std::vector<MatrixProxy> out(row_ranges.size()*col_ranges.size());
+  for (uint64_t i=0; i<row_ranges.size(); ++i) {
+    for (uint64_t j=0; j<col_ranges.size(); ++j) {
+      out[i*col_ranges.size()+j] = Dense(
+        *this,
+        row_ranges[i].n, col_ranges[j].n,
+        row_ranges[i].start, col_ranges[j].start,
+        copy
+      );
+    }
+  }
+  return out;
 }
 
 } // namespace hicma

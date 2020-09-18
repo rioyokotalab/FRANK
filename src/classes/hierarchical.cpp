@@ -104,26 +104,6 @@ define_method(Hierarchical&&, move_from_hierarchical, (Matrix& A)) {
   std::abort();
 }
 
-Hierarchical::Hierarchical(
-  const Matrix& A, int64_t n_row_blocks, int64_t n_col_blocks, bool copy
-) : dim{n_row_blocks, n_col_blocks}, data(dim[0]*dim[1])
-{
-  ClusterTree node({0, get_n_rows(A)}, {0, get_n_cols(A)}, dim[0], dim[1]);
-  for (const ClusterTree& child : node) {
-    (*this)[child] = get_part(A, child, copy);
-  }
-}
-
-Hierarchical::Hierarchical(const Matrix& A, const Hierarchical& like, bool copy)
-: dim(like.dim), data(dim[0]*dim[1]) {
-  assert(get_n_rows(A) == get_n_rows(like));
-  assert(get_n_cols(A) == get_n_cols(like));
-  ClusterTree node(like);
-  for (const ClusterTree& child : node) {
-    (*this)[child] = get_part(A, child, copy);
-  }
-}
-
 Hierarchical::Hierarchical(int64_t n_row_blocks, int64_t n_col_blocks)
 : dim{n_row_blocks, n_col_blocks}, data(dim[0]*dim[1]) {}
 

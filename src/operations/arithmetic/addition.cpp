@@ -45,7 +45,7 @@ define_method(Matrix&, addition_omm, (Dense& A, const LowRank& B)) {
 }
 
 define_method(Matrix&, addition_omm, (Hierarchical& A, const LowRank& B)) {
-  Hierarchical BH(B, A.dim[0], A.dim[1], false);
+  Hierarchical BH = split(B, A.dim[0], A.dim[1]);
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {
       A(i, j) += BH(i, j);
@@ -66,7 +66,7 @@ define_method(DensePair, merge_col_basis, (const Dense& Au, const Dense& Bu)) {
   assert(Arank == Brank);
 
   Dense InnerU(Arank+Brank, Brank);
-  Hierarchical InnerH(InnerU, 2, 1, false);
+  Hierarchical InnerH = split(InnerU, 2, 1);
   gemm(Au, Bu, InnerH[0], true, false, 1, 0);
 
   Dense Bu_AuAutBu(Bu);
@@ -100,7 +100,7 @@ define_method(
   assert(Arank == Brank);
 
   Dense InnerV(Brank, Arank+Brank);
-  Hierarchical InnerH(InnerV, 1, 2, false);
+  Hierarchical InnerH = split(InnerV, 1, 2);
   gemm(Bv, Av, InnerH[0], false, true, 1, 0);
 
   Dense Bv_BvAvtAv(Bv);
@@ -130,7 +130,7 @@ std::tuple<Dense, Dense, Dense> merge_S(
 
   // TODO Consider using move for As if possible!
   Dense M = gemm(InnerUBs, InnerV);
-  Hierarchical MH(M, 2, 2, false);
+  Hierarchical MH = split(M, 2, 2);
   MH(0, 0) += As;
 
   Dense Uhat, Shat, Vhat;

@@ -6,6 +6,7 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/operations/BLAS.h"
+#include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
 
 #ifdef USE_MKL
@@ -44,7 +45,7 @@ define_method(
   void, larfb_omm,
   (const Hierarchical& V, const Hierarchical& T, Dense& C, bool trans)
 ) {
-  Hierarchical CH(C, V.dim[0], V.dim[1]);
+  Hierarchical CH = split(C, V.dim[0], V.dim[1], true);
   larfb(V, T, CH, trans);
   C = Dense(CH);
 }

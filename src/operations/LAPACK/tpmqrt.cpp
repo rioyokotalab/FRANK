@@ -114,7 +114,7 @@ define_method(
     bool trans
   )
 ) {
-  Hierarchical BH(B, A.dim[0], A.dim[1]);
+  Hierarchical BH = split(B, A.dim[0], A.dim[1], true);
   tpmqrt(V, T, A, BH, trans);
   B = Dense(BH);
 }
@@ -204,7 +204,7 @@ define_method(
     bool trans
   )
 ) {
-  Hierarchical HA(A, B.dim[0], B.dim[1]);
+  Hierarchical HA = split(A, B.dim[0], B.dim[1], true);
   tpmqrt(V, T, HA, B, trans);
   A = Dense(HA);
 }

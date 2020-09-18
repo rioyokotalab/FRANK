@@ -855,7 +855,7 @@ void Recompress_col_task::execute() {
   Dense SV = gemm(
     resize(S, AU.dim[1], AU.dim[1]), resize(V, AU.dim[1], V.dim[1])
   );
-  Hierarchical smallVH(SV, 1, modified.size()-1, false);
+  Hierarchical smallVH = split(SV, 1, modified.size()-1);
   for (uint64_t i=1; i<modified.size(); ++i) {
     Copy_task(Dense(std::move(smallVH[i-1])), modified[i]).execute();
   }
@@ -880,7 +880,7 @@ void Recompress_row_task::execute() {
   Dense US = gemm(
     resize(U, U.dim[0], AV.dim[0]), resize(S, AV.dim[0], AV.dim[0])
   );
-  Hierarchical USH(US, modified.size()-1, 1, false);
+  Hierarchical USH = split(US, modified.size()-1, 1);
   for (uint64_t i=1; i<modified.size(); ++i) {
     Copy_task(Dense(std::move(USH[i-1])), modified[i]).execute();
   }

@@ -82,9 +82,9 @@ define_method(
     assert(!TransB);
     if ((A.is_col_basis() && TransA) || (A.is_row_basis() && !TransA)) {
       // TODO Won't work for sub-bases of different sizes
-      Hierarchical BH(B, A.num_child_basis(), 1, false);
+      Hierarchical BH = split(B, A.num_child_basis(), 1);
       Dense AsubB(A.transfer_matrix.dim[A.is_col_basis() ? 0 : 1], B.dim[1]);
-      Hierarchical AsubBH(AsubB, A.num_child_basis(), 1, false);
+      Hierarchical AsubBH = split(AsubB, A.num_child_basis(), 1);
       for (int64_t i=0; i<A.num_child_basis(); ++i) {
         gemm(A[i], BH[i], AsubBH[i], TransA, false, 1, 0);
       }
@@ -92,8 +92,8 @@ define_method(
     } else if ((A.is_col_basis() && !TransA) || (A.is_row_basis() || TransA)) {
       Dense AtransferB = gemm(A.transfer_matrix, B, 1, TransA, false);
       // TODO Won't work for sub-bases of different sizes
-      Hierarchical CH(C, A.num_child_basis(), 1, false);
-      Hierarchical AtransferBH(AtransferB, A.num_child_basis(), 1, false);
+      Hierarchical CH = split(C, A.num_child_basis(), 1);
+      Hierarchical AtransferBH = split(AtransferB, A.num_child_basis(), 1);
       for (int64_t i=0; i<A.num_child_basis(); ++i) {
         gemm(A[i], AtransferBH[i], CH[i], TransA, false, alpha, beta);
       }
@@ -116,9 +116,9 @@ define_method(
     assert(!TransA);
     if ((B.is_col_basis() && !TransB) || (B.is_row_basis() && TransB)) {
       // TODO Won't work for sub-bases of different sizes
-      Hierarchical AH(A, 1, B.num_child_basis(), false);
+      Hierarchical AH = split(A, 1, B.num_child_basis());
       Dense ABsub(A.dim[0], (B.transfer_matrix).dim[B.is_col_basis() ? 0 : 1]);
-      Hierarchical ABsubH(ABsub, 1, B.num_child_basis(), false);
+      Hierarchical ABsubH = split(ABsub, 1, B.num_child_basis());
       for (int64_t j=0; j<B.num_child_basis(); ++j) {
         gemm(AH[j], B[j], ABsubH[j], false, TransB, 1, 0);
       }
@@ -126,8 +126,8 @@ define_method(
     } else if ((B.is_col_basis() && TransB) || (B.is_row_basis() && !TransB)) {
       Dense ABtransfer = gemm(A, B.transfer_matrix, 1, false, TransB);
       // TODO Won't work for sub-bases of different sizes
-      Hierarchical CH(C, 1, B.num_child_basis(), false);
-      Hierarchical AtransferBH(ABtransfer, 1, B.num_child_basis(), false);
+      Hierarchical CH = split(C, 1, B.num_child_basis());
+      Hierarchical AtransferBH = split(ABtransfer, 1, B.num_child_basis());
       for (int64_t j=0; j<B.num_child_basis(); ++j) {
         gemm(AtransferBH[j], B[j], CH[j], false, TransB, alpha, beta);
       }
@@ -160,10 +160,10 @@ define_method(
     Dense AsubBsubtBtransfer(
       get_n_cols(A.transfer_matrix), get_n_cols(B.transfer_matrix)
     );
-    Hierarchical AsubBsubtBtransferH(
-      AsubBsubtBtransfer, A.num_child_basis(), 1, false
+    Hierarchical AsubBsubtBtransferH = split(
+      AsubBsubtBtransfer, A.num_child_basis(), 1
     );
-    Hierarchical AtransferH(A.transfer_matrix, 1, A.num_child_basis(), false);
+    Hierarchical AtransferH = split(A.transfer_matrix, 1, A.num_child_basis());
     for (int64_t i=0; i<A.num_child_basis(); ++i) {
       gemm(AtransferH[i], AsubBsubtBtransferH[i], C, alpha, i==0? beta : 0);
     }
@@ -400,8 +400,8 @@ define_method(
     double alpha, double beta
   )
 ) {
-  Hierarchical AH(A, C.dim[0], 1, false);
-  Hierarchical BH(B, 1, C.dim[1], false);
+  Hierarchical AH = split(A, C.dim[0], 1);
+  Hierarchical BH = split(B, 1, C.dim[1]);
   gemm(AH, BH, C, alpha, beta);
 }
 
@@ -426,7 +426,7 @@ define_method(
   )
 ) {
   assert(A.dim[0] == C.dim[0]);
-  Hierarchical BH(B, A.dim[1], C.dim[1], false);
+  Hierarchical BH = split(B, A.dim[1], C.dim[1]);
   gemm(A, BH, C, alpha, beta);
 }
 
@@ -438,7 +438,7 @@ define_method(
   )
 ) {
   assert(A.dim[0] == C.dim[0]);
-  Hierarchical BH(B, A.dim[1], C.dim[1], false);
+  Hierarchical BH = split(B, A.dim[1], C.dim[1]);
   gemm(A, BH, C, alpha, beta);
 }
 
@@ -450,7 +450,7 @@ define_method(
   )
 ) {
   assert(B.dim[1] == C.dim[1]);
-  Hierarchical AH(A, C.dim[0], B.dim[0], false);
+  Hierarchical AH = split(A, C.dim[0], B.dim[0]);
   gemm(AH, B, C, alpha, beta);
 }
 
@@ -462,7 +462,7 @@ define_method(
   )
 ) {
   assert(B.dim[1] == C.dim[1]);
-  Hierarchical AH(A, C.dim[0], B.dim[0], false);
+  Hierarchical AH = split(A, C.dim[0], B.dim[0]);
   gemm(AH, B, C, alpha, beta);
 }
 
@@ -474,7 +474,7 @@ define_method(
   )
 ) {
   assert(A.dim[1] == B.dim[0]);
-  Hierarchical CH(C, A.dim[0], B.dim[1], false);
+  Hierarchical CH = split(C, A.dim[0], B.dim[1]);
   gemm(A, B, CH, alpha, beta);
 }
 
@@ -485,8 +485,8 @@ define_method(
     double alpha, double beta
   )
 ) {
-  Hierarchical AH(A, 1, B.dim[0], false);
-  Hierarchical CH(C, 1, B.dim[1], false);
+  Hierarchical AH = split(A, 1, B.dim[0]);
+  Hierarchical CH = split(C, 1, B.dim[1]);
   gemm(AH, B, CH, alpha, beta);
 }
 
@@ -497,8 +497,8 @@ define_method(
     double alpha, double beta
   )
 ) {
-  Hierarchical BH(B, A.dim[1], 1, false);
-  Hierarchical CH(C, A.dim[0], 1, false);
+  Hierarchical BH = split(B, A.dim[1], 1);
+  Hierarchical CH = split(C, A.dim[0], 1);
   gemm(A, BH, CH, alpha, beta);
 }
 
@@ -509,8 +509,8 @@ define_method(
     double alpha, double beta
   )
 ) {
-  Hierarchical AH(A, 1, B.dim[0], false);
-  Hierarchical CH(C, 1, B.dim[1], false);
+  Hierarchical AH = split(A, 1, B.dim[0]);
+  Hierarchical CH = split(C, 1, B.dim[1]);
   gemm(AH, B, CH, alpha, beta);
 }
 
@@ -521,8 +521,8 @@ define_method(
     double alpha, double beta
   )
 ) {
-  Hierarchical BH(B, A.dim[1], 1, false);
-  Hierarchical CH(C, A.dim[0], 1, false);
+  Hierarchical BH = split(B, A.dim[1], 1);
+  Hierarchical CH = split(C, A.dim[0], 1);
   gemm(A, BH, CH, alpha, beta);
 }
 
@@ -616,8 +616,8 @@ define_method(
   assert(TransA == false);
   assert(TransB == false);
   Dense out(get_n_rows(A), B.dim[1]);
-  Hierarchical outH(out, A.dim[0], 1, false);
-  Hierarchical BH(B, A.dim[1], 1, false);
+  Hierarchical outH = split(out, A.dim[0], 1);
+  Hierarchical BH = split(B, A.dim[1], 1);
   gemm(A, BH, outH, alpha, 0);
   return out;
 }
@@ -633,8 +633,8 @@ define_method(
   assert(TransA == false);
   assert(TransB == false);
   Dense out(A.dim[0], get_n_cols(B));
-  Hierarchical outH(out, 1, B.dim[1], false);
-  Hierarchical AH(A, 1, B.dim[0], false);
+  Hierarchical outH = split(out, 1, B.dim[1]);
+  Hierarchical AH = split(A, 1, B.dim[0]);
   gemm(AH, B, outH, alpha, 0);
   return out;
 }
