@@ -1123,7 +1123,6 @@ void start_schedule() {
 }
 
 void execute_schedule() {
-  // starpu_resume();
   for (std::shared_ptr<Task> task : tasks) {
     task->execute();
   }
@@ -1146,7 +1145,6 @@ void initialize_starpu() {
   make_trsm_codelet();
   make_gemm_codelet();
   make_svd_codelet();
-  // starpu_pause();
 }
 
 void clear_task_trackers() {
