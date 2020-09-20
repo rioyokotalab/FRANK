@@ -14,6 +14,8 @@
 #include "hicma/util/print.h"
 #include "hicma/util/timer.h"
 
+#include "hicma_private/starpu_data_handler.h"
+
 #include "starpu.h"
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
@@ -27,45 +29,6 @@ using yorel::yomm2::virtual_;
 
 namespace hicma
 {
-
-class DataHandler {
- private:
-  std::vector<double> data;
-  starpu_data_handle_t handle;
- public:
-  // Special member functions
-  DataHandler() = default;
-
-  virtual ~DataHandler() {
-    if (starpu_is_initialized()) {
-      starpu_data_unregister_submit(handle);
-    }
-  }
-
-  DataHandler(const DataHandler& A) = delete;
-
-  DataHandler& operator=(const DataHandler& A) = delete;
-
-  DataHandler(DataHandler&& A) = delete;
-
-  DataHandler& operator=(DataHandler&& A) = delete;
-
-  DataHandler(int64_t n_rows, int64_t n_cols, double val=0)
-  : data(n_rows*n_cols, val) {
-    if (starpu_is_initialized()) {
-      starpu_matrix_data_register(
-        &handle, STARPU_MAIN_RAM,
-        (uintptr_t)&data[0], n_cols, n_cols, n_rows, sizeof(data[0])
-      );
-    }
-  }
-
-  double& operator[](int64_t i) { return data[i]; }
-
-  const double& operator[](int64_t i) const { return data[i]; }
-
-  uint64_t size() const { return data.size(); }
-};
 
 Dense::Dense(const Dense& A)
 : Matrix(A), dim{A.dim[0], A.dim[1]}, stride(A.dim[1]), rel_start{0, 0}
@@ -275,12 +238,15 @@ std::vector<MatrixProxy> Dense::split(
       }
     }
   } else {
+    std::vector<std::shared_ptr<DataHandler>> child_handlers = data->split(
+      row_ranges, col_ranges
+    );
     for (uint64_t i=0; i<row_ranges.size(); ++i) {
       for (uint64_t j=0; j<col_ranges.size(); ++j) {
         Dense child;
         child.dim = {row_ranges[i].n, col_ranges[j].n};
         child.stride = stride;
-        child.data = data;
+        child.data = child_handlers[i*col_ranges.size()+j];
         child.rel_start[0] = rel_start[0] + row_ranges[i].start;
         child.rel_start[1] = rel_start[1] + col_ranges[j].start;
         child.data_ptr = &(*child.data)[

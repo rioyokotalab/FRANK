@@ -9,6 +9,8 @@
 #include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
 
+#include "hicma_private/starpu_data_handler.h"
+
 #include "starpu.h"
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
@@ -33,6 +35,196 @@ using yorel::yomm2::virtual_;
 namespace hicma
 {
 
+class Task {
+ public:
+  std::vector<Dense> constant;
+  std::vector<Dense> modified;
+
+  // Special member functions
+  Task() = default;
+
+  virtual ~Task() = default;
+
+  Task(const Task& A) = default;
+
+  Task& operator=(const Task& A) = default;
+
+  Task(Task&& A) = default;
+
+  Task& operator=(Task&& A) = default;
+
+  // Execute the task
+  virtual void execute() = 0;
+
+ protected:
+  Task(
+    std::vector<std::reference_wrapper<const Dense>> constant,
+    std::vector<std::reference_wrapper<Dense>> modified
+  );
+
+  starpu_data_handle_t get_handle(const Dense& A);
+
+  DataHandler& get_handler(const Dense& A);
+};
+
+struct kernel_args {
+  void (*kernel)(
+    double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+    const std::vector<std::vector<double>>& x,
+    int64_t row_start, int64_t col_start
+  ) = nullptr;
+  const std::vector<std::vector<double>>& x;
+  int64_t row_start, col_start;
+};
+
+class Kernel_task : public Task {
+ public:
+  kernel_args args;
+  Kernel_task(
+    void (*kernel)(
+      double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+      const std::vector<std::vector<double>>& x,
+      int64_t row_start, int64_t col_start
+    ),
+    Dense& A, const std::vector<std::vector<double>>& x,
+    int64_t row_start, int64_t col_start
+  );
+
+  void execute() override;
+};
+
+struct copy_args { int64_t row_start, col_start; };
+
+class Copy_task : public Task {
+ public:
+  copy_args args;
+  Copy_task(const Dense& A, Dense& B, int64_t row_start=0, int64_t col_start=0);
+
+  void execute() override;
+};
+
+// // TODO Consider avoiding a copy when instantiating the follownig
+// struct partition_args { std::vector<IndexRange> row_ranges, col_ranges; };
+
+// class Partition_task : public Task {
+//  public:
+//   partition_args args;
+
+//   Partition_task(
+//     const Dense& A,
+//     const std::vector<IndexRange>& row_ranges,
+//     const std::vector<IndexRange>& col_ranges
+//   );
+
+//   void execute() override;
+// };
+
+struct assign_args { double value; };
+
+class Assign_task : public Task {
+ public:
+  assign_args args;
+  Assign_task(Dense& A, double value);
+
+  void execute() override;
+};
+
+class Addition_task : public Task {
+ public:
+  Addition_task(Dense& A, const Dense& B);
+
+  void execute() override;
+};
+
+class Subtraction_task : public Task {
+ public:
+  Subtraction_task(Dense& A, const Dense& B);
+
+  void execute() override;
+};
+
+struct multiplication_args { double factor; };
+
+class Multiplication_task : public Task {
+ public:
+  multiplication_args args;
+  Multiplication_task(Dense& A, double factor);
+
+  void execute() override;
+};
+
+class GETRF_task : public Task {
+ public:
+  GETRF_task(Dense& AU, Dense& L);
+
+  void execute() override;
+};
+
+class QR_task : public Task {
+ public:
+  QR_task(Dense& A, Dense& Q, Dense& R);
+
+  void execute() override;
+};
+
+class RQ_task : public Task {
+ public:
+  RQ_task(Dense& A, Dense& R, Dense& Q);
+
+  void execute() override;
+};
+
+struct trsm_args { int uplo; int lr; };
+
+class TRSM_task : public Task {
+ public:
+  trsm_args args;
+  TRSM_task(const Dense& A, Dense& B, int uplo, int lr);
+
+  void execute() override;
+};
+
+struct gemm_args { bool TransA; bool TransB; double alpha; double beta; };
+
+class GEMM_task : public Task {
+ public:
+  gemm_args args;
+  GEMM_task(
+    const Dense& A, const Dense& B, Dense& C,
+    bool TransA, bool TransB, double alpha, double beta
+  );
+
+  void execute() override;
+};
+
+class SVD_task : public Task {
+ public:
+  SVD_task(Dense& A, Dense& U, Dense& S, Dense& V);
+
+  void execute() override;
+};
+
+class Recompress_col_task : public Task {
+ public:
+  bool is_col;
+  Recompress_col_task(
+    Dense& newU, const Dense& AU, const Dense& BU, Dense& AS, const Dense& BS
+  );
+
+  void execute() override;
+};
+
+class Recompress_row_task : public Task {
+ public:
+  bool is_col;
+  Recompress_row_task(
+    Dense& newV, const Dense& AV, const Dense& BV, Dense& AS, const Dense& BS
+  );
+
+  void execute() override;
+};
+
+
 Task::Task(
   std::vector<std::reference_wrapper<const Dense>> constant_,
   std::vector<std::reference_wrapper<Dense>> modified_
@@ -43,6 +235,14 @@ Task::Task(
   for (size_t i=0; i<modified_.size(); ++i) {
     modified.push_back(modified_[i].get().share());
   }
+}
+
+starpu_data_handle_t Task::get_handle(const Dense & A) {
+  return A.data->get_handle();
+}
+
+DataHandler& Task::get_handler(const Dense & A) {
+  return *A.data;
 }
 
 std::list<std::shared_ptr<Task>> tasks;
@@ -95,7 +295,7 @@ void Kernel_task::execute() {
     task->cl = &kernel_cl;
     task->cl_arg = &args;
     task->cl_arg_size = sizeof(args);
-    task->handles[0] = starpu_data_lookup(&A);
+    task->handles[0] = get_handle(A);
     STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "kernel_task");
   } else {
     args.kernel(
@@ -159,8 +359,8 @@ void Copy_task::execute() {
     task->cl = &copy_cl;
     task->cl_arg = &args;
     task->cl_arg_size = sizeof(args);
-    task->handles[0] = starpu_data_lookup(&A);
-    task->handles[1] = starpu_data_lookup(&B);
+    task->handles[0] = get_handle(A);
+    task->handles[1] = get_handle(B);
     STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "copy_task");
   } else {
     copy_cpu_func(&A, A.stride, &B, B.dim[0], B.dim[1], B.stride, args);
@@ -208,7 +408,7 @@ void Assign_task::execute() {
     task->cl = &assign_cl;
     task->cl_arg = &args;
     task->cl_arg_size = sizeof(args);
-    task->handles[0] = starpu_data_lookup(&A);
+    task->handles[0] = get_handle(A);
     STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "assign_task");
   } else {
     assign_cpu_func(&A, A.dim[0], A.dim[1], A.stride, args);
@@ -257,8 +457,8 @@ void Addition_task::execute() {
   if (schedule_started) {
     struct starpu_task* task = starpu_task_create();
     task->cl = &addition_cl;
-    task->handles[0] = starpu_data_lookup(&A);
-    task->handles[1] = starpu_data_lookup(&B);
+    task->handles[0] = get_handle(A);
+    task->handles[1] = get_handle(B);
     STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "addition_task");
   } else {
     addition_cpu_func(&A, A.dim[0], A.dim[1], A.stride, &B, B.stride);
@@ -296,7 +496,7 @@ void make_subtraction_codelet() {
   subtraction_cl.cpu_funcs[0] = subtraction_cpu_starpu_interface;
   subtraction_cl.cpu_funcs_name[0] = "subtraction_cpu_func";
   subtraction_cl.name = "Subtraction";
-  subtraction_cl.nbuffers = 1;
+  subtraction_cl.nbuffers = 2;
   subtraction_cl.modes[0] = STARPU_RW;
   subtraction_cl.modes[1] = STARPU_R;
 }
@@ -307,8 +507,8 @@ void Subtraction_task::execute() {
   if (schedule_started) {
     struct starpu_task* task = starpu_task_create();
     task->cl = &subtraction_cl;
-    task->handles[0] = starpu_data_lookup(&A);
-    task->handles[1] = starpu_data_lookup(&B);
+    task->handles[0] = get_handle(A);
+    task->handles[1] = get_handle(B);
     STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "subtraction_task");
   } else {
     subtraction_cpu_func(&A, A.dim[0], A.dim[1], A.stride, &B, B.stride);
@@ -356,7 +556,7 @@ void Multiplication_task::execute() {
     task->cl = &multiplication_cl;
     task->cl_arg = &args;
     task->cl_arg_size = sizeof(args);
-    task->handles[0] = starpu_data_lookup(&A);
+    task->handles[0] = get_handle(A);
     STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "multiplication_task");
   } else {
     multiplication_cpu_func(&A, A.dim[0], A.dim[1], A.stride, args);
@@ -413,8 +613,8 @@ void GETRF_task::execute() {
   if (schedule_started) {
     struct starpu_task* task = starpu_task_create();
     task->cl = &getrf_cl;
-    task->handles[0] = starpu_data_lookup(&AU);
-    task->handles[1] = starpu_data_lookup(&L);
+    task->handles[0] = get_handle(AU);
+    task->handles[1] = get_handle(L);
     STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "getrf_task");
   } else {
     getrf_cpu_func(&AU, AU.dim[0], AU.dim[1], AU.stride, &L, L.stride);
@@ -494,9 +694,9 @@ void QR_task::execute() {
   if (schedule_started) {
     struct starpu_task* task = starpu_task_create();
     task->cl = &qr_cl;
-    task->handles[0] = starpu_data_lookup(&A);
-    task->handles[1] = starpu_data_lookup(&Q);
-    task->handles[2] = starpu_data_lookup(&R);
+    task->handles[0] = get_handle(A);
+    task->handles[1] = get_handle(Q);
+    task->handles[2] = get_handle(R);
     STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "qr_task");
   } else {
     qr_cpu_func(
@@ -577,9 +777,9 @@ void RQ_task::execute() {
   if (schedule_started) {
     struct starpu_task* task = starpu_task_create();
     task->cl = &rq_cl;
-    task->handles[0] = starpu_data_lookup(&A);
-    task->handles[1] = starpu_data_lookup(&R);
-    task->handles[2] = starpu_data_lookup(&Q);
+    task->handles[0] = get_handle(A);
+    task->handles[1] = get_handle(R);
+    task->handles[2] = get_handle(Q);
     STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "rq_task");
   } else {
     rq_cpu_func(
@@ -642,8 +842,8 @@ void TRSM_task::execute() {
     task->cl = &trsm_cl;
     task->cl_arg = &args;
     task->cl_arg_size = sizeof(args);
-    task->handles[0] = starpu_data_lookup(&A);
-    task->handles[1] = starpu_data_lookup(&B);
+    task->handles[0] = get_handle(A);
+    task->handles[1] = get_handle(B);
     STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "trsm_task");
   } else {
     trsm_cpu_func(&A, A.stride, &B, B.dim[0], B.dim[1], B.stride, args);
@@ -732,9 +932,9 @@ void GEMM_task::execute() {
     task->cl = &gemm_cl;
     task->cl_arg = &args;
     task->cl_arg_size = sizeof(args);
-    task->handles[0] = starpu_data_lookup(&A);
-    task->handles[1] = starpu_data_lookup(&B);
-    task->handles[2] = starpu_data_lookup(&C);
+    task->handles[0] = get_handle(A);
+    task->handles[1] = get_handle(B);
+    task->handles[2] = get_handle(C);
     // Effectively write only, this might be important for dependencies
     if (args.beta == 0) STARPU_TASK_SET_MODE(task, STARPU_W, 2);
     STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "gemm_task");
@@ -821,10 +1021,10 @@ void SVD_task::execute() {
   if (schedule_started) {
     struct starpu_task* task = starpu_task_create();
     task->cl = &svd_cl;
-    task->handles[0] = starpu_data_lookup(&A);
-    task->handles[1] = starpu_data_lookup(&U);
-    task->handles[2] = starpu_data_lookup(&S);
-    task->handles[3] = starpu_data_lookup(&V);
+    task->handles[0] = get_handle(A);
+    task->handles[1] = get_handle(U);
+    task->handles[2] = get_handle(S);
+    task->handles[3] = get_handle(V);
     STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "svd_task");
   } else {
     svd_cpu_func(

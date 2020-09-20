@@ -2,11 +2,13 @@ add_library(hicma SHARED functions.cpp)
 add_subdirectory(classes)
 add_subdirectory(gpu_batch)
 add_subdirectory(operations)
+add_subdirectory(starpu)
 add_subdirectory(util)
 target_include_directories(hicma
-PUBLIC
-    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
+    PUBLIC
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+    PRIVATE ${PROJECT_SOURCE_DIR}/private_include
 )
 target_compile_definitions(hicma PRIVATE ${HICMA_DEFINITIONS})
 target_compile_features(hicma PRIVATE ${HICMA_FEATURES})

@@ -15,14 +15,20 @@ namespace hicma
 
 class DataHandler;
 class IndexRange;
+class Task;
 
 class Dense : public Matrix {
+  // TODO Find way to avoid using friend here! Best not to rely on it.
+  // Also don't wanna expose the DataHandler directly though...
+  friend Task;
  public:
   std::array<int64_t, 2> dim = {0, 0};
   int64_t stride = 0;
  private:
   std::shared_ptr<DataHandler> data;
   std::array<int64_t, 2> rel_start = {0, 0};
+
+  DataHandler& get_handler();
  protected:
   double* data_ptr = nullptr;
  public:
