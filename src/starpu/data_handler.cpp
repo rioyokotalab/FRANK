@@ -88,16 +88,18 @@ std::vector<std::shared_ptr<DataHandler>> DataHandler::split(
   size_t n_children = row_ranges.size()*col_ranges.size();
   std::vector<std::shared_ptr<DataHandler>> out(n_children);
   std::vector<starpu_data_handle_t> child_handles(n_children);
-  partition_args args{row_ranges, col_ranges};
-  starpu_data_filter filter;
-  filter.nchildren = row_ranges.size() * col_ranges.size();
-  filter.filter_func = partition_filter;
-  filter.filter_arg_ptr = &args;
-  filter.get_child_ops = NULL;
-  filter.get_nchildren = NULL;
-  starpu_data_partition_plan(
-    handle, &filter, &child_handles[0]
-  );
+  if (starpu_is_initialized()) {
+    partition_args args{row_ranges, col_ranges};
+    starpu_data_filter filter;
+    filter.nchildren = row_ranges.size() * col_ranges.size();
+    filter.filter_func = partition_filter;
+    filter.filter_arg_ptr = &args;
+    filter.get_child_ops = NULL;
+    filter.get_nchildren = NULL;
+    starpu_data_partition_plan(
+      handle, &filter, &child_handles[0]
+    );
+  }
   for (uint64_t i=0; i<row_ranges.size(); ++i) {
     for (uint64_t j=0; j<col_ranges.size(); ++j) {
       out[i*col_ranges.size()+j] = std::make_shared<DataHandler>(
