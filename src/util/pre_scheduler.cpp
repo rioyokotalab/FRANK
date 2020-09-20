@@ -1229,8 +1229,8 @@ void start_schedule() {
 
 void execute_schedule() {
   // starpu_resume();
-  for (decltype(tasks)::iterator it=tasks.begin(); it!=tasks.end(); ++it) {
-    (**it).execute();
+  for (std::shared_ptr<Task> task : tasks) {
+    task->execute();
   }
   starpu_task_wait_for_all();
   tasks.clear();

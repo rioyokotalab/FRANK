@@ -198,7 +198,7 @@ define_method(Matrix&, addition_omm, (LowRank& A, const LowRank& B)) {
     Dense Qv(V_merge.dim[0], V_merge.dim[1]);
     rq(V_merge, Rv, Qv);
 
-    Dense RuRv = gemm(Ru, Rv, 1);
+    Dense RuRv = gemm(Ru, Rv);
 
     Dense RRU, RRS, RRV;
     std::tie(RRU, RRS, RRV) = svd(RuRv);
