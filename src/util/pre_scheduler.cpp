@@ -58,192 +58,23 @@ class Task {
 
  protected:
   Task(
-    std::vector<std::reference_wrapper<const Dense>> constant,
-    std::vector<std::reference_wrapper<Dense>> modified
-  );
-
-  starpu_data_handle_t get_handle(const Dense& A);
-
-  DataHandler& get_handler(const Dense& A);
-};
-
-struct kernel_args {
-  void (*kernel)(
-    double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-    const std::vector<std::vector<double>>& x,
-    int64_t row_start, int64_t col_start
-  ) = nullptr;
-  const std::vector<std::vector<double>>& x;
-  int64_t row_start, col_start;
-};
-
-class Kernel_task : public Task {
- public:
-  kernel_args args;
-  Kernel_task(
-    void (*kernel)(
-      double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-      const std::vector<std::vector<double>>& x,
-      int64_t row_start, int64_t col_start
-    ),
-    Dense& A, const std::vector<std::vector<double>>& x,
-    int64_t row_start, int64_t col_start
-  );
-
-  void execute() override;
-};
-
-struct copy_args { int64_t row_start, col_start; };
-
-class Copy_task : public Task {
- public:
-  copy_args args;
-  Copy_task(const Dense& A, Dense& B, int64_t row_start=0, int64_t col_start=0);
-
-  void execute() override;
-};
-
-// // TODO Consider avoiding a copy when instantiating the follownig
-// struct partition_args { std::vector<IndexRange> row_ranges, col_ranges; };
-
-// class Partition_task : public Task {
-//  public:
-//   partition_args args;
-
-//   Partition_task(
-//     const Dense& A,
-//     const std::vector<IndexRange>& row_ranges,
-//     const std::vector<IndexRange>& col_ranges
-//   );
-
-//   void execute() override;
-// };
-
-struct assign_args { double value; };
-
-class Assign_task : public Task {
- public:
-  assign_args args;
-  Assign_task(Dense& A, double value);
-
-  void execute() override;
-};
-
-class Addition_task : public Task {
- public:
-  Addition_task(Dense& A, const Dense& B);
-
-  void execute() override;
-};
-
-class Subtraction_task : public Task {
- public:
-  Subtraction_task(Dense& A, const Dense& B);
-
-  void execute() override;
-};
-
-struct multiplication_args { double factor; };
-
-class Multiplication_task : public Task {
- public:
-  multiplication_args args;
-  Multiplication_task(Dense& A, double factor);
-
-  void execute() override;
-};
-
-class GETRF_task : public Task {
- public:
-  GETRF_task(Dense& AU, Dense& L);
-
-  void execute() override;
-};
-
-class QR_task : public Task {
- public:
-  QR_task(Dense& A, Dense& Q, Dense& R);
-
-  void execute() override;
-};
-
-class RQ_task : public Task {
- public:
-  RQ_task(Dense& A, Dense& R, Dense& Q);
-
-  void execute() override;
-};
-
-struct trsm_args { int uplo; int lr; };
-
-class TRSM_task : public Task {
- public:
-  trsm_args args;
-  TRSM_task(const Dense& A, Dense& B, int uplo, int lr);
-
-  void execute() override;
-};
-
-struct gemm_args { bool TransA; bool TransB; double alpha; double beta; };
-
-class GEMM_task : public Task {
- public:
-  gemm_args args;
-  GEMM_task(
-    const Dense& A, const Dense& B, Dense& C,
-    bool TransA, bool TransB, double alpha, double beta
-  );
-
-  void execute() override;
-};
-
-class SVD_task : public Task {
- public:
-  SVD_task(Dense& A, Dense& U, Dense& S, Dense& V);
-
-  void execute() override;
-};
-
-class Recompress_col_task : public Task {
- public:
-  bool is_col;
-  Recompress_col_task(
-    Dense& newU, const Dense& AU, const Dense& BU, Dense& AS, const Dense& BS
-  );
-
-  void execute() override;
-};
-
-class Recompress_row_task : public Task {
- public:
-  bool is_col;
-  Recompress_row_task(
-    Dense& newV, const Dense& AV, const Dense& BV, Dense& AS, const Dense& BS
-  );
-
-  void execute() override;
-};
-
-
-Task::Task(
-  std::vector<std::reference_wrapper<const Dense>> constant_,
-  std::vector<std::reference_wrapper<Dense>> modified_
-) {
-  for (size_t i=0; i<constant_.size(); ++i) {
-    constant.push_back(constant_[i].get().share());
+    std::vector<std::reference_wrapper<const Dense>> constant_,
+    std::vector<std::reference_wrapper<Dense>> modified_
+  ) {
+    for (size_t i=0; i<constant_.size(); ++i) {
+      constant.push_back(constant_[i].get().share());
+    }
+    for (size_t i=0; i<modified_.size(); ++i) {
+      modified.push_back(modified_[i].get().share());
+    }
   }
-  for (size_t i=0; i<modified_.size(); ++i) {
-    modified.push_back(modified_[i].get().share());
+
+  starpu_data_handle_t get_handle(const Dense& A) {
+    return A.data->get_handle();
   }
-}
 
-starpu_data_handle_t Task::get_handle(const Dense & A) {
-  return A.data->get_handle();
-}
-
-DataHandler& Task::get_handler(const Dense & A) {
-  return *A.data;
-}
+  DataHandler& get_handler(const Dense& A) { return *A.data;}
+};
 
 std::list<std::shared_ptr<Task>> tasks;
 bool schedule_started = false;
@@ -256,15 +87,15 @@ void add_task(std::shared_ptr<Task> task) {
   }
 }
 
-Kernel_task::Kernel_task(
+struct kernel_args {
   void (*kernel)(
     double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
     const std::vector<std::vector<double>>& x,
     int64_t row_start, int64_t col_start
-  ),
-  Dense& A, const std::vector<std::vector<double>>& x,
-  int64_t row_start, int64_t col_start
-) : Task({}, {A}), args{kernel, x, row_start, col_start} {}
+  ) = nullptr;
+  const std::vector<std::vector<double>>& x;
+  int64_t row_start, col_start;
+};
 
 void kernel_cpu_starpu_interface(void* buffers[], void* cl_args) {
   double* A = (double *)STARPU_MATRIX_GET_PTR(buffers[0]);
@@ -288,25 +119,49 @@ void make_kernel_codelet() {
   kernel_cl.modes[0] = STARPU_W;
 }
 
-void Kernel_task::execute() {
-  Dense& A = modified[0];
-  if (schedule_started) {
-    struct starpu_task* task = starpu_task_create();
-    task->cl = &kernel_cl;
-    task->cl_arg = &args;
-    task->cl_arg_size = sizeof(args);
-    task->handles[0] = get_handle(A);
-    STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "kernel_task");
-  } else {
-    args.kernel(
-      &A, A.dim[0], A.dim[1], A.stride, args.x, args.row_start, args.col_start
-  );
+class Kernel_task : public Task {
+ public:
+  kernel_args args;
+  Kernel_task(
+    void (*kernel)(
+      double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+      const std::vector<std::vector<double>>& x,
+      int64_t row_start, int64_t col_start
+    ),
+    Dense& A, const std::vector<std::vector<double>>& x,
+    int64_t row_start, int64_t col_start
+  ) : Task({}, {A}), args{kernel, x, row_start, col_start} {}
+
+  void execute() override  {
+    Dense& A = modified[0];
+    if (schedule_started) {
+      struct starpu_task* task = starpu_task_create();
+      task->cl = &kernel_cl;
+      task->cl_arg = &args;
+      task->cl_arg_size = sizeof(args);
+      task->handles[0] = get_handle(A);
+      STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "kernel_task");
+    } else {
+      args.kernel(
+        &A, A.dim[0], A.dim[1], A.stride, args.x, args.row_start, args.col_start
+    );
+    }
   }
+};
+
+void add_kernel_task(
+  void (*kernel)(
+    double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+    const std::vector<std::vector<double>>& x,
+    int64_t row_start, int64_t col_start
+  ),
+  Dense& A, const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+) {
+  add_task(std::make_shared<Kernel_task>(kernel, A, x, row_start, col_start));
 }
 
-Copy_task::Copy_task(
-  const Dense& A, Dense& B, int64_t row_start, int64_t col_start
-) : Task({A}, {B}), args{row_start, col_start} {}
+struct copy_args { int64_t row_start, col_start; };
 
 void copy_cpu_func(
   const double* A, uint64_t A_stride,
@@ -351,24 +206,36 @@ void make_copy_codelet() {
   copy_cl.modes[1] = STARPU_W;
 }
 
-void Copy_task::execute() {
-  const Dense& A = constant[0];
-  Dense& B = modified[0];
-  if (schedule_started) {
-    struct starpu_task* task = starpu_task_create();
-    task->cl = &copy_cl;
-    task->cl_arg = &args;
-    task->cl_arg_size = sizeof(args);
-    task->handles[0] = get_handle(A);
-    task->handles[1] = get_handle(B);
-    STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "copy_task");
-  } else {
-    copy_cpu_func(&A, A.stride, &B, B.dim[0], B.dim[1], B.stride, args);
+class Copy_task : public Task {
+ public:
+  copy_args args;
+  Copy_task(const Dense& A, Dense& B, int64_t row_start=0, int64_t col_start=0)
+  : Task({A}, {B}), args{row_start, col_start} {}
+
+  void execute() override {
+    const Dense& A = constant[0];
+    Dense& B = modified[0];
+    if (schedule_started) {
+      struct starpu_task* task = starpu_task_create();
+      task->cl = &copy_cl;
+      task->cl_arg = &args;
+      task->cl_arg_size = sizeof(args);
+      task->handles[0] = get_handle(A);
+      task->handles[1] = get_handle(B);
+      STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "copy_task");
+    } else {
+      copy_cpu_func(&A, A.stride, &B, B.dim[0], B.dim[1], B.stride, args);
+    }
   }
+};
+
+void add_copy_task(
+  const Dense& A, Dense& B, int64_t row_start, int64_t col_start
+) {
+  add_task(std::make_shared<Copy_task>(A, B, row_start, col_start));
 }
 
-Assign_task::Assign_task(Dense& A, double value)
-: Task({}, {A}), args{value} {}
+struct assign_args { double value; };
 
 void assign_cpu_func(
   double* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
@@ -401,22 +268,29 @@ void make_assign_codelet() {
   assign_cl.modes[0] = STARPU_W;
 }
 
-void Assign_task::execute() {
-  Dense& A = modified[0];
-  if (schedule_started) {
-    struct starpu_task* task = starpu_task_create();
-    task->cl = &assign_cl;
-    task->cl_arg = &args;
-    task->cl_arg_size = sizeof(args);
-    task->handles[0] = get_handle(A);
-    STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "assign_task");
-  } else {
-    assign_cpu_func(&A, A.dim[0], A.dim[1], A.stride, args);
-  }
-}
+class Assign_task : public Task {
+ public:
+  assign_args args;
+  Assign_task(Dense& A, double value) : Task({}, {A}), args{value} {}
 
-Addition_task::Addition_task(Dense& A, const Dense& B)
-: Task({B}, {A}) {}
+  void execute() override {
+    Dense& A = modified[0];
+    if (schedule_started) {
+      struct starpu_task* task = starpu_task_create();
+      task->cl = &assign_cl;
+      task->cl_arg = &args;
+      task->cl_arg_size = sizeof(args);
+      task->handles[0] = get_handle(A);
+      STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "assign_task");
+    } else {
+      assign_cpu_func(&A, A.dim[0], A.dim[1], A.stride, args);
+    }
+  }
+};
+
+void add_assign_task(Dense& A, double value) {
+  add_task(std::make_shared<Assign_task>(A, value));
+}
 
 void addition_cpu_func(
   double* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
@@ -451,22 +325,28 @@ void make_addition_codelet() {
   addition_cl.modes[1] = STARPU_R;
 }
 
-void Addition_task::execute() {
-  Dense& A = modified[0];
-  const Dense& B = constant[0];
-  if (schedule_started) {
-    struct starpu_task* task = starpu_task_create();
-    task->cl = &addition_cl;
-    task->handles[0] = get_handle(A);
-    task->handles[1] = get_handle(B);
-    STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "addition_task");
-  } else {
-    addition_cpu_func(&A, A.dim[0], A.dim[1], A.stride, &B, B.stride);
-  }
-}
+class Addition_task : public Task {
+ public:
+  Addition_task(Dense& A, const Dense& B) : Task({B}, {A}) {}
 
-Subtraction_task::Subtraction_task(Dense& A, const Dense& B)
-: Task({B}, {A}) {}
+  void execute() override {
+    Dense& A = modified[0];
+    const Dense& B = constant[0];
+    if (schedule_started) {
+      struct starpu_task* task = starpu_task_create();
+      task->cl = &addition_cl;
+      task->handles[0] = get_handle(A);
+      task->handles[1] = get_handle(B);
+      STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "addition_task");
+    } else {
+      addition_cpu_func(&A, A.dim[0], A.dim[1], A.stride, &B, B.stride);
+    }
+  }
+};
+
+void add_addition_task(Dense& A, const Dense& B) {
+  add_task(std::make_shared<Addition_task>(A, B));
+}
 
 void subtraction_cpu_func(
   double* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
@@ -501,22 +381,30 @@ void make_subtraction_codelet() {
   subtraction_cl.modes[1] = STARPU_R;
 }
 
-void Subtraction_task::execute() {
-  Dense& A = modified[0];
-  const Dense& B = constant[0];
-  if (schedule_started) {
-    struct starpu_task* task = starpu_task_create();
-    task->cl = &subtraction_cl;
-    task->handles[0] = get_handle(A);
-    task->handles[1] = get_handle(B);
-    STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "subtraction_task");
-  } else {
-    subtraction_cpu_func(&A, A.dim[0], A.dim[1], A.stride, &B, B.stride);
+class Subtraction_task : public Task {
+ public:
+  Subtraction_task(Dense& A, const Dense& B) : Task({B}, {A}) {}
+
+  void execute() override {
+    Dense& A = modified[0];
+    const Dense& B = constant[0];
+    if (schedule_started) {
+      struct starpu_task* task = starpu_task_create();
+      task->cl = &subtraction_cl;
+      task->handles[0] = get_handle(A);
+      task->handles[1] = get_handle(B);
+      STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "subtraction_task");
+    } else {
+      subtraction_cpu_func(&A, A.dim[0], A.dim[1], A.stride, &B, B.stride);
+    }
   }
+};
+
+void add_subtraction_task(Dense& A, const Dense& B) {
+  add_task(std::make_shared<Subtraction_task>(A, B));
 }
 
-Multiplication_task::Multiplication_task(Dense& A, double factor)
-: Task({}, {A}), args{factor} {}
+struct multiplication_args { double factor; };
 
 void multiplication_cpu_func(
   double* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
@@ -549,21 +437,29 @@ void make_multiplication_codelet() {
   multiplication_cl.modes[0] = STARPU_W;
 }
 
-void Multiplication_task::execute() {
-  Dense& A = modified[0];
-  if (schedule_started) {
-    struct starpu_task* task = starpu_task_create();
-    task->cl = &multiplication_cl;
-    task->cl_arg = &args;
-    task->cl_arg_size = sizeof(args);
-    task->handles[0] = get_handle(A);
-    STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "multiplication_task");
-  } else {
-    multiplication_cpu_func(&A, A.dim[0], A.dim[1], A.stride, args);
-  }
-}
+class Multiplication_task : public Task {
+ public:
+  multiplication_args args;
+  Multiplication_task(Dense& A, double factor) : Task({}, {A}), args{factor} {}
 
-GETRF_task::GETRF_task(Dense& AU, Dense& L) : Task({}, {AU, L}) {}
+  void execute() override {
+    Dense& A = modified[0];
+    if (schedule_started) {
+      struct starpu_task* task = starpu_task_create();
+      task->cl = &multiplication_cl;
+      task->cl_arg = &args;
+      task->cl_arg_size = sizeof(args);
+      task->handles[0] = get_handle(A);
+      STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "multiplication_task");
+    } else {
+      multiplication_cpu_func(&A, A.dim[0], A.dim[1], A.stride, args);
+    }
+  }
+};
+
+void add_multiplication_task(Dense& A, double factor) {
+  add_task(std::make_shared<Multiplication_task>(A, factor));
+}
 
 void getrf_cpu_func(
   double* AU, uint64_t AU_dim0, uint64_t AU_dim1, uint64_t AU_stride,
@@ -607,21 +503,28 @@ void make_getrf_codelet() {
   getrf_cl.modes[1] = STARPU_W;
 }
 
-void GETRF_task::execute() {
-  Dense& AU = modified[0];
-  Dense& L = modified[1];
-  if (schedule_started) {
-    struct starpu_task* task = starpu_task_create();
-    task->cl = &getrf_cl;
-    task->handles[0] = get_handle(AU);
-    task->handles[1] = get_handle(L);
-    STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "getrf_task");
-  } else {
-    getrf_cpu_func(&AU, AU.dim[0], AU.dim[1], AU.stride, &L, L.stride);
-  }
-}
+class GETRF_task : public Task {
+ public:
+  GETRF_task(Dense& AU, Dense& L) : Task({}, {AU, L}) {}
 
-QR_task::QR_task(Dense& A, Dense& Q, Dense& R) : Task({}, {A, Q, R}) {}
+  void execute() override {
+    Dense& AU = modified[0];
+    Dense& L = modified[1];
+    if (schedule_started) {
+      struct starpu_task* task = starpu_task_create();
+      task->cl = &getrf_cl;
+      task->handles[0] = get_handle(AU);
+      task->handles[1] = get_handle(L);
+      STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "getrf_task");
+    } else {
+      getrf_cpu_func(&AU, AU.dim[0], AU.dim[1], AU.stride, &L, L.stride);
+    }
+  }
+};
+
+void add_getrf_task(Dense& AU, Dense& L) {
+  add_task(std::make_shared<GETRF_task>(AU, L));
+}
 
 void qr_cpu_func(
   double* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
@@ -687,27 +590,35 @@ void make_qr_codelet() {
   qr_cl.modes[2] = STARPU_W;
 }
 
-void QR_task::execute() {
-  Dense& A = modified[0];
-  Dense& Q = modified[1];
-  Dense& R = modified[2];
-  if (schedule_started) {
-    struct starpu_task* task = starpu_task_create();
-    task->cl = &qr_cl;
-    task->handles[0] = get_handle(A);
-    task->handles[1] = get_handle(Q);
-    task->handles[2] = get_handle(R);
-    STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "qr_task");
-  } else {
-    qr_cpu_func(
-      &A, A.dim[0], A.dim[1], A.stride,
-      &Q, Q.dim[0], Q.dim[1], Q.stride,
-      &R, R.dim[0], R.dim[1], R.stride
-    );
-  }
-}
+class QR_task : public Task {
+ public:
+  QR_task(Dense& A, Dense& Q, Dense& R) : Task({}, {A, Q, R}) {}
 
-RQ_task::RQ_task(Dense& A, Dense& R, Dense& Q) : Task({}, {A, R, Q}) {}
+  void execute() override {
+    Dense& A = modified[0];
+    Dense& Q = modified[1];
+    Dense& R = modified[2];
+    if (schedule_started) {
+      struct starpu_task* task = starpu_task_create();
+      task->cl = &qr_cl;
+      task->handles[0] = get_handle(A);
+      task->handles[1] = get_handle(Q);
+      task->handles[2] = get_handle(R);
+      STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "qr_task");
+    } else {
+      qr_cpu_func(
+        &A, A.dim[0], A.dim[1], A.stride,
+        &Q, Q.dim[0], Q.dim[1], Q.stride,
+        &R, R.dim[0], R.dim[1], R.stride
+      );
+    }
+  }
+};
+
+void add_qr_task(Dense& A, Dense& Q, Dense& R) {
+  // TODO Check for duplicate/shared tasks
+  add_task(std::make_shared<QR_task>(A, Q, R));
+}
 
 void rq_cpu_func(
   double* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
@@ -770,28 +681,37 @@ void make_rq_codelet() {
   rq_cl.modes[2] = STARPU_W;
 }
 
-void RQ_task::execute() {
-  Dense& A = modified[0];
-  Dense& R = modified[1];
-  Dense& Q = modified[2];
-  if (schedule_started) {
-    struct starpu_task* task = starpu_task_create();
-    task->cl = &rq_cl;
-    task->handles[0] = get_handle(A);
-    task->handles[1] = get_handle(R);
-    task->handles[2] = get_handle(Q);
-    STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "rq_task");
-  } else {
-    rq_cpu_func(
-      &A, A.dim[0], A.dim[1], A.stride,
-      &R, R.dim[0], R.dim[1], R.stride,
-      &Q, Q.dim[0], Q.dim[1], Q.stride
-    );
+class RQ_task : public Task {
+ public:
+  RQ_task(Dense& A, Dense& R, Dense& Q) : Task({}, {A, R, Q}) {}
+
+  void execute() override {
+    Dense& A = modified[0];
+    Dense& R = modified[1];
+    Dense& Q = modified[2];
+    if (schedule_started) {
+      struct starpu_task* task = starpu_task_create();
+      task->cl = &rq_cl;
+      task->handles[0] = get_handle(A);
+      task->handles[1] = get_handle(R);
+      task->handles[2] = get_handle(Q);
+      STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "rq_task");
+    } else {
+      rq_cpu_func(
+        &A, A.dim[0], A.dim[1], A.stride,
+        &R, R.dim[0], R.dim[1], R.stride,
+        &Q, Q.dim[0], Q.dim[1], Q.stride
+      );
+    }
   }
+};
+
+void add_rq_task(Dense& A, Dense& R, Dense& Q) {
+  // TODO Check for duplicate/shared tasks
+  add_task(std::make_shared<RQ_task>(A, R, Q));
 }
 
-TRSM_task::TRSM_task(const Dense& A, Dense& B, int uplo, int lr)
-: Task({A}, {B}), args{uplo, lr} {}
+struct trsm_args { int uplo; int lr; };
 
 void trsm_cpu_func(
   const double* A, uint64_t A_stride,
@@ -834,26 +754,37 @@ void make_trsm_codelet() {
   trsm_cl.modes[1] = STARPU_RW;
 }
 
-void TRSM_task::execute() {
-  const Dense& A = constant[0];
-  Dense& B = modified[0];
-  if (schedule_started) {
-    struct starpu_task* task = starpu_task_create();
-    task->cl = &trsm_cl;
-    task->cl_arg = &args;
-    task->cl_arg_size = sizeof(args);
-    task->handles[0] = get_handle(A);
-    task->handles[1] = get_handle(B);
-    STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "trsm_task");
-  } else {
-    trsm_cpu_func(&A, A.stride, &B, B.dim[0], B.dim[1], B.stride, args);
+class TRSM_task : public Task {
+ public:
+  trsm_args args;
+  TRSM_task(const Dense& A, Dense& B, int uplo, int lr)
+  : Task({A}, {B}), args{uplo, lr} {}
+
+  void execute() override {
+    const Dense& A = constant[0];
+    Dense& B = modified[0];
+    if (schedule_started) {
+      struct starpu_task* task = starpu_task_create();
+      task->cl = &trsm_cl;
+      task->cl_arg = &args;
+      task->cl_arg_size = sizeof(args);
+      task->handles[0] = get_handle(A);
+      task->handles[1] = get_handle(B);
+      STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "trsm_task");
+    } else {
+      trsm_cpu_func(&A, A.stride, &B, B.dim[0], B.dim[1], B.stride, args);
+    }
+  }
+};
+
+void add_trsm_task(const Dense& A, Dense& B, int uplo, int lr) {
+  if (!matrix_is_tracked("trsm_task", A, B)) {
+    add_task(std::make_shared<TRSM_task>(A, B, uplo, lr));
+    register_matrix("trsm_task", A, B);
   }
 }
 
-GEMM_task::GEMM_task(
-  const Dense& A, const Dense& B, Dense& C,
-  bool TransA, bool TransB, double alpha, double beta
-) : Task({A, B}, {C}), args{TransA, TransB, alpha, beta} {}
+struct gemm_args { bool TransA; bool TransB; double alpha; double beta; };
 
 void gemm_cpu_func(
   const double* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
@@ -923,33 +854,70 @@ void make_gemm_codelet() {
   gemm_cl.modes[2] = STARPU_RW;
 }
 
-void GEMM_task::execute() {
-  const Dense& A = constant[0];
-  const Dense& B = constant[1];
-  Dense& C = modified[0];
-  if (schedule_started) {
-    struct starpu_task* task = starpu_task_create();
-    task->cl = &gemm_cl;
-    task->cl_arg = &args;
-    task->cl_arg_size = sizeof(args);
-    task->handles[0] = get_handle(A);
-    task->handles[1] = get_handle(B);
-    task->handles[2] = get_handle(C);
-    // Effectively write only, this might be important for dependencies
-    if (args.beta == 0) STARPU_TASK_SET_MODE(task, STARPU_W, 2);
-    STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "gemm_task");
-  } else {
-    gemm_cpu_func(
-      &A, A.dim[0], A.dim[1], A.stride,
-      &B, B.dim[0], B.dim[1], B.stride,
-      &C, C.dim[0], C.dim[1], C.stride,
-      args
-    );
-  }
-}
+class GEMM_task : public Task {
+ public:
+  gemm_args args;
+  GEMM_task(
+    const Dense& A, const Dense& B, Dense& C,
+    bool TransA, bool TransB, double alpha, double beta
+  ) : Task({A, B}, {C}), args{TransA, TransB, alpha, beta} {}
 
-SVD_task::SVD_task(Dense& A, Dense& U, Dense& S, Dense& V)
-: Task({}, {A, U, S, V}) {}
+  void execute() override {
+    const Dense& A = constant[0];
+    const Dense& B = constant[1];
+    Dense& C = modified[0];
+    if (schedule_started) {
+      struct starpu_task* task = starpu_task_create();
+      task->cl = &gemm_cl;
+      task->cl_arg = &args;
+      task->cl_arg_size = sizeof(args);
+      task->handles[0] = get_handle(A);
+      task->handles[1] = get_handle(B);
+      task->handles[2] = get_handle(C);
+      // Effectively write only, this might be important for dependencies
+      if (args.beta == 0) STARPU_TASK_SET_MODE(task, STARPU_W, 2);
+      STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "gemm_task");
+    } else {
+      gemm_cpu_func(
+        &A, A.dim[0], A.dim[1], A.stride,
+        &B, B.dim[0], B.dim[1], B.stride,
+        &C, C.dim[0], C.dim[1], C.stride,
+        args
+      );
+    }
+  }
+};
+
+BasisTracker<
+  BasisKey, BasisTracker<BasisKey, std::shared_ptr<GEMM_task>>
+> gemm_tracker;
+
+void add_gemm_task(
+  const Dense& A, const Dense& B, Dense& C,
+  bool TransA, bool TransB, double alpha, double beta
+) {
+  // TODO Only add relevant gemm tasks to tracker?
+  // TODO Track tasks objects themselves?
+  if (
+    beta == 0
+    && schedule_started
+    && !C.is_submatrix()
+    && gemm_tracker.has_key(A) && gemm_tracker[A].has_key(B)
+    && gemm_tracker[A][B]->args.alpha == alpha
+    && gemm_tracker[A][B]->args.TransA == TransA
+    && gemm_tracker[A][B]->args.TransB == TransB
+  ) {
+    C = gemm_tracker[A][B]->modified[0].share();
+    return;
+  }
+  std::shared_ptr<GEMM_task> task = std::make_shared<GEMM_task>(
+    A, B, C, TransA, TransB, alpha, beta
+  );
+  if (beta == 0 && schedule_started && !C.is_submatrix()) {
+    gemm_tracker[A][B] = task;
+  }
+  add_task(task);
+}
 
 void svd_cpu_func(
   double* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
@@ -1013,169 +981,67 @@ void make_svd_codelet() {
   svd_cl.modes[3] = STARPU_W;
 }
 
-void SVD_task::execute() {
-  Dense& A = modified[0];
-  Dense& U = modified[1];
-  Dense& S = modified[2];
-  Dense& V = modified[3];
-  if (schedule_started) {
-    struct starpu_task* task = starpu_task_create();
-    task->cl = &svd_cl;
-    task->handles[0] = get_handle(A);
-    task->handles[1] = get_handle(U);
-    task->handles[2] = get_handle(S);
-    task->handles[3] = get_handle(V);
-    STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "svd_task");
-  } else {
-    svd_cpu_func(
-      &A, A.dim[0], A.dim[1], A.stride,
-      &U, U.dim[0], U.dim[1], U.stride,
-      &S, S.dim[0], S.dim[1], S.stride,
-      &V, V.dim[0], V.dim[1], V.stride
-    );
+class SVD_task : public Task {
+ public:
+  SVD_task(Dense& A, Dense& U, Dense& S, Dense& V) : Task({}, {A, U, S, V}) {}
+
+  void execute() override {
+    Dense& A = modified[0];
+    Dense& U = modified[1];
+    Dense& S = modified[2];
+    Dense& V = modified[3];
+    if (schedule_started) {
+      struct starpu_task* task = starpu_task_create();
+      task->cl = &svd_cl;
+      task->handles[0] = get_handle(A);
+      task->handles[1] = get_handle(U);
+      task->handles[2] = get_handle(S);
+      task->handles[3] = get_handle(V);
+      STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "svd_task");
+    } else {
+      svd_cpu_func(
+        &A, A.dim[0], A.dim[1], A.stride,
+        &U, U.dim[0], U.dim[1], U.stride,
+        &S, S.dim[0], S.dim[1], S.stride,
+        &V, V.dim[0], V.dim[1], V.stride
+      );
+    }
   }
-}
-
-Recompress_col_task::Recompress_col_task(
-  Dense& newU, const Dense& AU, const Dense& BU, Dense& AS, const Dense& BS
-) : Task({AU, BU, BS}, {newU, AS}) {}
-
-void Recompress_col_task::execute() {
-  Dense& AU = constant[0];
-  Dense& BU = constant[1];
-  Hierarchical US(1, modified.size()-1);
-  for (uint64_t i=1; i<modified.size(); ++i) {
-    // TODO Assumes equal size of Ss
-    US[i-1] = gemm(AU, modified[i]);
-    gemm(BU, constant[i+1], US[i-1], 1, 1);
-  }
-  Dense newU, S, V, USD(US);
-  std::tie(newU, S, V) = svd(USD);
-  Copy_task(newU, modified[0]).execute();
-  Dense SV = gemm(
-    resize(S, AU.dim[1], AU.dim[1]), resize(V, AU.dim[1], V.dim[1])
-  );
-  Hierarchical smallVH = split(SV, 1, modified.size()-1);
-  for (uint64_t i=1; i<modified.size(); ++i) {
-    Copy_task(Dense(std::move(smallVH[i-1])), modified[i]).execute();
-  }
-}
-
-Recompress_row_task::Recompress_row_task(
-  Dense& newV, const Dense& AV, const Dense& BV, Dense& AS, const Dense& BS
-) : Task({AV, BV, BS}, {newV, AS}) {}
-
-void Recompress_row_task::execute() {
-  Dense& AV = constant[0];
-  Dense& BV = constant[1];
-  Hierarchical SV(modified.size()-1, 1);
-  for (uint64_t i=1; i<modified.size(); ++i) {
-    // TODO Assumes equal size of Ss
-    SV[i-1] = gemm(modified[i], AV);
-    gemm(constant[i+1], BV, SV[i-1], 1, 1);
-  }
-  Dense U, S, newV, SVD(SV);
-  std::tie(U, S, newV) = svd(SVD);
-  Copy_task(newV, modified[0]).execute();
-  Dense US = gemm(
-    resize(U, U.dim[0], AV.dim[0]), resize(S, AV.dim[0], AV.dim[0])
-  );
-  Hierarchical USH = split(US, modified.size()-1, 1);
-  for (uint64_t i=1; i<modified.size(); ++i) {
-    Copy_task(Dense(std::move(USH[i-1])), modified[i]).execute();
-  }
-}
-
-void add_kernel_task(
-  void (*kernel)(
-    double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-    const std::vector<std::vector<double>>& x,
-    int64_t row_start, int64_t col_start
-  ),
-  Dense& A, const std::vector<std::vector<double>>& x,
-  int64_t row_start, int64_t col_start
-) {
-  add_task(std::make_shared<Kernel_task>(kernel, A, x, row_start, col_start));
-}
-
-void add_copy_task(
-  const Dense& A, Dense& B, int64_t row_start, int64_t col_start
-) {
-  add_task(std::make_shared<Copy_task>(A, B, row_start, col_start));
-}
-
-void add_assign_task(Dense& A, double value) {
-  add_task(std::make_shared<Assign_task>(A, value));
-}
-
-void add_addition_task(Dense& A, const Dense& B) {
-  add_task(std::make_shared<Addition_task>(A, B));
-}
-
-void add_subtraction_task(Dense& A, const Dense& B) {
-  add_task(std::make_shared<Subtraction_task>(A, B));
-}
-
-void add_multiplication_task(Dense& A, double factor) {
-  add_task(std::make_shared<Multiplication_task>(A, factor));
-}
-
-void add_getrf_task(Dense& AU, Dense& L) {
-  add_task(std::make_shared<GETRF_task>(AU, L));
-}
-
-void add_qr_task(Dense& A, Dense& Q, Dense& R) {
-  // TODO Check for duplicate/shared tasks
-  add_task(std::make_shared<QR_task>(A, Q, R));
-}
-
-void add_rq_task(Dense& A, Dense& R, Dense& Q) {
-  // TODO Check for duplicate/shared tasks
-  add_task(std::make_shared<RQ_task>(A, R, Q));
-}
-
-void add_trsm_task(const Dense& A, Dense& B, int uplo, int lr) {
-  if (!matrix_is_tracked("trsm_task", A, B)) {
-    add_task(std::make_shared<TRSM_task>(A, B, uplo, lr));
-    register_matrix("trsm_task", A, B);
-  }
-}
-
-BasisTracker<
-  BasisKey, BasisTracker<BasisKey, std::shared_ptr<GEMM_task>>
-> gemm_tracker;
-
-void add_gemm_task(
-  const Dense& A, const Dense& B, Dense& C,
-  bool TransA, bool TransB, double alpha, double beta
-) {
-  // TODO Only add relevant gemm tasks to tracker?
-  // TODO Track tasks objects themselves?
-  if (
-    beta == 0
-    && schedule_started
-    && !C.is_submatrix()
-    && gemm_tracker.has_key(A) && gemm_tracker[A].has_key(B)
-    && gemm_tracker[A][B]->args.alpha == alpha
-    && gemm_tracker[A][B]->args.TransA == TransA
-    && gemm_tracker[A][B]->args.TransB == TransB
-  ) {
-    C = gemm_tracker[A][B]->modified[0].share();
-    return;
-  }
-  std::shared_ptr<GEMM_task> task = std::make_shared<GEMM_task>(
-    A, B, C, TransA, TransB, alpha, beta
-  );
-  if (beta == 0 && schedule_started && !C.is_submatrix()) {
-    gemm_tracker[A][B] = task;
-  }
-  add_task(task);
-}
+};
 
 void add_svd_task(Dense& A, Dense& U, Dense& S, Dense& V) {
   // TODO Check for duplicate/shared tasks
   add_task(std::make_shared<SVD_task>(A, U, S, V));
 }
+
+class Recompress_col_task : public Task {
+ public:
+  bool is_col;
+  Recompress_col_task(
+    Dense& newU, const Dense& AU, const Dense& BU, Dense& AS, const Dense& BS
+  ) : Task({AU, BU, BS}, {newU, AS}) {}
+
+  void execute() override {
+    Dense& AU = constant[0];
+    Dense& BU = constant[1];
+    Hierarchical US(1, modified.size()-1);
+    for (uint64_t i=1; i<modified.size(); ++i) {
+      // TODO Assumes equal size of Ss
+      US[i-1] = gemm(AU, modified[i]);
+      gemm(BU, constant[i+1], US[i-1], 1, 1);
+    }
+    Dense newU, S, V, USD(US);
+    std::tie(newU, S, V) = svd(USD);
+    Copy_task(newU, modified[0]).execute();
+    Dense SV = gemm(
+      resize(S, AU.dim[1], AU.dim[1]), resize(V, AU.dim[1], V.dim[1])
+    );
+    Hierarchical smallVH = split(SV, 1, modified.size()-1);
+    for (uint64_t i=1; i<modified.size(); ++i) {
+      Copy_task(Dense(std::move(smallVH[i-1])), modified[i]).execute();
+    }
+  }
+};
 
 BasisTracker<
   BasisKey, BasisTracker<BasisKey, std::shared_ptr<Recompress_col_task>>
@@ -1198,6 +1064,35 @@ void add_recompress_col_task(
     add_task(recompress_col_tracker[AU][BU]);
   }
 }
+
+class Recompress_row_task : public Task {
+ public:
+  bool is_col;
+  Recompress_row_task(
+    Dense& newV, const Dense& AV, const Dense& BV, Dense& AS, const Dense& BS
+  ) : Task({AV, BV, BS}, {newV, AS}) {}
+
+  void execute() override {
+    Dense& AV = constant[0];
+    Dense& BV = constant[1];
+    Hierarchical SV(modified.size()-1, 1);
+    for (uint64_t i=1; i<modified.size(); ++i) {
+      // TODO Assumes equal size of Ss
+      SV[i-1] = gemm(modified[i], AV);
+      gemm(constant[i+1], BV, SV[i-1], 1, 1);
+    }
+    Dense U, S, newV, SVD(SV);
+    std::tie(U, S, newV) = svd(SVD);
+    Copy_task(newV, modified[0]).execute();
+    Dense US = gemm(
+      resize(U, U.dim[0], AV.dim[0]), resize(S, AV.dim[0], AV.dim[0])
+    );
+    Hierarchical USH = split(US, modified.size()-1, 1);
+    for (uint64_t i=1; i<modified.size(); ++i) {
+      Copy_task(Dense(std::move(USH[i-1])), modified[i]).execute();
+    }
+  }
+};
 
 BasisTracker<
   BasisKey, BasisTracker<BasisKey, std::shared_ptr<Recompress_row_task>>
