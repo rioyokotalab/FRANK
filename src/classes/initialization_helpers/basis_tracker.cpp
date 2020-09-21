@@ -146,7 +146,7 @@ NestedTracker::NestedTracker(const IndexRange& index_range)
 void NestedTracker::register_range(
   const IndexRange& main_range, const IndexRange& associated_range
 ) {
-  // NOTE This function assumes that there are now overlapping ranges!
+  // NOTE This function assumes that there are no overlapping ranges!
   for (NestedTracker& child : children) {
     if (child.is_exactly(main_range)) {
       child.add_associated_range(associated_range);

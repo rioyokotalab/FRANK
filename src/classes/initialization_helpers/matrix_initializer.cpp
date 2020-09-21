@@ -80,18 +80,19 @@ bool MatrixInitializer::is_admissible(const ClusterTree& node) const {
 Dense MatrixInitializer::make_block_row(const NestedTracker& tracker) const {
   // Create row block without admissible blocks
   int64_t n_cols = 0;
+  std::vector<IndexRange> adapted_ranges;
   for (const IndexRange& range : tracker.associated_ranges) {
+    adapted_ranges.push_back({n_cols, range.n});
     n_cols += range.n;
   }
   Dense block_row(tracker.index_range.n, n_cols);
-  int64_t col_start = 0;
-  // TODO Currently not working!
-  abort();
-  // for (const IndexRange& range : tracker.associated_ranges) {
-  //   Dense part(block_row, tracker.index_range.n, range.n, 0, col_start);
-  //   fill_dense_representation(part, tracker.index_range, range);
-  //   col_start += range.n;
-  // }
+  std::vector<Dense> parts = block_row.split(
+    {{0, tracker.index_range.n}}, adapted_ranges
+  );
+  uint64_t j = 0;
+  for (const IndexRange& range : tracker.associated_ranges) {
+    fill_dense_representation(parts[j++], tracker.index_range, range);
+  }
   return block_row;
 }
 
@@ -147,18 +148,19 @@ void MatrixInitializer::construct_nested_col_basis(NestedTracker& tracker) {
 Dense MatrixInitializer::make_block_col(const NestedTracker& tracker) const {
   // Create col block without admissible blocks
   int64_t n_rows = 0;
+  std::vector<IndexRange> adapted_ranges;
   for (const IndexRange& range : tracker.associated_ranges) {
+    adapted_ranges.push_back({n_rows, range.n});
     n_rows += range.n;
   }
   Dense block_col(n_rows, tracker.index_range.n);
-  int64_t row_start = 0;
-  // TODO Currently not working!
-  abort();
-  // for (const IndexRange& range : tracker.associated_ranges) {
-  //   Dense part(block_col, range.n, tracker.index_range.n, row_start, 0);
-  //   fill_dense_representation(part, range, tracker.index_range);
-  //   row_start += range.n;
-  // }
+  std::vector<Dense> parts = block_col.split(
+    adapted_ranges, {{0, tracker.index_range.n}}
+  );
+  int64_t i = 0;
+  for (const IndexRange& range : tracker.associated_ranges) {
+    fill_dense_representation(parts[i++], range, tracker.index_range);
+  }
   return block_col;
 }
 

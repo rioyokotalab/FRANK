@@ -92,7 +92,7 @@ class Dense : public Matrix {
 
   bool is_submatrix() const;
 
-  std::vector<MatrixProxy> split(
+  std::vector<Dense> split(
     const std::vector<IndexRange>& row_ranges,
     const std::vector<IndexRange>& col_ranges,
     bool copy=false

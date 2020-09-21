@@ -101,7 +101,7 @@ define_method(
   )
 ) {
   Hierarchical out(row_splits.size(), col_splits.size());
-  std::vector<MatrixProxy> result = A.split(row_splits, col_splits, copy);
+  std::vector<Dense> result = A.split(row_splits, col_splits, copy);
   for (int64_t i=0; i<out.dim[0]; ++i) {
     for (int64_t j=0; j<out.dim[1]; ++j) {
       out(i, j) = std::move(result[i*out.dim[1]+j]);

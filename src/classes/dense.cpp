@@ -223,12 +223,12 @@ bool Dense::is_submatrix() const {
   return !out;
 }
 
-std::vector<MatrixProxy> Dense::split(
+std::vector<Dense> Dense::split(
   const std::vector<IndexRange>& row_ranges,
   const std::vector<IndexRange>& col_ranges,
   bool copy
 ) const {
-  std::vector<MatrixProxy> out(row_ranges.size()*col_ranges.size());
+  std::vector<Dense> out(row_ranges.size()*col_ranges.size());
   if (copy) {
     for (uint64_t i=0; i<row_ranges.size(); ++i) {
       for (uint64_t j=0; j<col_ranges.size(); ++j) {
