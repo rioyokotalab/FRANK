@@ -22,15 +22,14 @@ DataHandler::~DataHandler() {
         );
       }
     }
-    if (!is_child) {
+    if (!is_child()) {
       starpu_data_unregister_submit(handle);
     }
   }
 }
 
 DataHandler::DataHandler(int64_t n_rows, int64_t n_cols, double val)
-: data(std::make_shared<std::vector<double>>(n_rows*n_cols, val)),
-  is_child(false)
+: data(std::make_shared<std::vector<double>>(n_rows*n_cols, val))
 {
   if (starpu_is_initialized()) {
     starpu_matrix_data_register(
@@ -41,9 +40,10 @@ DataHandler::DataHandler(int64_t n_rows, int64_t n_cols, double val)
 }
 
 DataHandler::DataHandler(
+  std::shared_ptr<DataHandler> parent,
   std::shared_ptr<std::vector<double>> data,
   starpu_data_handle_t handle
-) : data(data), handle(handle), is_child(true) {}
+) : data(data), parent(parent), handle(handle) {}
 
 double& DataHandler::operator[](int64_t i) { return (*data)[i]; }
 
@@ -82,6 +82,7 @@ void partition_filter(
 }
 
 std::vector<std::shared_ptr<DataHandler>> DataHandler::split(
+  std::shared_ptr<DataHandler> parent,
   const std::vector<IndexRange>& row_ranges,
   const std::vector<IndexRange>& col_ranges
 ) {
@@ -103,7 +104,7 @@ std::vector<std::shared_ptr<DataHandler>> DataHandler::split(
   for (uint64_t i=0; i<row_ranges.size(); ++i) {
     for (uint64_t j=0; j<col_ranges.size(); ++j) {
       out[i*col_ranges.size()+j] = std::make_shared<DataHandler>(
-        data, child_handles[i*col_ranges.size()+j]
+        parent, data, child_handles[i*col_ranges.size()+j]
       );
     }
   }
@@ -119,5 +120,7 @@ std::vector<starpu_data_handle_t>& DataHandler::get_last_split() {
   // TODO Add check if there are actually any splits?
   return splits.back();
 }
+
+bool DataHandler::is_child() const { return parent.get() != nullptr; }
 
 } // namespace hicma

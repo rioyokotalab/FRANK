@@ -239,7 +239,7 @@ std::vector<Dense> Dense::split(
     }
   } else {
     std::vector<std::shared_ptr<DataHandler>> child_handlers = data->split(
-      row_ranges, col_ranges
+      data, row_ranges, col_ranges
     );
     for (uint64_t i=0; i<row_ranges.size(); ++i) {
       for (uint64_t j=0; j<col_ranges.size(); ++j) {
