@@ -39,6 +39,7 @@ class Task {
  public:
   std::vector<Dense> constant;
   std::vector<Dense> modified;
+  starpu_task* task;
 
   // Special member functions
   Task() = default;
@@ -54,7 +55,7 @@ class Task {
   Task& operator=(Task&& A) = default;
 
   // Execute the task
-  virtual void execute() = 0;
+  virtual void submit() = 0;
 
  protected:
   Task(
@@ -83,7 +84,7 @@ void add_task(std::shared_ptr<Task> task) {
   if (schedule_started) {
     tasks.push_back(task);
   } else {
-    task->execute();
+    task->submit();
   }
 }
 
@@ -130,16 +131,19 @@ class Kernel_task : public Task {
     ),
     Dense& A, const std::vector<std::vector<double>>& x,
     int64_t row_start, int64_t col_start
-  ) : Task({}, {A}), args{kernel, x, row_start, col_start} {}
-
-  void execute() override  {
-    Dense& A = modified[0];
+  ) : Task({}, {A}), args{kernel, x, row_start, col_start} {
     if (schedule_started) {
-      struct starpu_task* task = starpu_task_create();
+      task = starpu_task_create();
       task->cl = &kernel_cl;
       task->cl_arg = &args;
       task->cl_arg_size = sizeof(args);
       task->handles[0] = get_handle(A);
+    }
+  }
+
+  void submit() override {
+    Dense& A = modified[0];
+    if (schedule_started) {
       STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "kernel_task");
     } else {
       args.kernel(
@@ -210,18 +214,21 @@ class Copy_task : public Task {
  public:
   copy_args args;
   Copy_task(const Dense& A, Dense& B, int64_t row_start=0, int64_t col_start=0)
-  : Task({A}, {B}), args{row_start, col_start} {}
-
-  void execute() override {
-    const Dense& A = constant[0];
-    Dense& B = modified[0];
+  : Task({A}, {B}), args{row_start, col_start} {
     if (schedule_started) {
-      struct starpu_task* task = starpu_task_create();
+      task = starpu_task_create();
       task->cl = &copy_cl;
       task->cl_arg = &args;
       task->cl_arg_size = sizeof(args);
       task->handles[0] = get_handle(A);
       task->handles[1] = get_handle(B);
+    }
+  }
+
+  void submit() override {
+    const Dense& A = constant[0];
+    Dense& B = modified[0];
+    if (schedule_started) {
       STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "copy_task");
     } else {
       copy_cpu_func(&A, A.stride, &B, B.dim[0], B.dim[1], B.stride, args);
@@ -271,16 +278,19 @@ void make_assign_codelet() {
 class Assign_task : public Task {
  public:
   assign_args args;
-  Assign_task(Dense& A, double value) : Task({}, {A}), args{value} {}
-
-  void execute() override {
-    Dense& A = modified[0];
+  Assign_task(Dense& A, double value) : Task({}, {A}), args{value} {
     if (schedule_started) {
-      struct starpu_task* task = starpu_task_create();
+      task = starpu_task_create();
       task->cl = &assign_cl;
       task->cl_arg = &args;
       task->cl_arg_size = sizeof(args);
       task->handles[0] = get_handle(A);
+    }
+  }
+
+  void submit() override {
+    Dense& A = modified[0];
+    if (schedule_started) {
       STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "assign_task");
     } else {
       assign_cpu_func(&A, A.dim[0], A.dim[1], A.stride, args);
@@ -327,16 +337,19 @@ void make_addition_codelet() {
 
 class Addition_task : public Task {
  public:
-  Addition_task(Dense& A, const Dense& B) : Task({B}, {A}) {}
-
-  void execute() override {
-    Dense& A = modified[0];
-    const Dense& B = constant[0];
+  Addition_task(Dense& A, const Dense& B) : Task({B}, {A}) {
     if (schedule_started) {
-      struct starpu_task* task = starpu_task_create();
+      task = starpu_task_create();
       task->cl = &addition_cl;
       task->handles[0] = get_handle(A);
       task->handles[1] = get_handle(B);
+    }
+  }
+
+  void submit() override {
+    Dense& A = modified[0];
+    const Dense& B = constant[0];
+    if (schedule_started) {
       STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "addition_task");
     } else {
       addition_cpu_func(&A, A.dim[0], A.dim[1], A.stride, &B, B.stride);
@@ -383,16 +396,19 @@ void make_subtraction_codelet() {
 
 class Subtraction_task : public Task {
  public:
-  Subtraction_task(Dense& A, const Dense& B) : Task({B}, {A}) {}
-
-  void execute() override {
-    Dense& A = modified[0];
-    const Dense& B = constant[0];
+  Subtraction_task(Dense& A, const Dense& B) : Task({B}, {A}) {
     if (schedule_started) {
-      struct starpu_task* task = starpu_task_create();
+      task = starpu_task_create();
       task->cl = &subtraction_cl;
       task->handles[0] = get_handle(A);
       task->handles[1] = get_handle(B);
+    }
+  }
+
+  void submit() override {
+    Dense& A = modified[0];
+    const Dense& B = constant[0];
+    if (schedule_started) {
       STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "subtraction_task");
     } else {
       subtraction_cpu_func(&A, A.dim[0], A.dim[1], A.stride, &B, B.stride);
@@ -440,16 +456,19 @@ void make_multiplication_codelet() {
 class Multiplication_task : public Task {
  public:
   multiplication_args args;
-  Multiplication_task(Dense& A, double factor) : Task({}, {A}), args{factor} {}
-
-  void execute() override {
-    Dense& A = modified[0];
+  Multiplication_task(Dense& A, double factor) : Task({}, {A}), args{factor} {
     if (schedule_started) {
-      struct starpu_task* task = starpu_task_create();
+      task = starpu_task_create();
       task->cl = &multiplication_cl;
       task->cl_arg = &args;
       task->cl_arg_size = sizeof(args);
       task->handles[0] = get_handle(A);
+    }
+  }
+
+  void submit() override {
+    Dense& A = modified[0];
+    if (schedule_started) {
       STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "multiplication_task");
     } else {
       multiplication_cpu_func(&A, A.dim[0], A.dim[1], A.stride, args);
@@ -505,16 +524,19 @@ void make_getrf_codelet() {
 
 class GETRF_task : public Task {
  public:
-  GETRF_task(Dense& AU, Dense& L) : Task({}, {AU, L}) {}
-
-  void execute() override {
-    Dense& AU = modified[0];
-    Dense& L = modified[1];
+  GETRF_task(Dense& AU, Dense& L) : Task({}, {AU, L}) {
     if (schedule_started) {
-      struct starpu_task* task = starpu_task_create();
+      task = starpu_task_create();
       task->cl = &getrf_cl;
       task->handles[0] = get_handle(AU);
       task->handles[1] = get_handle(L);
+    }
+  }
+
+  void submit() override {
+    Dense& AU = modified[0];
+    Dense& L = modified[1];
+    if (schedule_started) {
       STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "getrf_task");
     } else {
       getrf_cpu_func(&AU, AU.dim[0], AU.dim[1], AU.stride, &L, L.stride);
@@ -592,18 +614,21 @@ void make_qr_codelet() {
 
 class QR_task : public Task {
  public:
-  QR_task(Dense& A, Dense& Q, Dense& R) : Task({}, {A, Q, R}) {}
-
-  void execute() override {
-    Dense& A = modified[0];
-    Dense& Q = modified[1];
-    Dense& R = modified[2];
+  QR_task(Dense& A, Dense& Q, Dense& R) : Task({}, {A, Q, R}) {
     if (schedule_started) {
-      struct starpu_task* task = starpu_task_create();
+      task = starpu_task_create();
       task->cl = &qr_cl;
       task->handles[0] = get_handle(A);
       task->handles[1] = get_handle(Q);
       task->handles[2] = get_handle(R);
+    }
+  }
+
+  void submit() override {
+    Dense& A = modified[0];
+    Dense& Q = modified[1];
+    Dense& R = modified[2];
+    if (schedule_started) {
       STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "qr_task");
     } else {
       qr_cpu_func(
@@ -683,18 +708,21 @@ void make_rq_codelet() {
 
 class RQ_task : public Task {
  public:
-  RQ_task(Dense& A, Dense& R, Dense& Q) : Task({}, {A, R, Q}) {}
-
-  void execute() override {
-    Dense& A = modified[0];
-    Dense& R = modified[1];
-    Dense& Q = modified[2];
+  RQ_task(Dense& A, Dense& R, Dense& Q) : Task({}, {A, R, Q}) {
     if (schedule_started) {
-      struct starpu_task* task = starpu_task_create();
+      task = starpu_task_create();
       task->cl = &rq_cl;
       task->handles[0] = get_handle(A);
       task->handles[1] = get_handle(R);
       task->handles[2] = get_handle(Q);
+    }
+  }
+
+  void submit() override {
+    Dense& A = modified[0];
+    Dense& R = modified[1];
+    Dense& Q = modified[2];
+    if (schedule_started) {
       STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "rq_task");
     } else {
       rq_cpu_func(
@@ -758,18 +786,21 @@ class TRSM_task : public Task {
  public:
   trsm_args args;
   TRSM_task(const Dense& A, Dense& B, int uplo, int lr)
-  : Task({A}, {B}), args{uplo, lr} {}
-
-  void execute() override {
-    const Dense& A = constant[0];
-    Dense& B = modified[0];
+  : Task({A}, {B}), args{uplo, lr} {
     if (schedule_started) {
-      struct starpu_task* task = starpu_task_create();
+      task = starpu_task_create();
       task->cl = &trsm_cl;
       task->cl_arg = &args;
       task->cl_arg_size = sizeof(args);
       task->handles[0] = get_handle(A);
       task->handles[1] = get_handle(B);
+    }
+  }
+
+  void submit() override {
+    const Dense& A = constant[0];
+    Dense& B = modified[0];
+    if (schedule_started) {
       STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "trsm_task");
     } else {
       trsm_cpu_func(&A, A.stride, &B, B.dim[0], B.dim[1], B.stride, args);
@@ -860,14 +891,9 @@ class GEMM_task : public Task {
   GEMM_task(
     const Dense& A, const Dense& B, Dense& C,
     bool TransA, bool TransB, double alpha, double beta
-  ) : Task({A, B}, {C}), args{TransA, TransB, alpha, beta} {}
-
-  void execute() override {
-    const Dense& A = constant[0];
-    const Dense& B = constant[1];
-    Dense& C = modified[0];
+  ) : Task({A, B}, {C}), args{TransA, TransB, alpha, beta} {
     if (schedule_started) {
-      struct starpu_task* task = starpu_task_create();
+      task = starpu_task_create();
       task->cl = &gemm_cl;
       task->cl_arg = &args;
       task->cl_arg_size = sizeof(args);
@@ -876,6 +902,14 @@ class GEMM_task : public Task {
       task->handles[2] = get_handle(C);
       // Effectively write only, this might be important for dependencies
       if (args.beta == 0) STARPU_TASK_SET_MODE(task, STARPU_W, 2);
+    }
+  }
+
+  void submit() override {
+    const Dense& A = constant[0];
+    const Dense& B = constant[1];
+    Dense& C = modified[0];
+    if (schedule_started) {
       STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "gemm_task");
     } else {
       gemm_cpu_func(
@@ -983,20 +1017,23 @@ void make_svd_codelet() {
 
 class SVD_task : public Task {
  public:
-  SVD_task(Dense& A, Dense& U, Dense& S, Dense& V) : Task({}, {A, U, S, V}) {}
-
-  void execute() override {
-    Dense& A = modified[0];
-    Dense& U = modified[1];
-    Dense& S = modified[2];
-    Dense& V = modified[3];
+  SVD_task(Dense& A, Dense& U, Dense& S, Dense& V) : Task({}, {A, U, S, V}) {
     if (schedule_started) {
-      struct starpu_task* task = starpu_task_create();
+      task = starpu_task_create();
       task->cl = &svd_cl;
       task->handles[0] = get_handle(A);
       task->handles[1] = get_handle(U);
       task->handles[2] = get_handle(S);
       task->handles[3] = get_handle(V);
+    }
+  }
+
+  void submit() override {
+    Dense& A = modified[0];
+    Dense& U = modified[1];
+    Dense& S = modified[2];
+    Dense& V = modified[3];
+    if (schedule_started) {
       STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "svd_task");
     } else {
       svd_cpu_func(
@@ -1021,7 +1058,7 @@ class Recompress_col_task : public Task {
     Dense& newU, const Dense& AU, const Dense& BU, Dense& AS, const Dense& BS
   ) : Task({AU, BU, BS}, {newU, AS}) {}
 
-  void execute() override {
+  void submit() override {
     Dense& AU = constant[0];
     Dense& BU = constant[1];
     Hierarchical US(1, modified.size()-1);
@@ -1032,13 +1069,13 @@ class Recompress_col_task : public Task {
     }
     Dense newU, S, V, USD(US);
     std::tie(newU, S, V) = svd(USD);
-    Copy_task(newU, modified[0]).execute();
+    Copy_task(newU, modified[0]).submit();
     Dense SV = gemm(
       resize(S, AU.dim[1], AU.dim[1]), resize(V, AU.dim[1], V.dim[1])
     );
     Hierarchical smallVH = split(SV, 1, modified.size()-1);
     for (uint64_t i=1; i<modified.size(); ++i) {
-      Copy_task(Dense(std::move(smallVH[i-1])), modified[i]).execute();
+      Copy_task(Dense(std::move(smallVH[i-1])), modified[i]).submit();
     }
   }
 };
@@ -1072,7 +1109,7 @@ class Recompress_row_task : public Task {
     Dense& newV, const Dense& AV, const Dense& BV, Dense& AS, const Dense& BS
   ) : Task({AV, BV, BS}, {newV, AS}) {}
 
-  void execute() override {
+  void submit() override {
     Dense& AV = constant[0];
     Dense& BV = constant[1];
     Hierarchical SV(modified.size()-1, 1);
@@ -1083,13 +1120,13 @@ class Recompress_row_task : public Task {
     }
     Dense U, S, newV, SVD(SV);
     std::tie(U, S, newV) = svd(SVD);
-    Copy_task(newV, modified[0]).execute();
+    Copy_task(newV, modified[0]).submit();
     Dense US = gemm(
       resize(U, U.dim[0], AV.dim[0]), resize(S, AV.dim[0], AV.dim[0])
     );
     Hierarchical USH = split(US, modified.size()-1, 1);
     for (uint64_t i=1; i<modified.size(); ++i) {
-      Copy_task(Dense(std::move(USH[i-1])), modified[i]).execute();
+      Copy_task(Dense(std::move(USH[i-1])), modified[i]).submit();
     }
   }
 };
@@ -1124,7 +1161,7 @@ void start_schedule() {
 
 void execute_schedule() {
   for (std::shared_ptr<Task> task : tasks) {
-    task->execute();
+    task->submit();
   }
   starpu_task_wait_for_all();
   tasks.clear();
