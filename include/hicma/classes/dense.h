@@ -97,6 +97,10 @@ class Dense : public Matrix {
     const std::vector<IndexRange>& col_ranges,
     bool copy=false
   ) const;
+
+  std::vector<Dense> split(
+    uint64_t n_row_splits, uint64_t n_col_splits, bool copy=false
+  ) const;
 };
 
 } // namespace hicma

@@ -20,7 +20,6 @@ register_class(NestedBasis, Matrix)
 
 void shutdown() {
   clear_trackers();
-  clear_task_trackers();
   starpu_shutdown();
 }
 

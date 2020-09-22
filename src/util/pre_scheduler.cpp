@@ -1051,32 +1051,106 @@ void add_svd_task(Dense& A, Dense& U, Dense& S, Dense& V) {
   add_task(std::make_shared<SVD_task>(A, U, S, V));
 }
 
-class Recompress_col_task : public Task {
+void sync_func(void**, void*) {}
+
+struct starpu_codelet sync_cl;
+
+void make_sync_codelet() {
+  starpu_codelet_init(&sync_cl);
+  sync_cl.cpu_funcs[0] = sync_func;
+  sync_cl.cpu_funcs_name[0] = "sync_func";
+  sync_cl.name = "Sync";
+  sync_cl.nbuffers = 1;
+  sync_cl.modes[0] = STARPU_R;
+}
+
+class Synchronization_task : public Task {
  public:
-  bool is_col;
-  Recompress_col_task(
-    Dense& newU, const Dense& AU, const Dense& BU, Dense& AS, const Dense& BS
-  ) : Task({AU, BU, BS}, {newU, AS}) {}
+  Synchronization_task(const Dense& A) : Task({A}, {}) {
+    assert(schedule_started);
+    task = starpu_task_create();
+    task->cl = &sync_cl;
+    task->name = "Sync";
+    task->handles[0] = get_handle(A);
+  }
 
   void submit() override {
+    assert(schedule_started);
+    STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "sync_task");
+  }
+};
+
+class Recompress_col_task : public Task {
+ public:
+  std::vector<std::shared_ptr<Task>> subtasks;
+  std::vector<starpu_task*> AS_sync_tasks;
+  std::vector<starpu_task*> BS_sync_tasks;
+  unsigned char gemm_consistency[3]{1, 0, 1};
+
+  Recompress_col_task(
+    Dense& newU, Dense& newS,
+    const Dense& AU, const Dense& BU, const Dense& AS, const Dense& BS
+  ) : Task({AU, BU, AS, BS}, {newU, newS}) {}
+
+  void submit() override {
+    assert(schedule_started);
     Dense& AU = constant[0];
     Dense& BU = constant[1];
-    Hierarchical US(1, modified.size()-1);
+    Dense& newU = modified[0];
+    uint64_t n_cols = 0;
     for (uint64_t i=1; i<modified.size(); ++i) {
-      // TODO Assumes equal size of Ss
-      US[i-1] = gemm(AU, modified[i]);
-      gemm(BU, constant[i+1], US[i-1], 1, 1);
+      n_cols += modified[i].dim[1];
     }
-    Dense newU, S, V, USD(US);
-    std::tie(newU, S, V) = svd(USD);
-    Copy_task(newU, modified[0]).submit();
-    Dense SV = gemm(
-      resize(S, AU.dim[1], AU.dim[1]), resize(V, AU.dim[1], V.dim[1])
-    );
-    Hierarchical smallVH = split(SV, 1, modified.size()-1);
+    Dense US(AU.dim[0], n_cols);
+    // TODO Assumes equal size of Ss
+    std::vector<Dense> US_blocks = US.split(1, modified.size()-1);
     for (uint64_t i=1; i<modified.size(); ++i) {
-      Copy_task(Dense(std::move(smallVH[i-1])), modified[i]).submit();
+      subtasks.push_back(std::make_shared<GEMM_task>(
+        AU, constant[2*i], US_blocks[i-1], false, false, 1, 0)
+      );
+      if (i>1) {
+        starpu_task_declare_deps(subtasks.back()->task, 1, AS_sync_tasks[i-2]);
+        subtasks.back()->task->handles_sequential_consistency = gemm_consistency;
+      }
+      subtasks.push_back(std::make_shared<GEMM_task>(
+        BU, constant[2*i+1], US_blocks[i-1], false, false, 1, 1)
+      );
+      if (i>1) {
+        starpu_task_declare_deps(subtasks.back()->task, 1, BS_sync_tasks[i-2]);
+        subtasks.back()->task->handles_sequential_consistency = gemm_consistency;
+      }
     }
+    uint64_t dim_min = std::min(US.dim[0], US.dim[1]);
+    Dense U(US.dim[0], dim_min);
+    Dense S(dim_min, dim_min);
+    Dense V(dim_min, US.dim[1]);
+    subtasks.push_back(std::make_shared<SVD_task>(US, U, S, V));
+    subtasks.push_back(std::make_shared<Copy_task>(U, newU));
+    Dense smallS(AU.dim[1], AU.dim[1]);
+    subtasks.push_back(std::make_shared<Copy_task>(S, smallS));
+    Dense smallV(AU.dim[1], V.dim[1]);
+    subtasks.push_back(std::make_shared<Copy_task>(V, smallV));
+    std::vector<Dense> V_blocks = smallV.split(1, modified.size()-1);
+    for (uint64_t i=1; i<modified.size(); ++i) {
+      subtasks.push_back(std::make_shared<GEMM_task>(
+        smallS, V_blocks[i-1], modified[i], false, false, 1, 0
+      ));
+    }
+    for (std::shared_ptr<Task> task : subtasks) {
+      task->submit();
+    }
+  }
+
+  Dense add_block(
+    Dense& newS,
+    const Dense& AS, starpu_task* AS_sync, const Dense& BS, starpu_task* BS_sync
+  ) {
+    constant.push_back(AS.share());
+    AS_sync_tasks.push_back(AS_sync);
+    constant.push_back(BS.share());
+    BS_sync_tasks.push_back(BS_sync);
+    modified.push_back(newS.share());
+    return modified[0].share();
   }
 };
 
@@ -1085,49 +1159,99 @@ BasisTracker<
 > recompress_col_tracker;
 
 void add_recompress_col_task(
-  Dense& newU, const Dense& AU, const Dense& BU, Dense& AS, const Dense& BS
+  Dense& newU, Dense& newS,
+  const Dense& AU, const Dense& BU, const Dense& AS, const Dense& BS
 ) {
   assert(schedule_started);
   if (
     recompress_col_tracker.has_key(AU) && recompress_col_tracker[AU].has_key(BU)
   ) {
-    recompress_col_tracker[AU][BU]->modified.push_back(AS.share());
-    recompress_col_tracker[AU][BU]->constant.push_back(BS.share());
-    newU = recompress_col_tracker[AU][BU]->modified[0].share();
+    std::shared_ptr<Task> AS_sync(std::make_shared<Synchronization_task>(AS));
+    add_task(AS_sync);
+    std::shared_ptr<Task> BS_sync(std::make_shared<Synchronization_task>(BS));
+    add_task(BS_sync);
+    newU = recompress_col_tracker[AU][BU]->add_block(
+      newS, AS, AS_sync->task, BS, BS_sync->task);
   } else {
-    recompress_col_tracker[AU][BU] = std::make_shared<Recompress_col_task>(
-      newU, AU, BU, AS, BS
+    std::shared_ptr<Recompress_col_task> task(
+      std::make_shared<Recompress_col_task>(newU, newS, AU, BU, AS, BS)
     );
-    add_task(recompress_col_tracker[AU][BU]);
+    recompress_col_tracker[AU][BU] = task;
+    add_task(task);
   }
 }
 
 class Recompress_row_task : public Task {
  public:
-  bool is_col;
+  std::vector<std::shared_ptr<Task>> subtasks;
+  std::vector<starpu_task*> AS_sync_tasks;
+  std::vector<starpu_task*> BS_sync_tasks;
+  unsigned char gemm_consistency[3]{0, 1, 1};
+
   Recompress_row_task(
-    Dense& newV, const Dense& AV, const Dense& BV, Dense& AS, const Dense& BS
-  ) : Task({AV, BV, BS}, {newV, AS}) {}
+    Dense& newV, Dense& newS,
+    const Dense& AV, const Dense& BV, const Dense& AS, const Dense& BS
+  ) : Task({AV, BV, AS, BS}, {newV, newS}) {}
 
   void submit() override {
+    assert(schedule_started);
     Dense& AV = constant[0];
     Dense& BV = constant[1];
-    Hierarchical SV(modified.size()-1, 1);
+    Dense& newV = modified[0];
+    uint64_t n_rows = 0;
     for (uint64_t i=1; i<modified.size(); ++i) {
-      // TODO Assumes equal size of Ss
-      SV[i-1] = gemm(modified[i], AV);
-      gemm(constant[i+1], BV, SV[i-1], 1, 1);
+      n_rows += modified[i].dim[0];
     }
-    Dense U, S, newV, SVD(SV);
-    std::tie(U, S, newV) = svd(SVD);
-    Copy_task(newV, modified[0]).submit();
-    Dense US = gemm(
-      resize(U, U.dim[0], AV.dim[0]), resize(S, AV.dim[0], AV.dim[0])
-    );
-    Hierarchical USH = split(US, modified.size()-1, 1);
+    Dense SV(n_rows, AV.dim[1]);
+    // TODO Assumes equal size of Ss
+    std::vector<Dense> SV_blocks = SV.split(modified.size()-1, 1);
     for (uint64_t i=1; i<modified.size(); ++i) {
-      Copy_task(Dense(std::move(USH[i-1])), modified[i]).submit();
+      subtasks.push_back(std::make_shared<GEMM_task>(
+        constant[2*i], AV, SV_blocks[i-1], false, false, 1, 0)
+      );
+      if (i>1) {
+        starpu_task_declare_deps(subtasks.back()->task, 1, AS_sync_tasks[i-2]);
+        subtasks.back()->task->handles_sequential_consistency = gemm_consistency;
+      }
+      subtasks.push_back(std::make_shared<GEMM_task>(
+        constant[2*i+1], BV, SV_blocks[i-1], false, false, 1, 1)
+      );
+      if (i>1) {
+        starpu_task_declare_deps(subtasks.back()->task, 1, BS_sync_tasks[i-2]);
+        subtasks.back()->task->handles_sequential_consistency = gemm_consistency;
+      }
     }
+    uint64_t dim_min = std::min(SV.dim[0], SV.dim[1]);
+    Dense U(SV.dim[0], dim_min);
+    Dense S(dim_min, dim_min);
+    Dense V(dim_min, SV.dim[1]);
+    subtasks.push_back(std::make_shared<SVD_task>(SV, U, S, V));
+    Dense smallU(U.dim[0], AV.dim[0]);
+    subtasks.push_back(std::make_shared<Copy_task>(U, smallU));
+    Dense smallS(AV.dim[0], AV.dim[0]);
+    subtasks.push_back(std::make_shared<Copy_task>(S, smallS));
+    subtasks.push_back(std::make_shared<Copy_task>(V, newV));
+    std::vector<Dense> U_blocks = smallU.split(modified.size()-1, 1);
+    for (uint64_t i=1; i<modified.size(); ++i) {
+      subtasks.push_back(std::make_shared<GEMM_task>(
+        U_blocks[i-1], smallS, modified[i], false, false, 1, 0
+      ));
+    }
+    for (std::shared_ptr<Task> task : subtasks) {
+      task->submit();
+    }
+  }
+
+  Dense add_block(
+    Dense& newS,
+    const Dense& AS, starpu_task* AS_sync, const Dense& BS, starpu_task* BS_sync
+  ) {
+    constant.push_back(AS.share());
+    AS_sync_tasks.push_back(AS_sync);
+    constant.push_back(BS.share());
+    BS_sync_tasks.push_back(BS_sync);
+    modified.push_back(newS.share());
+    return modified[0].share();
   }
 };
 
@@ -1136,20 +1260,25 @@ BasisTracker<
 > recompress_row_tracker;
 
 void add_recompress_row_task(
-  Dense& newV, const Dense& AV, const Dense& BV, Dense& AS, const Dense& BS
+  Dense& newV, Dense& newS,
+  const Dense& AV, const Dense& BV, const Dense& AS, const Dense& BS
 ) {
   assert(schedule_started);
   if (
     recompress_row_tracker.has_key(AV) && recompress_row_tracker[AV].has_key(BV)
   ) {
-    recompress_row_tracker[AV][BV]->modified.push_back(AS.share());
-    recompress_row_tracker[AV][BV]->constant.push_back(BS.share());
-    newV = recompress_row_tracker[AV][BV]->modified[0].share();
+    std::shared_ptr<Task> AS_sync(std::make_shared<Synchronization_task>(AS));
+    add_task(AS_sync);
+    std::shared_ptr<Task> BS_sync(std::make_shared<Synchronization_task>(BS));
+    add_task(BS_sync);
+    newV = recompress_row_tracker[AV][BV]->add_block(
+      newS, AS, AS_sync->task, BS, BS_sync->task);
   } else {
-    recompress_row_tracker[AV][BV] = std::make_shared<Recompress_row_task>(
-      newV, AV, BV, AS, BS
+    std::shared_ptr<Recompress_row_task> task(
+      std::make_shared<Recompress_row_task>(newV, newS, AV, BV, AS, BS)
     );
-    add_task(recompress_row_tracker[AV][BV]);
+    recompress_row_tracker[AV][BV] = task;
+    add_task(task);
   }
 }
 
@@ -1182,6 +1311,7 @@ void initialize_starpu() {
   make_trsm_codelet();
   make_gemm_codelet();
   make_svd_codelet();
+  make_sync_codelet();
 }
 
 void clear_task_trackers() {

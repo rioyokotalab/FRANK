@@ -31,6 +31,7 @@ std::tuple<MatrixProxy, MatrixProxy> getrf(Matrix& A) {
   start_schedule();
   std::tuple<MatrixProxy, MatrixProxy> out = getrf_omm(A);
   execute_schedule();
+  clear_task_trackers();
   return out;
 }
 

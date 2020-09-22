@@ -259,4 +259,13 @@ std::vector<Dense> Dense::split(
   return out;
 }
 
+std::vector<Dense> Dense::split(
+  uint64_t n_row_splits, uint64_t n_col_splits, bool copy
+) const {
+  IndexRange row_index(0, dim[0]), col_index(0, dim[1]);
+  return split(
+    row_index.split(n_row_splits), col_index.split(n_col_splits), copy
+  );
+}
+
 } // namespace hicma

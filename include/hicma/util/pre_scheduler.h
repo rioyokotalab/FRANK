@@ -52,11 +52,13 @@ void add_gemm_task(
 void add_svd_task(Dense& A, Dense& U, Dense& S, Dense& V);
 
 void add_recompress_col_task(
-  Dense& newU, const Dense& AU, const Dense& BU, Dense& AS, const Dense& BS
+  Dense& newU, Dense& newS,
+  const Dense& AU, const Dense& BU, const Dense& AS, const Dense& BS
 );
 
 void add_recompress_row_task(
-  Dense& newV, const Dense& AV, const Dense& BV, Dense& AS, const Dense& BS
+  Dense& newV, Dense& newS,
+  const Dense& AV, const Dense& BV, const Dense& AS, const Dense& BS
 );
 
 void start_schedule();
