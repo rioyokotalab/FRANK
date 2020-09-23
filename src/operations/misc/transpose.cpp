@@ -7,6 +7,7 @@
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
 #include "hicma/util/omm_error_handler.h"
+#include "hicma/util/pre_scheduler.h"
 
 #include "yorel/yomm2/cute.hpp"
 
@@ -20,11 +21,7 @@ MatrixProxy transpose(const Matrix& A) { return transpose_omm(A); }
 
 define_method(MatrixProxy, transpose_omm, (const Dense& A)) {
   Dense transposed(A.dim[1], A.dim[0]);
-  for (int64_t i=0; i<A.dim[0]; i++) {
-    for (int64_t j=0; j<A.dim[1]; j++) {
-      transposed(j, i) = A(i, j);
-    }
-  }
+  add_transpose_task(A, transposed);
   return transposed;
 }
 

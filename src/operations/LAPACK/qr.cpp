@@ -354,11 +354,7 @@ define_method(
   for(int64_t i=0; i<HQb.dim[0]; i++) {
     int64_t dim_Bi[2]{get_n_rows(B(i, 0)), get_n_cols(B(i, 0))};
     Dense Qbi(dim_Bi[0], dim_Bi[1]);
-    for(int64_t row=0; row<dim_Bi[0]; row++) {
-      for(int64_t col=0; col<dim_Bi[1]; col++) {
-        Qbi(row, col) = Qb(rowOffset + row, col);
-      }
-    }
+    add_copy_task(Qb, Qbi, rowOffset, 0);
     HQb(i, 0) = Qbi;
     rowOffset += dim_Bi[0];
   }

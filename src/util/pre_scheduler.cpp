@@ -242,6 +242,65 @@ void add_copy_task(
   add_task(std::make_shared<Copy_task>(A, B, row_start, col_start));
 }
 
+void transpose_cpu_func(
+  const double* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
+  double* B, uint64_t B_stride
+) {
+  for (uint64_t i=0; i<A_dim0; i++) {
+    for (uint64_t j=0; j<A_dim1; j++) {
+      B[j*B_stride+i] = A[i*A_stride+j];
+    }
+  }
+}
+
+void transpose_cpu_starpu_interface(void* buffers[], void*) {
+  const double* A = (double *)STARPU_MATRIX_GET_PTR(buffers[0]);
+  uint64_t A_dim0 = STARPU_MATRIX_GET_NY(buffers[0]);
+  uint64_t A_dim1 = STARPU_MATRIX_GET_NX(buffers[0]);
+  uint64_t A_stride = STARPU_MATRIX_GET_LD(buffers[0]);
+  double* B = (double *)STARPU_MATRIX_GET_PTR(buffers[1]);
+  uint64_t B_stride = STARPU_MATRIX_GET_LD(buffers[1]);
+  transpose_cpu_func(A, A_dim0, A_dim1, A_stride, B, B_stride);
+}
+
+struct starpu_codelet transpose_cl;
+
+void make_transpose_codelet() {
+  starpu_codelet_init(&transpose_cl);
+  transpose_cl.cpu_funcs[0] = transpose_cpu_starpu_interface;
+  transpose_cl.cpu_funcs_name[0] = "transpose_cpu_func";
+  transpose_cl.name = "Transpose";
+  transpose_cl.nbuffers = 2;
+  transpose_cl.modes[0] = STARPU_R;
+  transpose_cl.modes[1] = STARPU_W;
+}
+
+class Transpose_task : public Task {
+ public:
+  Transpose_task(const Dense& A, Dense& B) : Task({A}, {B}) {
+    if (schedule_started) {
+      task = starpu_task_create();
+      task->cl = &transpose_cl;
+      task->handles[0] = get_handle(A);
+      task->handles[1] = get_handle(B);
+    }
+  }
+
+  void submit() override {
+    const Dense& A = constant[0];
+    Dense& B = modified[0];
+    if (schedule_started) {
+      STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "transpose_task");
+    } else {
+      transpose_cpu_func(&A, A.dim[0], A.dim[1], A.stride, &B, B.stride);
+    }
+  }
+};
+
+void add_transpose_task(const Dense& A, Dense& B) {
+  add_task(std::make_shared<Transpose_task>(A, B));
+}
+
 struct assign_args { double value; };
 
 void assign_cpu_func(
@@ -1301,6 +1360,7 @@ void initialize_starpu() {
   STARPU_CHECK_RETURN_VALUE(starpu_init(NULL), "init");
   make_kernel_codelet();
   make_copy_codelet();
+  make_transpose_codelet();
   make_assign_codelet();
   make_addition_codelet();
   make_subtraction_codelet();

@@ -28,6 +28,8 @@ void add_copy_task(
   const Dense& A, Dense& B, int64_t row_start=0, int64_t col_start=0
 );
 
+void add_transpose_task(const Dense& A, Dense& B);
+
 void add_assign_task(Dense& A, double value);
 
 void add_addition_task(Dense& A, const Dense& B);
