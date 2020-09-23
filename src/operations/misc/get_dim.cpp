@@ -33,15 +33,7 @@ define_method(int64_t, get_n_rows_omm, (const Hierarchical& A)) {
 
 define_method(int64_t, get_n_rows_omm, (const NestedBasis& A)) {
   // TODO This can be made simpler if we store Vt instead of V
-  int64_t out = 0;
-  if (A.col_basis && A.num_child_basis() > 0) {
-    for (int64_t i=0; i<A.num_child_basis(); ++i) {
-      out += get_n_rows(A[i]);
-    }
-  } else {
-    out = get_n_rows(A.transfer_matrix);
-  }
-  return out;
+  return A.is_col_basis() ? get_n_rows(A.sub_bases) : get_n_rows(A.translation);
 }
 
 define_method(int64_t, get_n_rows_omm, (const Matrix& A)) {
@@ -66,15 +58,7 @@ define_method(int64_t, get_n_cols_omm, (const Hierarchical& A)) {
 
 define_method(int64_t, get_n_cols_omm, (const NestedBasis& A)) {
   // TODO This can be made simpler if we store Vt instead of V
-  int64_t out = 0;
-  if (!A.col_basis && A.num_child_basis() > 0) {
-    for (int64_t j=0; j<A.num_child_basis(); ++j) {
-      out += get_n_cols(A[j]);
-    }
-  } else {
-    out = get_n_cols(A.transfer_matrix);
-  }
-  return out;
+  return A.is_row_basis() ? get_n_cols(A.sub_bases) : get_n_cols(A.translation);
 }
 
 define_method(int64_t, get_n_cols_omm, (const Matrix& A)) {

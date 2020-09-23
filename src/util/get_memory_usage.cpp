@@ -48,14 +48,12 @@ define_method(
   (const NestedBasis& A, bool include_structure)
 ) {
   // If transfer matrix is already registered, return 0
-  if (matrix_is_tracked("memory_usage", A.transfer_matrix)) return 0;
+  if (matrix_is_tracked("memory_usage", A.translation)) return 0;
   // Otherwise calculate size and recurse
   unsigned long memory_usage = get_memory_usage(
-    A.transfer_matrix, include_structure
+    A.translation, include_structure
   );
-  for (int64_t i=0; i<A.num_child_basis(); ++i) {
-    memory_usage += get_memory_usage_omm(A[i], include_structure);
-  }
+  memory_usage += get_memory_usage_omm(A.sub_bases, include_structure);
   if (include_structure) {
     memory_usage += sizeof(NestedBasis);
   }

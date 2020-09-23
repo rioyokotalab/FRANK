@@ -9,6 +9,7 @@
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
 
+#include <cassert>
 #include <cstdint>
 #include <cstdlib>
 #include <memory>
@@ -20,46 +21,11 @@ namespace hicma
 {
 
 NestedBasis::NestedBasis(
-  Dense&& A, std::vector<MatrixProxy>& sub_bases, bool is_col_basis
-) : sub_bases(std::move(sub_bases)), transfer_matrix(std::move(A)),
+  const MatrixProxy& sub_bases, const Dense& trans_mat, bool is_col_basis
+) : sub_bases(share_basis(sub_bases)),
+    translation(trans_mat.share()),
     col_basis(is_col_basis)
 {}
-
-NestedBasis::NestedBasis(const Dense& A, bool is_col_basis)
-: sub_bases(), transfer_matrix(std::move(A)), col_basis(is_col_basis)
-{}
-
-MatrixProxy& NestedBasis::operator[](int64_t i) {
-  return sub_bases[i];
-}
-
-const MatrixProxy& NestedBasis::operator[](int64_t i) const {
-  return sub_bases[i];
-}
-
-int64_t NestedBasis::num_child_basis() const { return sub_bases.size(); }
-
-NestedBasis NestedBasis::share() const {
-  NestedBasis new_shared;
-  new_shared.transfer_matrix = transfer_matrix.share();
-  new_shared.sub_bases = std::vector<MatrixProxy>(num_child_basis());
-  for (int64_t i=0; i<new_shared.num_child_basis(); ++i) {
-    new_shared[i] = share_basis((*this)[i]);
-  }
-  new_shared.col_basis = col_basis;
-  return new_shared;
-}
-
-bool NestedBasis::is_shared_with(const NestedBasis& A) const {
-  bool shared = transfer_matrix.is_shared_with(A.transfer_matrix);
-  shared &= num_child_basis() == A.num_child_basis();
-  if (shared) {
-    for (int64_t i=0; i<num_child_basis(); ++i) {
-      shared &= hicma::is_shared((*this)[i], A[i]);
-    }
-  }
-  return shared;
-}
 
 bool NestedBasis::is_col_basis() const { return col_basis; }
 
@@ -73,10 +39,17 @@ bool is_shared(const Matrix& A, const Matrix& B) {
   return is_shared_omm(A, B);
 }
 
+define_method(bool, is_shared_omm, (const Dense& A, const Dense& B)) {
+  return A.is_shared_with(B);
+}
+
 define_method(
   bool, is_shared_omm, (const NestedBasis& A, const NestedBasis& B)
 ) {
-  return A.is_shared_with(B);
+  bool shared = A.translation.is_shared_with(B.translation);
+  shared &= is_shared(A.sub_bases, B.sub_bases);
+  shared &= (A.is_col_basis() == B.is_col_basis());
+  return shared;
 }
 
 define_method(bool, is_shared_omm, (const NestedBasis&, const Dense&)) {
@@ -87,11 +60,16 @@ define_method(bool, is_shared_omm, (const Dense&, const NestedBasis&)) {
   return false;
 }
 
-define_method(bool, is_shared_omm, (const Dense&, const Dense&)) {
-  // TODO Might need to find a way to check for regular Dense as well. In LR
-  // addition, this could potentiall save a lot of time. For now though, such
-  // cases should not happen.
-  return false;
+define_method(
+  bool, is_shared_omm, (const Hierarchical& A, const Hierarchical& B)
+) {
+  assert(A.dim == B.dim);
+  for (int64_t i=0; i<A.dim[0]; ++i) {
+    for (int64_t j=0; j<A.dim[1]; ++j) {
+      if (!is_shared(A(i, j), B(i, j))) return false;
+    }
+  }
+  return true;
 }
 
 define_method(bool, is_shared_omm, (const Matrix& A, const Matrix& B)) {
@@ -103,14 +81,24 @@ MatrixProxy share_basis(const Matrix& A) {
   return share_basis_omm(A);
 }
 
-define_method(MatrixProxy, share_basis_omm, (const NestedBasis& A)) {
-  return A.share();
-}
-
 define_method(MatrixProxy, share_basis_omm, (const Dense& A)) {
   // TODO Having this work for Dense might not be desirable (see is_shared check
   // above)
   return A.share();
+}
+
+define_method(MatrixProxy, share_basis_omm, (const NestedBasis& A)) {
+  return NestedBasis(A.sub_bases, A.translation, A.is_col_basis());
+}
+
+define_method(MatrixProxy, share_basis_omm, (const Hierarchical& A)) {
+  Hierarchical new_shared(A.dim[0], A.dim[1]);
+  for (int64_t i=0; i<A.dim[0]; ++i) {
+    for (int64_t j=0; j<A.dim[1]; ++j) {
+      new_shared(i, j) = share_basis(A(i, j));
+    }
+  }
+  return new_shared;
 }
 
 define_method(MatrixProxy, share_basis_omm, (const Matrix& A)) {

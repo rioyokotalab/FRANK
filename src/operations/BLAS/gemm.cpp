@@ -74,31 +74,15 @@ define_method(
     double alpha, double beta
   )
 ) {
-  // TODO Find way to remove if check?
-  if (A.num_child_basis() == 0) {
-    gemm(A.transfer_matrix, B, C, TransA, TransB, alpha, beta);
+  // TODO Consider possible optimization here once all gemms with TransA and
+  // TransB are available
+  Dense dense_basis;
+  if (A.is_col_basis()) {
+    dense_basis = gemm(A.sub_bases, A.translation);
   } else {
-    // TODO Allow transpose for B?
-    assert(!TransB);
-    if ((A.is_col_basis() && TransA) || (A.is_row_basis() && !TransA)) {
-      // TODO Won't work for sub-bases of different sizes
-      Hierarchical BH = split(B, A.num_child_basis(), 1);
-      Dense AsubB(A.transfer_matrix.dim[A.is_col_basis() ? 0 : 1], B.dim[1]);
-      Hierarchical AsubBH = split(AsubB, A.num_child_basis(), 1);
-      for (int64_t i=0; i<A.num_child_basis(); ++i) {
-        gemm(A[i], BH[i], AsubBH[i], TransA, false, 1, 0);
-      }
-      gemm(A.transfer_matrix, AsubB, C, TransA, false, alpha, beta);
-    } else if ((A.is_col_basis() && !TransA) || (A.is_row_basis() || TransA)) {
-      Dense AtransferB = gemm(A.transfer_matrix, B, 1, TransA, false);
-      // TODO Won't work for sub-bases of different sizes
-      Hierarchical CH = split(C, A.num_child_basis(), 1);
-      Hierarchical AtransferBH = split(AtransferB, A.num_child_basis(), 1);
-      for (int64_t i=0; i<A.num_child_basis(); ++i) {
-        gemm(A[i], AtransferBH[i], CH[i], TransA, false, alpha, beta);
-      }
-    }
+    dense_basis = gemm(A.translation, A.sub_bases);
   }
+  gemm(dense_basis, B, C, TransA, TransB, alpha, beta);
 }
 
 define_method(
@@ -109,30 +93,15 @@ define_method(
     double alpha, double beta
   )
 ) {
-  if (B.num_child_basis() == 0) {
-    gemm(A, B.transfer_matrix, C, TransA, TransB, alpha, beta);
+  // TODO Consider possible optimization here once all gemms with TransA and
+  // TransB are available
+  Dense dense_basis;
+  if (B.is_col_basis()) {
+    dense_basis = gemm(B.sub_bases, B.translation);
   } else {
-    // TODO Allow transpose for A?
-    assert(!TransA);
-    if ((B.is_col_basis() && !TransB) || (B.is_row_basis() && TransB)) {
-      // TODO Won't work for sub-bases of different sizes
-      Hierarchical AH = split(A, 1, B.num_child_basis());
-      Dense ABsub(A.dim[0], (B.transfer_matrix).dim[B.is_col_basis() ? 0 : 1]);
-      Hierarchical ABsubH = split(ABsub, 1, B.num_child_basis());
-      for (int64_t j=0; j<B.num_child_basis(); ++j) {
-        gemm(AH[j], B[j], ABsubH[j], false, TransB, 1, 0);
-      }
-      gemm(ABsub, B.transfer_matrix, C, false, TransB, alpha, beta);
-    } else if ((B.is_col_basis() && TransB) || (B.is_row_basis() && !TransB)) {
-      Dense ABtransfer = gemm(A, B.transfer_matrix, 1, false, TransB);
-      // TODO Won't work for sub-bases of different sizes
-      Hierarchical CH = split(C, 1, B.num_child_basis());
-      Hierarchical AtransferBH = split(ABtransfer, 1, B.num_child_basis());
-      for (int64_t j=0; j<B.num_child_basis(); ++j) {
-        gemm(AtransferBH[j], B[j], CH[j], false, TransB, alpha, beta);
-      }
-    }
+    dense_basis = gemm(B.translation, B.sub_bases);
   }
+  gemm(A, dense_basis, C, TransA, TransB, alpha, beta);
 }
 
 define_method(
@@ -146,28 +115,10 @@ define_method(
   // TODO For now only allow this case
   assert(!TransA && !TransB);
   assert(A.is_row_basis() && B.is_col_basis());
-  if (A.num_child_basis() == 0 && B.num_child_basis() == 0) {
-    gemm(A.transfer_matrix, B.transfer_matrix, C, TransA, TransB, alpha, beta);
-  } else {
-    assert(A.num_child_basis() == B.num_child_basis());
-    // TODO Assumes evenly sized subbases
-    Hierarchical AsubBsubt(A.num_child_basis(), B.num_child_basis());
-    // TODO A lot of this code could be simplified if there was a Zero class or
-    // if Dense had a is_zero property.
-    for (int64_t i=0; i<A.num_child_basis(); ++i) {
-      AsubBsubt(i, i) = gemm(A[i], B[i]);
-    }
-    Dense AsubBsubtBtransfer(
-      get_n_cols(A.transfer_matrix), get_n_cols(B.transfer_matrix)
-    );
-    Hierarchical AsubBsubtBtransferH = split(
-      AsubBsubtBtransfer, A.num_child_basis(), 1
-    );
-    Hierarchical AtransferH = split(A.transfer_matrix, 1, A.num_child_basis());
-    for (int64_t i=0; i<A.num_child_basis(); ++i) {
-      gemm(AtransferH[i], AsubBsubtBtransferH[i], C, alpha, i==0? beta : 0);
-    }
-  }
+  gemm(
+    gemm(A.translation, gemm(A.sub_bases, B.sub_bases)),
+    B.translation, C, alpha, beta
+  );
 }
 
 // Fallback default, abort with error message

@@ -80,28 +80,10 @@ define_method(void, fill_dense_from, (const LowRank& A, Dense& B)) {
 
 define_method(void, fill_dense_from, (const NestedBasis& A, Dense& B)) {
   timing::start("make_dense(NestedBasis)");
-  // Only use transfer matrix if there are no children
-  if (A.num_child_basis() == 0) {
-    fill_dense_from(A.transfer_matrix, B);
-    timing::stop("make_dense(NestedBasis)");
-    return;
-  }
-  Hierarchical AtransH = split(
-    A.transfer_matrix,
-    A.is_col_basis() ? A.num_child_basis() : 1,
-    A.is_row_basis() ? A.num_child_basis() : 1
-  );
-  Hierarchical BH = split(
-    B,
-    A.is_col_basis() ? A.num_child_basis() : 1,
-    A.is_row_basis() ? A.num_child_basis() : 1
-  );
-  for (int64_t i=0; i<A.num_child_basis(); ++i) {
-    if (A.is_col_basis()) {
-      gemm(A[i], AtransH[i], BH[i], false, false, 1, 0);
-    } else if (A.is_row_basis()) {
-      gemm(AtransH[i], A[i], BH[i], false, false, 1, 0);
-    }
+  if (A.is_col_basis()) {
+    gemm(A.sub_bases, A.translation, B, 1, 0);
+  } else {
+    gemm(A.translation, A.sub_bases, B, 1, 0);
   }
   timing::stop("make_dense(NestedBasis)");
 }

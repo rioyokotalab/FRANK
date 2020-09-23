@@ -28,21 +28,21 @@ define_method(
   void, recompress_col_omm,
   (NestedBasis& AU, const NestedBasis& BU, Dense& AS, const Dense& BS)
 ) {
-  recompress_col(AU.transfer_matrix, BU.transfer_matrix, AS, BS);
+  recompress_col(AU.translation, BU.translation, AS, BS);
 }
 
 define_method(
   void, recompress_col_omm,
   (NestedBasis& AU, const Dense& BU, Dense& AS, const Dense& BS)
 ) {
-  recompress_col(AU.transfer_matrix, BU, AS, BS);
+  recompress_col(AU.translation, BU, AS, BS);
 }
 
 define_method(
   void, recompress_col_omm,
   (Dense& AU, const NestedBasis& BU, Dense& AS, const Dense& BS)
 ) {
-  recompress_col(AU, BU.transfer_matrix, AS, BS);
+  recompress_col(AU, BU.translation, AS, BS);
 }
 
 define_method(
@@ -76,21 +76,21 @@ define_method(
   void, recompress_row_omm,
   (NestedBasis& AV, const NestedBasis& BV, Dense& AS, const Dense& BS)
 ) {
-  recompress_row(AV.transfer_matrix, BV.transfer_matrix, AS, BS);
+  recompress_row(AV.translation, BV.translation, AS, BS);
 }
 
 define_method(
   void, recompress_row_omm,
   (NestedBasis& AV, const Dense& BV, Dense& AS, const Dense& BS)
 ) {
-  recompress_row(AV.transfer_matrix, BV, AS, BS);
+  recompress_row(AV.translation, BV, AS, BS);
 }
 
 define_method(
   void, recompress_row_omm,
   (Dense& AV, const NestedBasis& BV, Dense& AS, const Dense& BS)
 ) {
-  recompress_row(AV, BV.transfer_matrix, AS, BS);
+  recompress_row(AV, BV.translation, AS, BS);
 }
 
 define_method(

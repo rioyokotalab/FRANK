@@ -89,27 +89,61 @@ define_method(void, trsm_omm, (const Dense& A, Dense& B, int uplo, int lr)) {
 define_method(
   void, trsm_omm, (const Dense& A, NestedBasis& B, int uplo, int lr)
 ) {
-  // TODO Only works for single layer!
-  if (B.num_child_basis() != 0) abort();
   // Decouple basis
   // TODO Use different/more general tracker (like "copy")?
   // TODO Maybe this should not be in TRSM but in the main getrf?
-  if (!matrix_is_tracked("decoupling", B.transfer_matrix)) {
-    register_matrix("decoupling", B.transfer_matrix, Dense(B.transfer_matrix));
-  }
-  B.transfer_matrix = get_tracked_content("decoupling", B.transfer_matrix).share();
-  trsm(A, B.transfer_matrix, uplo, lr);
+  trsm(A, B.sub_bases, uplo, lr);
 }
+
+declare_method(MatrixProxy, decouple, (virtual_<const Matrix&>))
 
 define_method(void, trsm_omm, (const Matrix& A, LowRank& B, int uplo, int lr)) {
   switch (lr) {
   case TRSM_LEFT:
+    // TODO This introduces unneeded copies in the non-shared case! Find a way
+    // around that.
+    B.U = decouple(B.U);
     trsm(A, B.U, uplo, lr);
     break;
   case TRSM_RIGHT:
+    // TODO This introduces unneeded copies in the non-shared case! Find a way
+    // around that.
+    B.V = decouple(B.V);
     trsm(A, B.V, uplo, lr);
     break;
   }
+}
+
+define_method(MatrixProxy, decouple, (const Dense& A)) {
+  if (!matrix_is_tracked("decoupling", A)) {
+    register_matrix("decoupling", A, Dense(A));
+  }
+  return get_tracked_content("decoupling", A).share();
+}
+
+define_method(MatrixProxy, decouple, (const NestedBasis& A)) {
+  // TODO This is probably inefficient as checks are performed many times for
+  // same object. Store MatrixProxy instead of Dense in tracker?
+  return NestedBasis(
+    decouple(A.sub_bases),
+    decouple(A.translation),
+    A.col_basis
+  );
+}
+
+define_method(MatrixProxy, decouple, (const Hierarchical& A)) {
+  Hierarchical decoupled(A.dim[0], A.dim[1]);
+  for (int64_t i=0; i<A.dim[0]; ++i) {
+    for (int64_t j=0; j<A.dim[1]; ++j) {
+      decoupled(i, j) = decouple(A(i, j));
+    }
+  }
+  return decoupled;
+}
+
+define_method(MatrixProxy, decouple, (const Matrix& A)) {
+  omm_error_handler("decouple", {A}, __FILE__, __LINE__);
+  std::abort();
 }
 
 define_method(

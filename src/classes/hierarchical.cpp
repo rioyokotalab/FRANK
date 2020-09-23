@@ -68,13 +68,9 @@ define_method(MatrixProxy, tracked_copy, (const Dense& A)) {
 }
 
 define_method(MatrixProxy, tracked_copy, (const NestedBasis& A)) {
-  std::vector<MatrixProxy> new_sub_bases(A.num_child_basis());
-  for (int64_t i=0; i<A.num_child_basis(); ++i) {
-    new_sub_bases[i] = tracked_copy(A[i]);
-  }
   return NestedBasis(
-    tracked_copy(A.transfer_matrix),
-    new_sub_bases,
+    tracked_copy(A.sub_bases),
+    tracked_copy(A.translation),
     A.is_col_basis()
   );
 }

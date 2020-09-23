@@ -109,40 +109,36 @@ void MatrixInitializer::construct_nested_col_basis(NestedTracker& tracker) {
   }
   // Make block row using associated ranges
   Dense block_row = make_block_row(tracker);
-  // If there are children, use the now complete set to update the block row
-  // NOTE This assumes constant rank!
-  if (!tracker.children.empty()) {
-    Dense compressed_block_row(tracker.children.size()*rank, block_row.dim[1]);
-    // Created slices of appropriate size
-    // NOTE Assumes same size of all subblocks
+  if (tracker.children.empty()) {
+    Dense basis, _, __;
+    // TODO For very small ranks the following line can cause problems! Only
+    // happens with block_row, not with block_col. TSQR is better than small fat
+    // QR it seems.
+    int64_t sample_size = std::min(rank+5, block_row.dim[1]);
+    std::tie(basis, _, __) = rsvd(block_row, sample_size);
+    col_basis[tracker.index_range] = resize(basis, basis.dim[0], rank);
+  } else {
+    // Create slices of appropriate size
+    // TODO Assumes same size of all subblocks
     Hierarchical block_rowH = split(block_row, tracker.children.size(), 1);
-    Hierarchical compressed_block_rowH = split(
-      compressed_block_row, tracker.children.size(), 1
-    );
-    // Multiply transpose of subbases to the slices
-    for (uint64_t i=0; i < tracker.children.size(); ++i) {
-      gemm(
+    Hierarchical nested_basis(tracker.children.size(), 1);
+    Dense translation, _, __;
+    for (uint64_t i=0; i<tracker.children.size(); ++i) {
+      // Multiply transpose of subbases to the slices
+      Dense compressed_block_row = gemm(
         col_basis[tracker.children[i].index_range], block_rowH[i],
-        compressed_block_rowH[i],
-        true, false, 1, 0
+        1, true, false
+      );
+      int64_t sample_size = std::min(rank+5, compressed_block_row.dim[0]);
+      std::tie(translation, _, __) = rsvd(compressed_block_row, sample_size);
+      nested_basis[i] = NestedBasis(
+        col_basis[tracker.children[i].index_range],
+        resize(translation, translation.dim[0], rank),
+        true
       );
     }
-    // Replace block row with its compressed form
-    block_row = std::move(compressed_block_row);
+    col_basis[tracker.index_range] = std::move(nested_basis);
   }
-  // Get column basis of (possibly compressed) block row
-  int64_t sample_size = std::min(rank+5, tracker.index_range.n);
-  Dense U, _, __;
-  // TODO For very small ranks the following line can cause problems! Only
-  // happens with block_row, not with block_col. TSQR is better than small fat
-  // QR it seems.
-  std::tie(U, _, __) = rsvd(block_row, sample_size);
-  U = resize(U, U.dim[0], rank);
-  std::vector<MatrixProxy> child_bases;
-  for (NestedTracker& child : tracker.children) {
-    child_bases.push_back(share_basis(col_basis[child.index_range]));
-  }
-  col_basis[tracker.index_range] = NestedBasis(std::move(U), child_bases, true);
 }
 
 Dense MatrixInitializer::make_block_col(const NestedTracker& tracker) const {
@@ -177,37 +173,32 @@ void MatrixInitializer::construct_nested_row_basis(NestedTracker& tracker) {
   }
   // Make block col using associated ranges
   Dense block_col = make_block_col(tracker);
-  // If there are children, use the now complete set to update the block row
-  // NOTE This assumes constant rank!
-  if (!tracker.children.empty()) {
-    Dense compressed_block_col(block_col.dim[0], tracker.children.size()*rank);
-    // Created slices of appropriate size
+  if (tracker.children.empty()) {
+    Dense _, __, basis;
+    int64_t sample_size = std::min(rank+5, block_col.dim[1]);
+    std::tie(_, __, basis) = rsvd(block_col, sample_size);
+    row_basis[tracker.index_range] = resize(basis, rank, basis.dim[1]);
+  } else {
+    // Create slices of appropriate size
     // NOTE Assumes same size of all subblocks
     Hierarchical block_colH = split(block_col, 1, tracker.children.size());
-    Hierarchical compressed_block_colH = split(
-      compressed_block_col, 1, tracker.children.size()
-    );
-    // Multiply transpose of subbases to the slices
+    Hierarchical nested_basis(1, tracker.children.size());
+    Dense _, __, translation;
     for (uint64_t j=0; j < tracker.children.size(); ++j) {
-      gemm(
+      // Multiply transpose of subbases to the slices
+      Dense compressed_block_col = gemm(
         block_colH[j], row_basis[tracker.children[j].index_range],
-        compressed_block_colH[j],
-        false, true, 1, 0
+        1, false, true
+      );
+      int64_t sample_size = std::min(rank+5, compressed_block_col.dim[1]);
+      std::tie(_, __, translation) = rsvd(compressed_block_col, sample_size);
+      row_basis[tracker.index_range] = NestedBasis(
+        row_basis[tracker.children[j].index_range],
+        resize(translation, rank, translation.dim[1]),
+        false
       );
     }
-    // Replace block row with its compressed form
-    block_col = std::move(compressed_block_col);
   }
-  // Get column basis of (possibly compressed) block row
-  int64_t sample_size = std::min(rank+5, tracker.index_range.n);
-  Dense _, __, V;
-  std::tie(_, __, V) = rsvd(block_col, sample_size);
-  V = resize(V, rank, V.dim[1]);
-  std::vector<MatrixProxy> child_bases;
-  for (NestedTracker& child : tracker.children) {
-    child_bases.push_back(share_basis(row_basis[child.index_range]));
-  }
-  row_basis[tracker.index_range] = NestedBasis(std::move(V), child_bases, false);
 }
 
 } // namespace hicma
