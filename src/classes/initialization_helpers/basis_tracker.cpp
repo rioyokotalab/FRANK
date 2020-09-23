@@ -13,6 +13,7 @@ using yorel::yomm2::virtual_;
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
+#include <cstdlib>
 #include <functional>
 #include <utility>
 
@@ -212,7 +213,7 @@ void NestedTracker::complete_index_range() {
     const IndexRange& child_range = children[i].index_range;
     if (child_range.start > previous_range_end) {
       // NOTE There should be no missing index ranges!
-      abort();
+      std::abort();
       NestedTracker new_child(IndexRange(
         previous_range_end, child_range.start - previous_range_end
       ));
