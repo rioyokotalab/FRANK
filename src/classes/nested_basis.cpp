@@ -21,10 +21,10 @@ namespace hicma
 {
 
 NestedBasis::NestedBasis(
-  const MatrixProxy& sub_bases, const Dense& trans_mat, bool is_col_basis
+  const MatrixProxy& sub_bases, const Dense& trans_mat, bool col_basis
 ) : sub_bases(share_basis(sub_bases)),
     translation(trans_mat.share()),
-    col_basis(is_col_basis)
+    col_basis(col_basis)
 {}
 
 bool NestedBasis::is_col_basis() const { return col_basis; }

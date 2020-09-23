@@ -184,7 +184,7 @@ void MatrixInitializer::construct_nested_row_basis(NestedTracker& tracker) {
     Hierarchical block_colH = split(block_col, 1, tracker.children.size());
     Hierarchical nested_basis(1, tracker.children.size());
     Dense _, __, translation;
-    for (uint64_t j=0; j < tracker.children.size(); ++j) {
+    for (uint64_t j=0; j<tracker.children.size(); ++j) {
       // Multiply transpose of subbases to the slices
       Dense compressed_block_col = gemm(
         block_colH[j], row_basis[tracker.children[j].index_range],
@@ -192,12 +192,13 @@ void MatrixInitializer::construct_nested_row_basis(NestedTracker& tracker) {
       );
       int64_t sample_size = std::min(rank+5, compressed_block_col.dim[1]);
       std::tie(_, __, translation) = rsvd(compressed_block_col, sample_size);
-      row_basis[tracker.index_range] = NestedBasis(
+      nested_basis[j] = NestedBasis(
         row_basis[tracker.children[j].index_range],
         resize(translation, rank, translation.dim[1]),
         false
       );
     }
+    row_basis[tracker.index_range] = std::move(nested_basis);
   }
 }
 

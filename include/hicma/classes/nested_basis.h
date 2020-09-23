@@ -39,12 +39,10 @@ class NestedBasis : public Matrix {
   // Constructors
   NestedBasis(
     const MatrixProxy& sub_basis, const Dense& translation,
-    bool is_col_basis
+    bool col_basis
   );
 
   // Utility methods
-  NestedBasis share() const;
-
   bool is_shared_with(const NestedBasis& A) const;
 
   bool is_col_basis() const;
