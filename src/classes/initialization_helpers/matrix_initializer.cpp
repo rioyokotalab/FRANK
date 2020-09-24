@@ -121,19 +121,27 @@ void MatrixInitializer::construct_nested_col_basis(NestedTracker& tracker) {
     // Create slices of appropriate size
     // TODO Assumes same size of all subblocks
     Hierarchical block_rowH = split(block_row, tracker.children.size(), 1);
-    Hierarchical nested_basis(tracker.children.size(), 1);
-    Dense translation, _, __;
+    Dense compressed_block_row(tracker.children.size()*rank, block_row.dim[1]);
+    Hierarchical compressed_block_rowH = split(
+      compressed_block_row, tracker.children.size(), 1
+    );
     for (uint64_t i=0; i<tracker.children.size(); ++i) {
       // Multiply transpose of subbases to the slices
-      Dense compressed_block_row = gemm(
+      gemm(
         col_basis[tracker.children[i].index_range], block_rowH[i],
-        1, true, false
+        compressed_block_rowH[i],
+        true, false, 1, 0
       );
-      int64_t sample_size = std::min(rank+5, compressed_block_row.dim[0]);
-      std::tie(translation, _, __) = rsvd(compressed_block_row, sample_size);
+    }
+    int64_t sample_size = std::min(rank+5, compressed_block_row.dim[0]);
+    Dense translation, _, __;
+    std::tie(translation, _, __) = rsvd(compressed_block_row, sample_size);
+    Hierarchical translationH = split(translation, tracker.children.size(), 1);
+    Hierarchical nested_basis(tracker.children.size(), 1);
+    for (uint64_t i=0; i<tracker.children.size(); ++i) {
       nested_basis[i] = NestedBasis(
         col_basis[tracker.children[i].index_range],
-        resize(translation, translation.dim[0], rank),
+        resize(translationH[i], get_n_rows(translationH[i]), rank),
         true
       );
     }
@@ -182,19 +190,27 @@ void MatrixInitializer::construct_nested_row_basis(NestedTracker& tracker) {
     // Create slices of appropriate size
     // NOTE Assumes same size of all subblocks
     Hierarchical block_colH = split(block_col, 1, tracker.children.size());
-    Hierarchical nested_basis(1, tracker.children.size());
-    Dense _, __, translation;
+    Dense compressed_block_col(block_col.dim[0], tracker.children.size()*rank);
+    Hierarchical compressed_block_colH = split(
+      compressed_block_col, 1, tracker.children.size()
+    );
     for (uint64_t j=0; j<tracker.children.size(); ++j) {
       // Multiply transpose of subbases to the slices
-      Dense compressed_block_col = gemm(
+      gemm(
         block_colH[j], row_basis[tracker.children[j].index_range],
-        1, false, true
+        compressed_block_colH[j],
+        false, true, 1, 0
       );
-      int64_t sample_size = std::min(rank+5, compressed_block_col.dim[1]);
-      std::tie(_, __, translation) = rsvd(compressed_block_col, sample_size);
+    }
+    int64_t sample_size = std::min(rank+5, compressed_block_col.dim[1]);
+    Dense _, __, translation;
+    std::tie(_, __, translation) = rsvd(compressed_block_col, sample_size);
+    Hierarchical translationH = split(translation, 1, tracker.children.size());
+    Hierarchical nested_basis(1, tracker.children.size());
+    for (uint64_t j=0; j<tracker.children.size(); ++j) {
       nested_basis[j] = NestedBasis(
         row_basis[tracker.children[j].index_range],
-        resize(translation, rank, translation.dim[1]),
+        resize(translationH[j], rank, get_n_cols(translationH[j])),
         false
       );
     }
