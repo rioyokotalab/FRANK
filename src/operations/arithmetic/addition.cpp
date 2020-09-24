@@ -67,7 +67,7 @@ define_method(DensePair, merge_col_basis, (const Dense& Au, const Dense& Bu)) {
 
   Dense InnerU(Arank+Brank, Brank);
   Hierarchical InnerH = split(InnerU, 2, 1);
-  gemm(Au, Bu, InnerH[0], true, false, 1, 0);
+  gemm(Au, Bu, InnerH[0], 1, 0, true, false);
 
   Dense Bu_AuAutBu(Bu);
   gemm(Au, InnerH[0], Bu_AuAutBu, -1, 1);
@@ -101,7 +101,7 @@ define_method(
 
   Dense InnerV(Brank, Arank+Brank);
   Hierarchical InnerH = split(InnerV, 1, 2);
-  gemm(Bv, Av, InnerH[0], false, true, 1, 0);
+  gemm(Bv, Av, InnerH[0], 1, 0, false, true);
 
   Dense Bv_BvAvtAv(Bv);
   gemm(InnerH[0], Av, Bv_BvAvtAv, -1, 1);

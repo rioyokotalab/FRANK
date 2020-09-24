@@ -130,7 +130,7 @@ void MatrixInitializer::construct_nested_col_basis(NestedTracker& tracker) {
       gemm(
         col_basis[tracker.children[i].index_range], block_rowH[i],
         compressed_block_rowH[i],
-        true, false, 1, 0
+        1, 0, true, false
       );
     }
     int64_t sample_size = std::min(rank+5, compressed_block_row.dim[0]);
@@ -199,7 +199,7 @@ void MatrixInitializer::construct_nested_row_basis(NestedTracker& tracker) {
       gemm(
         block_colH[j], row_basis[tracker.children[j].index_range],
         compressed_block_colH[j],
-        false, true, 1, 0
+        1, 0, false, true
       );
     }
     int64_t sample_size = std::min(rank+5, compressed_block_col.dim[1]);

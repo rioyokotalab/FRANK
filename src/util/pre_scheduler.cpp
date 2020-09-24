@@ -874,7 +874,7 @@ void add_trsm_task(const Dense& A, Dense& B, int uplo, int lr) {
   }
 }
 
-struct gemm_args { bool TransA; bool TransB; double alpha; double beta; };
+struct gemm_args { double alpha, beta; bool TransA, TransB;  };
 
 void gemm_cpu_func(
   const double* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
@@ -949,8 +949,8 @@ class GEMM_task : public Task {
   gemm_args args;
   GEMM_task(
     const Dense& A, const Dense& B, Dense& C,
-    bool TransA, bool TransB, double alpha, double beta
-  ) : Task({A, B}, {C}), args{TransA, TransB, alpha, beta} {
+    double alpha, double beta, bool TransA, bool TransB
+  ) : Task({A, B}, {C}), args{alpha, beta, TransA, TransB} {
     if (schedule_started) {
       task = starpu_task_create();
       task->cl = &gemm_cl;
@@ -987,7 +987,7 @@ BasisTracker<
 
 void add_gemm_task(
   const Dense& A, const Dense& B, Dense& C,
-  bool TransA, bool TransB, double alpha, double beta
+  double alpha, double beta, bool TransA, bool TransB
 ) {
   // TODO Only add relevant gemm tasks to tracker?
   // TODO Track tasks objects themselves?
@@ -1004,7 +1004,7 @@ void add_gemm_task(
     return;
   }
   std::shared_ptr<GEMM_task> task = std::make_shared<GEMM_task>(
-    A, B, C, TransA, TransB, alpha, beta
+    A, B, C, alpha, beta, TransA, TransB
   );
   if (beta == 0 && schedule_started && !C.is_submatrix()) {
     gemm_tracker[A][B] = task;
@@ -1165,14 +1165,14 @@ class Recompress_col_task : public Task {
     std::vector<Dense> US_blocks = US.split(1, modified.size()-1);
     for (uint64_t i=1; i<modified.size(); ++i) {
       subtasks.push_back(std::make_shared<GEMM_task>(
-        AU, constant[2*i], US_blocks[i-1], false, false, 1, 0)
+        AU, constant[2*i], US_blocks[i-1], 1, 0, false, false)
       );
       if (i>1) {
         starpu_task_declare_deps(subtasks.back()->task, 1, AS_sync_tasks[i-2]);
         subtasks.back()->task->handles_sequential_consistency = gemm_consistency;
       }
       subtasks.push_back(std::make_shared<GEMM_task>(
-        BU, constant[2*i+1], US_blocks[i-1], false, false, 1, 1)
+        BU, constant[2*i+1], US_blocks[i-1], 1, 1, false, false)
       );
       if (i>1) {
         starpu_task_declare_deps(subtasks.back()->task, 1, BS_sync_tasks[i-2]);
@@ -1192,7 +1192,7 @@ class Recompress_col_task : public Task {
     std::vector<Dense> V_blocks = smallV.split(1, modified.size()-1);
     for (uint64_t i=1; i<modified.size(); ++i) {
       subtasks.push_back(std::make_shared<GEMM_task>(
-        smallS, V_blocks[i-1], modified[i], false, false, 1, 0
+        smallS, V_blocks[i-1], modified[i], 1, 0, false, false
       ));
     }
     for (std::shared_ptr<Task> task : subtasks) {
@@ -1266,14 +1266,14 @@ class Recompress_row_task : public Task {
     std::vector<Dense> SV_blocks = SV.split(modified.size()-1, 1);
     for (uint64_t i=1; i<modified.size(); ++i) {
       subtasks.push_back(std::make_shared<GEMM_task>(
-        constant[2*i], AV, SV_blocks[i-1], false, false, 1, 0)
+        constant[2*i], AV, SV_blocks[i-1], 1, 0, false, false)
       );
       if (i>1) {
         starpu_task_declare_deps(subtasks.back()->task, 1, AS_sync_tasks[i-2]);
         subtasks.back()->task->handles_sequential_consistency = gemm_consistency;
       }
       subtasks.push_back(std::make_shared<GEMM_task>(
-        constant[2*i+1], BV, SV_blocks[i-1], false, false, 1, 1)
+        constant[2*i+1], BV, SV_blocks[i-1], 1, 1, false, false)
       );
       if (i>1) {
         starpu_task_declare_deps(subtasks.back()->task, 1, BS_sync_tasks[i-2]);
@@ -1293,7 +1293,7 @@ class Recompress_row_task : public Task {
     std::vector<Dense> U_blocks = smallU.split(modified.size()-1, 1);
     for (uint64_t i=1; i<modified.size(); ++i) {
       subtasks.push_back(std::make_shared<GEMM_task>(
-        U_blocks[i-1], smallS, modified[i], false, false, 1, 0
+        U_blocks[i-1], smallS, modified[i], 1, 0, false, false
       ));
     }
     for (std::shared_ptr<Task> task : subtasks) {

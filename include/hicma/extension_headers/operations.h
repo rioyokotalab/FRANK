@@ -43,15 +43,7 @@ declare_method(
   void, gemm_omm,
   (
     virtual_<const Matrix&>, virtual_<const Matrix&>, virtual_<Matrix&>,
-    double, double
-  )
-)
-
-declare_method(
-  Dense, gemm_omm,
-  (
-    virtual_<const Matrix&>, virtual_<const Matrix&>,
-    double, bool, bool
+    double, double, bool, bool
   )
 )
 

@@ -48,7 +48,7 @@ void add_trsm_task(const Dense& A, Dense& B, int uplo, int lr);
 
 void add_gemm_task(
   const Dense& A, const Dense& B, Dense& C,
-  bool TransA, bool TransB, double alpha, double beta
+  double alpha, double beta, bool TransA, bool TransB
 );
 
 void add_svd_task(Dense& A, Dense& U, Dense& S, Dense& V);

@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
       }
       Dense DAsk(HAsk);
       Dense DRjk(Nb, Nb);
-      gemm(DQsj, DAsk, DRjk, true, false, 1, 1); //Rjk = Qsj^T x Ask
+      gemm(DQsj, DAsk, DRjk, 1, 1, true, false); //Rjk = Qsj^T x Ask
       R(j, k) = DRjk;
       gemm(DQsj, DRjk, DAsk, -1, 1); //A*k = A*k - Q*j x Rjk
       Hierarchical _HAsk = split(DAsk, Nc, 1, true);

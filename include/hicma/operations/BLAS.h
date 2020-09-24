@@ -9,12 +9,10 @@ namespace hicma
 
 class Matrix;
 
-void gemm(const Matrix&, const Matrix&, Matrix&, double, double);
-
 void gemm(
   const Matrix& A, const Matrix& B, Matrix& C,
-  bool TransA, bool TransB,
-  double alpha, double beta
+  double alpha=1, double beta=1,
+  bool TransA=false, bool TransB=false
 );
 
 Dense gemm(

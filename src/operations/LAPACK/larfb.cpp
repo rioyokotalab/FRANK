@@ -71,7 +71,7 @@ define_method(
   Dense VT(V_lower_tri);
   trmm(T, VT, 'r', 'u', trans ? 't' : 'n', 'n', 1);
   Dense VTVt(VT.dim[0], V_lower_tri.dim[0]);
-  gemm(VT, V_lower_tri, VTVt, false, true, 1, 0);
+  gemm(VT, V_lower_tri, VTVt, 1, 0, false, true);
   Hierarchical C_copy(C);
   gemm(VTVt, C_copy, C, -1, 1);
 }

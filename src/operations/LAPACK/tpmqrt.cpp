@@ -66,7 +66,7 @@ define_method(
   (const Dense& V, const Dense& T, LowRank& A, Dense& B, bool trans)
 ) {
   Dense C(A);
-  gemm(V, B, C, true, false, 1, 1); //C = A + Y^t*B
+  gemm(V, B, C, 1, 1, true, false); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(
     Dense(identity, std::vector<std::vector<double>>(), C.dim[0], C.dim[0]),
