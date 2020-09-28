@@ -89,9 +89,9 @@ class Hierarchical : public Matrix {
 
   MatrixProxy& operator()(int64_t i, int64_t j);
 
-  void unshare();
-
 };
+
+void unshare(Matrix& A);
 
 } // namespace hicma
 

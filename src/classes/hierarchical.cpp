@@ -203,23 +203,23 @@ MatrixProxy& Hierarchical::operator()(int64_t i, int64_t j) {
   return data[i*dim[1]+j];
 }
 
-declare_method(void, unshare_omm, (virtual_<Matrix&>))
-
 define_method(void, unshare_omm, (LowRank& A)) {
   A.U = Dense(A.U);
   A.V = Dense(A.V);
+}
+
+define_method(void, unshare_omm, (Hierarchical& A)) {
+  for (int64_t i=0; i<A.dim[0]; ++i) {
+    for (int64_t j=0; j<A.dim[1]; ++j) {
+      unshare_omm(A(i, j));
+    }
+  }
 }
 
 define_method(void, unshare_omm, (Matrix&)) {
   // Do nothing
 }
 
-void Hierarchical::unshare() {
-  for (int64_t i=0; i<dim[0]; ++i) {
-    for (int64_t j=0; j<dim[1]; ++j) {
-      unshare_omm((*this)(i, j));
-    }
-  }
-}
+void unshare(Matrix& A) { unshare_omm(A); }
 
 } // namespace hicma
