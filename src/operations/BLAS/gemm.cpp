@@ -386,9 +386,19 @@ define_method(
   )
 ) {
   // D D H
-  Hierarchical AH = split(A, TransA ? 1 : C.dim[0], TransA ? C.dim[0] : 1);
-  Hierarchical BH = split(B, TransB ? C.dim[1] : 1, TransB ? 1 : C.dim[1]);
-  gemm(AH, BH, C, alpha, beta, TransA, TransB);
+  // TODO Not implemented
+  if (C.dim[0] == 1 && C.dim[1] == 1) std::abort();
+  if (C.dim[1] == 1) {
+    Hierarchical AH = split(A, TransA ? 1 : C.dim[0], TransA ? C.dim[0] : 1);
+    gemm(AH, B, C, alpha, beta, TransA, TransB);
+  } else if (C.dim[0] == 1) {
+    Hierarchical BH = split(B, TransB ? C.dim[1] : 1, TransB ? 1 : C.dim[1]);
+    gemm(A, BH, C, alpha, beta, TransA, TransB);
+  } else {
+    Hierarchical AH = split(A, TransA ? 1 : C.dim[0], TransA ? C.dim[0] : 1);
+    Hierarchical BH = split(B, TransB ? C.dim[1] : 1, TransB ? 1 : C.dim[1]);
+    gemm(AH, BH, C, alpha, beta, TransA, TransB);
+  }
 }
 
 define_method(
