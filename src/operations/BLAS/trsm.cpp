@@ -80,13 +80,6 @@ define_method(
   }
 }
 
-define_method(
-  void, trsm_omm,
-  (const Hierarchical& A, NestedBasis& B, int uplo, int lr)
-) {
-  trsm(A, B.sub_bases, uplo, lr);
-}
-
 define_method(void, trsm_omm, (const Dense& A, Dense& B, int uplo, int lr)) {
   timing::start("DTRSM");
   add_trsm_task(A, B, uplo, lr);
@@ -94,6 +87,14 @@ define_method(void, trsm_omm, (const Dense& A, Dense& B, int uplo, int lr)) {
 }
 
 declare_method(MatrixProxy, decouple, (virtual_<const Matrix&>))
+
+define_method(
+  void, trsm_omm,
+  (const Hierarchical& A, NestedBasis& B, int uplo, int lr)
+) {
+  B.sub_bases = decouple(B.sub_bases);
+  trsm(A, B.sub_bases, uplo, lr);
+}
 
 define_method(
   void, trsm_omm, (const Dense& A, NestedBasis& B, int uplo, int lr)
