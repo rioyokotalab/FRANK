@@ -536,6 +536,7 @@ class Multiplication_task : public Task {
 };
 
 void add_multiplication_task(Dense& A, double factor) {
+  // TODO Don't do this if factor==1
   add_task(std::make_shared<Multiplication_task>(A, factor));
 }
 

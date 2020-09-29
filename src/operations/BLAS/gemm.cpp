@@ -36,11 +36,6 @@ void gemm(
     == (TransB ? get_n_cols(B) : get_n_rows(B))
   );
   assert((TransB ? get_n_rows(B) : get_n_cols(B)) == get_n_cols(C));
-  // std::cout << "ho" << std::endl;
-  // std::cout << get_n_rows(A) << " " << get_n_cols(A) << " ";
-  // std::cout << get_n_rows(B) << " " << get_n_cols(B) << " ";
-  // std::cout << get_n_rows(C) << " " << get_n_cols(C) << " " << std::endl;
-  // std::cout << TransA << " " << TransB << std::endl;
   gemm_omm(A, B, C, alpha, beta, TransA, TransB);
 }
 
