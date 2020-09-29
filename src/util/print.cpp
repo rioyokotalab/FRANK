@@ -147,7 +147,10 @@ void printXML(const Matrix& A, std::string filename) {
   write_xml(filename.c_str(), tree, std::locale());
 }
 
-void print(const Matrix& A) { print_omm(A); }
+void print(const Matrix& A) {
+  if (!VERBOSE) return;
+  print_omm(A);
+}
 
 void print_separation_line() {
   for (int i=0; i<82; ++i) std::cout << "-";
