@@ -540,8 +540,10 @@ class Multiplication_task : public Task {
 };
 
 void add_multiplication_task(Dense& A, double factor) {
-  // TODO Don't do this if factor==1
-  add_task(std::make_shared<Multiplication_task>(A, factor));
+  // Don't do anything if factor == 1
+  if (factor != 1) {
+    add_task(std::make_shared<Multiplication_task>(A, factor));
+  }
 }
 
 void getrf_cpu_func(
@@ -1115,7 +1117,6 @@ class SVD_task : public Task {
 };
 
 void add_svd_task(Dense& A, Dense& U, Dense& S, Dense& V) {
-  // TODO Check for duplicate/shared tasks
   add_task(std::make_shared<SVD_task>(A, U, S, V));
 }
 
