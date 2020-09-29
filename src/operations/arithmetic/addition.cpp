@@ -183,8 +183,11 @@ void naive_addition(LowRank& A, const LowRank& B) {
 void orthogonality_preserving_addition(LowRank& A, const LowRank& B) {
   //Bebendorf HMatrix Book p16
   //Rounded Addition
-  Dense U_combined = gemm(A.U, A.S);
-  gemm(B.U, B.S, U_combined, 1, 1);
+  Dense U_combined(get_n_rows(A.U), A.S.dim[1]+B.S.dim[1]);
+  // TODO Assumes A.S.dim[1] == B.S.dim[1]!
+  Hierarchical U_combinedH = split(U_combined, 1, 2, false);
+  gemm(A.U, A.S, U_combinedH[0], 1, 0);
+  gemm(B.U, B.S, U_combinedH[1], 1, 0);
 
   Dense Qu(U_combined.dim[0], U_combined.dim[1]);
   Dense Ru(U_combined.dim[1], U_combined.dim[1]);

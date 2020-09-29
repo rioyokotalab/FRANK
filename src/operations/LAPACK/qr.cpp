@@ -299,7 +299,7 @@ define_method(void, zero_whole_omm, (LowRank& A)) {
   A.S = 0.0;
   A.V = Dense(
     identity, std::vector<std::vector<double>>(),
-    get_n_rows(A.V), get_n_cols(A.U)
+    get_n_rows(A.V), get_n_cols(A.V)
   );
 }
 
