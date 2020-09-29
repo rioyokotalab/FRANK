@@ -142,6 +142,94 @@ std::tuple<Dense, Dense, Dense> merge_S(
   };
 }
 
+void naive_addition(LowRank& A, const LowRank& B) {
+  //Truncate and Recompress if rank > min(nrow, ncol)
+  if (A.rank+B.rank >= std::min(A.dim[0], A.dim[1])) {
+    A = LowRank(Dense(A) + Dense(B), A.rank);
+  } else {
+    Hierarchical U_merge(1, 2);
+    U_merge[0] = std::move(A.U);
+    U_merge[1] = share_basis(B.U);
+    Hierarchical V_merge(2, 1);
+    V_merge[0] = std::move(A.V);
+    V_merge[1] = share_basis(B.V);
+    Hierarchical S_merge(2, 2);
+    S_merge(0, 0) = std::move(A.S);
+    S_merge(0, 1) = Dense(A.rank, B.rank);
+    S_merge(1, 0) = Dense(B.rank, A.rank);
+    S_merge(1, 1) = B.S.share();
+    A.rank += B.rank;
+    A.U = Dense(U_merge);
+    A.S = Dense(S_merge);
+    A.V = Dense(V_merge);
+  }
+}
+
+void orthogonality_preserving_addition(LowRank& A, const LowRank& B) {
+  //Bebendorf HMatrix Book p16
+  //Rounded Addition
+  Dense U_combined = gemm(A.U, A.S);
+  gemm(B.U, B.S, U_combined, 1, 1);
+
+  Dense Qu(U_combined.dim[0], U_combined.dim[1]);
+  Dense Ru(U_combined.dim[1], U_combined.dim[1]);
+  qr(U_combined, Qu, Ru);
+
+  // TODO Probably better to do RQ decomposition (maybe make hierarchical
+  // version and avoid copies?)
+  Hierarchical V_mergeH(2, 1);
+  V_mergeH[0] = std::move(A.V);
+  V_mergeH[1] = share_basis(B.V);
+  Dense V_merge(V_mergeH);
+  Dense Rv(V_merge.dim[0], V_merge.dim[0]);
+  Dense Qv(V_merge.dim[0], V_merge.dim[1]);
+  rq(V_merge, Rv, Qv);
+
+  Dense RuRv = gemm(Ru, Rv);
+
+  Dense RRU, RRS, RRV;
+  std::tie(RRU, RRS, RRV) = svd(RuRv);
+
+  A.S = resize(RRS, A.rank, A.rank);
+  A.U = gemm(Qu, resize(RRU, RRU.dim[0], A.rank));
+  A.V = gemm(resize(RRV, A.rank, RRV.dim[1]), Qv);
+}
+
+void formatted_addition(LowRank& A, const LowRank& B) {
+  //Bebendorf HMatrix Book p17
+  //Rounded addition by exploiting orthogonality
+  timing::start("LR += LR");
+
+  timing::start("Merge col basis");
+  Hierarchical OuterU(1, 2);
+  Dense InnerU;
+  std::tie(OuterU[1], InnerU) = merge_col_basis(A.U, B.U);
+  OuterU[0] = std::move(A.U);
+  timing::stop("Merge col basis");
+
+  timing::start("Merge row basis");
+  Hierarchical OuterV(2, 1);
+  Dense InnerVt;
+  std::tie(OuterV[1], InnerVt) = merge_row_basis(A.V, B.V);
+  OuterV[0] = std::move(A.V);
+  timing::stop("Merge row basis");
+
+  timing::start("Merge S");
+  Dense Uhat, Vhat;
+  std::tie(Uhat, A.S, Vhat) = merge_S(A.S, B.S, InnerU, InnerVt);
+  timing::stop("Merge S");
+
+  // Restore moved-from U and V and finalize basis
+  // TODO Find a way to use more convenient D=gemm(D, D) here?
+  // Restore moved-from U and V and finalize basis
+  A.U = Dense(A.dim[0], A.rank);
+  A.V = Dense(A.rank, A.dim[1]);
+  gemm(OuterU, Uhat, A.U, 1, 0);
+  gemm(Vhat, OuterV, A.V, 1, 0);
+
+  timing::stop("LR += LR");
+}
+
 define_method(Matrix&, addition_omm, (LowRank& A, const LowRank& B)) {
   assert(A.dim[0] == B.dim[0]);
   assert(A.dim[1] == B.dim[1]);
@@ -158,87 +246,11 @@ define_method(Matrix&, addition_omm, (LowRank& A, const LowRank& B)) {
   }
   if (getCounter("LR_ADDITION_COUNTER") == 1) updateCounter("LR-addition", 1);
   if (getCounter("LRA") == 0) {
-    //Truncate and Recompress if rank > min(nrow, ncol)
-    if (A.rank+B.rank >= std::min(A.dim[0], A.dim[1])) {
-      A = LowRank(Dense(A) + Dense(B), A.rank);
-    } else {
-      Hierarchical U_merge(1, 2);
-      U_merge[0] = std::move(A.U);
-      U_merge[1] = share_basis(B.U);
-      Hierarchical V_merge(2, 1);
-      V_merge[0] = std::move(A.V);
-      V_merge[1] = share_basis(B.V);
-      Hierarchical S_merge(2, 2);
-      S_merge(0, 0) = std::move(A.S);
-      S_merge(0, 1) = Dense(A.rank, B.rank);
-      S_merge(1, 0) = Dense(B.rank, A.rank);
-      S_merge(1, 1) = B.S.share();
-      A.rank += B.rank;
-      A.U = Dense(U_merge);
-      A.S = Dense(S_merge);
-      A.V = Dense(V_merge);
-    }
+    naive_addition(A, B);
   } else if (getCounter("LRA") == 1) {
-    //Bebendorf HMatrix Book p16
-    //Rounded Addition
-    Dense U_combined = gemm(A.U, A.S);
-    gemm(B.U, B.S, U_combined, 1, 1);
-
-    Dense Qu(U_combined.dim[0], U_combined.dim[1]);
-    Dense Ru(U_combined.dim[1], U_combined.dim[1]);
-    qr(U_combined, Qu, Ru);
-
-    // TODO Probably better to do RQ decomposition (maybe make hierarchical
-    // version and avoid copies?)
-    Hierarchical V_mergeH(2, 1);
-    V_mergeH[0] = std::move(A.V);
-    V_mergeH[1] = share_basis(B.V);
-    Dense V_merge(V_mergeH);
-    Dense Rv(V_merge.dim[0], V_merge.dim[0]);
-    Dense Qv(V_merge.dim[0], V_merge.dim[1]);
-    rq(V_merge, Rv, Qv);
-
-    Dense RuRv = gemm(Ru, Rv);
-
-    Dense RRU, RRS, RRV;
-    std::tie(RRU, RRS, RRV) = svd(RuRv);
-
-    A.S = resize(RRS, A.rank, A.rank);
-    A.U = gemm(Qu, resize(RRU, RRU.dim[0], A.rank));
-    A.V = gemm(resize(RRV, A.rank, RRV.dim[1]), Qv);
+    orthogonality_preserving_addition(A, B);
   } else {
-    //Bebendorf HMatrix Book p17
-    //Rounded addition by exploiting orthogonality
-    timing::start("LR += LR");
-
-    timing::start("Merge col basis");
-    Hierarchical OuterU(1, 2);
-    Dense InnerU;
-    std::tie(OuterU[1], InnerU) = merge_col_basis(A.U, B.U);
-    OuterU[0] = std::move(A.U);
-    timing::stop("Merge col basis");
-
-    timing::start("Merge row basis");
-    Hierarchical OuterV(2, 1);
-    Dense InnerVt;
-    std::tie(OuterV[1], InnerVt) = merge_row_basis(A.V, B.V);
-    OuterV[0] = std::move(A.V);
-    timing::stop("Merge row basis");
-
-    timing::start("Merge S");
-    Dense Uhat, Vhat;
-    std::tie(Uhat, A.S, Vhat) = merge_S(A.S, B.S, InnerU, InnerVt);
-    timing::stop("Merge S");
-
-    // Restore moved-from U and V and finalize basis
-    // TODO Find a way to use more convenient D=gemm(D, D) here?
-    // Restore moved-from U and V and finalize basis
-    A.U = Dense(A.dim[0], A.rank);
-    A.V = Dense(A.rank, A.dim[1]);
-    gemm(OuterU, Uhat, A.U, 1, 0);
-    gemm(Vhat, OuterV, A.V, 1, 0);
-
-    timing::stop("LR += LR");
+    formatted_addition(A, B);
   }
   return A;
 }
