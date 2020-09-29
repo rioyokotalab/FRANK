@@ -363,14 +363,10 @@ define_method(
   assert(B.dim[TransB ? 0 : 1] == C.dim[1]);
   for (int64_t i=0; i<C.dim[0]; i++) {
     for (int64_t j=0; j<C.dim[1]; j++) {
-      gemm(
-        TransA ? A(0, i) : A(i, 0), TransB ? B(j, 0) : B(0, j), C(i, j),
-        alpha, beta, TransA, TransB
-      );
-      for (int64_t k=1; k<A.dim[TransA ? 0 : 1]; k++) {
+      for (int64_t k=0; k<A.dim[TransA ? 0 : 1]; k++) {
         gemm(
           TransA ? A(k, i) : A(i, k), TransB ? B(j, k) : B(k, j), C(i, j),
-          alpha, 1, TransA, TransB
+          alpha, k==0 ? beta : 1, TransA, TransB
         );
       }
     }
