@@ -33,7 +33,7 @@ TEST(DenseTest, ContructorHierarchical) {
   }
 }
 
-TEST(DenseTest, SplitTest) {
+TEST(DenseTest, Split1DTest) {
   hicma::initialize();
   int64_t N = 128;
   int64_t nblocks = 2;
@@ -65,6 +65,31 @@ TEST(DenseTest, SplitTest) {
   for (int64_t i=0; i<N; ++i) {
     for (int64_t j=0; j<N; ++j) {
       ASSERT_FLOAT_EQ(D(i, j), QR(i, j));
+    }
+  }
+}
+
+TEST(DenseTest, SplitTest) {
+  hicma::initialize();
+  int64_t N = 128;
+  int64_t nblocks = 4;
+  int64_t nleaf = N / nblocks;
+  Dense col(random_normal, std::vector<std::vector<double>>(), N, nleaf);
+  Dense row(random_normal, std::vector<std::vector<double>>(), nleaf, N);
+  // start_schedule();
+  Dense test1 = gemm(row, col);
+  test1 *= 2;
+  // execute_schedule();
+
+  start_schedule();
+  Hierarchical colH = split(col, nblocks, 1);
+  Hierarchical rowH = split(row, 1, nblocks);
+  Dense test2 = gemm(rowH, colH);
+  test2 *= 2;
+  execute_schedule();
+  for (int64_t i=0; i<nleaf; ++i) {
+    for (int64_t j=0; j<nleaf; ++j) {
+      ASSERT_FLOAT_EQ(test1(i, j), test2(i, j));
     }
   }
 }
