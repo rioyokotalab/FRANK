@@ -47,6 +47,7 @@ define_method(
     bool TransA, bool TransB
   )
 ) {
+  // D D D
   timing::start("DGEMM");
   add_gemm_task(A, B, C, alpha, beta, TransA, TransB);
   timing::stop("DGEMM");
@@ -60,6 +61,7 @@ define_method(
     bool TransA, bool TransB
   )
 ) {
+  // NB D D
   // TODO Consider possible optimization here once all gemms with TransA and
   // TransB are available
   gemm(Dense(A), B, C, alpha, beta, TransA, TransB);
@@ -73,6 +75,7 @@ define_method(
     bool TransA, bool TransB
   )
 ) {
+  // D NB D
   // TODO Consider possible optimization here once all gemms with TransA and
   // TransB are available
   gemm(A, Dense(B), C, alpha, beta, TransA, TransB);
@@ -86,6 +89,7 @@ define_method(
     bool TransA, bool TransB
   )
 ) {
+  // NB NB D
   // TODO Not implemented
   if (TransA || TransB) std::abort();
   if (!(A.is_row_basis() && B.is_col_basis())) std::abort();
@@ -103,6 +107,7 @@ define_method(
     bool TransA, bool TransB
   )
 ) {
+  // LR D D
   Dense AS_basis_B = gemm(
     A.S, gemm(TransA ? A.U : A.V, B, alpha, TransA, TransB),
     1, TransA, false
@@ -118,6 +123,7 @@ define_method(
     bool TransA, bool TransB
   )
 ) {
+  // D LR D
   Dense A_basis_BS = gemm(
     gemm(A, TransB ? B.V : B.U, alpha, TransA, TransB), B.S,
     1, false, TransB
@@ -133,6 +139,7 @@ define_method(
     bool TransA, bool TransB
   )
 ) {
+  // LR LR D
   // TODO Many optimizations possible here with shared basis
   // Even in non-shared case, UxS, SxV may be optimized across blocks!
   Dense Abasis_inner_matrices = gemm(
@@ -154,6 +161,7 @@ define_method(
     bool TransA, bool TransB
   )
 ) {
+  // D D LR
   C.S *= beta;
   C += LowRank(gemm(A, B, alpha, TransA, TransB), C.rank);
 }
@@ -166,6 +174,7 @@ define_method(
     bool TransA, bool TransB
   )
 ) {
+  // LR D LR
   // TODO Not implemented
   if (TransA) std::abort();
   Dense AVxB = gemm(A.V, B, alpha, false, TransB);
@@ -182,6 +191,7 @@ define_method(
     bool TransA, bool TransB
   )
 ) {
+  // LR H LR
   // TODO Not implemented
   if (TransA) std::abort();
   Dense AVxB = gemm(A.V, B, alpha, false, TransB);
@@ -198,6 +208,7 @@ define_method(
     bool TransA, bool TransB
   )
 ) {
+  // D LR LR
   // TODO Not implemented
   if (TransB) std::abort();
   Dense AxBU = gemm(A, B.U, alpha, TransA, false);
@@ -214,6 +225,7 @@ define_method(
     bool TransA, bool TransB
   )
 ) {
+  // H LR LR
   // TODO Not implemented
   if (TransB) std::abort();
   Dense AxBU = gemm(A, B.U, alpha, TransA, false);
@@ -230,6 +242,7 @@ define_method(
     bool TransA, bool TransB
   )
 ) {
+  // H H LR
   /*
     Making a Hierarchical out of C might be better
     But LowRank(Hierarchical, rank) constructor is needed
@@ -250,6 +263,7 @@ define_method(
     bool TransA, bool TransB
   )
 ) {
+  // LR LR LR
   // TODO Not implemented
   if (TransA || TransB) std::abort();
   assert(A.rank == B.rank);
@@ -267,6 +281,7 @@ define_method(
     bool TransA, bool TransB
   )
 ) {
+  // H H H
   assert(A.dim[TransA ? 1 : 0] == C.dim[0]);
   assert(A.dim[TransA ? 0 : 1] == B.dim[TransB ? 1 : 0]);
   assert(B.dim[TransB ? 0 : 1] == C.dim[1]);
@@ -294,6 +309,7 @@ define_method(
     bool TransA, bool TransB
   )
 ) {
+  // D D H
   Hierarchical AH = split(A, TransA ? 1 : C.dim[0], TransA ? C.dim[0] : 1);
   Hierarchical BH = split(B, TransB ? C.dim[1] : 1, TransB ? 1 : C.dim[1]);
   gemm(AH, BH, C, alpha, beta, TransA, TransB);
@@ -307,6 +323,7 @@ define_method(
     bool TransA, bool TransB
   )
 ) {
+  // LR LR H
   // TODO Not implemented
   if (TransA || TransB) std::abort();
   Dense SxVxUxS = gemm(gemm(A.S, gemm(A.V, B.U, alpha)), B.S);
@@ -323,6 +340,7 @@ define_method(
     bool TransA, bool TransB
   )
 ) {
+  // H D H
   assert(TransA ? A.dim[1] : A.dim[0] == C.dim[0]);
   Hierarchical BH = split(
     B,
@@ -340,6 +358,7 @@ define_method(
     bool TransA, bool TransB
   )
 ) {
+  // H LR H
   assert(A.dim[TransA ? 1 : 0] == C.dim[0]);
   Hierarchical BH = split(
     B,
@@ -357,6 +376,7 @@ define_method(
     bool TransA, bool TransB
   )
 ) {
+  // D H H
   assert(B.dim[TransB ? 0 : 1] == C.dim[1]);
   Hierarchical AH = split(
     A,
@@ -374,6 +394,7 @@ define_method(
     bool TransA, bool TransB
   )
 ) {
+  // LR H H
   assert(B.dim[1] == C.dim[1]);
   Hierarchical AH = split(
     A,
@@ -391,6 +412,7 @@ define_method(
     bool TransA, bool TransB
   )
 ) {
+  // H H D
   assert(A.dim[TransA ? 0 : 1] == B.dim[TransB ? 1 : 0]);
   Hierarchical CH = split(C, A.dim[TransA ? 1 : 0], B.dim[TransB ? 0 : 1]);
   gemm(A, B, CH, alpha, beta, TransA, TransB);
@@ -404,6 +426,7 @@ define_method(
     bool TransA, bool TransB
   )
 ) {
+  // D H D
   Hierarchical AH = split(
     A,
     TransA ? B.dim[TransB ? 1 : 0] : 1,
@@ -421,6 +444,7 @@ define_method(
     bool TransA, bool TransB
   )
 ) {
+  // LR H D
   Hierarchical AH = split(
     A,
     TransA ? B.dim[TransB ? 1 : 0] : 1,
@@ -438,6 +462,7 @@ define_method(
     bool TransA, bool TransB
   )
 ) {
+  // H D D
   Hierarchical BH = split(
     B,
     TransB ? 1 : A.dim[TransA ? 0 : 1],
@@ -455,6 +480,7 @@ define_method(
     bool TransA, bool TransB
   )
 ) {
+  // H LR D
   Hierarchical BH = split(
     B,
     TransB ? 1 : A.dim[TransA ? 0 : 1],
