@@ -62,9 +62,11 @@ define_method(
   )
 ) {
   // NB D D
-  // TODO Consider possible optimization here once all gemms with TransA and
-  // TransB are available
-  gemm(Dense(A), B, C, alpha, beta, TransA, TransB);
+  if (A.is_col_basis()) {
+    gemm(gemm(A.sub_bases, A.translation), B, C, alpha, beta, TransA, TransB);
+  } else {
+    gemm(gemm(A.translation, A.sub_bases), B, C, alpha, beta, TransA, TransB);
+  }
 }
 
 define_method(
@@ -76,9 +78,11 @@ define_method(
   )
 ) {
   // D NB D
-  // TODO Consider possible optimization here once all gemms with TransA and
-  // TransB are available
-  gemm(A, Dense(B), C, alpha, beta, TransA, TransB);
+  if (B.is_col_basis()) {
+    gemm(A, gemm(B.sub_bases, B.translation), C, alpha, beta, TransA, TransB);
+  } else {
+    gemm(A, gemm(B.translation, B.sub_bases), C, alpha, beta, TransA, TransB);
+  }
 }
 
 define_method(
@@ -94,8 +98,8 @@ define_method(
   if (TransA || TransB) std::abort();
   if (!(A.is_row_basis() && B.is_col_basis())) std::abort();
   gemm(
-    gemm(A.translation, gemm(A.sub_bases, B.sub_bases)),
-    B.translation, C, alpha, beta
+    gemm(A.translation, gemm(A.sub_bases, B.sub_bases, alpha)),
+    B.translation, C, 1, beta
   );
 }
 
@@ -151,6 +155,46 @@ define_method(
     ), 1, TransA, false
   );
   gemm(Abasis_inner_matrices, TransB ? B.U : B.V, C, 1, beta, false, TransB);
+}
+
+define_method(
+  void, gemm_omm,
+  (
+    const NestedBasis& A, const LowRank& B, NestedBasis& C,
+    double alpha, double beta,
+    bool TransA, bool TransB
+  )
+) {
+  // NB LR NB
+  // TODO Not implemented
+  if (TransA || TransB) std::abort();
+  if (!(A.is_row_basis() && C.is_row_basis())) std::abort();
+  Dense basis_BU = gemm(A.sub_bases, B.U, alpha);
+  Dense trans_basis_BU = gemm(A.translation, basis_BU);
+  Dense trans_basis_BU_S = gemm(trans_basis_BU, B.S);
+  NestedBasis mod_basis(B.V, trans_basis_BU_S, false);
+  C.translation *= beta;
+  C += mod_basis;
+}
+
+define_method(
+  void, gemm_omm,
+  (
+    const LowRank& A, const NestedBasis& B, NestedBasis& C,
+    double alpha, double beta,
+    bool TransA, bool TransB
+  )
+) {
+  // LR NB NB
+  // TODO Not implemented
+  if (TransA || TransB) std::abort();
+  if (!(B.is_col_basis() && C.is_col_basis())) std::abort();
+  Dense AV_basis = gemm(A.V, B.sub_bases, alpha);
+  Dense AV_basis_trans = gemm(AV_basis, B.translation);
+  Dense S_AV_basis_trans = gemm(A.S, AV_basis_trans);
+  NestedBasis mod_basis(A.U, S_AV_basis_trans, true);
+  C.translation *= beta;
+  C += mod_basis;
 }
 
 define_method(
@@ -414,8 +458,14 @@ define_method(
 ) {
   // H H D
   assert(A.dim[TransA ? 0 : 1] == B.dim[TransB ? 1 : 0]);
-  Hierarchical CH = split(C, A.dim[TransA ? 1 : 0], B.dim[TransB ? 0 : 1]);
-  gemm(A, B, CH, alpha, beta, TransA, TransB);
+  if (A.dim[TransA ? 1 : 0] == 1 && B.dim[TransB ? 0 : 1] == 1) {
+    for (int64_t k = 0; k < A.dim[TransA ? 0 : 1]; ++k) {
+      gemm(A[k], B[k], C, alpha, k == 0 ? beta : 1, TransA, TransB);
+    }
+  } else {
+    Hierarchical CH = split(C, A.dim[TransA ? 1 : 0], B.dim[TransB ? 0 : 1]);
+    gemm(A, B, CH, alpha, beta, TransA, TransB);
+  }
 }
 
 define_method(

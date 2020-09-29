@@ -71,6 +71,10 @@ void initialize_starpu();
 
 void clear_task_trackers();
 
+void start_tracking();
+
+void stop_tracking();
+
 } // namespace hicma
 
 #endif // hicma_util_pre_scheduler_h

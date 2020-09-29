@@ -80,32 +80,43 @@ define_method(
   }
 }
 
+define_method(
+  void, trsm_omm,
+  (const Hierarchical& A, NestedBasis& B, int uplo, int lr)
+) {
+  trsm(A, B.sub_bases, uplo, lr);
+}
+
 define_method(void, trsm_omm, (const Dense& A, Dense& B, int uplo, int lr)) {
   timing::start("DTRSM");
   add_trsm_task(A, B, uplo, lr);
   timing::stop("DTRSM");
 }
 
+declare_method(MatrixProxy, decouple, (virtual_<const Matrix&>))
+
 define_method(
   void, trsm_omm, (const Dense& A, NestedBasis& B, int uplo, int lr)
 ) {
-  // Decouple basis
-  // TODO Use different/more general tracker (like "copy")?
-  // TODO Maybe this should not be in TRSM but in the main getrf?
+  B.sub_bases = decouple(B.sub_bases);
   trsm(A, B.sub_bases, uplo, lr);
 }
-
-declare_method(MatrixProxy, decouple, (virtual_<const Matrix&>))
 
 define_method(void, trsm_omm, (const Matrix& A, LowRank& B, int uplo, int lr)) {
   switch (lr) {
   case TRSM_LEFT:
+    // Decouple basis
+    // TODO Use different/more general tracker (like "copy")?
+    // TODO Maybe this should not be in TRSM but in the main getrf?
     // TODO This introduces unneeded copies in the non-shared case! Find a way
     // around that.
     B.U = decouple(B.U);
     trsm(A, B.U, uplo, lr);
     break;
   case TRSM_RIGHT:
+    // Decouple basis
+    // TODO Use different/more general tracker (like "copy")?
+    // TODO Maybe this should not be in TRSM but in the main getrf?
     // TODO This introduces unneeded copies in the non-shared case! Find a way
     // around that.
     B.V = decouple(B.V);
@@ -125,7 +136,7 @@ define_method(MatrixProxy, decouple, (const NestedBasis& A)) {
   // TODO This is probably inefficient as checks are performed many times for
   // same object. Store MatrixProxy instead of Dense in tracker?
   return NestedBasis(
-    decouple(A.sub_bases),
+    A.sub_bases,
     decouple(A.translation),
     A.col_basis
   );

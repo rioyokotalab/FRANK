@@ -79,6 +79,7 @@ class Task {
 
 std::list<std::shared_ptr<Task>> tasks;
 bool schedule_started = false;
+bool is_tracking = false;
 
 void add_task(std::shared_ptr<Task> task) {
   if (schedule_started) {
@@ -417,7 +418,10 @@ class Addition_task : public Task {
 };
 
 void add_addition_task(Dense& A, const Dense& B) {
-  add_task(std::make_shared<Addition_task>(A, B));
+  if (!matrix_is_tracked("addition_task", A, B)) {
+    add_task(std::make_shared<Addition_task>(A, B));
+    register_matrix("addition_task", A, B);
+  }
 }
 
 void subtraction_cpu_func(
@@ -991,23 +995,27 @@ void add_gemm_task(
   double alpha, double beta, bool TransA, bool TransB
 ) {
   // TODO Only add relevant gemm tasks to tracker?
-  // TODO Track tasks objects themselves?
   if (
-    beta == 0
-    && schedule_started
+    is_tracking
     && !C.is_submatrix()
     && gemm_tracker.has_key(A) && gemm_tracker[A].has_key(B)
     && gemm_tracker[A][B]->args.alpha == alpha
+    && gemm_tracker[A][B]->args.beta == beta
     && gemm_tracker[A][B]->args.TransA == TransA
     && gemm_tracker[A][B]->args.TransB == TransB
   ) {
-    C = gemm_tracker[A][B]->modified[0].share();
-    return;
+    if (is_shared(C, gemm_tracker[A][B]->modified[0])) {
+      return;
+    } else
+    if (beta == 0) {
+      C = gemm_tracker[A][B]->modified[0].share();
+      return;
+    }
   }
   std::shared_ptr<GEMM_task> task = std::make_shared<GEMM_task>(
     A, B, C, alpha, beta, TransA, TransB
   );
-  if (beta == 0 && schedule_started && !C.is_submatrix()) {
+  if (is_tracking && !C.is_submatrix()) {
     gemm_tracker[A][B] = task;
   }
   add_task(task);
@@ -1376,8 +1384,19 @@ void initialize_starpu() {
 }
 
 void clear_task_trackers() {
+  gemm_tracker.clear();
   recompress_col_tracker.clear();
   recompress_row_tracker.clear();
+}
+
+void start_tracking() {
+  assert(!is_tracking);
+  is_tracking = true;
+}
+
+void stop_tracking() {
+  assert(is_tracking);
+  is_tracking = false;
 }
 
 } // namespace hicma
