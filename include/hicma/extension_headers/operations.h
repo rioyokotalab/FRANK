@@ -46,6 +46,13 @@ declare_method(
     double, double, bool, bool
   )
 )
+declare_method(
+  MatrixProxy, gemm_omm,
+  (
+    virtual_<const Matrix&>, virtual_<const Matrix&>,
+    double, bool, bool
+  )
+)
 
 declare_method(
   void, trmm_omm,

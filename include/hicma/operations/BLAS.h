@@ -15,7 +15,7 @@ void gemm(
   bool TransA=false, bool TransB=false
 );
 
-Dense gemm(
+MatrixProxy gemm(
   const Matrix& A, const Matrix& B,
   double alpha=1,
   bool TransA=false, bool TransB=false
