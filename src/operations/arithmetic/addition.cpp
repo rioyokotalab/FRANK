@@ -44,13 +44,18 @@ define_method(Matrix&, addition_omm, (Dense& A, const LowRank& B)) {
   return A;
 }
 
-define_method(Matrix&, addition_omm, (Hierarchical& A, const LowRank& B)) {
-  Hierarchical BH = split(B, A.dim[0], A.dim[1]);
+define_method(Matrix&, addition_omm, (Hierarchical& A, const Hierarchical& B)) {
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {
-      A(i, j) += BH(i, j);
+      A(i, j) += B(i, j);
     }
   }
+  return A;
+}
+
+define_method(Matrix&, addition_omm, (Hierarchical& A, const LowRank& B)) {
+  Hierarchical BH = split(B, A.dim[0], A.dim[1]);
+  A += BH;
   return A;
 }
 
