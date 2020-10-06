@@ -63,13 +63,13 @@ define_method(Matrix&, addition_omm, (NestedBasis& A, const NestedBasis& B)) {
   if (is_shared(A.sub_bases, B.sub_bases)) {
     A.translation += B.translation;
   } else {
-    // if (A.is_col_basis() && B.is_col_basis()) {
-    //   recompress_col(A.sub_bases, B.sub_bases, A.translation, B.translation);
-    // } else if (A.is_row_basis() && B.is_row_basis()) {
-    //   recompress_row(A.sub_bases, B.sub_bases, A.translation, B.translation);
-    // } else {
+    if (A.is_col_basis() && B.is_col_basis()) {
+      recompress_col(A.sub_bases, B.sub_bases, A.translation, B.translation);
+    } else if (A.is_row_basis() && B.is_row_basis()) {
+      recompress_row(A.sub_bases, B.sub_bases, A.translation, B.translation);
+    } else {
       std::abort();
-    // }
+    }
   }
   return A;
 }
