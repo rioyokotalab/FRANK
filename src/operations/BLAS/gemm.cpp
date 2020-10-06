@@ -435,11 +435,8 @@ define_method(
 ) {
   // H LR LR
   // TODO Not implemented
-  if (TransB) std::abort();
-  MatrixProxy AxBU = gemm(A, B.U, alpha, TransA, false);
-  LowRank AxB(AxBU, B.S, B.V);
-  C.S *= beta;
-  C += AxB;
+  if (TransA || TransB) std::abort();
+  recompress(A, B, C, alpha, beta, TransA, TransB);
 }
 
 define_method(
@@ -452,11 +449,8 @@ define_method(
 ) {
   // LR H LR
   // TODO Not implemented
-  if (TransA) std::abort();
-  MatrixProxy AVxB = gemm(A.V, B, alpha, false, TransB);
-  LowRank AxB(A.U, A.S, AVxB);
-  C.S *= beta;
-  C += AxB;
+  if (TransA || TransB) std::abort();
+  recompress(A, B, C, alpha, beta, TransA, TransB);
 }
 
 define_method(

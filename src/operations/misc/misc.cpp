@@ -129,6 +129,20 @@ define_method(
 
 define_method(
   LowRank, resolve_nested_basis,
+  (const Hierarchical& U, const NestedBasis& V, const Dense& S, bool)
+) {
+  return LowRank(U, gemm(S, V.translation), V.sub_bases, false);
+}
+
+define_method(
+  LowRank, resolve_nested_basis,
+  (const NestedBasis& U, const Hierarchical& V, const Dense& S, bool)
+) {
+  return LowRank(U.sub_bases, gemm(U.translation, S), V, false);
+}
+
+define_method(
+  LowRank, resolve_nested_basis,
   (const Dense& U, const Dense& V, const Dense& S, bool copy_S)
 ) {
   return LowRank(U, S, V, copy_S);
@@ -152,12 +166,32 @@ define_method(
   )
 ) {
   Hierarchical out(row_splits.size(), col_splits.size());
-  Hierarchical U_splits = split_omm(
-    A.U, row_splits, {IndexRange(0, get_n_cols(A.U))}, copy
-  );
-  Hierarchical V_splits = split_omm(
-    A.V, {IndexRange(0, get_n_rows(A.V))}, col_splits, copy
-  );
+  Hierarchical U_splits;
+  if (row_splits.size() > 1) {
+    U_splits = split_omm(
+      A.U, row_splits, {IndexRange(0, get_n_cols(A.U))}, copy
+    );
+  } else {
+    U_splits = Hierarchical(1, 1);
+    if (copy) {
+      U_splits(0, 0) = A.U;
+    } else {
+      U_splits(0, 0) = share_basis(A.U);
+    }
+  }
+  Hierarchical V_splits;
+  if (col_splits.size() > 1) {
+    V_splits = split_omm(
+      A.V, {IndexRange(0, get_n_rows(A.V))}, col_splits, copy
+    );
+  } else {
+    V_splits = Hierarchical(1, 1);
+    if (copy) {
+      V_splits(0, 0) = A.V;
+    } else {
+      V_splits(0, 0) = share_basis(A.V);
+    }
+  }
   for (uint64_t i=0; i<row_splits.size(); ++i) {
     for (uint64_t j=0; j<col_splits.size(); ++j) {
       out(i, j) = resolve_nested_basis(U_splits[i], V_splits[j], A.S, copy);

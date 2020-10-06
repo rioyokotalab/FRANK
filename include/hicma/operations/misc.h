@@ -14,6 +14,7 @@ namespace hicma
 class ClusterTree;
 class Dense;
 class Hierarchical;
+class LowRank;
 class Matrix;
 
 int64_t get_n_rows(const Matrix&);
@@ -40,6 +41,11 @@ Hierarchical split(
 Hierarchical split(const Matrix& A, const Hierarchical& like, bool copy=false);
 
 double norm(const Matrix&);
+
+void recompress(
+  const Matrix& A, const Matrix& B, LowRank& C,
+  double alpha, double beta, bool TransA, bool TransB
+);
 
 void recompress_col(Matrix& AU, const Matrix& BU, Dense& AS, const Dense& BS);
 
