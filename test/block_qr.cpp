@@ -73,8 +73,8 @@ int main(int argc, char **argv) {
       Dense DAsk(HAsk);
       Dense DRjk(Nb, Nb);
       gemm(DQsj, DAsk, DRjk, 1, 1, true, false); //Rjk = Qsj^T x Ask
-      R(j, k) = DRjk;
       gemm(DQsj, DRjk, DAsk, -1, 1); //A*k = A*k - Q*j x Rjk
+      R(j, k) = std::move(DRjk);
       Hierarchical _HAsk = split(DAsk, Nc, 1, true);
       for(int64_t i = 0; i < Nc; i++) {
         A(i, k) = std::move(_HAsk(i, 0));

@@ -27,7 +27,7 @@ class MatrixProxy {
   MatrixProxy& operator=(MatrixProxy&& A) = default;
 
   // Additional constructors from Matrix to allow implicit conversion
-  MatrixProxy(const Matrix& A);
+  explicit MatrixProxy(const Matrix& A);
 
   MatrixProxy(Matrix&& A);
 

@@ -99,7 +99,7 @@ define_method(
   if (TransA || TransB) std::abort();
   if (!B.is_col_basis()) std::abort();
   Dense A_basis = gemm(A, B.sub_bases, alpha);
-  return NestedBasis(A_basis, B.translation, true);
+  return NestedBasis(std::move(A_basis), B.translation, true);
 }
 
 define_method(
@@ -114,7 +114,7 @@ define_method(
   if (TransA || TransB) std::abort();
   if (!A.is_row_basis()) std::abort();
   Dense basis_B = gemm(A.sub_bases, B, alpha);
-  return NestedBasis(basis_B, A.translation, false);
+  return NestedBasis(std::move(basis_B), A.translation, false);
 }
 
 define_method(
