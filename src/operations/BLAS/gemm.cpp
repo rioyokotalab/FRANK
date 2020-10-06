@@ -333,8 +333,8 @@ define_method(
   if (TransA || TransB) std::abort();
   if (!(A.is_row_basis() && C.is_row_basis())) std::abort();
   Dense basis_BU = gemm(A.sub_bases, B.U, alpha);
-  Dense trans_basis_BU = gemm(A.translation, basis_BU);
-  Dense trans_basis_BU_S = gemm(trans_basis_BU, B.S);
+  Dense basis_BU_S = gemm(basis_BU, B.S);
+  Dense trans_basis_BU_S = gemm(A.translation, basis_BU_S);
   NestedBasis mod_basis(B.V, trans_basis_BU_S, false);
   C.translation *= beta;
   C += mod_basis;
@@ -353,8 +353,8 @@ define_method(
   if (TransA || TransB) std::abort();
   if (!(B.is_col_basis() && C.is_col_basis())) std::abort();
   Dense AV_basis = gemm(A.V, B.sub_bases, alpha);
-  Dense AV_basis_trans = gemm(AV_basis, B.translation);
-  Dense S_AV_basis_trans = gemm(A.S, AV_basis_trans);
+  Dense S_AV_basis = gemm(A.S, AV_basis);
+  Dense S_AV_basis_trans = gemm(S_AV_basis, B.translation);
   NestedBasis mod_basis(A.U, S_AV_basis_trans, true);
   C.translation *= beta;
   C += mod_basis;
@@ -555,8 +555,10 @@ define_method(
 ) {
   // D H H
   // LR H H
+  // TODO Not implemented
+  if (B.dim[0] == 1 && B.dim[1] == 1) std::abort();
   assert(B.dim[TransB ? 0 : 1] == C.dim[1]);
-  if (B.dim[TransB ? 1 : 0] == 1) {
+  if (B.dim[TransB ? 1 : 0] == 1 && C.dim[0] == 1) {
     for (int64_t j=0; j<B.dim[TransB ? 0 : 1]; ++j) {
       gemm(A, B[j], C[j], alpha, beta, TransA, TransB);
     }
@@ -580,8 +582,10 @@ define_method(
 ) {
   // H D H
   // H LR H
+  // TODO Not implemented
+  if (A.dim[0] == 1 && A.dim[1] == 1) std::abort();
   assert(A.dim[TransA ? 1 : 0] == C.dim[0]);
-  if (A.dim[TransA ? 0 : 1] == 1) {
+  if (A.dim[TransA ? 0 : 1] == 1 && C.dim[1] == 1) {
     for (int64_t i=0; i<A.dim[TransA ? 1 : 0]; ++i) {
       gemm(A[i], B, C[i], alpha, beta, TransA, TransB);
     }
