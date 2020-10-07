@@ -1154,6 +1154,7 @@ class Recompress_col_task : public Task {
   std::vector<std::shared_ptr<Task>> subtasks;
   std::vector<starpu_task*> AS_sync_tasks;
   std::vector<starpu_task*> BS_sync_tasks;
+  BasisTracker<BasisKey, BasisTracker<BasisKey>> S_pair_tracker;
   unsigned char gemm_consistency[3]{1, 0, 1};
 
   Recompress_col_task(
@@ -1210,16 +1211,21 @@ class Recompress_col_task : public Task {
     }
   }
 
-  Dense add_block(
-    Dense& newS,
-    const Dense& AS, starpu_task* AS_sync, const Dense& BS, starpu_task* BS_sync
-  ) {
+  std::tuple<Dense, Dense> add_block(const Dense& AS, const Dense& BS) {
+    if (S_pair_tracker.has_key(AS) && S_pair_tracker[AS].has_key(BS)) {
+      return {modified[0].share(), share_basis(S_pair_tracker[AS][BS])};
+    }
     constant.push_back(AS.share());
-    AS_sync_tasks.push_back(AS_sync);
+    std::shared_ptr<Task> AS_sync(std::make_shared<Synchronization_task>(AS));
+    add_task(AS_sync);
+    AS_sync_tasks.push_back(AS_sync->task);
     constant.push_back(BS.share());
-    BS_sync_tasks.push_back(BS_sync);
-    modified.push_back(newS.share());
-    return modified[0].share();
+    std::shared_ptr<Task> BS_sync(std::make_shared<Synchronization_task>(BS));
+    add_task(BS_sync);
+    BS_sync_tasks.push_back(BS_sync->task);
+    modified.push_back(Dense(AS.dim[0], AS.dim[1]));
+    S_pair_tracker[AS][BS] = modified.back().share();
+    return {modified[0].share(), modified.back().share()};
   }
 };
 
@@ -1235,12 +1241,7 @@ void add_recompress_col_task(
   if (
     recompress_col_tracker.has_key(AU) && recompress_col_tracker[AU].has_key(BU)
   ) {
-    std::shared_ptr<Task> AS_sync(std::make_shared<Synchronization_task>(AS));
-    add_task(AS_sync);
-    std::shared_ptr<Task> BS_sync(std::make_shared<Synchronization_task>(BS));
-    add_task(BS_sync);
-    newU = recompress_col_tracker[AU][BU]->add_block(
-      newS, AS, AS_sync->task, BS, BS_sync->task);
+    std::tie(newU, newS) = recompress_col_tracker[AU][BU]->add_block(AS, BS);
   } else {
     std::shared_ptr<Recompress_col_task> task(
       std::make_shared<Recompress_col_task>(newU, newS, AU, BU, AS, BS)
@@ -1255,6 +1256,7 @@ class Recompress_row_task : public Task {
   std::vector<std::shared_ptr<Task>> subtasks;
   std::vector<starpu_task*> AS_sync_tasks;
   std::vector<starpu_task*> BS_sync_tasks;
+  BasisTracker<BasisKey, BasisTracker<BasisKey>> S_pair_tracker;
   unsigned char gemm_consistency[3]{0, 1, 1};
 
   Recompress_row_task(
@@ -1311,16 +1313,21 @@ class Recompress_row_task : public Task {
     }
   }
 
-  Dense add_block(
-    Dense& newS,
-    const Dense& AS, starpu_task* AS_sync, const Dense& BS, starpu_task* BS_sync
-  ) {
+  std::tuple<Dense, Dense> add_block(const Dense& AS, const Dense& BS) {
+    if (S_pair_tracker.has_key(AS) && S_pair_tracker[AS].has_key(BS)) {
+      return {modified[0].share(), S_pair_tracker[AS][BS].share()};
+    }
     constant.push_back(AS.share());
-    AS_sync_tasks.push_back(AS_sync);
+    std::shared_ptr<Task> AS_sync(std::make_shared<Synchronization_task>(AS));
+    add_task(AS_sync);
+    AS_sync_tasks.push_back(AS_sync->task);
+    std::shared_ptr<Task> BS_sync(std::make_shared<Synchronization_task>(BS));
+    add_task(BS_sync);
     constant.push_back(BS.share());
-    BS_sync_tasks.push_back(BS_sync);
-    modified.push_back(newS.share());
-    return modified[0].share();
+    BS_sync_tasks.push_back(BS_sync->task);
+    modified.push_back(Dense(AS.dim[0], AS.dim[1]));
+    S_pair_tracker[AS][BS] = modified.back().share();
+    return {modified[0].share(), modified.back().share()};
   }
 };
 
@@ -1336,12 +1343,7 @@ void add_recompress_row_task(
   if (
     recompress_row_tracker.has_key(AV) && recompress_row_tracker[AV].has_key(BV)
   ) {
-    std::shared_ptr<Task> AS_sync(std::make_shared<Synchronization_task>(AS));
-    add_task(AS_sync);
-    std::shared_ptr<Task> BS_sync(std::make_shared<Synchronization_task>(BS));
-    add_task(BS_sync);
-    newV = recompress_row_tracker[AV][BV]->add_block(
-      newS, AS, AS_sync->task, BS, BS_sync->task);
+    std::tie(newV, newS) = recompress_row_tracker[AV][BV]->add_block(AS, BS);
   } else {
     std::shared_ptr<Recompress_row_task> task(
       std::make_shared<Recompress_row_task>(newV, newS, AV, BV, AS, BS)
