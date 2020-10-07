@@ -48,7 +48,8 @@ define_method(
   void, recompress_col_omm,
   (Matrix& AU, const Matrix& BU, Dense&, const Dense&)
 ) {
-  omm_error_handler("recompress", {AU, BU}, __FILE__, __LINE__);
+  omm_error_handler("recompress_col", {AU, BU}, __FILE__, __LINE__);
+  std::abort();
 }
 
 declare_method(
@@ -75,7 +76,8 @@ define_method(
   void, recompress_row_omm,
   (Matrix& AV, const Matrix& BV, Dense&, const Dense&)
 ) {
-  omm_error_handler("recompress", {AV, BV}, __FILE__, __LINE__);
+  omm_error_handler("recompress_row", {AV, BV}, __FILE__, __LINE__);
+  std::abort();
 }
 
 declare_method(void, recompress_omm,
