@@ -50,7 +50,7 @@ if(OpenMP_FOUND)
 endif()
 
 find_or_download(starpu PKG_CONFIG VERSION 1.3)
-list(APPEND HICMA_DEPENDENCIES PkgConfig::starpu)
+link_directories(${starpu_LIBRARY_DIRS})
 
 # Boost
 find_or_download(Boost VERSION 1.65.0 EXACT)
