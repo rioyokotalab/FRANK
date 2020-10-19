@@ -243,9 +243,8 @@ define_method(
   if (TransA || TransB) std::abort();
   if (!A.is_row_basis()) std::abort();
   MatrixProxy basis_B = gemm(A.sub_bases, B, alpha);
-  NestedBasis mod_basis(basis_B, A.translation, false);
   C.translation *= beta;
-  C += mod_basis;
+  recompress_row(C.sub_bases, basis_B, C.translation, A.translation);
 }
 
 define_method(
@@ -261,9 +260,8 @@ define_method(
   if (TransA || TransB) std::abort();
   if (!B.is_col_basis()) std::abort();
   MatrixProxy A_basis = gemm(A, B.sub_bases, alpha);
-  NestedBasis mod_basis(A_basis, B.translation, true);
   C.translation *= beta;
-  C += mod_basis;
+  recompress_col(C.sub_bases, A_basis, C.translation, B.translation);
 }
 
 define_method(
@@ -334,10 +332,13 @@ define_method(
   if (!(A.is_row_basis() && C.is_row_basis())) std::abort();
   Dense basis_BU = gemm(A.sub_bases, B.U, alpha);
   Dense basis_BU_S = gemm(basis_BU, B.S);
-  Dense trans_basis_BU_S = gemm(A.translation, basis_BU_S);
-  NestedBasis mod_basis(B.V, trans_basis_BU_S, false);
-  C.translation *= beta;
-  C += mod_basis;
+  if (is_shared(B.V, C.sub_bases)) {
+    gemm(A.translation, basis_BU_S, C.translation, 1, beta);
+  } else {
+    Dense trans_basis_BU_S = gemm(A.translation, basis_BU_S);
+    C.translation *= beta;
+    recompress_row(C.sub_bases, B.V, C.translation, trans_basis_BU_S);
+  }
 }
 
 define_method(
@@ -354,10 +355,13 @@ define_method(
   if (!(B.is_col_basis() && C.is_col_basis())) std::abort();
   Dense AV_basis = gemm(A.V, B.sub_bases, alpha);
   Dense S_AV_basis = gemm(A.S, AV_basis);
-  Dense S_AV_basis_trans = gemm(S_AV_basis, B.translation);
-  NestedBasis mod_basis(A.U, S_AV_basis_trans, true);
-  C.translation *= beta;
-  C += mod_basis;
+  if (is_shared(A.U, C.sub_bases)) {
+    gemm(S_AV_basis, B.translation, C.translation, 1, beta);
+  } else {
+    Dense S_AV_basis_trans = gemm(S_AV_basis, B.translation);
+    C.translation *= beta;
+    recompress_col(C.sub_bases, A.U, C.translation, S_AV_basis_trans);
+  }
 }
 
 define_method(
@@ -385,9 +389,13 @@ define_method(
   // TODO Not implemented
   if (TransA) std::abort();
   Dense AVxB = gemm(A.V, B, alpha, false, TransB);
-  LowRank AxB(A.U, A.S, AVxB);
   C.S *= beta;
-  C += AxB;
+  if (is_shared(A.U, C.U)) {
+    recompress_row(C.V, AVxB, C.S, A.S);
+  } else {
+    LowRank AxB(A.U, A.S, AVxB);
+    C += AxB;
+  }
 }
 
 define_method(
@@ -402,9 +410,13 @@ define_method(
   // TODO Not implemented
   if (TransB) std::abort();
   Dense AxBU = gemm(A, B.U, alpha, TransA, false);
-  LowRank AxB(AxBU, B.S, B.V);
   C.S *= beta;
-  C += AxB;
+  if (is_shared(B.V, C.V)) {
+    recompress_col(C.U, AxBU, C.S, B.S);
+  } else {
+    LowRank AxB(AxBU, B.S, B.V);
+    C += AxB;
+  }
 }
 
 define_method(
@@ -419,10 +431,21 @@ define_method(
   // TODO Not implemented
   if (TransA || TransB) std::abort();
   assert(A.rank == B.rank);
-  Dense SxVxUxS = gemm(gemm(A.S, gemm(A.V, B.U, alpha)), B.S);
-  LowRank AxB(A.U, SxVxUxS, B.V);
-  C.S *= beta;
-  C += AxB;
+  Dense SxVxU = gemm(A.S, gemm(A.V, B.U, alpha));
+  if (is_shared(A.U, C.U) && is_shared(B.V, C.V)) {
+    gemm(SxVxU, B.S, C.S, 1, beta);
+  } else {
+    Dense SxVxUxS = gemm(SxVxU, B.S);
+    C.S *= beta;
+    if (is_shared(A.U, C.U)) {
+      recompress_row(C.V, B.V, C.S, SxVxUxS);
+    } else if (is_shared(B.V, C.V)) {
+      recompress_col(C.U, A.U, C.S, SxVxUxS);
+    } else {
+      LowRank AxB(A.U, SxVxUxS, B.V);
+      C += AxB;
+    }
+  }
 }
 
 define_method(
@@ -436,7 +459,17 @@ define_method(
   // H LR LR
   // TODO Not implemented
   if (TransA || TransB) std::abort();
-  recompress(A, B, C, alpha, beta, TransA, TransB);
+  if (is_shared(B.V, C.V)) {
+    Hierarchical BH = split(B, A.dim[1], 1);
+    Hierarchical CH = split(C, A.dim[0], 1);
+    gemm(A, BH, CH, alpha, beta, TransA, TransB);
+    C = recombine_col(CH, C.V);
+  } else {
+    MatrixProxy AxBU = gemm(A, B.U, alpha, TransA, false);
+    LowRank AxB(AxBU, B.S, B.V);
+    C.S *= beta;
+    C += AxB;
+  }
 }
 
 define_method(
@@ -450,7 +483,17 @@ define_method(
   // LR H LR
   // TODO Not implemented
   if (TransA || TransB) std::abort();
-  recompress(A, B, C, alpha, beta, TransA, TransB);
+  if (is_shared(A.U, C.U)) {
+    Hierarchical AH = split(A, 1, B.dim[0]);
+    Hierarchical CH = split(C, 1, B.dim[1]);
+    gemm(AH, B, CH, alpha, beta, TransA, TransB);
+    C = recombine_row(CH, C.U);
+  } else {
+    MatrixProxy AVxB = gemm(A.V, B, alpha, false, TransB);
+    LowRank AxB(A.U, A.S, AVxB);
+    C.S *= beta;
+    C += AxB;
+  }
 }
 
 define_method(

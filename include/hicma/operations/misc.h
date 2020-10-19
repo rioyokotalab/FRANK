@@ -42,14 +42,13 @@ Hierarchical split(const Matrix& A, const Hierarchical& like, bool copy=false);
 
 double norm(const Matrix&);
 
-void recompress(
-  const Matrix& A, const Matrix& B, LowRank& C,
-  double alpha, double beta, bool TransA, bool TransB
-);
-
 void recompress_col(Matrix& AU, const Matrix& BU, Dense& AS, const Dense& BS);
 
 void recompress_row(Matrix& AV, const Matrix& BV, Dense& AS, const Dense& BS);
+
+LowRank recombine_col(Hierarchical& A, MatrixProxy& V);
+
+LowRank recombine_row(Hierarchical& A, MatrixProxy& U);
 
 MatrixProxy transpose(const Matrix&);
 

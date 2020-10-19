@@ -80,127 +80,48 @@ define_method(
   std::abort();
 }
 
-declare_method(void, recompress_omm,
-  (
-    virtual_<const Matrix&>, virtual_<const Matrix&>,
-    virtual_<const Matrix&>, virtual_<const Matrix&>, LowRank&,
-    double, double, bool, bool
-  )
-)
-
-void recompress(
-  const Matrix& A, const Matrix& B, LowRank& C,
-  double alpha, double beta, bool TransA, bool TransB
-) {
-  recompress_omm(C.U, C.V, A, B, C, alpha, beta, TransA, TransB);
-}
-
-define_method(
-  void, recompress_omm,
-  (
-    const Hierarchical&, const Hierarchical&,
-    const Hierarchical& A, const LowRank& B, LowRank& C,
-    double alpha, double beta, bool TransA, bool TransB
-  )
-) {
-  assert(is_shared(B.V, C.V));
-  Hierarchical BH = split(B, A.dim[1], 1);
-  Hierarchical CH = split(C, A.dim[0], 1);
-  gemm(A, BH, CH, alpha, beta, TransA, TransB);
+LowRank recombine_col(Hierarchical& A, MatrixProxy& V) {
   // TODO The following needs to be done like the all-dense recompress, as in we
   // need to combine this for all blocks in the block row
   Hierarchical S_colH(A.dim[0], 1);
   for (int64_t i=0; i<A.dim[0]; ++i) {
-    LowRank Ci(std::move(CH[i]));
-    S_colH[i] = std::move(Ci.S);
-    CH[i] = std::move(Ci);
+    LowRank Ai(std::move(A[i]));
+    S_colH[i] = std::move(Ai.S);
+    A[i] = std::move(Ai);
   }
   Dense S_col(S_colH);
   Dense new_trans_mats(S_col.dim[0], S_col.dim[1]);
-  Dense new_S(C.S.dim[0], C.S.dim[1]);
+  Dense new_S(S_col.dim[1], S_col.dim[1]);
   qr(S_col, new_trans_mats, new_S);
-  C.S = std::move(new_S);
   std::vector<Dense> new_trans_matsH = new_trans_mats.split(A.dim[0], 1, true);
   Hierarchical new_U(A.dim[0], 1);
   for (int64_t i=0; i<A.dim[0]; ++i) {
-    LowRank Ci(std::move(CH[i]));
-    new_U[i] = NestedBasis(Ci.U, new_trans_matsH[i], true);
+    LowRank Ai(std::move(A[i]));
+    new_U[i] = NestedBasis(Ai.U, new_trans_matsH[i], true);
   }
-  C.U = std::move(new_U);
+  return LowRank(std::move(new_U), std::move(new_S), std::move(V));
 }
 
-define_method(
-  void, recompress_omm,
-  (
-    const Hierarchical&, const Hierarchical&,
-    const LowRank& A, const Hierarchical& B, LowRank& C,
-    double alpha, double beta, bool TransA, bool TransB
-  )
-) {
-  assert(is_shared(A.U, C.U));
-  Hierarchical AH = split(A, 1, B.dim[0]);
-  Hierarchical CH = split(C, 1, B.dim[1]);
-  gemm(AH, B, CH, alpha, beta, TransA, TransB);
+LowRank recombine_row(Hierarchical& A, MatrixProxy& U) {
   // TODO The following needs to be done like the all-dense recompress, as in we
   // need to combine this for all blocks in the block col
-  Hierarchical S_rowH(1, B.dim[1]);
-  for (int64_t j=0; j<B.dim[1]; ++j) {
-    LowRank Cj(std::move(CH[j]));
-    S_rowH[j] = std::move(Cj.S);
-    CH[j] = std::move(Cj);
+  Hierarchical S_rowH(1, A.dim[1]);
+  for (int64_t j=0; j<A.dim[1]; ++j) {
+    LowRank Aj(std::move(A[j]));
+    S_rowH[j] = std::move(Aj.S);
+    A[j] = std::move(Aj);
   }
   Dense S_row(S_rowH);
   Dense new_trans_mats(S_row.dim[0], S_row.dim[1]);
-  Dense new_S(C.S.dim[0], C.S.dim[1]);
+  Dense new_S(S_row.dim[0], S_row.dim[0]);
   rq(S_row, new_S, new_trans_mats);
-  C.S = std::move(new_S);
-  std::vector<Dense> new_trans_matsH = new_trans_mats.split(1, B.dim[1], true);
-  Hierarchical new_V(1, B.dim[1]);
-  for (int64_t j=0; j<B.dim[1]; ++j) {
-    LowRank Cj(std::move(CH[j]));
-    new_V[j] = NestedBasis(Cj.V, new_trans_matsH[j], false);
+  std::vector<Dense> new_trans_matsH = new_trans_mats.split(1, A.dim[1], true);
+  Hierarchical new_V(1, A.dim[1]);
+  for (int64_t j=0; j<A.dim[1]; ++j) {
+    LowRank Aj(std::move(A[j]));
+    new_V[j] = NestedBasis(Aj.V, new_trans_matsH[j], false);
   }
-  C.V = std::move(new_V);
-}
-
-define_method(
-  void, recompress_omm,
-  (
-    const Dense&, const Dense&,
-    const Hierarchical& A, const LowRank& B, LowRank& C,
-    double alpha, double beta, bool TransA, bool
-  )
-) {
-  MatrixProxy AxBU = gemm(A, B.U, alpha, TransA, false);
-  LowRank AxB(AxBU, B.S, B.V);
-  C.S *= beta;
-  C += AxB;
-}
-
-define_method(
-  void, recompress_omm,
-  (
-    const Dense&, const Dense&,
-    const LowRank& A, const Hierarchical& B, LowRank& C,
-    double alpha, double beta, bool, bool TransB
-  )
-) {
-  MatrixProxy AVxB = gemm(A.V, B, alpha, false, TransB);
-  LowRank AxB(A.U, A.S, AVxB);
-  C.S *= beta;
-  C += AxB;
-}
-
-define_method(
-  void, recompress_omm,
-  (
-    const Matrix& CU, const Matrix& CV,
-    const Matrix& A, const Matrix& B, LowRank&,
-    double, double, bool, bool
-  )
-) {
-  omm_error_handler("recompress", {CU, CV, A, B}, __FILE__, __LINE__);
-  std::abort();
+  return LowRank(std::move(U), std::move(new_S), std::move(new_V));
 }
 
 } // namespace hicma
