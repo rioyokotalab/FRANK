@@ -156,6 +156,65 @@ define_method(
   std::abort();
 }
 
+declare_method(
+  NestedBasis, resolve_nested_basis,
+  (virtual_<const Matrix&>, const Dense&, bool, bool)
+)
+
+define_method(
+  NestedBasis, resolve_nested_basis,
+  (const Dense& basis, const Dense& S, bool, bool is_col_basis)
+) {
+  // TODO No difference for copying/non-copying version atm!
+  return NestedBasis(basis.share(), S.share(), is_col_basis);
+}
+
+define_method(
+  NestedBasis, resolve_nested_basis,
+  (const NestedBasis& basis, const Dense& S, bool, bool is_col_basis)
+) {
+  // TODO No difference for copying/non-copying version atm!
+  return NestedBasis(
+    basis.sub_bases,
+    is_col_basis ? gemm(basis.translation, S) : gemm(S, basis.translation),
+    is_col_basis
+  );
+}
+
+define_method(
+  NestedBasis, resolve_nested_basis,
+  (const Matrix& basis, const Dense&, bool, bool)
+) {
+  omm_error_handler("resolve_nested_basis", {basis}, __FILE__, __LINE__);
+  std::abort();
+}
+
+define_method(
+  Hierarchical, split_omm,
+  (
+    const NestedBasis& A,
+    const std::vector<IndexRange>& row_splits,
+    const std::vector<IndexRange>& col_splits,
+    bool copy
+  )
+) {
+  assert(
+    (A.is_col_basis() && col_splits.size() == 1)
+    || (A.is_row_basis() && row_splits.size() == 1)
+  );
+  Hierarchical out(row_splits.size(), col_splits.size());
+  // TODO Possibly wrong dimensions for subbasis!
+  Hierarchical sub_basis_split = split_omm(
+    A.sub_bases, row_splits, col_splits, copy
+  );
+  for (int64_t i=0; i<out.dim[A.is_col_basis() ? 0 : 1]; ++i) {
+    out[i] = resolve_nested_basis(
+      sub_basis_split[i], A.translation, copy, A.is_col_basis()
+    );
+  }
+  return out;
+}
+
 define_method(
   Hierarchical, split_omm,
   (

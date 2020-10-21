@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <tuple>
 #include <vector>
 
 
@@ -61,6 +62,14 @@ void add_recompress_col_task(
 void add_recompress_row_task(
   Dense& newV, Dense& newS,
   const Dense& AV, const Dense& BV, const Dense& AS, const Dense& BS
+);
+
+std::tuple<Dense, Dense> add_recombine_col_task(
+  const Dense& trans_orig, const Dense& S_orig, const Dense& trans
+);
+
+std::tuple<Dense, Dense> add_recombine_row_task(
+  const Dense& trans_orig, const Dense& S_orig, const Dense& trans
 );
 
 void start_schedule();

@@ -1,6 +1,7 @@
 #ifndef hicma_operations_misc_h
 #define hicma_operations_misc_h
 
+#include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/matrix_proxy.h"
 
@@ -12,7 +13,6 @@ namespace hicma
 {
 
 class ClusterTree;
-class Dense;
 class Hierarchical;
 class LowRank;
 class Matrix;
@@ -46,9 +46,9 @@ void recompress_col(Matrix& AU, const Matrix& BU, Dense& AS, const Dense& BS);
 
 void recompress_row(Matrix& AV, const Matrix& BV, Dense& AS, const Dense& BS);
 
-LowRank recombine_col(Hierarchical& A, MatrixProxy& V);
+void recombine_col(Hierarchical& A, MatrixProxy& U, Dense& S_orig);
 
-LowRank recombine_row(Hierarchical& A, MatrixProxy& U);
+void recombine_row(Hierarchical& A, MatrixProxy& V, Dense& S_orig);
 
 MatrixProxy transpose(const Matrix&);
 

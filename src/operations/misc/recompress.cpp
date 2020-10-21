@@ -80,48 +80,113 @@ define_method(
   std::abort();
 }
 
-LowRank recombine_col(Hierarchical& A, MatrixProxy& V) {
-  // TODO The following needs to be done like the all-dense recompress, as in we
-  // need to combine this for all blocks in the block row
-  Hierarchical S_colH(A.dim[0], 1);
-  for (int64_t i=0; i<A.dim[0]; ++i) {
-    LowRank Ai(std::move(A[i]));
-    S_colH[i] = std::move(Ai.S);
-    A[i] = std::move(Ai);
-  }
-  Dense S_col(S_colH);
-  Dense new_trans_mats(S_col.dim[0], S_col.dim[1]);
-  Dense new_S(S_col.dim[1], S_col.dim[1]);
-  qr(S_col, new_trans_mats, new_S);
-  std::vector<Dense> new_trans_matsH = new_trans_mats.split(A.dim[0], 1, true);
-  Hierarchical new_U(A.dim[0], 1);
-  for (int64_t i=0; i<A.dim[0]; ++i) {
-    LowRank Ai(std::move(A[i]));
-    new_U[i] = NestedBasis(Ai.U, new_trans_matsH[i], true);
-  }
-  return LowRank(std::move(new_U), std::move(new_S), std::move(V));
+declare_method(
+  Dense, add_recombine_col,
+  (virtual_<const Matrix&>, virtual_<Matrix&>, const Dense&)
+)
+
+define_method(
+  Dense, add_recombine_col,
+  (const NestedBasis& split, NestedBasis& basis_orig, const Dense& S_orig)
+) {
+  Dense new_trans, new_S;
+  std::tie(new_trans, new_S) = add_recombine_col_task(
+    basis_orig.translation, S_orig, split.translation
+  );
+  basis_orig = NestedBasis(split.sub_bases, new_trans, true);
+  return new_S;
 }
 
-LowRank recombine_row(Hierarchical& A, MatrixProxy& U) {
-  // TODO The following needs to be done like the all-dense recompress, as in we
-  // need to combine this for all blocks in the block col
-  Hierarchical S_rowH(1, A.dim[1]);
-  for (int64_t j=0; j<A.dim[1]; ++j) {
-    LowRank Aj(std::move(A[j]));
-    S_rowH[j] = std::move(Aj.S);
-    A[j] = std::move(Aj);
+define_method(
+  Dense, add_recombine_col,
+  (const LowRank& split, NestedBasis& basis_orig, const Dense& S_orig)
+) {
+  Dense new_trans, new_S;
+  std::tie(new_trans, new_S) = add_recombine_col_task(
+    basis_orig.translation, S_orig, split.S
+  );
+  basis_orig = NestedBasis(split.U, new_trans, true);
+  return new_S;
+
+}
+
+define_method(
+  Dense, add_recombine_col,
+  (const Matrix& split, Matrix& original, const Dense&)
+) {
+  omm_error_handler("add_recombine_col", {split, original}, __FILE__, __LINE__);
+  std::abort();
+}
+
+void recombine_col(Hierarchical& split, MatrixProxy& U, Dense& S) {
+  // Assumes U is actually Hierarchical (should always be the case). This allows
+  // us to skip one layer of OMM functions (actually an OMM is used implicitly).
+  Hierarchical U_orig(std::move(U));
+  Dense new_S;
+  for (int64_t i=0; i<split.dim[0]; ++i) {
+    Dense block_S = add_recombine_col(split[i], U_orig[i], S);
+    if (i == 0) {
+      new_S = std::move(block_S);
+    } else {
+      assert(is_shared(block_S, new_S));
+    }
   }
-  Dense S_row(S_rowH);
-  Dense new_trans_mats(S_row.dim[0], S_row.dim[1]);
-  Dense new_S(S_row.dim[0], S_row.dim[0]);
-  rq(S_row, new_S, new_trans_mats);
-  std::vector<Dense> new_trans_matsH = new_trans_mats.split(1, A.dim[1], true);
-  Hierarchical new_V(1, A.dim[1]);
-  for (int64_t j=0; j<A.dim[1]; ++j) {
-    LowRank Aj(std::move(A[j]));
-    new_V[j] = NestedBasis(Aj.V, new_trans_matsH[j], false);
+  U = std::move(U_orig);
+  S = std::move(new_S);
+}
+
+declare_method(
+  Dense, add_recombine_row,
+  (virtual_<const Matrix&>, virtual_<Matrix&>, const Dense&)
+)
+
+define_method(
+  Dense, add_recombine_row,
+  (const NestedBasis& split, NestedBasis& basis_orig, const Dense& S_orig)
+) {
+  Dense new_trans, new_S;
+  std::tie(new_trans, new_S) = add_recombine_row_task(
+    basis_orig.translation, S_orig, split.translation
+  );
+  basis_orig = NestedBasis(split.sub_bases, new_trans, false);
+  return new_S;
+}
+
+define_method(
+  Dense, add_recombine_row,
+  (const LowRank& split, NestedBasis& basis_orig, const Dense& S_orig)
+) {
+  Dense new_trans, new_S;
+  std::tie(new_trans, new_S) = add_recombine_row_task(
+    basis_orig.translation, S_orig, split.S
+  );
+  basis_orig = NestedBasis(split.V, new_trans, false);
+  return new_S;
+}
+
+define_method(
+  Dense, add_recombine_row,
+  (const Matrix& split, Matrix& original, const Dense&)
+) {
+  omm_error_handler("add_recombine_row", {split, original}, __FILE__, __LINE__);
+  std::abort();
+}
+
+void recombine_row(Hierarchical& split, MatrixProxy& V, Dense& S) {
+  // Assumes U is actually Hierarchical (should always be the case). This allows
+  // us to skip one layer of OMM functions (actually an OMM is used implicitly).
+  Hierarchical V_orig(std::move(V));
+  Dense new_S;
+  for (int64_t j=0; j<split.dim[1]; ++j) {
+    Dense block_ = add_recombine_row(split[j], V_orig[j], S);
+    if (j == 0) {
+      new_S = std::move(block_);
+    } else {
+      assert(is_shared(block_, new_S));
+    }
   }
-  return LowRank(std::move(U), std::move(new_S), std::move(new_V));
+  V = std::move(V_orig);
+  S = std::move(new_S);
 }
 
 } // namespace hicma

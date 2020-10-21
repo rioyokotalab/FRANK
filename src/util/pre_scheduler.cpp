@@ -15,21 +15,22 @@
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
 
-#include <algorithm>
-#include <cassert>
-#include <cstdint>
-#include <functional>
-#include <list>
-#include <memory>
-#include <utility>
-#include <vector>
-
 #ifdef USE_MKL
 #include <mkl.h>
 #else
 #include <cblas.h>
 #include <lapacke.h>
 #endif
+
+#include <algorithm>
+#include <cassert>
+#include <cstdint>
+#include <functional>
+#include <list>
+#include <memory>
+#include <tuple>
+#include <utility>
+#include <vector>
 
 
 namespace hicma
@@ -1350,6 +1351,333 @@ void add_recompress_row_task(
     );
     recompress_row_tracker[AV][BV] = task;
     add_task(task);
+  }
+}
+
+class Recombine_col_task : public Task {
+ public:
+  std::vector<std::shared_ptr<Task>> subtasks;
+  BasisTracker<BasisKey, Dense> S_orig_S_tracker;
+  std::vector<Dense> new_S_mats;
+  BasisTracker<BasisKey, Dense> trans_orig_trans_tracker;
+  std::vector<Dense> new_trans_mats;
+  BasisTracker<BasisKey, BasisTracker<BasisKey, bool>> S_trans_pair_tracker;
+  std::vector<starpu_task*> sync_tasks;
+  unsigned char copy_consistency[2]{0, 1};
+  int64_t n_rows=0, n_cols=0;
+
+  Recombine_col_task(
+    const Dense& trans_orig, const Dense& S_orig, const Dense& trans
+  ) {
+    n_rows = trans.dim[0];
+    n_cols = trans.dim[1];
+    Dense new_S(S_orig.dim[0], S_orig.dim[1]);
+    new_S_mats.push_back(new_S.share());
+    S_orig_S_tracker[S_orig] = new_S.share();
+    Dense new_trans(trans.dim[0], trans.dim[1]);
+    new_trans_mats.push_back(new_trans.share());
+    trans_orig_trans_tracker[trans_orig] = new_trans.share();
+    constant.push_back(trans.share());
+    S_trans_pair_tracker[S_orig][trans] = true;
+  }
+
+  std::tuple<Dense, Dense> add_block(
+    const Dense& trans_orig, const Dense& S_orig, const Dense& trans
+  ) {
+    // TODO Add manual dependency on trans!
+    n_cols += trans.dim[1];
+    Dense new_S(S_orig.dim[0], S_orig.dim[1]);
+    new_S_mats.push_back(new_S.share());
+    S_orig_S_tracker[S_orig] = new_S.share();
+    constant.push_back(trans.share());
+    S_trans_pair_tracker[S_orig][trans] = true;
+    std::shared_ptr<Task> trans_sync(
+      std::make_shared<Synchronization_task>(trans)
+    );
+    add_task(trans_sync);
+    sync_tasks.push_back(trans_sync->task);
+    return {trans_orig_trans_tracker[trans_orig].share(), std::move(new_S)};
+  }
+
+  std::tuple<Dense, Dense> add_sub_block(
+    const Dense& trans_orig, const Dense& S_orig, const Dense& trans
+  ) {
+    // Skipp those where both S_orig and the modified trans already exist
+    if (
+      S_trans_pair_tracker.has_key(S_orig)
+      && S_trans_pair_tracker[S_orig].has_key(trans)
+    ) {
+      return {
+        trans_orig_trans_tracker[trans_orig].share(),
+        S_orig_S_tracker[S_orig].share()
+      };
+    }
+    // TODO Add manual dependency on trans!
+    Dense new_trans;
+    if (trans_orig_trans_tracker.has_key(trans_orig)) {
+      new_trans = trans_orig_trans_tracker[trans_orig].share();
+    } else {
+      n_rows += trans.dim[0];
+      new_trans = Dense(trans.dim[0], trans.dim[1]);
+      new_trans_mats.push_back(new_trans.share());
+      trans_orig_trans_tracker[trans_orig] = new_trans.share();
+    }
+    constant.push_back(trans.share());
+    S_trans_pair_tracker[S_orig][trans] = true;
+    std::shared_ptr<Task> trans_sync(
+      std::make_shared<Synchronization_task>(trans)
+    );
+    add_task(trans_sync);
+    sync_tasks.push_back(trans_sync->task);
+    return {std::move(new_trans), S_orig_S_tracker[S_orig].share()};
+  }
+
+  void submit() override {
+    Dense combined_trans(n_rows, n_cols);
+    int64_t n_trans = new_trans_mats.size();
+    int64_t n_S = new_S_mats.size();
+    std::vector<Dense> trans_blocks = combined_trans.split(n_trans, n_S);
+    // TODO Needs this weird transpose orders since columns are filled first
+    for (int64_t i=0; i<n_trans; ++i) {
+      for (int64_t j=0; j<n_S; ++j) {
+        subtasks.push_back(std::make_shared<Copy_task>(
+          constant[j*n_trans+i], trans_blocks[i*n_S+j]
+        ));
+        if (j*n_trans+i > 0) {
+          starpu_task_declare_deps(
+            subtasks.back()->task, 1, sync_tasks[j*n_trans+i-1]
+          );
+          subtasks.back()->task->handles_sequential_consistency = copy_consistency;
+        }
+      }
+    }
+    uint64_t dim_min = std::min(combined_trans.dim[0], combined_trans.dim[1]);
+    Dense U(combined_trans.dim[0], dim_min);
+    Dense S(dim_min, dim_min);
+    Dense V(dim_min, combined_trans.dim[1]);
+    subtasks.push_back(std::make_shared<SVD_task>(combined_trans, U, S, V));
+    // TODO Avoid copy tasks by using no-copy-split!
+    // TODO Assumes same size of all S mats
+    Dense smallS(new_S_mats[0].dim[0], new_S_mats[0].dim[1]);
+    subtasks.push_back(std::make_shared<Copy_task>(S, smallS));
+    Dense smallV(new_S_mats[0].dim[1], V.dim[1]);
+    subtasks.push_back(std::make_shared<Copy_task>(V, smallV));
+    std::vector<Dense> smallV_parts = smallV.split(1, n_S);
+    for (int64_t j=0; j<n_S; ++j) {
+      subtasks.push_back(std::make_shared<GEMM_task>(
+        smallS, smallV_parts[j], new_S_mats[j], 1, 0, false, false
+      ));
+    }
+    std::vector<Dense> recompressed_trans = U.split(n_trans, 1);
+    for (int64_t i=0; i<n_trans; ++i) {
+      subtasks.push_back(std::make_shared<Copy_task>(
+        recompressed_trans[i], new_trans_mats[i]
+      ));
+    }
+    for (std::shared_ptr<Task> task : subtasks) {
+      task->submit();
+    }
+  }
+};
+
+BasisTracker<BasisKey, std::shared_ptr<Recombine_col_task>>
+recombine_col_S_tracker, recombine_col_trans_tracker;
+
+std::tuple<Dense, Dense> add_recombine_col_task(
+  const Dense& trans_orig, const Dense& S_orig, const Dense& trans
+) {
+  // TODO Currently not correct for the case where both S_orig and trans_orig
+  // are logged but the trans is new! This should not happen unless basis is
+  // broken due to dense blocks far from diagonal...
+  if (recombine_col_trans_tracker.has_key(trans_orig)) {
+    if (recombine_col_S_tracker.has_key(S_orig)) {
+      return recombine_col_S_tracker[S_orig]->add_sub_block(
+        trans_orig, S_orig, trans
+      );
+    } else {
+      std::shared_ptr<Recombine_col_task> task = (
+        recombine_col_trans_tracker[trans_orig]
+      );
+      recombine_col_S_tracker[S_orig] = task;
+      return task->add_block(trans_orig, S_orig, trans);
+    }
+  } else {
+    if (recombine_col_S_tracker.has_key(S_orig)) {
+      std::shared_ptr<Recombine_col_task> task = recombine_col_S_tracker[S_orig];
+      recombine_col_trans_tracker[trans_orig] = task;
+      return task->add_sub_block(trans_orig, S_orig, trans);
+    } else {
+      std::shared_ptr<Recombine_col_task> task(
+        std::make_shared<Recombine_col_task>(trans_orig, S_orig, trans)
+      );
+      recombine_col_S_tracker[S_orig] = task;
+      recombine_col_trans_tracker[trans_orig] = task;
+      add_task(task);
+      return {task->new_trans_mats[0].share(), task->new_S_mats[0].share()};
+    }
+  }
+}
+
+class Recombine_row_task : public Task {
+ public:
+  std::vector<std::shared_ptr<Task>> subtasks;
+  BasisTracker<BasisKey, Dense> S_orig_S_tracker;
+  std::vector<Dense> new_S_mats;
+  BasisTracker<BasisKey, Dense> trans_orig_trans_tracker;
+  std::vector<Dense> new_trans_mats;
+  BasisTracker<BasisKey, BasisTracker<BasisKey, bool>> S_trans_pair_tracker;
+  std::vector<starpu_task*> sync_tasks;
+  unsigned char copy_consistency[2]{0, 1};
+  int64_t n_rows=0, n_cols=0;
+
+  Recombine_row_task(
+    const Dense& trans_orig, const Dense& S_orig, const Dense& trans
+  ) {
+    n_rows = trans.dim[0];
+    n_cols = trans.dim[1];
+    Dense new_S(S_orig.dim[0], S_orig.dim[1]);
+    new_S_mats.push_back(new_S.share());
+    S_orig_S_tracker[S_orig] = new_S.share();
+    Dense new_trans(trans.dim[0], trans.dim[1]);
+    new_trans_mats.push_back(new_trans.share());
+    trans_orig_trans_tracker[trans_orig] = new_trans.share();
+    constant.push_back(trans.share());
+    S_trans_pair_tracker[S_orig][trans] = true;
+  }
+
+  std::tuple<Dense, Dense> add_block(
+    const Dense& trans_orig, const Dense& S_orig, const Dense& trans
+  ) {
+    // TODO Add manual dependency on trans!
+    n_rows += trans.dim[0];
+    Dense new_S(S_orig.dim[0], S_orig.dim[1]);
+    new_S_mats.push_back(new_S.share());
+    S_orig_S_tracker[S_orig] = new_S.share();
+    constant.push_back(trans.share());
+    S_trans_pair_tracker[S_orig][trans] = true;
+    std::shared_ptr<Task> trans_sync(
+      std::make_shared<Synchronization_task>(trans)
+    );
+    add_task(trans_sync);
+    sync_tasks.push_back(trans_sync->task);
+    return {trans_orig_trans_tracker[trans_orig].share(), std::move(new_S)};
+  }
+
+  std::tuple<Dense, Dense> add_sub_block(
+    const Dense& trans_orig, const Dense& S_orig, const Dense& trans
+  ) {
+    // Skipp those where both S_orig and the modified trans already exist
+    if (
+      S_trans_pair_tracker.has_key(S_orig)
+      && S_trans_pair_tracker[S_orig].has_key(trans)
+    ) {
+      return {
+        trans_orig_trans_tracker[trans_orig].share(),
+        S_orig_S_tracker[S_orig].share()
+      };
+    }
+    // TODO Add manual dependency on trans!
+    Dense new_trans;
+    if (trans_orig_trans_tracker.has_key(trans_orig)) {
+      new_trans = trans_orig_trans_tracker[trans_orig].share();
+    } else {
+      n_cols += trans.dim[1];
+      new_trans = Dense(trans.dim[0], trans.dim[1]);
+      new_trans_mats.push_back(new_trans.share());
+      trans_orig_trans_tracker[trans_orig] = new_trans.share();
+    }
+    constant.push_back(trans.share());
+    S_trans_pair_tracker[S_orig][trans] = true;
+    std::shared_ptr<Task> trans_sync(
+      std::make_shared<Synchronization_task>(trans)
+    );
+    add_task(trans_sync);
+    sync_tasks.push_back(trans_sync->task);
+    return {std::move(new_trans), S_orig_S_tracker[S_orig].share()};
+  }
+
+  void submit() override {
+    Dense combined_trans(n_rows, n_cols);
+    int64_t n_trans = new_trans_mats.size();
+    int64_t n_S = new_S_mats.size();
+    std::vector<Dense> trans_blocks = combined_trans.split(n_S, n_trans);
+    for (int64_t i=0; i<n_S; ++i) {
+      for (int64_t j=0; j<n_trans; ++j) {
+        subtasks.push_back(std::make_shared<Copy_task>(
+          constant[i*n_trans+j], trans_blocks[i*n_trans+j]
+        ));
+        if (i*n_trans+j > 0) {
+          starpu_task_declare_deps(
+            subtasks.back()->task, 1, sync_tasks[i*n_trans+j-1]
+          );
+          subtasks.back()->task->handles_sequential_consistency = copy_consistency;
+        }
+      }
+    }
+    uint64_t dim_min = std::min(combined_trans.dim[0], combined_trans.dim[1]);
+    Dense U(combined_trans.dim[0], dim_min);
+    Dense S(dim_min, dim_min);
+    Dense V(dim_min, combined_trans.dim[1]);
+    subtasks.push_back(std::make_shared<SVD_task>(combined_trans, U, S, V));
+    // TODO Avoid copy tasks by using no-copy-split!
+    // TODO Assumes same size of all S mats
+    Dense smallS(new_S_mats[0].dim[0], new_S_mats[0].dim[1]);
+    subtasks.push_back(std::make_shared<Copy_task>(S, smallS));
+    Dense smallU(U.dim[0], new_S_mats[0].dim[0]);
+    subtasks.push_back(std::make_shared<Copy_task>(U, smallU));
+    std::vector<Dense> smallU_parts = smallU.split(n_S, 1);
+    for (int64_t i=0; i<n_S; ++i) {
+      subtasks.push_back(std::make_shared<GEMM_task>(
+        smallU_parts[i], smallS, new_S_mats[i], 1, 0, false, false
+      ));
+    }
+    std::vector<Dense> recompressed_trans = V.split(1, n_trans);
+    for (int64_t j=0; j<n_trans; ++j) {
+      subtasks.push_back(std::make_shared<Copy_task>(
+        recompressed_trans[j], new_trans_mats[j]
+      ));
+    }
+    for (std::shared_ptr<Task> task : subtasks) {
+      task->submit();
+    }
+  }
+};
+
+BasisTracker<BasisKey, std::shared_ptr<Recombine_row_task>>
+recombine_row_S_tracker, recombine_row_trans_tracker;
+
+std::tuple<Dense, Dense> add_recombine_row_task(
+  const Dense& trans_orig, const Dense& S_orig, const Dense& trans
+) {
+  // TODO Currently not correct for the case where both S_orig and trans_orig
+  // are logged but the trans is new! This should not happen unless basis is
+  // broken due to dense blocks far from diagonal...
+  if (recombine_row_trans_tracker.has_key(trans_orig)) {
+    if (recombine_row_S_tracker.has_key(S_orig)) {
+      return recombine_row_S_tracker[S_orig]->add_sub_block(
+        trans_orig, S_orig, trans
+      );
+    } else {
+      std::shared_ptr<Recombine_row_task> task = (
+        recombine_row_trans_tracker[trans_orig]
+      );
+      recombine_row_S_tracker[S_orig] = task;
+      return task->add_block(trans_orig, S_orig, trans);
+    }
+  } else {
+    if (recombine_row_S_tracker.has_key(S_orig)) {
+      std::shared_ptr<Recombine_row_task> task = recombine_row_S_tracker[S_orig];
+      recombine_row_trans_tracker[trans_orig] = task;
+      return task->add_sub_block(trans_orig, S_orig, trans);
+    } else {
+      std::shared_ptr<Recombine_row_task> task(
+        std::make_shared<Recombine_row_task>(trans_orig, S_orig, trans)
+      );
+      recombine_row_S_tracker[S_orig] = task;
+      recombine_row_trans_tracker[trans_orig] = task;
+      add_task(task);
+      return {task->new_trans_mats[0].share(), task->new_S_mats[0].share()};
+    }
   }
 }
 

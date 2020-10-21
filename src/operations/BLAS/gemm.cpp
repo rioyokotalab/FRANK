@@ -463,7 +463,7 @@ define_method(
     Hierarchical BH = split(B, A.dim[1], 1);
     Hierarchical CH = split(C, A.dim[0], 1);
     gemm(A, BH, CH, alpha, beta, TransA, TransB);
-    C = recombine_col(CH, C.V);
+    recombine_col(CH, C.U, C.S);
   } else {
     MatrixProxy AxBU = gemm(A, B.U, alpha, TransA, false);
     LowRank AxB(AxBU, B.S, B.V);
@@ -487,13 +487,47 @@ define_method(
     Hierarchical AH = split(A, 1, B.dim[0]);
     Hierarchical CH = split(C, 1, B.dim[1]);
     gemm(AH, B, CH, alpha, beta, TransA, TransB);
-    C = recombine_row(CH, C.U);
+    recombine_row(CH, C.V, C.S);
   } else {
     MatrixProxy AVxB = gemm(A.V, B, alpha, false, TransB);
     LowRank AxB(A.U, A.S, AVxB);
     C.S *= beta;
     C += AxB;
   }
+}
+
+define_method(
+  void, gemm_omm,
+  (
+    const Hierarchical& A, const NestedBasis& B, NestedBasis& C,
+    double alpha, double beta,
+    bool TransA, bool TransB
+  )
+) {
+  // H NB NB
+  // TODO Not implemented
+  if (TransA || TransB) std::abort();
+  Hierarchical BH = split(B, A.dim[1], 1);
+  Hierarchical CH = split(C, A.dim[0], 1);
+  gemm(A, BH, CH, alpha, beta, TransA, TransB);
+  recombine_col(CH, C.sub_bases, C.translation);
+}
+
+define_method(
+  void, gemm_omm,
+  (
+    const NestedBasis& A, const Hierarchical& B, NestedBasis& C,
+    double alpha, double beta,
+    bool TransA, bool TransB
+  )
+) {
+  // NB H NB
+  // TODO Not implemented
+  if (TransA || TransB) std::abort();
+  Hierarchical AH = split(A, 1, B.dim[0]);
+  Hierarchical CH = split(C, 1, B.dim[1]);
+  gemm(AH, B, CH, alpha, beta, TransA, TransB);
+  recombine_row(CH, C.sub_bases, C.translation);
 }
 
 define_method(
