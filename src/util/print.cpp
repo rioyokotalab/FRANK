@@ -192,6 +192,17 @@ define_method(void, print_omm, (const Hierarchical& A)) {
   print_separation_line();
 }
 
+define_method(void, print_omm, (const NestedBasis& A)) {
+  if (A.is_col_basis()) {
+    print(A.sub_bases);
+    print(A.translation);
+  } else {
+    print(A.translation);
+    print(A.sub_bases);
+  }
+  print_separation_line();
+}
+
 void print(std::string s) {
   if (!VERBOSE) return;
   s += " ";
