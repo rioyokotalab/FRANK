@@ -107,7 +107,6 @@ define_method(
   );
   basis_orig = NestedBasis(split.U, new_trans, true);
   return new_S;
-
 }
 
 define_method(

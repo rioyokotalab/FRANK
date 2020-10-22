@@ -38,6 +38,7 @@ namespace hicma
 
 class Task {
  public:
+  // TODO Remove these and let tasks have individual arguments!
   std::vector<Dense> constant;
   std::vector<Dense> modified;
   starpu_task* task;
@@ -1197,6 +1198,7 @@ class Recompress_col_task : public Task {
     Dense V(dim_min, US.dim[1]);
     subtasks.push_back(std::make_shared<SVD_task>(US, U, S, V));
     subtasks.push_back(std::make_shared<Copy_task>(U, newU));
+    // TODO Avoid copy tasks by using no-copy-split!
     Dense smallS(AU.dim[1], AU.dim[1]);
     subtasks.push_back(std::make_shared<Copy_task>(S, smallS));
     Dense smallV(AU.dim[1], V.dim[1]);
@@ -1298,6 +1300,7 @@ class Recompress_row_task : public Task {
     Dense S(dim_min, dim_min);
     Dense V(dim_min, SV.dim[1]);
     subtasks.push_back(std::make_shared<SVD_task>(SV, U, S, V));
+    // TODO Avoid copy tasks by using no-copy-split!
     Dense smallU(U.dim[0], AV.dim[0]);
     subtasks.push_back(std::make_shared<Copy_task>(U, smallU));
     Dense smallS(AV.dim[0], AV.dim[0]);
