@@ -80,112 +80,93 @@ define_method(
   std::abort();
 }
 
+declare_method(Dense, get_trans_or_S, (virtual_<const Matrix&>))
+
+define_method(Dense, get_trans_or_S, (const NestedBasis& A)) {
+  return A.translation.share();
+}
+
+define_method(Dense, get_trans_or_S, (const LowRank& A)) {
+  return A.S.share();
+}
+
+define_method(Dense, get_trans_or_S, (const Matrix& A)) {
+  omm_error_handler("get_trans_or_S", {A}, __FILE__, __LINE__);
+  std::abort();
+}
+
+std::vector<Dense> gather_trans_mats(const Hierarchical& sub_bases) {
+  assert(!(sub_bases.dim[0] > 1 && sub_bases.dim[1] > 1));
+  std::vector<Dense> out(sub_bases.dim[0]*sub_bases.dim[1]);
+  for (uint64_t i=0; i<out.size(); ++i) {
+    out[i] = get_trans_or_S(sub_bases[i]);
+  }
+  return out;
+}
+
 declare_method(
-  Dense, add_recombine_col,
-  (virtual_<const Matrix&>, virtual_<Matrix&>, const Dense&)
+  void, reform_basis_omm, (virtual_<Matrix&>, virtual_<Matrix&>, Dense&)
 )
 
 define_method(
-  Dense, add_recombine_col,
-  (const NestedBasis& split, NestedBasis& basis_orig, const Dense& S_orig)
+  void, reform_basis_omm,
+  (NestedBasis& old_basis, NestedBasis& new_basis, Dense& new_trans)
 ) {
-  Dense new_trans, new_S;
-  std::tie(new_trans, new_S) = add_recombine_col_task(
-    basis_orig.translation, S_orig, split.translation
-  );
-  basis_orig = NestedBasis(split.sub_bases, new_trans, true);
-  return new_S;
+  old_basis.sub_bases = std::move(new_basis.sub_bases);
+  old_basis.translation = std::move(new_trans);
 }
 
 define_method(
-  Dense, add_recombine_col,
-  (const LowRank& split, NestedBasis& basis_orig, const Dense& S_orig)
+  void, reform_basis_omm,
+  (NestedBasis& old_basis, LowRank& new_basis, Dense& new_trans)
 ) {
-  Dense new_trans, new_S;
-  std::tie(new_trans, new_S) = add_recombine_col_task(
-    basis_orig.translation, S_orig, split.S
-  );
-  basis_orig = NestedBasis(split.U, new_trans, true);
-  return new_S;
+  if (old_basis.is_col_basis()) {
+    old_basis.sub_bases = std::move(new_basis.U);
+  } else {
+    old_basis.sub_bases = std::move(new_basis.V);
+  }
+  old_basis.translation = std::move(new_trans);
 }
 
 define_method(
-  Dense, add_recombine_col,
-  (const Matrix& split, Matrix& original, const Dense&)
+  void, reform_basis_omm,
+  (Matrix& new_basis, Matrix& old_basis, Dense& new_trans)
 ) {
-  omm_error_handler("add_recombine_col", {split, original}, __FILE__, __LINE__);
+  omm_error_handler(
+    "reform_basis_omm", {new_basis, old_basis, new_trans}, __FILE__, __LINE__
+  );
   std::abort();
+}
+
+void reform_basis(
+  Hierarchical& bases, Hierarchical& split, std::vector<Dense>& trans_mats
+) {
+  assert(!(bases.dim[0] > 1 && bases.dim[1] > 1));
+  for (int64_t i=0; i<std::max(bases.dim[0], bases.dim[1]); ++i) {
+    reform_basis_omm(bases[i], split[i], trans_mats[i]);
+  }
 }
 
 void recombine_col(Hierarchical& split, MatrixProxy& U, Dense& S) {
   // Assumes U is actually Hierarchical (should always be the case). This allows
   // us to skip one layer of OMM functions (actually an OMM is used implicitly).
   Hierarchical U_orig(std::move(U));
-  Dense new_S;
-  for (int64_t i=0; i<split.dim[0]; ++i) {
-    Dense block_S = add_recombine_col(split[i], U_orig[i], S);
-    if (i == 0) {
-      new_S = std::move(block_S);
-    } else {
-      assert(is_shared(block_S, new_S));
-    }
-  }
+  std::vector<Dense> trans_orig = gather_trans_mats(U_orig);
+  std::vector<Dense> trans_mats = gather_trans_mats(split);
+  add_recombine_col_task(trans_orig, S, trans_mats);
+  reform_basis(U_orig, split, trans_mats);
   U = std::move(U_orig);
-  S = std::move(new_S);
-}
-
-declare_method(
-  Dense, add_recombine_row,
-  (virtual_<const Matrix&>, virtual_<Matrix&>, const Dense&)
-)
-
-define_method(
-  Dense, add_recombine_row,
-  (const NestedBasis& split, NestedBasis& basis_orig, const Dense& S_orig)
-) {
-  Dense new_trans, new_S;
-  std::tie(new_trans, new_S) = add_recombine_row_task(
-    basis_orig.translation, S_orig, split.translation
-  );
-  basis_orig = NestedBasis(split.sub_bases, new_trans, false);
-  return new_S;
-}
-
-define_method(
-  Dense, add_recombine_row,
-  (const LowRank& split, NestedBasis& basis_orig, const Dense& S_orig)
-) {
-  Dense new_trans, new_S;
-  std::tie(new_trans, new_S) = add_recombine_row_task(
-    basis_orig.translation, S_orig, split.S
-  );
-  basis_orig = NestedBasis(split.V, new_trans, false);
-  return new_S;
-}
-
-define_method(
-  Dense, add_recombine_row,
-  (const Matrix& split, Matrix& original, const Dense&)
-) {
-  omm_error_handler("add_recombine_row", {split, original}, __FILE__, __LINE__);
-  std::abort();
 }
 
 void recombine_row(Hierarchical& split, MatrixProxy& V, Dense& S) {
   // Assumes U is actually Hierarchical (should always be the case). This allows
   // us to skip one layer of OMM functions (actually an OMM is used implicitly).
   Hierarchical V_orig(std::move(V));
-  Dense new_S;
-  for (int64_t j=0; j<split.dim[1]; ++j) {
-    Dense block_ = add_recombine_row(split[j], V_orig[j], S);
-    if (j == 0) {
-      new_S = std::move(block_);
-    } else {
-      assert(is_shared(block_, new_S));
-    }
-  }
+  std::vector<Dense> trans_orig = gather_trans_mats(V_orig);
+  std::vector<Dense> trans_mats = gather_trans_mats(split);
+  add_recombine_row_task(trans_orig, S, trans_mats);
+  reform_basis(V_orig, split, trans_mats);
   V = std::move(V_orig);
-  S = std::move(new_S);
 }
 
 } // namespace hicma

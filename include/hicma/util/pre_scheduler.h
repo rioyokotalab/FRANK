@@ -64,12 +64,12 @@ void add_recompress_row_task(
   const Dense& AV, const Dense& BV, const Dense& AS, const Dense& BS
 );
 
-std::tuple<Dense, Dense> add_recombine_col_task(
-  const Dense& trans_orig, const Dense& S_orig, const Dense& trans
+void add_recombine_col_task(
+  const std::vector<Dense>& trans_orig, Dense& S_orig, std::vector<Dense>& trans
 );
 
-std::tuple<Dense, Dense> add_recombine_row_task(
-  const Dense& trans_orig, const Dense& S_orig, const Dense& trans
+void add_recombine_row_task(
+  const std::vector<Dense>& trans_orig, Dense& S_orig, std::vector<Dense>& trans
 );
 
 void start_schedule();
