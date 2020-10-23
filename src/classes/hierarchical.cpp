@@ -135,7 +135,6 @@ Hierarchical::Hierarchical(
   int basis_type,
   int64_t row_start, int64_t col_start
 ) {
-  start_schedule();
   MatrixInitializerKernel initer(func, x, admis, rank, basis_type);
   ClusterTree cluster_tree(
     {row_start, n_rows}, {col_start, n_cols}, n_row_blocks, n_col_blocks, nleaf
@@ -147,7 +146,6 @@ Hierarchical::Hierarchical(
     initer.create_nested_basis(cluster_tree);
   }
   *this = Hierarchical(cluster_tree, initer);
-  execute_schedule();
 }
 
 Hierarchical::Hierarchical(

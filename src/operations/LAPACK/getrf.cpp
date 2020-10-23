@@ -28,14 +28,10 @@ namespace hicma
 
 std::tuple<MatrixProxy, MatrixProxy> getrf(Matrix& A) {
   clear_trackers();
-  clear_task_trackers();
-  start_schedule();
   start_tracking();
   std::tuple<MatrixProxy, MatrixProxy> out = getrf_omm(A);
   stop_tracking();
-  execute_schedule();
   clear_trackers();
-  clear_task_trackers();
   return out;
 }
 

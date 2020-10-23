@@ -1605,6 +1605,7 @@ void start_schedule() {
   assert(!schedule_started);
   assert(tasks.empty());
   schedule_started = true;
+  clear_task_trackers();
 }
 
 void execute_schedule() {
@@ -1613,6 +1614,7 @@ void execute_schedule() {
   }
   starpu_task_wait_for_all();
   tasks.clear();
+  clear_task_trackers();
   schedule_started = false;
 }
 

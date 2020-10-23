@@ -20,11 +20,12 @@ int main(int argc, char** argv) {
   std::vector<std::vector<double>> randx{get_sorted_random_vector(N)};
   timing::start("Init matrix");
   timing::start("CPU compression");
+  start_schedule();
   Hierarchical A(
     laplacend, randx, N, N, rank, nleaf, admis, nblocks, nblocks, basis);
+  execute_schedule();
   timing::stop("CPU compression");
-  rsvd_batch();
-  // printXML(A);
+  printXML(A);
   Dense x(random_uniform, std::vector<std::vector<double>>(), N);
   Dense b(N);
   timing::start("Dense tree");
@@ -37,11 +38,12 @@ int main(int argc, char** argv) {
   timing::stop("Verification time");
   print("Time");
   gemm(A, x, b, 1, 1);
-  gemm_batch();
   timing::stopAndPrint("Init matrix");
   timing::start("LU decomposition");
   Hierarchical L, U;
+  start_schedule();
   std::tie(L, U) = getrf(A);
+  execute_schedule();
   timing::stopAndPrint("LU decomposition", 2);
   timing::start("Verification time");
   timing::start("Forward substitution");
