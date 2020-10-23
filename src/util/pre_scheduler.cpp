@@ -1199,12 +1199,15 @@ class Recompress_col_task : public Task {
     Dense V(dim_min, US.dim[1]);
     subtasks.push_back(std::make_shared<SVD_task>(US, U, S, V));
     subtasks.push_back(std::make_shared<Copy_task>(U, newU));
-    // TODO Avoid copy tasks by using no-copy-split!
-    Dense smallS(AU.dim[1], AU.dim[1]);
-    subtasks.push_back(std::make_shared<Copy_task>(S, smallS));
-    Dense smallV(AU.dim[1], V.dim[1]);
-    subtasks.push_back(std::make_shared<Copy_task>(V, smallV));
-    std::vector<Dense> V_blocks = smallV.split(1, modified.size()-1);
+    uint64_t rank = AU.dim[1];
+    Dense smallS = S.split(
+      IndexRange(0, S.dim[0]).split_at(rank),
+      IndexRange(0, S.dim[0]).split_at(rank)
+    )[0].share();
+    std::vector<Dense> V_blocks = V.split(
+      IndexRange(0, V.dim[0]).split_at(rank),
+      IndexRange(0, V.dim[1]).split(modified.size()-1)
+    );
     for (uint64_t i=1; i<modified.size(); ++i) {
       subtasks.push_back(std::make_shared<GEMM_task>(
         smallS, V_blocks[i-1], modified[i], 1, 0, false, false
@@ -1303,17 +1306,20 @@ class Recompress_row_task : public Task {
     Dense U(SV.dim[0], dim_min);
     Dense S(dim_min, dim_min);
     Dense V(dim_min, SV.dim[1]);
+    uint64_t rank = AV.dim[0];
     subtasks.push_back(std::make_shared<SVD_task>(SV, U, S, V));
-    // TODO Avoid copy tasks by using no-copy-split!
-    Dense smallU(U.dim[0], AV.dim[0]);
-    subtasks.push_back(std::make_shared<Copy_task>(U, smallU));
-    Dense smallS(AV.dim[0], AV.dim[0]);
-    subtasks.push_back(std::make_shared<Copy_task>(S, smallS));
+    std::vector<Dense> U_blocks = U.split(
+      IndexRange(0, U.dim[0]).split(modified.size()-1),
+      IndexRange(0, U.dim[1]).split_at(rank)
+    );
+    Dense smallS = S.split(
+      IndexRange(0, S.dim[0]).split_at(rank),
+      IndexRange(0, S.dim[1]).split_at(rank)
+    )[0].share();
     subtasks.push_back(std::make_shared<Copy_task>(V, newV));
-    std::vector<Dense> U_blocks = smallU.split(modified.size()-1, 1);
     for (uint64_t i=1; i<modified.size(); ++i) {
       subtasks.push_back(std::make_shared<GEMM_task>(
-        U_blocks[i-1], smallS, modified[i], 1, 0, false, false
+        U_blocks[2*(i-1)], smallS, modified[i], 1, 0, false, false
       ));
     }
     for (std::shared_ptr<Task> task : subtasks) {
@@ -1431,13 +1437,15 @@ class Recombine_col_task : public Task {
     Dense S(dim_min, dim_min);
     Dense V(dim_min, combined_trans.dim[1]);
     subtasks.push_back(std::make_shared<SVD_task>(combined_trans, U, S, V));
-    // TODO Avoid copy tasks by using no-copy-split!
     // TODO Assumes same size of all S mats
-    Dense smallS(new_S_mats[0].dim[0], new_S_mats[0].dim[1]);
-    subtasks.push_back(std::make_shared<Copy_task>(S, smallS));
-    Dense smallV(new_S_mats[0].dim[1], V.dim[1]);
-    subtasks.push_back(std::make_shared<Copy_task>(V, smallV));
-    std::vector<Dense> smallV_parts = smallV.split(1, n_S);
+    uint64_t rank = new_S_mats[0].dim[0];
+    Dense smallS = S.split(
+      IndexRange(0, S.dim[0]).split_at(rank),
+      IndexRange(0, S.dim[1]).split_at(rank)
+    )[0].share();
+    std::vector<Dense> smallV_parts = V.split(
+      IndexRange(0, V.dim[0]).split_at(rank), IndexRange(0, V.dim[1]).split(n_S)
+    );
     for (int64_t j=0; j<n_S; ++j) {
       subtasks.push_back(std::make_shared<GEMM_task>(
         smallS, smallV_parts[j], new_S_mats[j], 1, 0, false, false
@@ -1545,16 +1553,18 @@ class Recombine_row_task : public Task {
     Dense S(dim_min, dim_min);
     Dense V(dim_min, combined_trans.dim[1]);
     subtasks.push_back(std::make_shared<SVD_task>(combined_trans, U, S, V));
-    // TODO Avoid copy tasks by using no-copy-split!
     // TODO Assumes same size of all S mats
-    Dense smallS(new_S_mats[0].dim[0], new_S_mats[0].dim[1]);
-    subtasks.push_back(std::make_shared<Copy_task>(S, smallS));
-    Dense smallU(U.dim[0], new_S_mats[0].dim[0]);
-    subtasks.push_back(std::make_shared<Copy_task>(U, smallU));
-    std::vector<Dense> smallU_parts = smallU.split(n_S, 1);
+    uint64_t rank = new_S_mats[0].dim[0];
+    Dense smallS = S.split(
+      IndexRange(0, S.dim[0]).split_at(rank),
+      IndexRange(0, S.dim[1]).split_at(rank)
+    )[0].share();
+    std::vector<Dense> smallU_parts = U.split(
+      IndexRange(0, U.dim[0]).split(n_S), IndexRange(0, U.dim[1]).split_at(rank)
+    );
     for (int64_t i=0; i<n_S; ++i) {
       subtasks.push_back(std::make_shared<GEMM_task>(
-        smallU_parts[i], smallS, new_S_mats[i], 1, 0, false, false
+        smallU_parts[2*i], smallS, new_S_mats[i], 1, 0, false, false
       ));
     }
     std::vector<Dense> recompressed_trans = V.split(1, n_trans);

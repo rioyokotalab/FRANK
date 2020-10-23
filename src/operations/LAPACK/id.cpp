@@ -5,6 +5,7 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
+#include "hicma/classes/initialization_helpers/index_range.h"
 #include "hicma/functions.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/misc.h"
@@ -23,22 +24,6 @@
 
 namespace hicma
 {
-
-std::tuple<Dense, Dense> get_R11_R12(const Dense& R, int64_t k) {
-  Dense R11(k, k);
-  for (int64_t i=0; i<R11.dim[0]; ++i) {
-    for (int64_t j = 0; j < R11.dim[1]; ++j) {
-      R11(i, j) = R(i, j);
-    }
-  }
-  Dense R22(k, R.dim[1]-k);
-  for (int64_t i=0; i<R22.dim[0]; ++i) {
-    for (int64_t j = 0; j < R22.dim[1]; ++j) {
-      R22(i, j) = R(i, k+j);
-    }
-  }
-  return {std::move(R11), std::move(R22)};
-}
 
 Dense interleave_id(const Dense& A, std::vector<int64_t>& P) {
   int64_t k = P.size() - A.dim[1];
@@ -65,12 +50,12 @@ define_method(DenseIndexSetPair, one_sided_id_omm, (Dense& A, int64_t k)) {
   Dense col_basis;
   // First case applies also when A.dim[1] > A.dim[0] end k == A.dim[0]
   if (k < std::min(A.dim[0], A.dim[1]) || A.dim[1] > A.dim[0]) {
-    Dense R11, T;
-    // TODO Find more abstract way for this.
-    // Hierarchical with designed subnodes?
-    std::tie(R11, T) = get_R11_R12(R, k);
-    trsm(R11, T, TRSM_UPPER);
-    col_basis = interleave_id(T, selected_cols);
+    // Get R11 (split[0]) and R22 (split[1])
+    std::vector<Dense> split = R.split(
+      IndexRange(0, R.dim[0]).split_at(k), IndexRange(0, R.dim[1]).split_at(k)
+    );
+    trsm(split[0], split[1], TRSM_UPPER);
+    col_basis = interleave_id(split[1], selected_cols);
   } else {
     col_basis = interleave_id(
       Dense(identity, std::vector<std::vector<double>>(), k, k), selected_cols);
@@ -88,7 +73,6 @@ define_method(
   omm_error_handler("id", {A}, __FILE__, __LINE__);
   std::abort();
 }
-
 
 std::tuple<Dense, Dense, Dense> id(Matrix& A, int64_t k) {
   return id_omm(A, k);

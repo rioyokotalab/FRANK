@@ -27,6 +27,10 @@ std::vector<IndexRange> IndexRange::split(int64_t n_splits) const {
   return children;
 }
 
+std::vector<IndexRange> IndexRange::split_at(int64_t index) const {
+  return {{start, index}, {start+index, n-index}};
+}
+
 std::vector<IndexRange> IndexRange::split_like(
   const Hierarchical& like, int along
 ) const {
@@ -41,6 +45,5 @@ std::vector<IndexRange> IndexRange::split_like(
   }
   return children;
 }
-
 
 } // namespace hicma

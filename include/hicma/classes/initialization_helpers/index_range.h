@@ -39,6 +39,8 @@ class IndexRange {
   // Utility methods
   std::vector<IndexRange> split(int64_t n_splits) const;
 
+  std::vector<IndexRange> split_at(int64_t index) const;
+
   std::vector<IndexRange> split_like(const Hierarchical& A, int along) const;
 };
 
