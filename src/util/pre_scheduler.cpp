@@ -1160,9 +1160,11 @@ class Recompress_col_task : public Task {
   unsigned char gemm_consistency[3]{1, 0, 1};
 
   Recompress_col_task(
-    Dense& newU, Dense& newS,
     const Dense& AU, const Dense& BU, const Dense& AS, const Dense& BS
-  ) : Task({AU, BU, AS, BS}, {newU, newS}) {}
+  ) : Task({AU, BU, AS, BS}, {}) {
+    modified.push_back(Dense(AU.dim[0], AU.dim[1]));
+    modified.push_back(Dense(AS.dim[0], AS.dim[1]));
+  }
 
   void submit() override {
     assert(schedule_started);
@@ -1237,20 +1239,21 @@ BasisTracker<
 > recompress_col_tracker;
 
 void add_recompress_col_task(
-  Dense& newU, Dense& newS,
-  const Dense& AU, const Dense& BU, const Dense& AS, const Dense& BS
+  Dense& AU, const Dense& BU, Dense& AS, const Dense& BS
 ) {
   assert(schedule_started);
   if (
     recompress_col_tracker.has_key(AU) && recompress_col_tracker[AU].has_key(BU)
   ) {
-    std::tie(newU, newS) = recompress_col_tracker[AU][BU]->add_block(AS, BS);
+    std::tie(AU, AS) = recompress_col_tracker[AU][BU]->add_block(AS, BS);
   } else {
     std::shared_ptr<Recompress_col_task> task(
-      std::make_shared<Recompress_col_task>(newU, newS, AU, BU, AS, BS)
+      std::make_shared<Recompress_col_task>(AU, BU, AS, BS)
     );
     recompress_col_tracker[AU][BU] = task;
     add_task(task);
+    AU = task->modified[0].share();
+    AS = task->modified[1].share();
   }
 }
 
@@ -1263,9 +1266,11 @@ class Recompress_row_task : public Task {
   unsigned char gemm_consistency[3]{0, 1, 1};
 
   Recompress_row_task(
-    Dense& newV, Dense& newS,
     const Dense& AV, const Dense& BV, const Dense& AS, const Dense& BS
-  ) : Task({AV, BV, AS, BS}, {newV, newS}) {}
+  ) : Task({AV, BV, AS, BS}, {}) {
+    modified.push_back(Dense(AV.dim[0], AV.dim[1]));
+    modified.push_back(Dense(AS.dim[0], AS.dim[1]));
+  }
 
   void submit() override {
     assert(schedule_started);
@@ -1340,20 +1345,21 @@ BasisTracker<
 > recompress_row_tracker;
 
 void add_recompress_row_task(
-  Dense& newV, Dense& newS,
-  const Dense& AV, const Dense& BV, const Dense& AS, const Dense& BS
+  Dense& AV, const Dense& BV, Dense& AS, const Dense& BS
 ) {
   assert(schedule_started);
   if (
     recompress_row_tracker.has_key(AV) && recompress_row_tracker[AV].has_key(BV)
   ) {
-    std::tie(newV, newS) = recompress_row_tracker[AV][BV]->add_block(AS, BS);
+    std::tie(AV, AS) = recompress_row_tracker[AV][BV]->add_block(AS, BS);
   } else {
     std::shared_ptr<Recompress_row_task> task(
-      std::make_shared<Recompress_row_task>(newV, newS, AV, BV, AS, BS)
+      std::make_shared<Recompress_row_task>(AV, BV, AS, BS)
     );
     recompress_row_tracker[AV][BV] = task;
     add_task(task);
+    AV = task->modified[0].share();
+    AS = task->modified[1].share();
   }
 }
 

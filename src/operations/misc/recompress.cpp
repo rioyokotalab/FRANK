@@ -37,11 +37,7 @@ define_method(
   void, recompress_col_omm,
   (Dense& AU, const Dense& BU, Dense& AS, const Dense& BS)
 ) {
-  Dense newU(AU.dim[0], AU.dim[1]);
-  Dense newS(AS.dim[0], AS.dim[1]);
-  add_recompress_col_task(newU, newS, AU, BU, AS, BS);
-  AU = std::move(newU);
-  AS = std::move(newS);
+  add_recompress_col_task(AU, BU, AS, BS);
 }
 
 define_method(
@@ -65,11 +61,7 @@ define_method(
   void, recompress_row_omm,
   (Dense& AV, const Dense& BV, Dense& AS, const Dense& BS)
 ) {
-  Dense newV(AV.dim[0], AV.dim[1]);
-  Dense newS(AS.dim[0], AS.dim[1]);
-  add_recompress_row_task(newV, newS, AV, BV, AS, BS);
-  AV = std::move(newV);
-  AS = std::move(newS);
+  add_recompress_row_task(AV, BV, AS, BS);
 }
 
 define_method(
