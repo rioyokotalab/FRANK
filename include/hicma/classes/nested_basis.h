@@ -42,6 +42,8 @@ class NestedBasis : public Matrix {
     bool col_basis
   );
 
+  NestedBasis(MatrixProxy&& sub_basis);
+
   // Utility methods
   bool is_shared_with(const NestedBasis& A) const;
 

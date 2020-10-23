@@ -27,6 +27,20 @@ NestedBasis::NestedBasis(
     col_basis(col_basis)
 {}
 
+declare_method(NestedBasis&&, move_from_nested_basis, (virtual_<Matrix&>))
+
+NestedBasis::NestedBasis(MatrixProxy&& A)
+: NestedBasis(move_from_nested_basis(A)) {}
+
+define_method(NestedBasis&&, move_from_nested_basis, (NestedBasis& A)) {
+  return std::move(A);
+}
+
+define_method(NestedBasis&&, move_from_nested_basis, (Matrix& A)) {
+  omm_error_handler("move_from_nested_basis", {A}, __FILE__, __LINE__);
+  std::abort();
+}
+
 bool NestedBasis::is_col_basis() const { return col_basis; }
 
 bool NestedBasis::is_row_basis() const { return !col_basis; }
