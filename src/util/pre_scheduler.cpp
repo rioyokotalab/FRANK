@@ -998,7 +998,6 @@ void add_gemm_task(
   const Dense& A, const Dense& B, Dense& C,
   double alpha, double beta, bool TransA, bool TransB
 ) {
-  // TODO Only add relevant gemm tasks to tracker?
   if (
     is_tracking
     && !C.is_submatrix()

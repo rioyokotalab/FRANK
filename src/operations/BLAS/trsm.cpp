@@ -107,8 +107,6 @@ define_method(void, trsm_omm, (const Matrix& A, LowRank& B, int uplo, int lr)) {
   switch (lr) {
   case TRSM_LEFT:
     // Decouple basis
-    // TODO Use different/more general tracker (like "copy")?
-    // TODO Maybe this should not be in TRSM but in the main getrf?
     // TODO This introduces unneeded copies in the non-shared case! Find a way
     // around that.
     B.U = decouple(B.U);
@@ -116,8 +114,6 @@ define_method(void, trsm_omm, (const Matrix& A, LowRank& B, int uplo, int lr)) {
     break;
   case TRSM_RIGHT:
     // Decouple basis
-    // TODO Use different/more general tracker (like "copy")?
-    // TODO Maybe this should not be in TRSM but in the main getrf?
     // TODO This introduces unneeded copies in the non-shared case! Find a way
     // around that.
     B.V = decouple(B.V);
@@ -134,8 +130,6 @@ define_method(MatrixProxy, decouple, (const Dense& A)) {
 }
 
 define_method(MatrixProxy, decouple, (const NestedBasis& A)) {
-  // TODO This is probably inefficient as checks are performed many times for
-  // same object. Store MatrixProxy instead of Dense in tracker?
   return NestedBasis(
     A.sub_bases,
     decouple(A.translation),

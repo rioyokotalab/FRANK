@@ -114,11 +114,6 @@ starpu_data_handle_t DataHandler::get_handle() const {
   return handle;
 }
 
-std::vector<starpu_data_handle_t>& DataHandler::get_last_split() {
-  // TODO Add check if there are actually any splits?
-  return splits.back();
-}
-
 bool DataHandler::is_child() const { return parent.get() != nullptr; }
 
 } // namespace hicma

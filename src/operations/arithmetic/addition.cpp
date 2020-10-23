@@ -133,7 +133,6 @@ std::tuple<Dense, Dense, Dense> merge_S(
 
   Dense InnerUBs = gemm(InnerU, Bs);
 
-  // TODO Consider using move for As if possible!
   Dense M = gemm(InnerUBs, InnerV);
   Hierarchical MH = split(M, 2, 2);
   MH(0, 0) += As;
@@ -227,7 +226,6 @@ void formatted_addition(LowRank& A, const LowRank& B) {
   std::tie(Uhat, A.S, Vhat) = merge_S(A.S, B.S, InnerU, InnerVt);
   timing::stop("Merge S");
 
-  // Restore moved-from U and V and finalize basis
   // TODO Find a way to use more convenient D=gemm(D, D) here?
   // Restore moved-from U and V and finalize basis
   A.U = Dense(A.dim[0], A.rank);

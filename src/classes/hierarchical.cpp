@@ -146,7 +146,6 @@ Hierarchical::Hierarchical(
     //  - Use Tracker in MatrixInitializer
     initer.create_nested_basis(cluster_tree);
   }
-  // TODO The following two should be combined into a single call
   *this = Hierarchical(cluster_tree, initer);
   execute_schedule();
 }

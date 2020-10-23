@@ -54,8 +54,6 @@ class DataHandler {
 
   starpu_data_handle_t get_handle() const;
 
-  std::vector<starpu_data_handle_t>& get_last_split();
-
   bool is_child() const;
 };
 
