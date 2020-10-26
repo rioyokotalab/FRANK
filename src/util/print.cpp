@@ -5,7 +5,7 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
-#include "hicma/classes/shared_basis.h"
+#include "hicma/classes/nested_basis.h"
 #include "hicma/operations/LAPACK.h"
 #include "hicma/util/omm_error_handler.h"
 
@@ -42,8 +42,8 @@ define_method(std::string, type_omm, ([[maybe_unused]] const Hierarchical& A)) {
   return "Hierarchical";
 }
 
-define_method(std::string, type_omm, ([[maybe_unused]] const SharedBasis& A)) {
-  return "SharedBasis";
+define_method(std::string, type_omm, ([[maybe_unused]] const NestedBasis& A)) {
+  return "NestedBasis";
 }
 
 define_method(std::string, type_omm, ([[maybe_unused]] const Matrix&)) {
@@ -147,7 +147,10 @@ void printXML(const Matrix& A, std::string filename) {
   write_xml(filename.c_str(), tree, std::locale());
 }
 
-void print(const Matrix& A) { print_omm(A); }
+void print(const Matrix& A) {
+  if (!VERBOSE) return;
+  print_omm(A);
+}
 
 void print_separation_line() {
   for (int i=0; i<82; ++i) std::cout << "-";
@@ -185,6 +188,17 @@ define_method(void, print_omm, (const Hierarchical& A)) {
       print(A(i,j));
     }
     std::cout << std::endl;
+  }
+  print_separation_line();
+}
+
+define_method(void, print_omm, (const NestedBasis& A)) {
+  if (A.is_col_basis()) {
+    print(A.sub_bases);
+    print(A.translation);
+  } else {
+    print(A.translation);
+    print(A.sub_bases);
   }
   print_separation_line();
 }

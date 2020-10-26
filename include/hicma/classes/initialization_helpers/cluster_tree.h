@@ -1,7 +1,7 @@
 #ifndef hicma_classes_initializion_helpers_cluster_tree_h
 #define hicma_classes_initializion_helpers_cluster_tree_h
 
-#include "hicma/classes/intitialization_helpers/index_range.h"
+#include "hicma/classes/initialization_helpers/index_range.h"
 
 #include <array>
 #include <cstdint>

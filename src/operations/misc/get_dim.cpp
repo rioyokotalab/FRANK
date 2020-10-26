@@ -5,7 +5,7 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
-#include "hicma/classes/shared_basis.h"
+#include "hicma/classes/nested_basis.h"
 #include "hicma/util/omm_error_handler.h"
 
 #include "yorel/yomm2/cute.hpp"
@@ -31,8 +31,9 @@ define_method(int64_t, get_n_rows_omm, (const Hierarchical& A)) {
   return n_rows;
 }
 
-define_method(int64_t, get_n_rows_omm, (const SharedBasis& A)) {
-  return get_n_rows(*A.get_ptr());
+define_method(int64_t, get_n_rows_omm, (const NestedBasis& A)) {
+  // TODO This can be made simpler if we store Vt instead of V
+  return A.is_col_basis() ? get_n_rows(A.sub_bases) : get_n_rows(A.translation);
 }
 
 define_method(int64_t, get_n_rows_omm, (const Matrix& A)) {
@@ -55,8 +56,9 @@ define_method(int64_t, get_n_cols_omm, (const Hierarchical& A)) {
   return n_cols;
 }
 
-define_method(int64_t, get_n_cols_omm, (const SharedBasis& A)) {
-  return get_n_cols(*A.get_ptr());
+define_method(int64_t, get_n_cols_omm, (const NestedBasis& A)) {
+  // TODO This can be made simpler if we store Vt instead of V
+  return A.is_row_basis() ? get_n_cols(A.sub_bases) : get_n_cols(A.translation);
 }
 
 define_method(int64_t, get_n_cols_omm, (const Matrix& A)) {

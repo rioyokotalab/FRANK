@@ -70,7 +70,7 @@ int main(int argc, char** argv) {
   print("Rel. L2 Error", l2_error(QR, D), false);
   Dense DQ(Q);
   Dense QtQ(DQ.dim[1], DQ.dim[1]);
-  gemm(DQ, DQ, QtQ, true, false, 1, 1);
+  gemm(DQ, DQ, QtQ, 1, 1, true, false);
   Dense Id(identity, randx, QtQ.dim[0], QtQ.dim[1]);
   print("Rel. L2 Orthogonality", l2_error(QtQ, Id), false);
   return 0;

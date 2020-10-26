@@ -2,6 +2,7 @@
 #define hicma_classes_dense_h
 
 #include "hicma/classes/matrix.h"
+#include "hicma/classes/matrix_proxy.h"
 
 #include <array>
 #include <cstdint>
@@ -12,13 +13,19 @@
 namespace hicma
 {
 
+class DataHandler;
+class IndexRange;
+class Task;
+
 class Dense : public Matrix {
+  // TODO Find way to avoid using friend here! Best not to rely on it.
+  // Also don't wanna expose the DataHandler directly though...
+  friend Task;
  public:
   std::array<int64_t, 2> dim = {0, 0};
   int64_t stride = 0;
  private:
-  std::shared_ptr<std::vector<double>> data
-    = std::make_shared<std::vector<double>>();
+  std::shared_ptr<DataHandler> data;
   std::array<int64_t, 2> rel_start = {0, 0};
  protected:
   double* data_ptr = nullptr;
@@ -39,23 +46,24 @@ class Dense : public Matrix {
   // Explicit conversions using multiple-dispatch function.
   explicit Dense(const Matrix& A);
 
+  // Implicit conversion from temporaries, requires them to actually be D
+  Dense(MatrixProxy&& A);
+
   // Additional constructors
   Dense(int64_t n_rows, int64_t n_cols=1);
 
+  // TODO Add overload where vector doesn't need to be passed. That function
+  // should forward to this one with a 0-sized vector. This is to make
+  // initialization with functions like identity and random_uniform easier.
   Dense(
     void (*func)(
-      Dense& A, const std::vector<std::vector<double>>& x,
+      double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+      const std::vector<std::vector<double>>& x,
       int64_t row_start, int64_t col_start
     ),
     const std::vector<std::vector<double>>& x,
     int64_t n_rows, int64_t n_cols=1,
     int64_t row_start=0, int64_t col_start=0
-  );
-
-  Dense(
-    const Dense& A,
-    int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start,
-    bool copy=false
   );
 
   // Additional operators
@@ -74,13 +82,23 @@ class Dense : public Matrix {
   const double* operator&() const;
 
   // Utility methods
-  int64_t size() const;
+  Dense share() const;
 
-  void resize(int64_t dim0, int64_t dim1);
+  bool is_shared() const;
 
-  Dense transpose() const;
+  bool is_shared_with(const Dense& A) const;
 
-  void transpose();
+  bool is_submatrix() const;
+
+  std::vector<Dense> split(
+    const std::vector<IndexRange>& row_ranges,
+    const std::vector<IndexRange>& col_ranges,
+    bool copy=false
+  ) const;
+
+  std::vector<Dense> split(
+    uint64_t n_row_splits, uint64_t n_col_splits, bool copy=false
+  ) const;
 };
 
 } // namespace hicma

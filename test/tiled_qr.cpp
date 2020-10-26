@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
     int64_t mode = 1; //See docs
     Dense DA(N, N);
     latms(dist, iseed, sym, d, mode, conditionNumber, dmax, kl, ku, pack, DA);
-    A = Hierarchical(DA, Nc, Nc);
+    A = split(DA, Nc, Nc, true);
   }
   Hierarchical T(zeros, std::vector<std::vector<double>>(), N, N, 0, Nb, Nc, Nc, Nc);
   Hierarchical Q(identity, std::vector<std::vector<double>>(), N, N, 0, Nb, Nc, Nc, Nc);
@@ -89,8 +89,8 @@ int main(int argc, char** argv) {
   print("Rel. Error (operator norm)", l2_error(QRx, Ax), false);
   //Orthogonality
   Dense Qx = gemm(Q, x);
-  transpose(Q);
-  Dense QtQx = gemm(Q, Qx);
+  Hierarchical Qt = transpose(Q);
+  Dense QtQx = gemm(Qt, Qx);
   print("Orthogonality");
   print("Rel. Error (operator norm)", l2_error(QtQx, x), false);
   return 0;

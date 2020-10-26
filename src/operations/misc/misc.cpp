@@ -2,9 +2,12 @@
 #include "hicma/extension_headers/classes.h"
 
 #include "hicma/classes/dense.h"
+#include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
-#include "hicma/classes/shared_basis.h"
+#include "hicma/classes/nested_basis.h"
+#include "hicma/classes/initialization_helpers/index_range.h"
+#include "hicma/operations/BLAS.h"
 #include "hicma/operations/LAPACK.h"
 #include "hicma/util/omm_error_handler.h"
 
@@ -12,6 +15,7 @@
 #include <cassert>
 #include <cmath>
 #include <cstdint>
+#include <cstdlib>
 #include <numeric>
 #include <vector>
 
@@ -67,67 +71,235 @@ std::vector<double> equallySpacedVector(int64_t N, double minVal, double maxVal)
   return res;
 }
 
-MatrixProxy get_part(
-  const Matrix& A,
-  int64_t n_rows, int64_t n_cols,
-  int64_t row_start, int64_t col_start,
-  bool copy
+Hierarchical split(
+  const Matrix& A, int64_t n_row_blocks, int64_t n_col_blocks, bool copy
 ) {
-  return get_part_omm(A, n_rows, n_cols, row_start, col_start, copy);
+  return split_omm(
+    A,
+    IndexRange(0, get_n_rows(A)).split(n_row_blocks),
+    IndexRange(0, get_n_cols(A)).split(n_col_blocks),
+    copy
+  );
 }
 
-MatrixProxy get_part(
-  const Matrix& A,
-  const ClusterTree& node,
-  bool copy
-) {
-  return get_part_omm(
-    A, node.rows.n, node.cols.n, node.rows.start, node.cols.start, copy);
+Hierarchical split(const Matrix& A, const Hierarchical& like, bool copy) {
+  assert(get_n_rows(A) == get_n_rows(like));
+  assert(get_n_cols(A) == get_n_cols(like));
+  return split_omm(
+    A,
+    IndexRange(0, get_n_rows(A)).split_like(like, ALONG_COL),
+    IndexRange(0, get_n_cols(A)).split_like(like, ALONG_ROW),
+    copy
+  );
 }
 
 define_method(
-  MatrixProxy, get_part_omm,
+  Hierarchical, split_omm,
   (
     const Dense& A,
-    int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start,
+    const std::vector<IndexRange>& row_splits,
+    const std::vector<IndexRange>& col_splits,
     bool copy
   )
 ) {
-  return Dense(A, n_rows, n_cols, row_start, col_start, copy);
+  Hierarchical out(row_splits.size(), col_splits.size());
+  std::vector<Dense> result = A.split(row_splits, col_splits, copy);
+  for (int64_t i=0; i<out.dim[0]; ++i) {
+    for (int64_t j=0; j<out.dim[1]; ++j) {
+      out(i, j) = std::move(result[i*out.dim[1]+j]);
+    }
+  }
+  return out;
+}
+
+declare_method(
+  LowRank, resolve_nested_basis,
+  (virtual_<const Matrix&>, virtual_<const Matrix&>, const Dense&, bool)
+)
+
+define_method(
+  LowRank, resolve_nested_basis,
+  (const NestedBasis& U, const NestedBasis& V, const Dense& S, bool)
+) {
+  return LowRank(
+    U.sub_bases, gemm(gemm(U.translation, S), V.translation), V.sub_bases,
+    false
+  );
 }
 
 define_method(
-  MatrixProxy, get_part_omm,
+  LowRank, resolve_nested_basis,
+  (const Hierarchical& U, const NestedBasis& V, const Dense& S, bool)
+) {
+  return LowRank(U, gemm(S, V.translation), V.sub_bases, false);
+}
+
+define_method(
+  LowRank, resolve_nested_basis,
+  (const NestedBasis& U, const Hierarchical& V, const Dense& S, bool)
+) {
+  return LowRank(U.sub_bases, gemm(U.translation, S), V, false);
+}
+
+define_method(
+  LowRank, resolve_nested_basis,
+  (const Dense& U, const Dense& V, const Dense& S, bool copy_S)
+) {
+  return LowRank(U, S, V, copy_S);
+}
+
+define_method(
+  LowRank, resolve_nested_basis,
+  (const Matrix& U, const Matrix& V, const Dense&, bool)
+) {
+  omm_error_handler("resolve_nested_basis", {U, V}, __FILE__, __LINE__);
+  std::abort();
+}
+
+declare_method(
+  NestedBasis, resolve_nested_basis,
+  (virtual_<const Matrix&>, const Dense&, bool, bool)
+)
+
+define_method(
+  NestedBasis, resolve_nested_basis,
+  (const Dense& basis, const Dense& S, bool, bool is_col_basis)
+) {
+  // TODO No difference for copying/non-copying version atm!
+  return NestedBasis(basis.share(), S.share(), is_col_basis);
+}
+
+define_method(
+  NestedBasis, resolve_nested_basis,
+  (const NestedBasis& basis, const Dense& S, bool, bool is_col_basis)
+) {
+  // TODO No difference for copying/non-copying version atm!
+  return NestedBasis(
+    basis.sub_bases,
+    is_col_basis ? gemm(basis.translation, S) : gemm(S, basis.translation),
+    is_col_basis
+  );
+}
+
+define_method(
+  NestedBasis, resolve_nested_basis,
+  (const Matrix& basis, const Dense&, bool, bool)
+) {
+  omm_error_handler("resolve_nested_basis", {basis}, __FILE__, __LINE__);
+  std::abort();
+}
+
+define_method(
+  Hierarchical, split_omm,
   (
-    const SharedBasis& A,
-    int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start,
+    const NestedBasis& A,
+    const std::vector<IndexRange>& row_splits,
+    const std::vector<IndexRange>& col_splits,
     bool copy
   )
 ) {
-  return get_part(*A.get_ptr(), n_rows, n_cols, row_start, col_start, copy);
+  assert(
+    (A.is_col_basis() && col_splits.size() == 1)
+    || (A.is_row_basis() && row_splits.size() == 1)
+  );
+  Hierarchical out(row_splits.size(), col_splits.size());
+  // TODO Possibly wrong dimensions for subbasis!
+  Hierarchical sub_basis_split = split_omm(
+    A.sub_bases, row_splits, col_splits, copy
+  );
+  for (int64_t i=0; i<out.dim[A.is_col_basis() ? 0 : 1]; ++i) {
+    out[i] = resolve_nested_basis(
+      sub_basis_split[i], A.translation, copy, A.is_col_basis()
+    );
+  }
+  return out;
 }
 
 define_method(
-  MatrixProxy, get_part_omm,
+  Hierarchical, split_omm,
   (
     const LowRank& A,
-    int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start,
+    const std::vector<IndexRange>& row_splits,
+    const std::vector<IndexRange>& col_splits,
     bool copy
   )
 ) {
-  return LowRank(A, n_rows, n_cols, row_start, col_start, copy);
+  Hierarchical out(row_splits.size(), col_splits.size());
+  Hierarchical U_splits;
+  if (row_splits.size() > 1) {
+    U_splits = split_omm(
+      A.U, row_splits, {IndexRange(0, get_n_cols(A.U))}, copy
+    );
+  } else {
+    U_splits = Hierarchical(1, 1);
+    if (copy) {
+      U_splits(0, 0) = A.U;
+    } else {
+      U_splits(0, 0) = share_basis(A.U);
+    }
+  }
+  Hierarchical V_splits;
+  if (col_splits.size() > 1) {
+    V_splits = split_omm(
+      A.V, {IndexRange(0, get_n_rows(A.V))}, col_splits, copy
+    );
+  } else {
+    V_splits = Hierarchical(1, 1);
+    if (copy) {
+      V_splits(0, 0) = A.V;
+    } else {
+      V_splits(0, 0) = share_basis(A.V);
+    }
+  }
+  for (uint64_t i=0; i<row_splits.size(); ++i) {
+    for (uint64_t j=0; j<col_splits.size(); ++j) {
+      out(i, j) = resolve_nested_basis(U_splits[i], V_splits[j], A.S, copy);
+    }
+  }
+  return out;
 }
 
 define_method(
-  MatrixProxy, get_part_omm,
+  Hierarchical, split_omm,
   (
-    const Matrix& A,
-    [[maybe_unused]] int64_t n_rows, [[maybe_unused]] int64_t n_cols,
-    [[maybe_unused]] int64_t row_start, [[maybe_unused]] int64_t col_start,
-    [[maybe_unused]] bool copy
+    const Hierarchical& A,
+    const std::vector<IndexRange>& row_splits,
+    const std::vector<IndexRange>& col_splits,
+    bool copy
   )
 ) {
-  omm_error_handler("get_part", {A}, __FILE__, __LINE__);
+  if (
+    (row_splits.size() != uint64_t(A.dim[0]))
+    || (col_splits.size() != uint64_t(A.dim[1]))
+  ) {
+    std::abort();
+  }
+  Hierarchical out(row_splits.size(), col_splits.size());
+  for (uint64_t i=0; i<row_splits.size(); ++i) {
+    for (uint64_t j=0; j<col_splits.size(); ++j) {
+      if (
+        (row_splits[i].n != get_n_rows(A(i, j)))
+        || (col_splits[j].n != get_n_cols(A(i, j)))
+      ) std::abort();
+      if (copy) {
+        out(i, j) = A(i, j);
+      } else {
+        out(i, j) = share_basis(A(i, j));
+      }
+    }
+  }
+  return out;
+}
+
+define_method(
+  Hierarchical, split_omm,
+  (
+    const Matrix& A,
+    [[maybe_unused]] const std::vector<IndexRange>&,
+    [[maybe_unused]] const std::vector<IndexRange>&,
+    [[maybe_unused]] bool)
+) {
+  omm_error_handler("split", {A}, __FILE__, __LINE__);
   std::abort();
 }
 

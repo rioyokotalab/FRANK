@@ -62,14 +62,14 @@ define_method(
 define_method(
   DoublePair, collect_diff_norm_omm, (const Hierarchical& A, const Matrix& B)
 ) {
-  Hierarchical BH(B, A.dim[0], A.dim[1], false);
+  Hierarchical BH = split(B, A.dim[0], A.dim[1]);
   return collect_diff_norm_omm(A, BH);
 }
 
 define_method(
   DoublePair, collect_diff_norm_omm, (const Matrix& A, const Hierarchical& B)
 ) {
-  Hierarchical AH(A, B.dim[0], B.dim[1], false);
+  Hierarchical AH = split(A, B.dim[0], B.dim[1]);
   return collect_diff_norm_omm(AH, B);
 }
 

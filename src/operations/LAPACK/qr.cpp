@@ -10,13 +10,9 @@
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
+#include "hicma/util/pre_scheduler.h"
 #include "hicma/util/timer.h"
 
-#ifdef USE_MKL
-#include <mkl.h>
-#else
-#include <lapacke.h>
-#endif
 #include "yorel/yomm2/cute.hpp"
 
 #include <algorithm>
@@ -67,30 +63,7 @@ define_method(void, qr_omm, (Dense& A, Dense& Q, Dense& R)) {
   assert(R.dim[0] == A.dim[1]);
   assert(R.dim[1] == A.dim[1]);
   timing::start("QR");
-  timing::start("DGEQRF");
-  int64_t k = std::min(A.dim[0], A.dim[1]);
-  std::vector<double> tau(k);
-  for(int64_t i=0; i<std::min(Q.dim[0], Q.dim[1]); i++) Q(i, i) = 1.0;
-  LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, A.dim[0], A.dim[1], &A, A.stride, &tau[0]);
-  timing::stop("DGEQRF");
-  timing::start("DORGQR");
-  // TODO Consider using A for the dorgqr and moving to Q afterwards! That
-  // also simplify this loop.
-  for(int64_t i=0; i<A.dim[0]; i++) {
-    for(int64_t j=0; j<A.dim[1]; j++) {
-      if(j>=i)
-        R(i, j) = A(i, j);
-      else
-        Q(i,j) = A(i,j);
-    }
-  }
-  // TODO Consider making special function for this. Performance heavy
-  // and not always needed. If Q should be applied to something, use directly!
-  // Alternatively, create Dense deriative that remains in elementary
-  // reflector form, uses dormqr instead of gemm and can be transformed to
-  // Dense via dorgqr!
-  LAPACKE_dorgqr(LAPACK_ROW_MAJOR, Q.dim[0], Q.dim[1], k, &Q, Q.stride, &tau[0]);
-  timing::stop("DORGQR");
+  add_qr_task(A, Q, R);
   timing::stop("QR");
 }
 
@@ -103,11 +76,10 @@ define_method(
   assert(R.dim[1] == A.dim[1]);
   for (int64_t j=0; j<A.dim[1]; j++) {
     orthogonalize_block_col(j, A, Q, R(j, j));
-    Hierarchical QjT(Q.dim[0], 1);
+    Hierarchical QjT(1, Q.dim[0]);
     for (int64_t i=0; i<Q.dim[0]; i++) {
-      QjT(i, 0) = Q(i, j);
+      QjT(0, i) = transpose(Q(i, j));
     }
-    transpose(QjT);
     for (int64_t k=j+1; k<A.dim[1]; k++) {
       for(int64_t i=0; i<A.dim[0]; i++) { //Rjk = Q*j^T x A*k
         gemm(QjT(0, i), A(i, k), R(j, k), 1, 1);
@@ -171,7 +143,7 @@ define_method(
   MatrixProxy, split_by_column_omm,
   (const Dense& A, Hierarchical& storage, int64_t& currentRow)
 ) {
-  Hierarchical splitted(A, 1, storage.dim[1]);
+  Hierarchical splitted = split(A, 1, storage.dim[1], true);
   for(int64_t i=0; i<storage.dim[1]; i++)
     storage(currentRow, i) = splitted(0, i);
   currentRow++;
@@ -189,7 +161,7 @@ define_method(
   Dense RS = gemm(Ru, _A.S);
   Dense RSV = gemm(RS, _A.V);
   //Split R*S*V
-  Hierarchical splitted(RSV, 1, storage.dim[1]);
+  Hierarchical splitted = split(RSV, 1, storage.dim[1], true);
   for(int64_t i=0; i<storage.dim[1]; i++) {
     storage(currentRow, i) = splitted(0, i);
   }
@@ -258,8 +230,8 @@ define_method(
   assert(concatenatedRow.dim[0] == A.rank);
   assert(concatenatedRow.dim[1] == A.dim[1]);
   LowRank _A(A.dim[0], A.dim[1], A.rank);
-  _A.U = Q;
-  _A.V = concatenatedRow;
+  _A.U = Dense(Q);
+  _A.V = std::move(concatenatedRow);
   _A.S = Dense(
     identity, std::vector<std::vector<double>>(), _A.rank, _A.rank);
   currentRow++;
@@ -327,7 +299,7 @@ define_method(void, zero_whole_omm, (LowRank& A)) {
   A.S = 0.0;
   A.V = Dense(
     identity, std::vector<std::vector<double>>(),
-    get_n_rows(A.V), get_n_cols(A.U)
+    get_n_rows(A.V), get_n_cols(A.V)
   );
 }
 
@@ -382,12 +354,8 @@ define_method(
   for(int64_t i=0; i<HQb.dim[0]; i++) {
     int64_t dim_Bi[2]{get_n_rows(B(i, 0)), get_n_cols(B(i, 0))};
     Dense Qbi(dim_Bi[0], dim_Bi[1]);
-    for(int64_t row=0; row<dim_Bi[0]; row++) {
-      for(int64_t col=0; col<dim_Bi[1]; col++) {
-        Qbi(row, col) = Qb(rowOffset + row, col);
-      }
-    }
-    HQb(i, 0) = Qbi;
+    add_copy_task(Qb, Qbi, rowOffset, 0);
+    HQb(i, 0) = std::move(Qbi);
     rowOffset += dim_Bi[0];
   }
   for(int64_t i=0; i<A.dim[0]; i++) {
@@ -416,25 +384,7 @@ define_method(void, rq_omm, (Dense& A, Dense& R, Dense& Q)) {
   assert(Q.dim[0] == A.dim[0]);
   assert(Q.dim[1] == A.dim[1]);
   timing::start("DGERQF");
-  std::vector<double> tau(A.dim[1]);
-  LAPACKE_dgerqf(LAPACK_ROW_MAJOR, A.dim[0], A.dim[1], &A, A.stride, &tau[0]);
-  // TODO Consider making special function for this. Performance heavy and not
-  // always needed. If Q should be applied to something, use directly!
-  // Alternatively, create Dense deriative that remains in elementary reflector
-  // form, uses dormqr instead of gemm and can be transformed to Dense via
-  // dorgqr!
-  for (int64_t i=0; i<R.dim[0]; i++) {
-    for (int64_t j=0; j<R.dim[1]; j++) {
-      if (j>=i) R(i, j) = A(i, A.dim[1]-R.dim[1]+j);
-    }
-  }
-  LAPACKE_dorgrq(
-    LAPACK_ROW_MAJOR,
-    A.dim[0], A.dim[1], A.dim[0],
-    &A, A.dim[1],
-    &tau[0]
-  );
-  Q = std::move(A);
+  add_rq_task(A, R, Q);
   timing::stop("DGERQF");
 }
 

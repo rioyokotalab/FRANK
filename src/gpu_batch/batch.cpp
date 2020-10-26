@@ -22,7 +22,7 @@ void rsvd_push(MatrixProxy& A, Dense& Aij, int64_t rank) {
 }
 
 void gemm_push(const Dense& A, const Dense& B, Dense& C) {
-  gemm(A, B, C, false, false, 1, 1);
+  gemm(A, B, C, 1, 1, false, false);
 }
 
 void rsvd_batch() {}

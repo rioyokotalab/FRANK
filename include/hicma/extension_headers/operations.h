@@ -4,7 +4,6 @@
 #include "hicma/classes/dense.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
-#include "hicma/classes/intitialization_helpers/basis_tracker.h"
 #include "hicma/extension_headers/tuple_types.h"
 
 #include "yorel/yomm2/cute.hpp"
@@ -44,12 +43,11 @@ declare_method(
   void, gemm_omm,
   (
     virtual_<const Matrix&>, virtual_<const Matrix&>, virtual_<Matrix&>,
-    double, double
+    double, double, bool, bool
   )
 )
-
 declare_method(
-  Dense, gemm_omm,
+  MatrixProxy, gemm_omm,
   (
     virtual_<const Matrix&>, virtual_<const Matrix&>,
     double, bool, bool
@@ -68,14 +66,6 @@ declare_method(
 declare_method(
   void, trsm_omm,
   (virtual_<const Matrix&>, virtual_<Matrix&>, int, int)
-)
-
-declare_method(
-  void, trsm_omm,
-  (
-    virtual_<const Matrix&>, virtual_<Matrix&>,
-    int, int, BasisTracker<BasisKey>&
-  )
 )
 
 // LAPACK
@@ -158,7 +148,11 @@ declare_method(int64_t, get_n_cols_omm, (virtual_<const Matrix&>))
 
 declare_method(double, norm_omm, (virtual_<const Matrix&>))
 
-declare_method(void, transpose_omm, (virtual_<Matrix&>))
+declare_method(MatrixProxy, transpose_omm, (virtual_<const Matrix&>))
+
+declare_method(
+  MatrixProxy, resize_omm, (virtual_<const Matrix&>, int64_t, int64_t)
+)
 
 } // namespace hicma
 

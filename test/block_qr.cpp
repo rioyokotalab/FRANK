@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
     int64_t mode = 1; //See docs
     Dense DA(N, N);
     latms(dist, iseed, sym, d, mode, conditionNumber, dmax, kl, ku, pack, DA);
-    A = Hierarchical(DA, Nc, Nc);
+    A = split(DA, Nc, Nc, true);
   }
   Hierarchical Q(Nc, Nc);
   Hierarchical R(zeros, std::vector<std::vector<double>>(), N, N, 0, Nb, Nc, Nc, Nc);
@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
     qr(DAsj, DQsj, Rjj); //[Q*j, Rjj] = QR(A*j)
     R(j, j) = std::move(Rjj);
     //Move Dense Qsj to Hierarchical Q
-    Hierarchical HQsj(DQsj, Nc, 1);
+    Hierarchical HQsj = split(DQsj, Nc, 1, true);
     for(int64_t i = 0; i < Nc; i++) {
       Q(i, j) = std::move(HQsj(i, 0));
     }
@@ -72,10 +72,10 @@ int main(int argc, char **argv) {
       }
       Dense DAsk(HAsk);
       Dense DRjk(Nb, Nb);
-      gemm(DQsj, DAsk, DRjk, true, false, 1, 1); //Rjk = Qsj^T x Ask
-      R(j, k) = DRjk;
+      gemm(DQsj, DAsk, DRjk, 1, 1, true, false); //Rjk = Qsj^T x Ask
       gemm(DQsj, DRjk, DAsk, -1, 1); //A*k = A*k - Q*j x Rjk
-      Hierarchical _HAsk(DAsk, Nc, 1);
+      R(j, k) = std::move(DRjk);
+      Hierarchical _HAsk = split(DAsk, Nc, 1, true);
       for(int64_t i = 0; i < Nc; i++) {
         A(i, k) = std::move(_HAsk(i, 0));
       }
@@ -90,8 +90,8 @@ int main(int argc, char **argv) {
   print("Rel. Error (operator norm)", l2_error(QRx, Ax), false);
   //Orthogonality
   Dense Qx = gemm(Q, x);
-  transpose(Q);
-  Dense QtQx = gemm(Q, Qx);
+  Hierarchical Qt = transpose(Q);
+  Dense QtQx = gemm(Qt, Qx);
   print("Orthogonality");
   print("Rel. Error (operator norm)", l2_error(QtQx, x), false);
   return 0;

@@ -5,7 +5,7 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
-#include "hicma/classes/intitialization_helpers/cluster_tree.h"
+#include "hicma/classes/initialization_helpers/cluster_tree.h"
 
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
@@ -24,13 +24,19 @@ declare_method(std::unique_ptr<Matrix>, move_clone, (virtual_<Matrix&&>))
 declare_method(MatrixProxy, share_basis_omm, (virtual_<const Matrix&>))
 
 declare_method(
-  MatrixProxy, get_part_omm,
-  (virtual_<const Matrix&>, int64_t, int64_t, int64_t, int64_t, bool)
+  Hierarchical, split_omm,
+  (
+    virtual_<const Matrix&>,
+    const std::vector<IndexRange>&, const std::vector<IndexRange>&,
+    bool
+  )
 )
 
 declare_method(
   void, fill_dense_from, (virtual_<const Matrix&>, virtual_<Matrix&>)
 )
+
+declare_method(void, unshare_omm, (virtual_<Matrix&>))
 
 } // namespace hicma
 

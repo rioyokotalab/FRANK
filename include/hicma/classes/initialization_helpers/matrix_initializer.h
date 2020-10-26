@@ -2,12 +2,14 @@
 #define hicma_classes_initialization_helpers_matrix_initializer_h
 
 #include "hicma/classes/dense.h"
+// TODO Note that this include is only for the enum (NORMAL_BASIS)
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
-#include "hicma/classes/intitialization_helpers/basis_tracker.h"
-#include "hicma/classes/intitialization_helpers/index_range.h"
+#include "hicma/classes/initialization_helpers/basis_tracker.h"
+#include "hicma/classes/initialization_helpers/index_range.h"
 
 #include <cstdint>
+#include <tuple>
 #include <vector>
 
 
@@ -18,16 +20,19 @@ class ClusterTree;
 
 class MatrixInitializer {
  private:
-  void (*kernel)(
-    Dense& A,
-    const std::vector<std::vector<double>>& x,
-    int64_t row_start, int64_t col_start
-  ) = nullptr;
-  const std::vector<std::vector<double>>& x;
   int64_t admis;
   int64_t rank;
-  BasisTracker<IndexRange> col_basis, row_basis;
+  BasisTracker<IndexRange, MatrixProxy> col_basis, row_basis;
+  NestedTracker col_tracker, row_tracker;
   int basis_type = NORMAL_BASIS;
+
+  void find_admissible_blocks(const ClusterTree& node);
+
+  Dense make_block_row(const NestedTracker& tracker) const;
+  void construct_nested_col_basis(NestedTracker& row_tracker);
+
+  Dense make_block_col(const NestedTracker& tracker) const;
+  void construct_nested_row_basis(NestedTracker& col_tracker);
  public:
 
   // Special member functions
@@ -45,27 +50,23 @@ class MatrixInitializer {
 
   // Additional constructors
   MatrixInitializer(
-    void (*kernel)(
-      Dense& A, const std::vector<std::vector<double>>& x,
-      int64_t row_start, int64_t col_start
-    ),
-    const std::vector<std::vector<double>>& x,
-    int64_t admis, int64_t rank,
-    int basis_type
+    int64_t admis, int64_t rank, int basis_type
   );
 
   // Utility methods
   virtual void fill_dense_representation(
     Dense& A, const ClusterTree& node
-  ) const;
+  ) const = 0;
 
-  virtual Dense get_dense_representation(const ClusterTree& node) const;
+  virtual void fill_dense_representation(
+    Dense& A, const IndexRange& row_range, const IndexRange& col_range
+  ) const = 0;
 
-  Dense make_block_row(const ClusterTree& node) const;
+  virtual Dense get_dense_representation(const ClusterTree& node) const = 0;
 
-  Dense make_block_col(const ClusterTree& node) const;
+  LowRank get_compressed_representation(const ClusterTree& node);
 
-  virtual LowRank get_compressed_representation(const ClusterTree& node);
+  void create_nested_basis(const ClusterTree& node);
 
   bool is_admissible(const ClusterTree& node) const;
 };

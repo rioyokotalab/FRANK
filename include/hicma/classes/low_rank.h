@@ -32,25 +32,15 @@ class LowRank : public Matrix {
 
   LowRank& operator=(LowRank&& A) = default;
 
+  // Implicit conversion from temporaries, requires them to actually be LR
+  LowRank(MatrixProxy&& A);
+
   // Additional constructors
   LowRank(int64_t n_rows, int64_t n_cols, int64_t k);
 
   LowRank(const Dense& A, int64_t k);
 
   LowRank(const Matrix& U, const Dense& S, const Matrix& V, bool copy_S=false);
-
-  LowRank(
-    const LowRank& A,
-    int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start,
-    bool copy=false
-  );
-
-  // Utility methods
-  void mergeU(const LowRank& A, const LowRank& B);
-
-  void mergeS(const LowRank& A, const LowRank& B);
-
-  void mergeV(const LowRank& A, const LowRank& B);
 };
 
 } // namespace hicma

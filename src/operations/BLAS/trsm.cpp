@@ -5,16 +5,13 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
-#include "hicma/classes/shared_basis.h"
-#include "hicma/classes/intitialization_helpers/basis_tracker.h"
+#include "hicma/classes/nested_basis.h"
+#include "hicma/classes/initialization_helpers/basis_tracker.h"
+#include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
+#include "hicma/util/pre_scheduler.h"
 #include "hicma/util/timer.h"
 
-#ifdef USE_MKL
-#include <mkl.h>
-#else
-#include <cblas.h>
-#endif
 #include "yorel/yomm2/cute.hpp"
 
 #include <cassert>
@@ -85,42 +82,83 @@ define_method(
 
 define_method(void, trsm_omm, (const Dense& A, Dense& B, int uplo, int lr)) {
   timing::start("DTRSM");
-  cblas_dtrsm(
-    CblasRowMajor,
-    lr==TRSM_LEFT?CblasLeft:CblasRight,
-    uplo==TRSM_UPPER?CblasUpper:CblasLower,
-    CblasNoTrans,
-    uplo==TRSM_UPPER?CblasNonUnit:CblasUnit,
-    B.dim[0], B.dim[1],
-    1,
-    &A, A.stride,
-    &B, B.stride
-  );
+  add_trsm_task(A, B, uplo, lr);
   timing::stop("DTRSM");
 }
 
+declare_method(MatrixProxy, decouple, (virtual_<const Matrix&>))
+
 define_method(
-  void, trsm_omm, (const Matrix& A, SharedBasis& B, int uplo, int lr)
+  void, trsm_omm,
+  (const Hierarchical& A, NestedBasis& B, int uplo, int lr)
 ) {
-  trsm(A, *B.get_ptr(), uplo, lr);
+  B.sub_bases = decouple(B.sub_bases);
+  trsm(A, B.sub_bases, uplo, lr);
+}
+
+define_method(
+  void, trsm_omm, (const Dense& A, NestedBasis& B, int uplo, int lr)
+) {
+  B.sub_bases = decouple(B.sub_bases);
+  trsm(A, B.sub_bases, uplo, lr);
 }
 
 define_method(void, trsm_omm, (const Matrix& A, LowRank& B, int uplo, int lr)) {
   switch (lr) {
   case TRSM_LEFT:
+    // Decouple basis
+    // TODO This introduces unneeded copies in the non-shared case! Find a way
+    // around that.
+    B.U = decouple(B.U);
     trsm(A, B.U, uplo, lr);
     break;
   case TRSM_RIGHT:
+    // Decouple basis
+    // TODO This introduces unneeded copies in the non-shared case! Find a way
+    // around that.
+    B.V = decouple(B.V);
     trsm(A, B.V, uplo, lr);
     break;
   }
+}
+
+define_method(MatrixProxy, decouple, (const Dense& A)) {
+  if (!matrix_is_tracked("decoupling", A)) {
+    register_matrix("decoupling", A, Dense(A));
+  }
+  return get_tracked_content("decoupling", A).share();
+}
+
+define_method(MatrixProxy, decouple, (const NestedBasis& A)) {
+  return NestedBasis(
+    A.sub_bases,
+    decouple(A.translation),
+    A.col_basis
+  );
+}
+
+define_method(MatrixProxy, decouple, (const Hierarchical& A)) {
+  Hierarchical decoupled(A.dim[0], A.dim[1]);
+  for (int64_t i=0; i<A.dim[0]; ++i) {
+    for (int64_t j=0; j<A.dim[1]; ++j) {
+      decoupled(i, j) = decouple(A(i, j));
+    }
+  }
+  return decoupled;
+}
+
+define_method(MatrixProxy, decouple, (const Matrix& A)) {
+  omm_error_handler("decouple", {A}, __FILE__, __LINE__);
+  std::abort();
 }
 
 define_method(
   void, trsm_omm,
   (const Hierarchical& A, Dense& B, int uplo, int lr)
 ) {
-  Hierarchical BH(B, lr==TRSM_LEFT?A.dim[0]:1, lr==TRSM_LEFT?1:A.dim[1], false);
+  Hierarchical BH = split(
+    B, lr==TRSM_LEFT?A.dim[0]:1, lr==TRSM_LEFT?1:A.dim[1]
+  );
   trsm(A, BH, uplo, lr);
 }
 
@@ -134,42 +172,6 @@ define_method(
 ) {
   omm_error_handler("trsm", {A, B}, __FILE__, __LINE__);
   std::abort();
-}
-
-define_method(
-  void, trsm_omm,
-  (
-    const Matrix& A, LowRank& B,
-    int uplo, int lr, BasisTracker<BasisKey>& tracker
-  )
-) {
-  // Check if already applied
-  // If applied, do nothing
-  switch (lr) {
-  case TRSM_LEFT:
-    if (tracker.has_basis(B.U)) {
-      return;
-    } else {
-      tracker[B.U] = MatrixProxy();
-    }
-    break;
-  case TRSM_RIGHT:
-    if (tracker.has_basis(B.V)) {
-      return;
-    } else {
-      tracker[B.V] = MatrixProxy();
-    }
-    break;
-  }
-  // If not applied, use regular trsm to apply
-  trsm(A, B, uplo, lr);
-}
-
-define_method(
-  void, trsm_omm,
-  (const Matrix& A, Matrix& B, int uplo, int lr, BasisTracker<BasisKey>&)
-) {
-  trsm(A, B, uplo, lr);
 }
 
 } // namespace hicma

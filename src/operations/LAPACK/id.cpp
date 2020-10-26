@@ -5,8 +5,10 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
+#include "hicma/classes/initialization_helpers/index_range.h"
 #include "hicma/functions.h"
 #include "hicma/operations/BLAS.h"
+#include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
 
 #include "yorel/yomm2/cute.hpp"
@@ -22,22 +24,6 @@
 
 namespace hicma
 {
-
-std::tuple<Dense, Dense> get_R11_R12(const Dense& R, int64_t k) {
-  Dense R11(k, k);
-  for (int64_t i=0; i<R11.dim[0]; ++i) {
-    for (int64_t j = 0; j < R11.dim[1]; ++j) {
-      R11(i, j) = R(i, j);
-    }
-  }
-  Dense R22(k, R.dim[1]-k);
-  for (int64_t i=0; i<R22.dim[0]; ++i) {
-    for (int64_t j = 0; j < R22.dim[1]; ++j) {
-      R22(i, j) = R(i, k+j);
-    }
-  }
-  return {std::move(R11), std::move(R22)};
-}
 
 Dense interleave_id(const Dense& A, std::vector<int64_t>& P) {
   int64_t k = P.size() - A.dim[1];
@@ -64,12 +50,12 @@ define_method(DenseIndexSetPair, one_sided_id_omm, (Dense& A, int64_t k)) {
   Dense col_basis;
   // First case applies also when A.dim[1] > A.dim[0] end k == A.dim[0]
   if (k < std::min(A.dim[0], A.dim[1]) || A.dim[1] > A.dim[0]) {
-    Dense R11, T;
-    // TODO Find more abstract way for this.
-    // Hierarchical with designed subnodes?
-    std::tie(R11, T) = get_R11_R12(R, k);
-    trsm(R11, T, TRSM_UPPER);
-    col_basis = interleave_id(T, selected_cols);
+    // Get R11 (split[0]) and R22 (split[1])
+    std::vector<Dense> split = R.split(
+      IndexRange(0, R.dim[0]).split_at(k), IndexRange(0, R.dim[1]).split_at(k)
+    );
+    trsm(split[0], split[1], TRSM_UPPER);
+    col_basis = interleave_id(split[1], selected_cols);
   } else {
     col_basis = interleave_id(
       Dense(identity, std::vector<std::vector<double>>(), k, k), selected_cols);
@@ -88,36 +74,41 @@ define_method(
   std::abort();
 }
 
-
 std::tuple<Dense, Dense, Dense> id(Matrix& A, int64_t k) {
   return id_omm(A, k);
 }
 
 Dense get_cols(const Dense& A, std::vector<int64_t> Pr) {
   Dense B(A.dim[0], Pr.size());
-  for (int64_t j=0; j<B.dim[1]; ++j) {
-    for (int64_t i=0; i<A.dim[0]; ++i) {
+  for (int64_t i=0; i<A.dim[0]; ++i) {
+    for (int64_t j=0; j<B.dim[1]; ++j) {
       B(i, j) = A(i, Pr[j]);
     }
   }
   return B;
 }
 
-// Fallback default, abort with error message
+Dense get_rows(const Dense& A, std::vector<int64_t> Pr) {
+  Dense B(Pr.size(), A.dim[1]);
+  for (int64_t i=0; i<B.dim[0]; ++i) {
+    for (int64_t j=0; j<A.dim[1]; ++j) {
+      B(i, j) = A(Pr[i], j);
+    }
+  }
+  return B;
+}
+
 define_method(DenseTriplet, id_omm, (Dense& A, int64_t k)) {
   Dense V(k, A.dim[1]);
   Dense Awork(A);
   std::vector<int64_t> selected_cols;
   std::tie(V, selected_cols) = one_sided_id(Awork, k);
   Dense AC = get_cols(A, selected_cols);
-  Dense U(k, A.dim[0]);
-  AC.transpose();
-  Dense ACwork(AC);
-  std::tie(U, selected_cols) = one_sided_id(ACwork, k);
-  A = get_cols(AC, selected_cols);
-  U.transpose();
-  A.transpose();
-  return {std::move(U), std::move(A), std::move(V)};
+  Dense ACwork = transpose(AC);
+  Dense Ut(k, A.dim[0]);
+  std::vector<int64_t> selected_rows;
+  std::tie(Ut, selected_rows) = one_sided_id(ACwork, k);
+  return {transpose(Ut), get_rows(AC, selected_rows), std::move(V)};
 }
 
 // Fallback default, abort with error message

@@ -1,6 +1,8 @@
 #ifndef hicma_operations_misc_h
 #define hicma_operations_misc_h
 
+#include "hicma/classes/dense.h"
+#include "hicma/classes/hierarchical.h"
 #include "hicma/classes/matrix_proxy.h"
 
 #include <cstdint>
@@ -11,7 +13,8 @@ namespace hicma
 {
 
 class ClusterTree;
-class Dense;
+class Hierarchical;
+class LowRank;
 class Matrix;
 
 int64_t get_n_rows(const Matrix&);
@@ -31,22 +34,25 @@ int64_t getMortonIndex(std::vector<int64_t> index, int64_t level);
 std::vector<double> equallySpacedVector(
   int64_t N, double minVal, double maxVal);
 
-MatrixProxy get_part(
-  const Matrix& A,
-  int64_t n_rows, int64_t n_cols,
-  int64_t row_start, int64_t col_start,
-  bool copy=false
+Hierarchical split(
+  const Matrix& A, int64_t n_row_blocks, int64_t n_col_blocks, bool copy=false
 );
 
-MatrixProxy get_part(
-  const Matrix& A,
-  const ClusterTree& node,
-  bool copy=false
-);
+Hierarchical split(const Matrix& A, const Hierarchical& like, bool copy=false);
 
 double norm(const Matrix&);
 
-void transpose(Matrix&);
+void recompress_col(Matrix& AU, const Matrix& BU, Dense& AS, const Dense& BS);
+
+void recompress_row(Matrix& AV, const Matrix& BV, Dense& AS, const Dense& BS);
+
+void recombine_col(Hierarchical& A, MatrixProxy& U, Dense& S_orig);
+
+void recombine_row(Hierarchical& A, MatrixProxy& V, Dense& S_orig);
+
+MatrixProxy transpose(const Matrix&);
+
+MatrixProxy resize(const Matrix&, int64_t n_rows, int64_t n_cols);
 
 } // namespace hicma
 

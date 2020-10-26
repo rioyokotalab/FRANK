@@ -1,5 +1,5 @@
 function(find_or_download PACKAGE)
-    set(options EXACT INSTALL_WITH_HiCMA)
+    set(options EXACT PKG_CONFIG INSTALL_WITH_HiCMA)
     set(oneValueArgs VERSION)
     cmake_parse_arguments(ARGS
         "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN}
@@ -13,21 +13,29 @@ function(find_or_download PACKAGE)
     if(${ARGS_EXACT})
         set(EXACT "EXACT")
     endif()
-    find_package(
-        ${PACKAGE} ${ARGS_VERSION} ${EXACT} QUIET
-        HINTS ${CMAKE_SOURCE_DIR}/dependencies ${CMAKE_INSTALL_PREFIX}
-    )
+
+    if(${ARGS_INSTALL_WITH_HiCMA})
+        set(DEPENDENCY_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+    else()
+        set(DEPENDENCY_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/dependencies)
+    endif()
+    if(${ARGS_PKG_CONFIG})
+        find_package(PkgConfig REQUIRED)
+        set(ENV{PKG_CONFIG_PATH} ${DEPENDENCY_INSTALL_PREFIX}/lib/pkgconfig)
+        pkg_check_modules(${PACKAGE} IMPORTED_TARGET ${PACKAGE}-${ARGS_VERSION})
+    else()
+        # Update search path and use regular find_package to add dependency
+        find_package(
+            ${PACKAGE} ${ARGS_VERSION} ${EXACT} QUIET
+            HINTS ${CMAKE_SOURCE_DIR}/dependencies ${CMAKE_INSTALL_PREFIX}
+        )
+    endif()
+
     if(${${PACKAGE}_FOUND})
         message(STATUS "Found dependency ${PACKAGE} installed in system.")
     else()
         message(STATUS "Suitable version of ${PACKAGE} not found in system.")
         message(STATUS "Downloading ${PACKAGE} and building from source.")
-
-        if(${ARGS_INSTALL_WITH_HiCMA})
-            set(DEPENDENCY_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
-        else()
-            set(DEPENDENCY_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/dependencies)
-        endif()
         # Use below settings for git downloads if available
         if(${CMAKE_VERSION} VERSION_GREATER 3.6)
             list(APPEND ADDITIONAL_GIT_SETTINGS "GIT_SHALLOW True")
@@ -69,11 +77,19 @@ function(find_or_download PACKAGE)
             )
         endif()
 
-        # Update search path and use regular find_package to add dependency
-        find_package(${PACKAGE}
-            ${ARGS_VERSION} ${EXACT} REQUIRED NO_DEFAULT_PATH
-            PATHS "${DEPENDENCY_INSTALL_PREFIX}"
-        )
+        if(${ARGS_PKG_CONFIG})
+            find_package(PkgConfig REQUIRED)
+            set(ENV{PKG_CONFIG_PATH} ${DEPENDENCY_INSTALL_PREFIX}/lib/pkgconfig)
+            pkg_check_modules(${PACKAGE}
+                REQUIRED IMPORTED_TARGET ${PACKAGE}-${ARGS_VERSION}
+            )
+        else()
+            # Update search path and use regular find_package to add dependency
+            find_package(${PACKAGE}
+                ${ARGS_VERSION} ${EXACT} REQUIRED NO_DEFAULT_PATH
+                PATHS "${DEPENDENCY_INSTALL_PREFIX}"
+            )
+        endif()
         message(STATUS "Using ${PACKAGE} from ${DEPENDENCY_INSTALL_PREFIX}.")
     endif()
 endfunction()
