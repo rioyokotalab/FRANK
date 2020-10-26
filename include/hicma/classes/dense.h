@@ -27,8 +27,6 @@ class Dense : public Matrix {
  private:
   std::shared_ptr<DataHandler> data;
   std::array<int64_t, 2> rel_start = {0, 0};
-
-  DataHandler& get_handler();
  protected:
   double* data_ptr = nullptr;
  public:
