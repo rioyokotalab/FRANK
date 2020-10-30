@@ -12,7 +12,9 @@ ExternalProject_Add(${PROJECT_NAME}
                         --disable-build-examples
                         --disable-build-tests
                         --disable-static
+                        --disable-cuda
                         --disable-mpi
+                        --disable-opencl
                         --disable-starpufft
                         --disable-fortran
                         --disable-build-doc

@@ -49,6 +49,7 @@ if(OpenMP_FOUND)
     list(APPEND HICMA_OPTIONS ${OpenMP_CXX_FLAGS})
 endif()
 
+# StarPU
 find_or_download(starpu PKG_CONFIG VERSION 1.3)
 link_directories(${starpu_LIBRARY_DIRS})
 
@@ -60,7 +61,7 @@ list(APPEND HICMA_DEPENDENCIES Boost::boost)
 option(USE_MKL "Use Intel Math Kernel Libraries (MKL)" OFF)
 if(${USE_MKL})
     list(APPEND HICMA_DEFINITIONS USE_MKL)
-    set(BLA_VENDOR Intel10_64ilp)
+    set(BLA_VENDOR Intel10_64lp)
     find_package(BLAS REQUIRED)
     find_package(LAPACK REQUIRED)
     list(APPEND HICMA_DEPENDENCIES ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})

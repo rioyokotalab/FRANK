@@ -310,7 +310,6 @@ define_method(void, zero_whole_omm, (Matrix& A)) {
 
 
 std::tuple<Hierarchical, Hierarchical> split_block_col(int64_t j, const Hierarchical& A) {
-  assert(type(A(j, j)) == "Hierarchical");
   int64_t splitRowSize = 0;
   int64_t splitColSize = 1;
   for(int64_t i=0; i<A.dim[0]; i++) {
