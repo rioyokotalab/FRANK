@@ -176,6 +176,8 @@ void orthogonality_preserving_addition(LowRank& A, const LowRank& B) {
   gemm(A.U, A.S, U_combinedH[0], 1, 0);
   gemm(B.U, B.S, U_combinedH[1], 1, 0);
 
+  //This will fail if A.rank+B.rank > max(A.dim[0], A.dim[1])
+  //TODO Fix
   Dense Qu(U_combined.dim[0], U_combined.dim[1]);
   Dense Ru(U_combined.dim[1], U_combined.dim[1]);
   qr(U_combined, Qu, Ru);
@@ -186,6 +188,8 @@ void orthogonality_preserving_addition(LowRank& A, const LowRank& B) {
   V_mergeH[0] = std::move(A.V);
   V_mergeH[1] = shallow_copy(B.V);
   Dense V_merge(V_mergeH);
+  //This will fail if A.rank+B.rank > max(A.dim[0], A.dim[1])
+  //TODO Fix
   Dense Rv(V_merge.dim[0], V_merge.dim[0]);
   Dense Qv(V_merge.dim[0], V_merge.dim[1]);
   rq(V_merge, Rv, Qv);
