@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
     latms(dist, iseed, sym, d, mode, conditionNumber, dmax, kl, ku, pack, DA);
     A = split(DA, Nc, Nc, true);
   }
-  Hierarchical Q(Nc, Nc);
+  Hierarchical Q(zeros, std::vector<std::vector<double>>(), N, N, 0, Nb, Nc, Nc, Nc);
   Hierarchical R(zeros, std::vector<std::vector<double>>(), N, N, 0, Nb, Nc, Nc, Nc);
 
   print("Cond(A)", cond(Dense(A)), false);
@@ -48,39 +48,7 @@ int main(int argc, char **argv) {
   print("Block Gram Schmidt QR Decomposition");
   print("Time");
   timing::start("QR decomposition");
-  for(int64_t j = 0; j < Nc; j++) {
-    Hierarchical HAsj(Nc, 1);
-    for(int64_t i = 0; i < Nc; i++) {
-      HAsj(i, 0) = A(i, j);
-    }
-    Dense DAsj(HAsj);
-    Dense DQsj(DAsj.dim[0], DAsj.dim[1]);
-    Dense Rjj(Nb, Nb);
-    qr(DAsj, DQsj, Rjj); //[Q*j, Rjj] = QR(A*j)
-    R(j, j) = std::move(Rjj);
-    //Move Dense Qsj to Hierarchical Q
-    Hierarchical HQsj = split(DQsj, Nc, 1, true);
-    for(int64_t i = 0; i < Nc; i++) {
-      Q(i, j) = std::move(HQsj(i, 0));
-    }
-    //Process next columns
-    for(int64_t k = j + 1; k < Nc; k++) {
-      //Take k-th column
-      Hierarchical HAsk(Nc, 1);
-      for(int64_t i = 0; i < Nc; i++) {
-        HAsk(i, 0) = A(i, k);
-      }
-      Dense DAsk(HAsk);
-      Dense DRjk(Nb, Nb);
-      gemm(DQsj, DAsk, DRjk, 1, 1, true, false); //Rjk = Qsj^T x Ask
-      gemm(DQsj, DRjk, DAsk, -1, 1); //A*k = A*k - Q*j x Rjk
-      R(j, k) = std::move(DRjk);
-      Hierarchical _HAsk = split(DAsk, Nc, 1, true);
-      for(int64_t i = 0; i < Nc; i++) {
-        A(i, k) = std::move(_HAsk(i, 0));
-      }
-    }
-  }
+  qr(A, Q, R);
   timing::stopAndPrint("QR decomposition");
 
   //Residual
