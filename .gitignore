@@ -1,8 +1,13 @@
+# Ignore build artifact folders
 build
 bin
 lib
 install
 .env
+dependencies
+# Also ignore documentation, except for the Doxyfile
+docs/*
+!docs/CMakeLists.txt
 
 *.json
 *.pdf
@@ -19,7 +24,5 @@ GPATH
 GRPATH
 GTAGS
 GRTAGS
-
-dependencies
 
 job.sh
