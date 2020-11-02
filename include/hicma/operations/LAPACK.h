@@ -45,6 +45,8 @@ void latms(
 
 void qr(Matrix&, Matrix&, Matrix&);
 
+void orthogonalize_block_col(int64_t, const Matrix&, Matrix&, Matrix&);
+
 void zero_lowtri(Matrix&);
 
 void zero_whole(Matrix&);
