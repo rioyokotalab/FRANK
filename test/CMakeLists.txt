@@ -25,6 +25,7 @@ list(
 if(OpenMP_FOUND)
   list(APPEND EXECUTABLES "forkjoin_tlr_qr")
   list(APPEND EXECUTABLES "forkjoin_blr_qr")
+  list(APPEND EXECUTABLES "taskbased_tlr_qr")
 endif()
 foreach(EXECUTABLE ${EXECUTABLES})
   add_executable(${EXECUTABLE} ${EXECUTABLE}.cpp)

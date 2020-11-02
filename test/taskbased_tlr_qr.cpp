@@ -1,6 +1,5 @@
 #include "hicma/hicma.h"
 
-#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <utility>
@@ -50,54 +49,92 @@ int main(int argc, char** argv) {
     A = Hierarchical(cauchy2d, randpts, N, N, rank, Nb, (int64_t)admis, Nc, Nc);
     D = Hierarchical(cauchy2d, randpts, N, N, 0, Nb, Nc, Nc, Nc);
   }
-  Hierarchical Q(zeros, std::vector<std::vector<double>>(), N, N, rank, Nb, (int64_t)admis, Nc, Nc);
-  Hierarchical R(zeros, std::vector<std::vector<double>>(), N, N, rank, Nb, (int64_t)admis, Nc, Nc);
+  Hierarchical Q(identity, std::vector<std::vector<double>>(), N, N, rank, Nb, (int64_t)admis, Nc, Nc);
+  Hierarchical T(zeros, std::vector<std::vector<double>>(), N, N, 0, Nb, Nc, Nc, Nc);
 
   print("Cond(A)", cond(Dense(A)), false);
 
-  //For residual measurement
+  // For residual measurement
   Dense x(N); x = 1.0;
   Dense Ax = gemm(A, x);
 
-  print("Ida's BLR QR Decomposition");
+  print("BLR QR Decomposition");
   print("Compression Accuracy");
   print("Rel. L2 Error", l2_error(A, D), false);
 
   print("Time");
   double tic = get_time();
-  // timing::start("Fork-Join BLR QR decomposition");
-  for (int64_t j=0; j<A.dim[1]; j++) {
-    orthogonalize_block_col(j, A, Q, R(j, j));
-    Hierarchical QjT(1, Q.dim[0]);
-    for (int64_t i=0; i<Q.dim[0]; i++) {
-      QjT(0, i) = transpose(Q(i, j));
-    }
-    for (int64_t k=j+1; k<A.dim[1]; k++) {
-      for(int64_t i=0; i<A.dim[0]; i++) { //Rjk = Q*j^T x A*k
-        gemm(QjT(0, i), A(i, k), R(j, k), 1, 1);
-      }
-    }
-    #pragma omp parallel
+  char dep[Nc][Nc];
+  // timing::start("Task-based BLR QR decomposition");
+  #pragma omp parallel
+  {
+    #pragma omp single
     {
-      #pragma omp single
-      {
-        for (int64_t k=j+1; k<A.dim[1]; k++) {
-          for(int64_t i=0; i<A.dim[0]; i++) { //A*k = A*k - Q*j x Rjk
-            #pragma omp task
+      for(int64_t k = 0; k < Nc; k++) {
+        #pragma omp task depend(out: dep[k][k])
+        {
+          geqrt(A(k, k), T(k, k));
+        }
+        for(int64_t j = k+1; j < Nc; j++) {
+          #pragma omp task depend(in: dep[k][k]) depend(out: dep[k][j])
+          {
+            larfb(A(k, k), T(k, k), A(k, j), true);
+          }
+        }
+        for(int64_t i = k+1; i < Nc; i++) {
+          #pragma omp task depend(in: dep[i-1][k]) depend(out: dep[i][k])
+          {
+            tpqrt(A(k, k), A(i, k), T(i, k));
+          }
+          for(int64_t j = k+1; j < Nc; j++) {
+            #pragma omp task depend(in: dep[i][k], dep[i-1][j]) depend(out: dep[i][j])
             {
-              gemm(Q(i, j), R(j, k), A(i, k), -1, 1);
+              tpmqrt(A(i, k), T(i, k), A(k, j), A(i, j), true);
             }
           }
         }
       }
     }
   }
-  // timing::stopAndPrint("Fork-Join BLR QR decomposition", 1);
+  // timing::stopAndPrint("Task-based BLR QR decomposition", 1);
   double toc = get_time();
-  print("Fork-Join BLR QR Decomposition", toc-tic);
+  print("Task-based BLR QR Decomposition", toc-tic);
 
+  //Build Q: Apply Q to Id
+  #pragma omp parallel
+  {
+    #pragma omp single
+    {
+      for(int64_t k = Nc-1; k >= 0; k--) {
+        for(int64_t i = Nc-1; i > k; i--) {
+          for(int64_t j = k; j < Nc; j++) {
+            #pragma omp task depend(inout: dep[k][j], dep[i][j])
+            {
+              tpmqrt(A(i, k), T(i, k), Q(k, j), Q(i, j), false);
+            }
+          }
+        }
+        for(int64_t j = k; j < Nc; j++) {
+          #pragma omp task depend(inout: dep[k][j])
+          {
+            larfb(A(k, k), T(k, k), Q(k, j), false);
+          }
+        }
+      }
+    }
+  }
+
+  //Build R: Take upper triangular part of modified A
+  for(int64_t i=0; i<A.dim[0]; i++) {
+    for(int64_t j=0; j<=i; j++) {
+      if(i == j) //Diagonal must be dense, zero lower-triangular part
+        zero_lowtri(A(i, j));
+      else
+        zero_whole(A(i, j));
+    }
+  }
   //Residual
-  Dense Rx = gemm(R, x);
+  Dense Rx = gemm(A, x);
   Dense QRx = gemm(Q, Rx);
   print("Residual");
   print("Rel. Error (operator norm)", l2_error(QRx, Ax), false);

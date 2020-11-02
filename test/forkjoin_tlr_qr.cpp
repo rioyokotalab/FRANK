@@ -64,7 +64,7 @@ int main(int argc, char** argv) {
 
   print("Time");
   double tic = get_time();
-  // timing::start("BLR QR decomposition");
+  // timing::start("Fork-Join BLR QR decomposition");
   for(int64_t k = 0; k < Nc; k++) {
     geqrt(A(k, k), T(k, k));
     #pragma omp parallel for schedule(dynamic)
@@ -79,9 +79,9 @@ int main(int argc, char** argv) {
       }
     }
   }
-  // timing::stopAndPrint("BLR QR decomposition", 1);
+  // timing::stopAndPrint("Fork-Join BLR QR decomposition", 1);
   double toc = get_time();
-  print("BLR QR Decomposition", toc-tic);
+  print("Fork-Join BLR QR Decomposition", toc-tic);
 
   //Build Q: Apply Q to Id
   for(int64_t k = Nc-1; k >= 0; k--) {
