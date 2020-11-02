@@ -19,7 +19,6 @@ int main(int argc, char** argv) {
   int64_t lra = argc > 6 ? atoi(argv[6]) : 1; updateCounter("LRA", lra);
   int64_t Nc = N / Nb;
   std::vector<std::vector<double>> randpts;
-  updateCounter("LR_ADDITION_COUNTER", 1); //Enable LR addition counter
 
   Hierarchical A;
   Hierarchical D;
@@ -57,11 +56,9 @@ int main(int argc, char** argv) {
   print("Rel. L2 Error", l2_error(A, D), false);
 
   print("Time");
-  resetCounter("LR-addition");
   timing::start("BLR QR decomposition");
   qr(A, Q, R);
   timing::stopAndPrint("BLR QR decomposition", 1);
-  printCounter("LR-addition");
 
   //Residual
   Dense Rx = gemm(R, x);

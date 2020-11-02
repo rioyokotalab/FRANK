@@ -18,7 +18,6 @@ int main(int argc, char** argv) {
   int64_t lra = argc > 6 ? atoi(argv[6]) : 1; updateCounter("LRA", lra);
   int64_t Nc = N / Nb;
   std::vector<std::vector<double>> randpts;
-  updateCounter("LR_ADDITION_COUNTER", 1); //Enable LR addition counter
 
   Hierarchical A;
   Hierarchical D;
@@ -56,7 +55,6 @@ int main(int argc, char** argv) {
   print("Rel. L2 Error", l2_error(A, D), false);
 
   print("Time");
-  resetCounter("LR-addition");
   timing::start("BLR QR decomposition");
   for(int64_t k = 0; k < Nc; k++) {
     geqrt(A(k, k), T(k, k));
@@ -82,8 +80,6 @@ int main(int argc, char** argv) {
       larfb(A(k, k), T(k, k), Q(k, j), false);
     }
   }
-
-  printCounter("LR-addition");
 
   //Build R: Take upper triangular part of modified A
   for(int64_t i=0; i<A.dim[0]; i++) {
