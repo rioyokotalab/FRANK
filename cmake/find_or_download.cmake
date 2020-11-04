@@ -80,9 +80,15 @@ function(find_or_download PACKAGE)
         if(${ARGS_PKG_CONFIG})
             find_package(PkgConfig REQUIRED)
             set(ENV{PKG_CONFIG_PATH} ${DEPENDENCY_INSTALL_PREFIX}/lib/pkgconfig)
-            pkg_check_modules(${PACKAGE}
-                REQUIRED IMPORTED_TARGET ${PACKAGE}-${ARGS_VERSION}
-            )
+            if(${ARGS_VERSION})
+              pkg_check_modules(${PACKAGE}
+                  REQUIRED IMPORTED_TARGET ${PACKAGE}-${ARGS_VERSION}
+              )
+            else()
+              pkg_check_modules(${PACKAGE}
+                  REQUIRED IMPORTED_TARGET ${PACKAGE}
+              )
+            endif()
         else()
             # Update search path and use regular find_package to add dependency
             find_package(${PACKAGE}
