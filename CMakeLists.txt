@@ -113,6 +113,12 @@ if(${BUILD_TESTS})
   add_subdirectory(test)
 endif()
 
+## Examples
+option(BUILD_EXAMPLES "Build example code" ON)
+if(${BUILD_TESTS})
+    add_subdirectory(examples)
+endif()
+
 ## Install instruction
 # Create version file for cmake package
 include(CMakePackageConfigHelpers)
