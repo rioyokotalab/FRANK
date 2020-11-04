@@ -5,6 +5,14 @@
 namespace hicma
 {
 
+/**
+ * @brief Abstract matrix class. All other matrix types derive from this.
+ *
+ * This abstract matrix class has no properties, holds no data and no operations
+ * are defined for it. It serves only as a parent class for all other matrix
+ * classes. Having a common parent class is necessary for \OMMs, a central part
+ * the HiCMA library.
+ */
 class Matrix {
  public:
   // Special member functions

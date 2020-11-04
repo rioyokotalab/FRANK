@@ -638,7 +638,7 @@ void qr_cpu_func(
   }
   // TODO Consider making special function for this. Performance heavy
   // and not always needed. If Q should be applied to something, use directly!
-  // Alternatively, create Dense deriative that remains in elementary
+  // Alternatively, create Dense derivative that remains in elementary
   // reflector form, uses dormqr instead of gemm and can be transformed to
   // Dense via dorgqr!
   LAPACKE_dorgqr(
@@ -722,7 +722,7 @@ void rq_cpu_func(
   LAPACKE_dgerqf(LAPACK_ROW_MAJOR, A_dim0, A_dim1, A, A_stride, &tau[0]);
   // TODO Consider making special function for this. Performance heavy and not
   // always needed. If Q should be applied to something, use directly!
-  // Alternatively, create Dense deriative that remains in elementary reflector
+  // Alternatively, create Dense derivative that remains in elementary reflector
   // form, uses dormqr instead of gemm and can be transformed to Dense via
   // dorgqr!
   for (uint64_t i=0; i<R_dim0; i++) {

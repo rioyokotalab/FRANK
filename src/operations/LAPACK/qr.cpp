@@ -223,11 +223,7 @@ define_method(
   assert(Q.dim[1] == A.rank);
   assert(concatenatedRow.dim[0] == A.rank);
   assert(concatenatedRow.dim[1] == A.dim[1]);
-  LowRank _A(A.dim[0], A.dim[1], A.rank);
-  _A.U = Dense(Q);
-  _A.V = std::move(concatenatedRow);
-  _A.S = Dense(
-    identity, std::vector<std::vector<double>>(), _A.rank, _A.rank);
+  LowRank _A(Dense(Q), Dense(identity, {}, A.rank, A.rank), concatenatedRow);
   currentRow++;
   return std::move(_A);
 }

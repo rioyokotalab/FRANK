@@ -112,19 +112,19 @@ Dense::Dense(int64_t n_rows, int64_t n_cols)
 }
 
 Dense::Dense(
-  void (*func)(
+  void (*kernel)(
     double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-    const std::vector<std::vector<double>>& x,
+    const std::vector<std::vector<double>>& params,
     int64_t row_start, int64_t col_start
   ),
-  const std::vector<std::vector<double>>& x,
+  const std::vector<std::vector<double>>& params,
   int64_t n_rows, int64_t n_cols,
   int64_t row_start, int64_t col_start
 ) : Dense(n_rows, n_cols) {
-  add_kernel_task(func, *this, x, row_start, col_start);
+  add_kernel_task(kernel, *this, params, row_start, col_start);
 }
 
-const Dense& Dense::operator=(const double a) {
+Dense& Dense::operator=(const double a) {
   add_assign_task(*this, a);
   return *this;
 }
