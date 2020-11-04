@@ -70,6 +70,10 @@ bool is_admissible_nd_morton(
   double admis
 );
 
+ namespace starsh {
+   
+ }
+
 } // namespace hicma
 
 #endif // hicma_functions_h

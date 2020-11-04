@@ -19,6 +19,7 @@ list(
     "h_lu"
     "h_qr"
     "rsvd"
+    "hicmat-matern"
 )
 foreach(EXECUTABLE ${EXECUTABLES})
     add_executable(${EXECUTABLE} ${EXECUTABLE}.cpp)
