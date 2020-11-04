@@ -22,7 +22,12 @@ function(find_or_download PACKAGE)
     if(${ARGS_PKG_CONFIG})
         find_package(PkgConfig REQUIRED)
         set(ENV{PKG_CONFIG_PATH} ${DEPENDENCY_INSTALL_PREFIX}/lib/pkgconfig)
-        pkg_check_modules(${PACKAGE} IMPORTED_TARGET ${PACKAGE}-${ARGS_VERSION})
+        if(${ARGS_VERSION})
+            set(PC_FILE ${PACKAGE}-${ARGS_VERSION})
+        else()
+            set(PC_FILE ${PACKAGE})
+        endif()
+        pkg_check_modules(${PACKAGE} IMPORTED_TARGET ${PC_FILE})
     else()
         # Update search path and use regular find_package to add dependency
         find_package(
@@ -78,11 +83,7 @@ function(find_or_download PACKAGE)
         endif()
 
         if(${ARGS_PKG_CONFIG})
-            find_package(PkgConfig REQUIRED)
-            set(ENV{PKG_CONFIG_PATH} ${DEPENDENCY_INSTALL_PREFIX}/lib/pkgconfig)
-            pkg_check_modules(${PACKAGE}
-                REQUIRED IMPORTED_TARGET ${PACKAGE}-${ARGS_VERSION}
-            )
+            pkg_check_modules(${PACKAGE} REQUIRED IMPORTED_TARGET ${PC_FILE})
         else()
             # Update search path and use regular find_package to add dependency
             find_package(${PACKAGE}
