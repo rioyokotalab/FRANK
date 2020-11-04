@@ -78,7 +78,7 @@ find_or_download(YOMM2)
 list(APPEND HICMA_DEPENDENCIES YOMM2::yomm2)
 
 # stars-H dependency
-find_or_download(starsh PKG_CONFIG)
+find_or_download(starsh)
 link_directories(${starsh_LIBRARY_DIRS})
 include_directories(${starsh_INCLUDE_DIRS})
 
