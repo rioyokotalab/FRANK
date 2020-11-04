@@ -77,6 +77,10 @@ endif()
 find_or_download(YOMM2)
 list(APPEND HICMA_DEPENDENCIES YOMM2::yomm2)
 
+# stars-H dependency
+find_or_download(starsh)
+list(APPEND HICMA_DEPENDENCIES starsh)
+
 
 ## Main source tree
 add_subdirectory(src)
