@@ -44,7 +44,6 @@ int main(int argc, char** argv) {
 
   starsh::matern_kernel_prepare(N, beta, nu, noise, sigma, wave_k, add_diag);
 
-
   Hierarchical(starsh::matern_kernel_fill, randx, N, N, rank, nleaf, admis,
                nblocks, nblocks, basis);
   
