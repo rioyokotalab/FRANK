@@ -7,7 +7,12 @@
 #include <cstdint>
 #include <random>
 #include <vector>
+#include <fstream>
 
+#include <starsh.h>
+#include <starsh-randtlr.h>
+#include <starsh-electrodynamics.h>
+#include <starsh-spatial.h>
 
 namespace hicma
 {
@@ -133,6 +138,52 @@ void helmholtznd(
     }
   }
 }
+  
+std::vector<std::string> split_line(const std::string& s, char c) {
+  std::vector<std::string> tokens;
+  
+  int i = 0;
+  int j = s.find(c);
+
+  while (j >= 0) {
+    tokens.push_back(s.substr(i, j-i));
+    i = ++j;
+    j = s.find(c, j);
+    
+    if (j < 0) {
+      tokens.push_back(s.substr(i, s.length()));
+    }
+  }
+
+  return tokens;
+}
+
+void read_hicmat(std::string filename, Dense& A) {
+  int64_t n, nb;
+  std::fstream file;
+  std::string line;
+  file.open(filename, std::ios::in);
+  
+  std::getline(file, line);  
+  auto tokens = split_line(line, ',');
+  n = stoi(tokens[0]);
+  nb = stoi(tokens[1]);
+  
+  while (std::getline(file, line)) {
+    int i, j;
+    double num;
+    
+    auto tokens1 = split_line(line, ',');
+    i = stoi(tokens1[0]);
+    j = stoi(tokens1[1]);
+    num = stod(tokens1[2]);
+
+    A(i, j) = num;
+  }
+
+  file.close();
+}
+  
 
 bool is_admissible_nd(
   const std::vector<std::vector<double>>& x,
@@ -188,5 +239,7 @@ bool is_admissible_nd_morton(
   return (std::max(diamI, diamJ) <= (admis * dist));
 }
 
+  namespace starsh {
+  }
 
 } // namespace hicma
