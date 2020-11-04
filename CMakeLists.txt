@@ -78,8 +78,8 @@ find_or_download(YOMM2)
 list(APPEND HICMA_DEPENDENCIES YOMM2::yomm2)
 
 # stars-H dependency
-# find_or_download(stars-h)
-# list(APPEND HICMA_DEPENDENCIES stars-h)
+find_or_download(stars-h PKG_CONFIG)
+list(APPEND HICMA_DEPENDENCIES stars-h)
 
 ## Main source tree
 add_subdirectory(src)

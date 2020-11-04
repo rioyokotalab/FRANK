@@ -5,6 +5,12 @@
 #include <vector>
 
 
+#include <starsh.h>
+#include <starsh-randtlr.h>
+#include <starsh-electrodynamics.h>
+#include <starsh-spatial.h>
+
+
 namespace hicma
 {
 
@@ -71,7 +77,11 @@ bool is_admissible_nd_morton(
 );
 
  namespace starsh {
-   
+   void matern_kernel_prepare(int64_t N, double beta, double nu, double noise,
+                              double sigma, double wave_k, int64_t add_diag);
+   void matern_kernel_fill(double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+                           const std::vector<std::vector<double>>& x,
+                           int64_t row_start, int64_t col_start);
  }
 
 } // namespace hicma

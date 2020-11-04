@@ -40,10 +40,12 @@ int main(int argc, char** argv) {
   double wave_k = 1.0;
   int add_diag = 27000;
 
+  std::vector<std::vector<double>> randx{get_sorted_random_vector(N)};
+
   starsh::matern_kernel_prepare(N, beta, nu, noise, sigma, wave_k, add_diag);
 
 
-  Hierarchical(starsh::matern_kernel_fill, index, N, N, rank, nleaf, admis,
+  Hierarchical(starsh::matern_kernel_fill, randx, N, N, rank, nleaf, admis,
                nblocks, nblocks, basis);
   
   return 0;
