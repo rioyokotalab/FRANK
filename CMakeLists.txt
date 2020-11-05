@@ -5,8 +5,6 @@ project(HICMA
     VERSION 1.0
 )
 
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
 # Use Release build by default
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
