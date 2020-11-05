@@ -66,7 +66,6 @@ include(find_or_download)
 find_package(OpenMP)
 if(OpenMP_FOUND)
   list(APPEND HICMA_OPTIONS ${OpenMP_CXX_FLAGS})
-  list(APPEND HICMA_LFLAGS ${OpenMP_CXX_FLAGS})
 endif()
 
 # StarPU

@@ -22,16 +22,27 @@ list(
   # "blr-lu-exp3d"
   # "kernel-test"
 )
-if(OpenMP_FOUND)
-  list(APPEND EXECUTABLES "forkjoin_tlr_qr")
-  list(APPEND EXECUTABLES "forkjoin_blr_qr")
-  list(APPEND EXECUTABLES "taskbased_tlr_qr")
-endif()
 foreach(EXECUTABLE ${EXECUTABLES})
   add_executable(${EXECUTABLE} ${EXECUTABLE}.cpp)
   target_link_libraries(${EXECUTABLE} hicma stdc++ m dl)
-  target_link_options(${EXECUTABLE} PRIVATE ${HICMA_LFLAGS})
   target_compile_definitions(${EXECUTABLE} PRIVATE ${HICMA_DEFINITIONS})
   target_compile_features(${EXECUTABLE} PRIVATE ${HICMA_FEATURES})
   target_compile_options(${EXECUTABLE} PRIVATE ${HICMA_OPTIONS})
 endforeach()
+
+# OpenMP multithreaded execution files
+if(OpenMP_FOUND)
+  list(
+    APPEND MULTITHREADED_EXECUTABLES
+    "forkjoin_blr_qr"
+    "forkjoin_tlr_qr"
+    "taskbased_tlr_qr"
+  )
+foreach(EXECUTABLE ${MULTITHREADED_EXECUTABLES})
+    add_executable(${EXECUTABLE} ${EXECUTABLE}.cpp)
+    target_link_libraries(${EXECUTABLE} hicma stdc++ m dl ${OpenMP_CXX_LIB_NAMES})
+    target_compile_definitions(${EXECUTABLE} PRIVATE ${HICMA_DEFINITIONS})
+    target_compile_features(${EXECUTABLE} PRIVATE ${HICMA_FEATURES})
+    target_compile_options(${EXECUTABLE} PRIVATE ${HICMA_OPTIONS})
+  endforeach()
+endif()
