@@ -4,13 +4,6 @@
 #include <cstdint>
 #include <vector>
 
-
-#include <starsh.h>
-#include <starsh-randtlr.h>
-#include <starsh-electrodynamics.h>
-#include <starsh-spatial.h>
-
-
 namespace hicma
 {
 
