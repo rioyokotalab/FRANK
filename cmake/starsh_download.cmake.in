@@ -12,5 +12,5 @@ ExternalProject_Add(${PROJECT_NAME}
                       -DTESTING=OFF
                       -DEXAMPLES=OFF
                       -DMPI=OFF
-  
-  )
+                      -DCMAKE_POSITION_INDEPENDENT_CODE=ON  
+)
