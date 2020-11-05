@@ -11,5 +11,7 @@ ExternalProject_Add(${PROJECT_NAME}
                       -DSTARPU=OFF
                       -DTESTING=OFF
                       -DEXAMPLES=OFF
+                      -DMPI=OFF
+                      -DCMAKE_C_FLAGS= -fPIC
   
   )
