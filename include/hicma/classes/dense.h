@@ -112,7 +112,7 @@ class Dense : public Matrix {
   explicit Dense(const Matrix& A);
 
   /**
-   * @brief Move from a `MatrixProxy` instance
+   * @brief Move from a `MatrixProxy` instance containing a `Dense` matrix
    *
    * @param A
    * `MatrixProxy` that must contain a `Dense` instance.
@@ -147,17 +147,17 @@ class Dense : public Matrix {
    * @brief Construct a new `Dense` object from a kernel function
    *
    * @param kernel
-   * Kernel used to compute matrix entries from the
+   * Kernel used to compute matrix entries from together with \p params.
    * @param params
-   * Vector with parameters used as input to the kernel
+   * Vector with parameters used as input to the kernel.
    * @param n_rows
    * Number of rows of the new matrix.
    * @param n_cols
    * Number of columns of the new matrix.
    * @param row_start
-   * Starting index into the vector params of the rows of the new matrix.
+   * Starting index into the vector \p params of the rows of the new matrix.
    * @param col_start
-   * Starting index into the vector params of the columns of the new matrix.
+   * Starting index into the vector \p params of the columns of the new matrix.
    *
    * The elements of the new `Dense` matrix will be calculated according to the
    * kernel function as well as the vector of values passed to this function.

@@ -73,7 +73,7 @@ class LowRank : public Matrix {
   LowRank& operator=(LowRank&& A) = default;
 
   /**
-   * @brief Move from a `MatrixProxy` instance
+   * @brief Move from a `MatrixProxy` instance containing a `LowRank` matrix
    *
    * @param A
    * `MatrixProxy` that must contain a `LowRank` instance.
