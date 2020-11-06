@@ -60,11 +60,11 @@ std::vector<ClusterTree>::const_iterator ClusterTree::end() const {
   return children.end();
 }
 
-const ClusterTree& ClusterTree::operator()(int64_t i, int64_t j) const {
+ClusterTree& ClusterTree::operator()(int64_t i, int64_t j) {
   return children[i*block_dim[1] + j];
 }
 
-ClusterTree& ClusterTree::operator()(int64_t i, int64_t j) {
+const ClusterTree& ClusterTree::operator()(int64_t i, int64_t j) const {
   return children[i*block_dim[1] + j];
 }
 
