@@ -73,13 +73,13 @@ class Hierarchical : public Matrix {
   );
 
   // Additional operators
+  const MatrixProxy& operator[](const std::array<int64_t, 2>& pos) const;
+
+  MatrixProxy& operator[](const std::array<int64_t, 2>& pos);
+
   const MatrixProxy& operator[](int64_t i) const;
 
   MatrixProxy& operator[](int64_t i);
-
-  const MatrixProxy& operator[](const ClusterTree& node) const;
-
-  MatrixProxy& operator[](const ClusterTree& node);
 
   const MatrixProxy& operator()(int64_t i, int64_t j) const;
 
