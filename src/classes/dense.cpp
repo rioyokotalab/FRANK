@@ -30,8 +30,11 @@ using yorel::yomm2::virtual_;
 namespace hicma
 {
 
+uint64_t next_unique_id = 0;
+
 Dense::Dense(const Dense& A)
-: Matrix(A), dim{A.dim[0], A.dim[1]}, stride(A.dim[1]), rel_start{0, 0}
+: Matrix(A), dim{A.dim[0], A.dim[1]}, stride(A.dim[1]), rel_start{0, 0},
+  unique_id(next_unique_id++)
 {
   timing::start("Dense cctor");
   data = std::make_shared<DataHandler>(dim[0], dim[1], 0);
@@ -49,6 +52,7 @@ Dense& Dense::operator=(const Dense& A) {
   rel_start = {0, 0};
   data_ptr = &(*data)[0];
   fill_dense_from(A, *this);
+  unique_id = next_unique_id++;
   timing::stop("Dense copy assignment");
   return *this;
 }
@@ -56,7 +60,7 @@ Dense& Dense::operator=(const Dense& A) {
 Dense::Dense(const Matrix& A)
 : Matrix(A), dim{get_n_rows(A), get_n_cols(A)}, stride(dim[1]),
   data(std::make_shared<DataHandler>(dim[0], dim[1], 0)),
-  rel_start{0, 0}, data_ptr(&(*data)[0])
+  rel_start{0, 0}, data_ptr(&(*data)[0]), unique_id(next_unique_id++)
 {
   fill_dense_from(A, *this);
 }
@@ -110,7 +114,7 @@ define_method(Dense&&, move_from_dense, (Matrix& A)) {
 }
 
 Dense::Dense(int64_t n_rows, int64_t n_cols)
-: dim{n_rows, n_cols}, stride(dim[1]) {
+: dim{n_rows, n_cols}, stride(dim[1]), unique_id(next_unique_id++) {
   timing::start("Dense alloc");
   data = std::make_shared<DataHandler>(dim[0], dim[1], 0);
   rel_start = {0, 0};
@@ -181,15 +185,8 @@ Dense Dense::shallow_copy() const {
   out.data = data;
   out.rel_start = rel_start;
   out.data_ptr = data_ptr;
+  out.unique_id = unique_id;
   return out;
-}
-
-bool Dense::is_shared_with(const Dense& A) const {
-  bool shared = (data == A.data);
-  shared &= (data_ptr == A.data_ptr);
-  shared &= (rel_start == A.rel_start);
-  shared &= (dim == A.dim);
-  return shared;
 }
 
 bool Dense::is_submatrix() const {
@@ -198,6 +195,8 @@ bool Dense::is_submatrix() const {
   out &= (data->size() == uint64_t(dim[0] * dim[1]));
   return !out;
 }
+
+uint64_t Dense::id() const { return unique_id; }
 
 std::vector<Dense> Dense::split(
   const std::vector<IndexRange>& row_ranges,
@@ -228,6 +227,7 @@ std::vector<Dense> Dense::split(
         child.data_ptr = &(*child.data)[
           child.rel_start[0]*child.stride + child.rel_start[1]
         ];
+        child.unique_id = next_unique_id++;
         out[i*col_ranges.size()+j] = std::move(child);
       }
     }

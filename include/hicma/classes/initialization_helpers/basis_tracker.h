@@ -14,73 +14,12 @@
 
 
 /**
- * @brief General namespace of the HiCMA library
+ * @brief Namespace of the C++ standard library
+ *
+ * Some template specializations are added to utilize standard library
+ * containers with HiCMA custom classes.
  */
-namespace hicma
-{
-
-class Dense;
-
-class BasisKey {
- public:
-  const double* data_ptr;
-  // Hold a shared version of the origin of the key. This way we can avoid the
-  // memory from being released as long as the key is in use. Important since we
-  // use the pointer to hash and compare the keys.
-  Dense D;
-  std::array<int64_t, 2> dim;
-
-  // Special member functions
-  BasisKey() = default;
-
-  virtual ~BasisKey() = default;
-
-  BasisKey(const BasisKey& A);
-
-  BasisKey& operator=(const BasisKey& A);
-
-  BasisKey(BasisKey&& A) = default;
-
-  BasisKey& operator=(BasisKey&& A) = default;
-
-  BasisKey(const Dense&);
-};
-
-bool matrix_is_tracked(std::string tracker, const Dense& key);
-
-void register_matrix(
-  std::string tracker, const Dense& key, Dense&& content=Dense()
-);
-
-Dense& get_tracked_content(std::string tracker, const Dense& key);
-
-bool matrix_is_tracked(
-  std::string tracker, const Dense& key1, const Dense& key2
-);
-
-void register_matrix(
-  std::string tracker,
-  const Dense& key1, const Dense& key2,
-  Dense&& content=Dense()
-);
-
-Dense& get_tracked_content(
-  std::string tracker, const Dense& key1, const Dense& key2
-);
-
-void clear_tracker(std::string tracker);
-
-void clear_trackers();
-
-} // namespace hicma
-
-
 namespace std {
-  template <>
-  struct hash<hicma::BasisKey> {
-    size_t operator()(const hicma::BasisKey& key) const;
-  };
-
   template <>
   struct hash<hicma::IndexRange> {
     size_t operator()(const hicma::IndexRange& key) const;
@@ -94,12 +33,35 @@ namespace std {
   };
 }
 
+
+/**
+ * @brief General namespace of the HiCMA library
+ */
 namespace hicma
 {
 
 class ClusterTree;
+class Dense;
 
-bool operator==(const BasisKey& A, const BasisKey& B);
+bool matrix_is_tracked(std::string tracker, const Dense& A);
+
+void register_matrix(
+  std::string tracker, const Dense& A, Dense&& content=Dense()
+);
+
+Dense& get_tracked_content(std::string tracker, const Dense& A);
+
+bool matrix_is_tracked(std::string tracker, const Dense& A, const Dense& B);
+
+void register_matrix(
+  std::string tracker, const Dense& A, const Dense& B, Dense&& content=Dense()
+);
+
+Dense& get_tracked_content(std::string tracker, const Dense& A, const Dense& B);
+
+void clear_tracker(std::string tracker);
+
+void clear_trackers();
 
 bool operator==(const IndexRange& A, const IndexRange& B);
 

@@ -990,7 +990,7 @@ class GEMM_task : public Task {
 };
 
 BasisTracker<
-  BasisKey, BasisTracker<BasisKey, std::shared_ptr<GEMM_task>>
+  uint64_t, BasisTracker<uint64_t, std::shared_ptr<GEMM_task>>
 > gemm_tracker;
 
 void add_gemm_task(
@@ -1000,17 +1000,17 @@ void add_gemm_task(
   if (
     is_tracking
     && !C.is_submatrix()
-    && gemm_tracker.has_key(A) && gemm_tracker[A].has_key(B)
-    && gemm_tracker[A][B]->args.alpha == alpha
-    && gemm_tracker[A][B]->args.beta == beta
-    && gemm_tracker[A][B]->args.TransA == TransA
-    && gemm_tracker[A][B]->args.TransB == TransB
+    && gemm_tracker.has_key(A.id()) && gemm_tracker[A.id()].has_key(B.id())
+    && gemm_tracker[A.id()][B.id()]->args.alpha == alpha
+    && gemm_tracker[A.id()][B.id()]->args.beta == beta
+    && gemm_tracker[A.id()][B.id()]->args.TransA == TransA
+    && gemm_tracker[A.id()][B.id()]->args.TransB == TransB
   ) {
-    if (C.is_shared_with(gemm_tracker[A][B]->modified[0])) {
+    if (C.id() == gemm_tracker[A.id()][B.id()]->modified[0].id()) {
       return;
     } else
     if (beta == 0) {
-      C = gemm_tracker[A][B]->modified[0].shallow_copy();
+      C = gemm_tracker[A.id()][B.id()]->modified[0].shallow_copy();
       return;
     }
   }
@@ -1018,7 +1018,7 @@ void add_gemm_task(
     A, B, C, alpha, beta, TransA, TransB
   );
   if (is_tracking && !C.is_submatrix()) {
-    gemm_tracker[A][B] = task;
+    gemm_tracker[A.id()][B.id()] = task;
   }
   add_task(task);
 }
