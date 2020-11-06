@@ -49,23 +49,23 @@ Hierarchical::Hierarchical(int64_t n_row_blocks, int64_t n_col_blocks)
 
 Hierarchical::Hierarchical(
   const ClusterTree& node,
-  MatrixInitializer& initer
+  MatrixInitializer& initializer
 ) : dim(node.block_dim), data(dim[0]*dim[1]) {
   for (const ClusterTree& child : node) {
-    if (initer.is_admissible(child)) {
-      (*this)[child] = initer.get_compressed_representation(child);
+    if (initializer.is_admissible(child)) {
+      (*this)[child] = initializer.get_compressed_representation(child);
     } else {
       if (child.is_leaf()) {
-        (*this)[child] = initer.get_dense_representation(child);
+        (*this)[child] = initializer.get_dense_representation(child);
       } else {
-        (*this)[child] = Hierarchical(child, initer);
+        (*this)[child] = Hierarchical(child, initializer);
       }
     }
   }
 }
 
 Hierarchical::Hierarchical(
-  void (*func)(
+  void (*kernel)(
     double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
     const std::vector<std::vector<double>>& x,
     int64_t row_start, int64_t col_start
@@ -78,11 +78,11 @@ Hierarchical::Hierarchical(
   int64_t n_row_blocks, int64_t n_col_blocks,
   int64_t row_start, int64_t col_start
 ) {
-  MatrixInitializerKernel initer(func, x, admis, rank);
+  MatrixInitializerKernel initializer(kernel, x, admis, rank);
   ClusterTree cluster_tree(
     {row_start, n_rows}, {col_start, n_cols}, n_row_blocks, n_col_blocks, nleaf
   );
-  *this = Hierarchical(cluster_tree, initer);
+  *this = Hierarchical(cluster_tree, initializer);
 }
 
 Hierarchical::Hierarchical(
@@ -97,8 +97,8 @@ Hierarchical::Hierarchical(
     {row_start, A.dim[0]}, {col_start, A.dim[1]},
     n_row_blocks, n_col_blocks, nleaf
   );
-  MatrixInitializerBlock initer(std::move(A), admis, rank);
-  *this = Hierarchical(cluster_tree, initer);
+  MatrixInitializerBlock initializer(std::move(A), admis, rank);
+  *this = Hierarchical(cluster_tree, initializer);
 }
 
 const MatrixProxy& Hierarchical::operator[](const ClusterTree& node) const {
