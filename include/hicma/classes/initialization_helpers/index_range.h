@@ -6,6 +6,9 @@
 #include <vector>
 
 
+/**
+ * @brief General namespace of the HiCMA library
+ */
 namespace hicma
 {
 

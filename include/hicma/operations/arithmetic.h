@@ -6,6 +6,9 @@
 #include "hicma/classes/matrix_proxy.h"
 
 
+/**
+ * @brief General namespace of the HiCMA library
+ */
 namespace hicma
 {
 

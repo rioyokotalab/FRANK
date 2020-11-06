@@ -2,6 +2,9 @@
 #define hicma_classes_matrix_h
 
 
+/**
+ * @brief General namespace of the HiCMA library
+ */
 namespace hicma
 {
 

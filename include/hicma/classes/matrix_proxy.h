@@ -4,6 +4,9 @@
 #include <memory>
 
 
+/**
+ * @brief General namespace of the HiCMA library
+ */
 namespace hicma
 {
 

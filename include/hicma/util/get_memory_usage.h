@@ -2,6 +2,9 @@
 #define hicma_util_get_memory_usage_h
 
 
+/**
+ * @brief General namespace of the HiCMA library
+ */
 namespace hicma
 {
 
