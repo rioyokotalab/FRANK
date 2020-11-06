@@ -44,8 +44,11 @@ int main(int argc, char** argv) {
 
   starsh::matern_kernel_prepare(N, beta, nu, noise, sigma, wave_k, add_diag);
 
+  print("Being compression");
+  timing::start("Hierarchical compression");
   Hierarchical(starsh::matern_kernel_fill, randx, N, N, rank, nleaf, admis,
                nblocks, nblocks, basis);
+  timing::stop("Hierarchical compression");
   
   return 0;
 }

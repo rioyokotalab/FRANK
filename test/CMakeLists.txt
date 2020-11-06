@@ -7,7 +7,7 @@ foreach(TEST ${GTEST_TESTS})
     target_compile_features(${TEST}_test PRIVATE ${HICMA_FEATURES})
     target_compile_options(${TEST}_test PRIVATE ${HICMA_OPTIONS})
 endforeach()
-
+  
 # Legacy execution files
 list(
     APPEND EXECUTABLES
@@ -20,7 +20,10 @@ list(
     "h_qr"
     "rsvd"
     "hicmat-matern"
+    "test-starsh"
 )
+  
+
 foreach(EXECUTABLE ${EXECUTABLES})
     add_executable(${EXECUTABLE} ${EXECUTABLE}.cpp)
     target_link_libraries(${EXECUTABLE} hicma)
@@ -28,3 +31,6 @@ foreach(EXECUTABLE ${EXECUTABLES})
     target_compile_features(${EXECUTABLE} PRIVATE ${HICMA_FEATURES})
     target_compile_options(${EXECUTABLE} PRIVATE ${HICMA_OPTIONS})
 endforeach()
+
+target_link_libraries(hicmat-matern starsh::starsh)
+target_link_libraries(test-starsh starsh::starsh)
