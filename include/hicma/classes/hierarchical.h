@@ -22,7 +22,6 @@
 namespace hicma
 {
 
-class BasisKey;
 class Dense;
 class ClusterTree;
 class MatrixInitializer;

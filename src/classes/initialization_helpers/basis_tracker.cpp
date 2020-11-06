@@ -20,16 +20,6 @@ using yorel::yomm2::virtual_;
 namespace std
 {
 
-size_t hash<hicma::BasisKey>::operator()(const hicma::BasisKey& key) const {
-  return (
-    ((
-      hash<const double*>()(key.data_ptr)
-      ^ (hash<int64_t>()(key.dim[0]) << 1)
-    ) >> 1)
-    ^ (hash<int64_t>()(key.dim[1]) << 1)
-  );
-}
-
 size_t hash<hicma::IndexRange>::operator()(const hicma::IndexRange& key) const {
   return (hash<int64_t>()(key.start) ^ (hash<int64_t>()(key.n) << 1));
 }
@@ -58,79 +48,62 @@ bool less<hicma::IndexRange>::operator()(
 namespace hicma
 {
 
-BasisKey::BasisKey(const BasisKey& A)
-: data_ptr(A.data_ptr), D(A.D.shallow_copy()), dim(A.dim) {}
-
-BasisKey& BasisKey::operator=(const BasisKey& A) {
-  data_ptr = A.data_ptr;
-  D = A.D.shallow_copy();
-  dim = A.dim;
-  return *this;
-}
-
-BasisKey::BasisKey(const Dense& A)
-: data_ptr(&A), D(A.shallow_copy()), dim(A.dim) {}
-
-bool operator==(const BasisKey& A, const BasisKey& B) {
-  return (A.data_ptr == B.data_ptr) && (A.dim == B.dim);
-}
-
 bool operator==(const IndexRange& A, const IndexRange& B) {
   return (A.start == B.start) && (A.n == B.n);
 }
 
-std::map<std::string, BasisTracker<BasisKey>> single_trackers;
+std::map<std::string, BasisTracker<uint64_t>> single_trackers;
 
-bool matrix_is_tracked(std::string tracker, const Dense& key) {
+bool matrix_is_tracked(std::string tracker, const Dense& A) {
   if (single_trackers.find(tracker) == single_trackers.end()) {
     return false;
   } else {
-    return single_trackers[tracker].has_key(key);
+    return single_trackers[tracker].has_key(A.id());
   }
 }
 
 void register_matrix(
-  std::string tracker, const Dense& key, Dense&& content
+  std::string tracker, const Dense& A, Dense&& content
 ) {
   if (single_trackers.find(tracker) == single_trackers.end()) {
-    single_trackers[tracker] = BasisTracker<BasisKey>();
+    single_trackers[tracker] = BasisTracker<uint64_t>();
   }
-  single_trackers[tracker][key] = std::move(content);
+  single_trackers[tracker][A.id()] = std::move(content);
 }
 
-Dense& get_tracked_content(std::string tracker, const Dense& key) {
-  return single_trackers[tracker][key];
+Dense& get_tracked_content(std::string tracker, const Dense& A) {
+  return single_trackers[tracker][A.id()];
 }
 
 std::map<
-  std::string, BasisTracker<BasisKey, BasisTracker<BasisKey>>
+  std::string, BasisTracker<uint64_t, BasisTracker<uint64_t>>
 > double_trackers;
 
 bool matrix_is_tracked(
-  std::string tracker, const Dense& key1, const Dense& key2
+  std::string tracker, const Dense& A, const Dense& B
 ) {
   if (double_trackers.find(tracker) == double_trackers.end()) {
     return false;
   } else {
-    if (!double_trackers[tracker].has_key(key1)) return false;
-    if (!double_trackers[tracker][key1].has_key(key2)) return false;
+    if (!double_trackers[tracker].has_key(A.id())) return false;
+    if (!double_trackers[tracker][A.id()].has_key(B.id())) return false;
     return true;
   }
 }
 
 void register_matrix(
-  std::string tracker, const Dense& key1, const Dense& key2, Dense&& content
+  std::string tracker, const Dense& A, const Dense& B, Dense&& content
 ) {
   if (double_trackers.find(tracker) == double_trackers.end()) {
-    double_trackers[tracker] = BasisTracker<BasisKey, BasisTracker<BasisKey>>();
+    double_trackers[tracker] = BasisTracker<uint64_t, BasisTracker<uint64_t>>();
   }
-  double_trackers[tracker][key1][key2] = std::move(content);
+  double_trackers[tracker][A.id()][B.id()] = std::move(content);
 }
 
 Dense& get_tracked_content(
-  std::string tracker, const Dense& key1, const Dense& key2
+  std::string tracker, const Dense& A, const Dense& B
 ) {
-  return double_trackers[tracker][key1][key2];
+  return double_trackers[tracker][A.id()][B.id()];
 }
 
 void clear_tracker(std::string tracker) { single_trackers.erase(tracker); }

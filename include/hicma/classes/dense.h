@@ -26,7 +26,6 @@ class DataHandler;
 class IndexRange;
 class Task;
 
-
 /**
  * @brief Class handling a regular dense matrix
  *
@@ -61,6 +60,10 @@ class Dense : public Matrix {
   // need to be used every time the indexing operator is called, leading to
   // measurable performance decrease.
   double* data_ptr = nullptr;
+  // Shared-unique ID. Shared with Dense matrices that this matrix shares its
+  // data with, otherwise unique.
+  // TODO Consider moving this to the DataHandler class.
+  uint64_t unique_id = -1;
  public:
   Dense() = default;
 
@@ -286,21 +289,6 @@ class Dense : public Matrix {
   Dense shallow_copy() const;
 
   /**
-   * @brief Check if this `Dense` instance is shared with another instance
-   *
-   * @param A
-   * `Dense` instance to check sharedness for
-   * @return true
-   * if this `Dense` matrix is shared with the instance \p A
-   * @return false
-   * if the matrices are not shared
-   *
-   * Shared here means that they manage the exact same memory, so that
-   * modifications to one will also modify the other.
-   */
-  bool is_shared_with(const Dense& A) const;
-
-  /**
    * @brief Check if this `Dense` instance is a submatrix of a larger matrix.
    *
    * @return true if this `Dense` instance is a part of a larger matrix
@@ -312,6 +300,19 @@ class Dense : public Matrix {
    * covers a smaller part.
    */
   bool is_submatrix() const;
+
+  // TODO Consider adding conversion operator to uint64_t. Risky though...
+  /**
+   * @brief Get the shared-unique id of this `Dense` instance
+   *
+   * @return uint64_t
+   * Shared-unique ID of the `Dense` instance.
+   *
+   * Shared-unique means that it is unique module shared `Dense` instances. Two
+   * `Dense` instances for which ::is_shared() returns true will have the same
+   * ID. Otherwise, the ID will always be unique.
+   */
+  uint64_t id() const;
 
   /**
    * @brief Split the matrix according to row and column index ranges
