@@ -53,12 +53,12 @@ Hierarchical::Hierarchical(
 ) : dim(node.block_dim), data(dim[0]*dim[1]) {
   for (const ClusterTree& child : node) {
     if (initializer.is_admissible(child)) {
-      (*this)[child] = initializer.get_compressed_representation(child);
+      (*this)[child.rel_pos] = initializer.get_compressed_representation(child);
     } else {
       if (child.is_leaf()) {
-        (*this)[child] = initializer.get_dense_representation(child);
+        (*this)[child.rel_pos] = initializer.get_dense_representation(child);
       } else {
-        (*this)[child] = Hierarchical(child, initializer);
+        (*this)[child.rel_pos] = Hierarchical(child, initializer);
       }
     }
   }
@@ -101,12 +101,14 @@ Hierarchical::Hierarchical(
   *this = Hierarchical(cluster_tree, initializer);
 }
 
-const MatrixProxy& Hierarchical::operator[](const ClusterTree& node) const {
-  return (*this)(node.rel_pos[0], node.rel_pos[1]);
+const MatrixProxy& Hierarchical::operator[](
+  const std::array<int64_t, 2>& pos
+) const {
+  return (*this)(pos[0], pos[1]);
 }
 
-MatrixProxy& Hierarchical::operator[](const ClusterTree& node) {
-  return (*this)(node.rel_pos[0], node.rel_pos[1]);
+MatrixProxy& Hierarchical::operator[](const std::array<int64_t, 2>& pos) {
+  return (*this)(pos[0], pos[1]);
 }
 
 const MatrixProxy& Hierarchical::operator[](int64_t i) const {
