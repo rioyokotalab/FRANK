@@ -12,9 +12,6 @@
 namespace hicma
 {
 
-class ClusterTree;
-class Hierarchical;
-class LowRank;
 class Matrix;
 
 int64_t get_n_rows(const Matrix&);
