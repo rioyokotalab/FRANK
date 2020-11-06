@@ -1,3 +1,9 @@
+/**
+ * @file low_rank.h
+ * @brief Include the `LowRank` matrix class.
+ *
+ * @copyright Copyright (c) 2020
+ */
 #ifndef hicma_classes_low_rank_h
 #define hicma_classes_low_rank_h
 

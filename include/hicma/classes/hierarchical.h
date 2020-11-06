@@ -1,6 +1,6 @@
 /**
  * @file hierarchical.h
- * @brief Include the `Hierarchical` class and some peripherals.
+ * @brief Include the `Hierarchical` matrix class and some peripherals.
  *
  * @copyright Copyright (c) 2020
  */

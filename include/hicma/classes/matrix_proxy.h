@@ -1,3 +1,9 @@
+/**
+ * @file matrix_proxy.h
+ * @brief Include the `MatrixProxy` class.
+ *
+ * @copyright Copyright (c) 2020
+ */
 #ifndef hicma_classes_matrix_proxy_h
 #define hicma_classes_matrix_proxy_h
 

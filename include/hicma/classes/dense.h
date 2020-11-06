@@ -1,3 +1,9 @@
+/**
+ * @file dense.h
+ * @brief Include the `Dense` matrix class.
+ *
+ * @copyright Copyright (c) 2020
+ */
 #ifndef hicma_classes_dense_h
 #define hicma_classes_dense_h
 
