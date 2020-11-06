@@ -1,16 +1,13 @@
 #ifndef hicma_classes_initialization_helpers_basis_tracker_h
 #define hicma_classes_initialization_helpers_basis_tracker_h
 
-#include "hicma/classes/matrix.h"
 #include "hicma/classes/dense.h"
 #include "hicma/classes/initialization_helpers/index_range.h"
 
 #include <cstdint>
 #include <functional>
-#include <set>
 #include <string>
-#include <tuple>
-#include <vector>
+#include <unordered_map>
 
 
 /**
@@ -24,13 +21,6 @@ namespace std {
   struct hash<hicma::IndexRange> {
     size_t operator()(const hicma::IndexRange& key) const;
   };
-
-  template <>
-  struct less<hicma::IndexRange> {
-    bool operator()(
-      const hicma::IndexRange& a, const hicma::IndexRange& b
-    ) const;
-  };
 }
 
 
@@ -39,9 +29,6 @@ namespace std {
  */
 namespace hicma
 {
-
-class ClusterTree;
-class Dense;
 
 bool matrix_is_tracked(std::string tracker, const Dense& A);
 
@@ -77,45 +64,6 @@ class BasisTracker {
   Content& operator[](const Key& key) { return map[key]; }
 
   void clear() { map.clear(); }
-};
-
-class NestedTracker {
- public:
-  std::vector<NestedTracker> children;
-  IndexRange index_range;
-  std::set<IndexRange> associated_ranges;
-
-  // Special member functions
-  NestedTracker() = default;
-
-  virtual ~NestedTracker() = default;
-
-  NestedTracker(const NestedTracker& A) = default;
-
-  NestedTracker& operator=(const NestedTracker& A) = default;
-
-  NestedTracker(NestedTracker&& A) = default;
-
-  NestedTracker& operator=(NestedTracker&& A) = default;
-
-  // Additional constructors
-  NestedTracker(const IndexRange& index_range);
-
-  // Utility methods
-  void register_range(
-    const IndexRange& main_range, const IndexRange& associated_range
-  );
-
-  void add_associated_range(const IndexRange& associated_range);
-
-  bool contains(const IndexRange& range) const;
-
-  bool is_exactly(const IndexRange& range) const;
-
-  void complete_index_range();
-
- private:
-  void sort_children();
 };
 
 } // namespace hicma
