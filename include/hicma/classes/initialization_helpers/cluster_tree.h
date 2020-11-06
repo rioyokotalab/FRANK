@@ -35,11 +35,11 @@ class ClusterTree {
 
   ~ClusterTree() = default;
 
-  ClusterTree(const ClusterTree& A);
+  ClusterTree(const ClusterTree& A) = delete;
 
   ClusterTree& operator=(const ClusterTree& A) = delete;
 
-  ClusterTree(ClusterTree&& A) = delete;
+  ClusterTree(ClusterTree&& A) = default;
 
   ClusterTree& operator=(ClusterTree&& A) = default;
 
