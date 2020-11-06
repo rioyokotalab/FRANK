@@ -54,15 +54,6 @@ class ClusterTree {
     ClusterTree* parent=nullptr
   );
 
-  ClusterTree(
-    const Hierarchical& A,
-    int64_t i_start=0, int64_t j_start=0,
-    int64_t level=0,
-    int64_t i_rel=0, int64_t j_rel=0,
-    int64_t i_abs=0, int64_t j_abs=0,
-    ClusterTree* parent=nullptr
-  );
-
   // Make class usable as range
   std::vector<ClusterTree>::iterator begin();
 
