@@ -1,3 +1,9 @@
+/**
+ * @file matrix.h
+ * @brief Include the base `Matrix` class.
+ *
+ * @copyright Copyright (c) 2020
+ */
 #ifndef hicma_classes_matrix_h
 #define hicma_classes_matrix_h
 
