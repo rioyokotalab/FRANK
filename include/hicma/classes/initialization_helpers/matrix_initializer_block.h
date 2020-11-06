@@ -6,6 +6,10 @@
 
 #include <cstdint>
 
+
+/**
+ * @brief General namespace of the HiCMA library
+ */
 namespace hicma
 {
 

@@ -5,6 +5,9 @@
 #include <string>
 
 
+/**
+ * @brief General namespace of the HiCMA library
+ */
 namespace hicma {
 
 extern std::map<std::string,int> globalCounter;
