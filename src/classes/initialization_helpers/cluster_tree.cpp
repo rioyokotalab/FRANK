@@ -11,16 +11,6 @@
 namespace hicma
 {
 
-ClusterTree::ClusterTree(const ClusterTree& A)
-: rows(A.rows), cols(A.cols), block_dim(A.block_dim), nleaf(A.nleaf),
-  level(A.level), rel_pos(A.rel_pos), abs_pos(A.abs_pos), parent(nullptr),
-  children(A.children)
-{
-  for (ClusterTree& child_node : children) {
-    child_node.parent = this;
-  }
-}
-
 ClusterTree::ClusterTree(
   IndexRange rows, IndexRange cols,
   int64_t n_row_blocks, int64_t n_col_blocks,
