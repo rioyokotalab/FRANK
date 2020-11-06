@@ -88,7 +88,8 @@ class Dense : public Matrix {
   /**
    * @brief Explicit copy/conversion from any `Matrix` type using an \OMM
    *
-   * @param A `Matrix` object to be copied. Any type of matrix can be passed.
+   * @param A
+   * `Matrix` object from which a `Dense` matrix is to be generated.
    *
    * Any class derived from `Matrix` can be passed and a new `Dense` matrix of
    * the same size will be generated from it. If a `Dense` matrix is passed,
@@ -97,7 +98,9 @@ class Dense : public Matrix {
    * `LowRank::V` will be multiplied together to create the new matrix `D`
    * (\f$D=U*S*V\f$).
    *
-   * An \OMM is used so that the type of the
+   * An \OMM is used to select the correct implementation. For new types, a new
+   * specialization of this \OMM will need to be implemented. Read \ext_hicma
+   * for more information.
    *
    * Note that this operator is set to `explicit` so as to avoid inadvertently
    * converting matrices to `Dense` matrices, as doing so would likely cause

@@ -5,9 +5,6 @@ lib
 install
 .env
 dependencies
-# Also ignore documentation, except for the Doxyfile
-docs/*
-!docs/CMakeLists.txt
 
 *.json
 *.pdf
