@@ -82,7 +82,8 @@ class Hierarchical : public Matrix {
   Hierarchical& operator=(Hierarchical&& A) = default;
 
   /**
-   * @brief Move from a `MatrixProxy` instance containing a `Hierarchical` matrix
+   * @brief Move from a `MatrixProxy` instance containing a `Hierarchical`
+   * matrix
    *
    * @param A
    * `MatrixProxy` that must contain a `Hierarchical` instance.
