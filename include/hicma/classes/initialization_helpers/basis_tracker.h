@@ -1,3 +1,14 @@
+/**
+ * @file basis_tracker.h
+ * @brief Include the `BasisTracker class and content related to tracking
+ *
+ * This file defines some utilities for tracking matrices. This is often used to
+ * avoid unnecessary computations or combine calculations related to
+ * `NestedBasis`. It also includes small extensions to the C++ standard library
+ * that allow using the trackers with some HiCMA classes.
+ *
+ * @copyright Copyright (c) 2020
+ */
 #ifndef hicma_classes_initialization_helpers_basis_tracker_h
 #define hicma_classes_initialization_helpers_basis_tracker_h
 
