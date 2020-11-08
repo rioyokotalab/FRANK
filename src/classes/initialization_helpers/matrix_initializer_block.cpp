@@ -18,12 +18,6 @@ MatrixInitializerBlock::MatrixInitializerBlock(
 
 // Utility methods
 void MatrixInitializerBlock::fill_dense_representation(
-  Dense& A, const ClusterTree& node
-) const {
-  fill_dense_representation(A, node.rows, node.cols);
-}
-
-void MatrixInitializerBlock::fill_dense_representation(
   Dense& A, const IndexRange& row_range, const IndexRange& col_range
 ) const {
   for (int64_t i=0; i<A.dim[0]; ++i) {

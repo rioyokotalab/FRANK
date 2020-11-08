@@ -40,11 +40,6 @@ class MatrixInitializer {
   // Additional constructors
   MatrixInitializer(int64_t admis, int64_t rank);
 
-  // Utility methods
-  virtual void fill_dense_representation(
-    Dense& A, const ClusterTree& node
-  ) const = 0;
-
   virtual void fill_dense_representation(
     Dense& A, const IndexRange& row_range, const IndexRange& col_range
   ) const = 0;
