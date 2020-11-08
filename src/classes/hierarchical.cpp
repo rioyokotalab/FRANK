@@ -67,10 +67,10 @@ Hierarchical::Hierarchical(
 Hierarchical::Hierarchical(
   void (*kernel)(
     double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-    const std::vector<std::vector<double>>& x,
+    const std::vector<std::vector<double>>& params,
     int64_t row_start, int64_t col_start
   ),
-  const std::vector<std::vector<double>>& x,
+  const std::vector<std::vector<double>>& params,
   int64_t n_rows, int64_t n_cols,
   int64_t rank,
   int64_t nleaf,
@@ -78,7 +78,7 @@ Hierarchical::Hierarchical(
   int64_t n_row_blocks, int64_t n_col_blocks,
   int64_t row_start, int64_t col_start
 ) {
-  MatrixInitializerKernel initializer(kernel, x, admis, rank);
+  MatrixInitializerKernel initializer(kernel, params, admis, rank);
   ClusterTree cluster_tree(
     {row_start, n_rows}, {col_start, n_cols}, n_row_blocks, n_col_blocks, nleaf
   );
