@@ -32,9 +32,7 @@ int main(int argc, char *argv[])
   double A[A_rows * A_cols];
       
   kernel = starsh_ssdata_block_exp_kernel_3d;
-  info = starsh_ssdata_generate((STARSH_ssdata **)&starsh_data, N, ndim,
-                                beta, nu, noise,
-                                place, sigma);
+  info = starsh_ssdata_generate((STARSH_ssdata **)&starsh_data, N, ndim, beta, nu, noise, place, sigma);
   for (int j = 0; j < N; ++j) {
     starsh_index.push_back(j);
   }
