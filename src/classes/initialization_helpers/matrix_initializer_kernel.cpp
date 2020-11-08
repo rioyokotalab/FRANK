@@ -21,13 +21,6 @@ MatrixInitializerKernel::MatrixInitializerKernel(
 ) : MatrixInitializer(admis, rank), kernel(kernel), x(x) {}
 
 void MatrixInitializerKernel::fill_dense_representation(
-  Dense& A,
-  const ClusterTree& node
-) const {
-  fill_dense_representation(A, node.rows, node.cols);
-}
-
-void MatrixInitializerKernel::fill_dense_representation(
   Dense& A, const IndexRange& row_range, const IndexRange& col_range
 ) const {
   add_kernel_task(kernel, A, x, row_range.start, col_range.start);

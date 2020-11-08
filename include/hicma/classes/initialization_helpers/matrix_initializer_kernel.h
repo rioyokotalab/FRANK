@@ -54,10 +54,6 @@ class MatrixInitializerKernel : public MatrixInitializer {
 
   // Utility methods
   void fill_dense_representation(
-    Dense& A, const ClusterTree& node
-  ) const override;
-
-  void fill_dense_representation(
     Dense& A, const IndexRange& row_range, const IndexRange& col_range
   ) const override;
 };
