@@ -53,27 +53,8 @@ class Hierarchical : public Matrix {
 
   virtual ~Hierarchical() = default;
 
-  /**
-   * @brief Copy constructor
-   *
-   * @param A
-   * `Hierarchical` instance to be copied
-   *
-   * A deep copy if \p A is created.
-   */
   Hierarchical(const Hierarchical& A) = default;
 
-  /**
-   * @brief Copy assignment operator
-   *
-   * @param A
-   * `Hierarchical` instance to be copied
-   *
-   * @return Hierarchical&
-   * Reference to the modified `Hierarchical` instance
-   *
-   * Just as with Hierarchical(const Hierarchical&), a deep copy is created.
-   */
   Hierarchical& operator=(const Hierarchical& A) = default;
 
   Hierarchical(Hierarchical&& A) = default;
@@ -173,10 +154,10 @@ class Hierarchical : public Matrix {
   Hierarchical(
     void (*kernel)(
       double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-      const std::vector<std::vector<double>>& x,
+      const std::vector<std::vector<double>>& params,
       int64_t row_start, int64_t col_start
     ),
-    const std::vector<std::vector<double>>& x,
+    const std::vector<std::vector<double>>& params,
     int64_t n_rows, int64_t n_cols,
     int64_t rank,
     int64_t nleaf,
