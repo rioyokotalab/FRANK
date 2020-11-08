@@ -33,12 +33,4 @@ void MatrixInitializerBlock::fill_dense_representation(
   }
 }
 
-Dense MatrixInitializerBlock::get_dense_representation(
-  const ClusterTree& node
-) const {
-  Dense out(node.rows.n, node.cols.n);
-  fill_dense_representation(out, node.rows, node.cols);
-  return out;
-}
-
 } // namespace hicma

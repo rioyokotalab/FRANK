@@ -49,7 +49,7 @@ class MatrixInitializer {
     Dense& A, const IndexRange& row_range, const IndexRange& col_range
   ) const = 0;
 
-  virtual Dense get_dense_representation(const ClusterTree& node) const = 0;
+  Dense get_dense_representation(const ClusterTree& node) const;
 
   LowRank get_compressed_representation(const ClusterTree& node);
 

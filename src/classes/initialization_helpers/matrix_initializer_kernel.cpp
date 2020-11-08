@@ -33,12 +33,4 @@ void MatrixInitializerKernel::fill_dense_representation(
   add_kernel_task(kernel, A, x, row_range.start, col_range.start);
 }
 
-Dense MatrixInitializerKernel::get_dense_representation(
-  const ClusterTree& node
-) const {
-  Dense representation(node.rows.n, node.cols.n);
-  fill_dense_representation(representation, node.rows, node.cols);
-  return representation;
-}
-
 } // namespace hicma

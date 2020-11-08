@@ -21,6 +21,14 @@ namespace hicma
 MatrixInitializer::MatrixInitializer(int64_t admis, int64_t rank)
 : admis(admis), rank(rank) {}
 
+Dense MatrixInitializer::get_dense_representation(
+  const ClusterTree& node
+) const {
+  Dense representation(node.rows.n, node.cols.n);
+  fill_dense_representation(representation, node.rows, node.cols);
+  return representation;
+}
+
 LowRank MatrixInitializer::get_compressed_representation(
   const ClusterTree& node
 ) {
