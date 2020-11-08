@@ -1,3 +1,13 @@
+/**
+ * @file matrix_initializer.h
+ * @brief Include the `MatrixInitializer` class and a small standard library
+ * extension
+ *
+ * The extension to the C++ standard library allows using HiCMA classes with
+ * some standard library containers.
+ *
+ * @copyright Copyright (c) 2020
+ */
 #ifndef hicma_classes_initialization_helpers_matrix_initializer_h
 #define hicma_classes_initialization_helpers_matrix_initializer_h
 

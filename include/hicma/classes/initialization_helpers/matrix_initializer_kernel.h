@@ -1,9 +1,12 @@
+/**
+ * @file matrix_initializer_kernel.h
+ * @brief Include the `MatrixInitializerKernel` class
+ *
+ * @copyright Copyright (c) 2020
+ */
 #ifndef hicma_classes_initialization_helpers_matrix_initializer_kernel_h
 #define hicma_classes_initialization_helpers_matrix_initializer_kernel_h
 
-#include "hicma/classes/dense.h"
-// TODO Note that this include is only for the enum (NORMAL_BASIS)
-#include "hicma/classes/hierarchical.h"
 #include "hicma/classes/initialization_helpers/matrix_initializer.h"
 
 #include <cstdint>
@@ -17,8 +20,13 @@ namespace hicma
 {
 
 class ClusterTree;
+class Dense;
 class IndexRange;
 
+/**
+ * @brief `MatrixInitializer` specialization initializing matrix elements from a
+ * kernel and parameters
+ */
 class MatrixInitializerKernel : public MatrixInitializer {
  private:
   void (*kernel)(
@@ -42,7 +50,20 @@ class MatrixInitializerKernel : public MatrixInitializer {
 
   MatrixInitializerKernel& operator=(MatrixInitializerKernel&& A) = delete;
 
-  // Additional constructors
+  /**
+   * @brief Construct a new `MatrixInitializerKernel` object
+   *
+   * @param kernel
+   * Kernel to be used to assign matrix elements.
+   * @param params
+   * Vector with parameters used as input to the kernel.
+   * @param admis
+   * Distance-to-diagonal admissibility condition.
+   * @param rank
+   * Fixed rank to be used for approximating admissible submatrices.
+   * @param basis_type
+   * Either ::NORMAL_BASIS or ::NESTED_BASIS.
+   */
   MatrixInitializerKernel(
     void (*kernel)(
       double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
@@ -52,7 +73,22 @@ class MatrixInitializerKernel : public MatrixInitializer {
     const std::vector<std::vector<double>>& params, int64_t admis, int64_t rank
   );
 
-  // Utility methods
+  /**
+   * @brief Specialization for assigning matrix elements
+   *
+   * @param A
+   * Matrix whose elements are to be assigned.
+   * @param row_range
+   * Row range of \p A. The start of the `IndexRange` is that within the root
+   * level `Hierarchical` matrix.
+   * @param col_range
+   * Column range of \p A. The start of the `IndexRange` is that within the root
+   * level `Hierarchical` matrix.
+   *
+   * Uses the kernel and parameters stored in this class to assign elements. The
+   * \p row_range and \p col_range are both used as indices into the vector of
+   * parameters passed to the constructor of this class.
+   */
   void fill_dense_representation(
     Dense& A, const IndexRange& row_range, const IndexRange& col_range
   ) const override;
