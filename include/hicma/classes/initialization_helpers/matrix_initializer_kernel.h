@@ -60,8 +60,6 @@ class MatrixInitializerKernel : public MatrixInitializer {
   void fill_dense_representation(
     Dense& A, const IndexRange& row_range, const IndexRange& col_range
   ) const override;
-
-  Dense get_dense_representation(const ClusterTree& node) const override;
 };
 
 } // namespace hicma
