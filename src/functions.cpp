@@ -139,52 +139,31 @@ bool is_admissible_nd(
   int64_t row_start, int64_t col_start,
   double admis
 ) {
-  std::vector<double> diamsI, diamsJ, centerI, centerJ;
+  //Calculate bounding boxes
+  double boxEps = 5e-1;
+  std::vector<double> bmax_i, bmin_i, center_i;
+  std::vector<double> bmax_j, bmin_j, center_j;
   for(size_t k=0; k<x.size(); k++) {
-    diamsI.push_back(diam(x[k], n_rows, row_start));
-    diamsJ.push_back(diam(x[k], n_cols, col_start));
-    centerI.push_back(mean(x[k], n_rows, row_start));
-    centerJ.push_back(mean(x[k], n_cols, col_start));
+    bmin_i.push_back(-boxEps + *std::min_element(x[k].begin()+row_start, x[k].begin()+row_start+n_rows));
+    bmax_i.push_back(boxEps + *std::max_element(x[k].begin()+row_start, x[k].begin()+row_start+n_rows));
+    center_i.push_back(bmin_i[k] + (bmax_i[k]-bmin_i[k])/2.0);
+
+    bmin_j.push_back(-boxEps + *std::min_element(x[k].begin()+col_start, x[k].begin()+col_start+n_cols));
+    bmax_j.push_back(boxEps + *std::max_element(x[k].begin()+col_start, x[k].begin()+col_start+n_cols));
+    center_j.push_back(bmin_j[k] + (bmax_j[k]-bmin_j[k])/2.0);
   }
-  double diamI = *std::max_element(diamsI.begin(), diamsI.end());
-  double diamJ = *std::max_element(diamsJ.begin(), diamsJ.end());
+  //Calculate diameter and distance
+  double diam_i = 0.0;
+  double diam_j = 0.0;
   double dist = 0.0;
   for(size_t k=0; k<x.size(); k++) {
-    dist += (centerI[k]-centerJ[k])*(centerI[k]-centerJ[k]);
+    diam_i = std::max(diam_i, bmax_i[k] - bmin_i[k]);
+    diam_j = std::max(diam_j, bmax_j[k] - bmin_j[k]);
+    double d = std::fabs(center_i[k] - center_j[k]);
+    dist += d * d;
   }
-  dist = std::sqrt(dist);
-  return (std::max(diamI, diamJ) <= (admis * dist));
-}
-
-bool is_admissible_nd_morton(
-  const std::vector<std::vector<double>>& x,
-  int64_t n_rows, int64_t n_cols,
-  int64_t row_start, int64_t col_start,
-  double admis
-) {
-  std::vector<double> diamsI, diamsJ, centerI, centerJ;
-  for(size_t k=0; k<x.size(); k++) {
-    diamsI.push_back(diam(x[k], n_rows, row_start));
-    diamsJ.push_back(diam(x[k], n_cols, col_start));
-    centerI.push_back(mean(x[k], n_rows, row_start));
-    centerJ.push_back(mean(x[k], n_cols, col_start));
-  }
-  double diamI = *std::max_element(diamsI.begin(), diamsI.end());
-  double diamJ = *std::max_element(diamsJ.begin(), diamsJ.end());
-  //Compute distance based on morton index of box
-  int64_t boxSize = std::min(n_rows, n_cols);
-  int64_t npartitions = x[0].size()/boxSize;
-  int64_t level = (int64_t)log2((double)npartitions);
-  std::vector<int64_t> indexI(x.size(), 0), indexJ(x.size(), 0);
-  for(size_t k=0; k<x.size(); k++) {
-    indexI[k] = row_start/boxSize;
-    indexJ[k] = col_start/boxSize;
-  }
-  double dist = std::abs(
-    getMortonIndex(indexI, level)
-    - getMortonIndex(indexJ, level)
-  );
-  return (std::max(diamI, diamJ) <= (admis * dist));
+  double diams = std::max(diam_i, diam_j);
+  return ((diams * diams) <= (admis * admis * dist));
 }
 
   // namespace starsh {
