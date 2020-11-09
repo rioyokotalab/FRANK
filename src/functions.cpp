@@ -246,7 +246,7 @@ bool is_admissible_nd_morton(
     std::vector<STARSH_int> starsh_index;
 
     void matern_kernel_prepare(int64_t N, double beta, double nu, double noise,
-                               double sigma, double wave_k, int64_t add_diag) {
+                               double sigma, int64_t add_diag) {
       // ./testing_dpotrf -N 27000 -t 2700 -e 1e-8 -u 200 -j 27000 -v -c 19 -G 200 -U 200 -D 2 -z 30 -Z 10 -Y 1
       int ndim = 3;
       int info = 0;
@@ -267,11 +267,9 @@ bool is_admissible_nd_morton(
                             const std::vector<std::vector<double>>& x,
                             int64_t row_start, int64_t col_start) {
 
-
-      kernel(A_cols, A_rows, starsh_index.data(), starsh_index.data(), starsh_data, starsh_data,
+      kernel(A_cols, A_rows, starsh_index.data() + col_start, starsh_index.data() + row_start, starsh_data, starsh_data,
              A, A_cols);
-      std::cout << "filling kernel r: "
-                << A_rows << " c: " << A_cols << " A[0]: " << A[0] << std::endl;
+      
     }
   }
 

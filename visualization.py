@@ -279,7 +279,7 @@ def main():
     # TODO change figure size if width of bases varies (.set_size_inches)
     plt.tight_layout()
     plt.subplots_adjust(wspace=0, hspace=0)
-    plt.savefig("matrix.pdf")
+    plt.savefig(in_file + ".pdf")
     # plt.show()
 
 

@@ -19,8 +19,5 @@ ExternalProject_Add(${PROJECT_NAME}
                         --disable-fortran
                         --disable-build-doc
                         --prefix=<INSTALL_DIR>
-                        --enable-verbose
-                        --enable-debug
-                        --enable-memory-stats
     BUILD_COMMAND       make -j4
 )
