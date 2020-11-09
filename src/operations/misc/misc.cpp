@@ -28,39 +28,6 @@ double cond(Dense A) {
   return (S[0] / S[k-1]);
 }
 
-double diam(const std::vector<double>& x, int64_t n, int64_t offset) {
-  double xmax = *std::max_element(x.begin()+offset, x.begin()+offset+n);
-  double xmin = *std::min_element(x.begin()+offset, x.begin()+offset+n);
-  return std::abs(xmax-xmin);
-}
-
-double mean(const std::vector<double>& x, int64_t n, int64_t offset) {
-  return std::accumulate(x.begin()+offset, x.begin()+offset+n, 0.0)/n;
-}
-
-std::vector<int64_t> getIndex(int64_t dim, int64_t mortonIndex) {
-  std::vector<int64_t> index(dim, 0);
-  int64_t d = 0, level = 0;
-  while (mortonIndex != 0) {
-    index[d] += (mortonIndex % 2) * (1 << level);
-    mortonIndex >>= 1;
-    d = (d + 1) % dim;
-    if (d == 0) level++;
-  }
-  return index;
-}
-
-int64_t getMortonIndex(std::vector<int64_t> index, int64_t level) {
-  int64_t mortonIndex = 0;
-  for(int64_t lev=0; lev<level; lev++) {
-    for(size_t d=0; d<index.size(); d++) {
-      mortonIndex += index[d] % 2 << (index.size() * lev + d);
-      index[d] >>= 1;
-    }
-  }
-  return mortonIndex;
-}
-
 std::vector<double> equallySpacedVector(int64_t N, double minVal, double maxVal) {
   std::vector<double> res(N, 0.0);
   double rnge = maxVal - minVal;
