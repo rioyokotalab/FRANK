@@ -20,7 +20,7 @@ list(
     "h_qr"
     "rsvd"
     "hicmat-matern"
-    "test-starsh"
+    "kernel-test"
 )
   
 
@@ -33,4 +33,4 @@ foreach(EXECUTABLE ${EXECUTABLES})
 endforeach()
 
 target_link_libraries(hicmat-matern starsh::starsh)
-target_link_libraries(test-starsh starsh::starsh)
+target_link_libraries(kernel-test starsh::starsh)

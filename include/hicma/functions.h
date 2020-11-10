@@ -70,11 +70,12 @@ bool is_admissible_nd_morton(
 );
 
  namespace starsh {
-   void matern_kernel_prepare(int64_t N, double beta, double nu, double noise,
-                              double sigma, int64_t add_diag);
-   void matern_kernel_fill(double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+   void exp_kernel_prepare(int64_t N, double beta, double nu, double noise,
+                              double sigma, int ndim);
+   void exp_kernel_fill(double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
                            const std::vector<std::vector<double>>& x,
                            int64_t row_start, int64_t col_start);
+   void exp_kernel_cleanup();
  }
 
 } // namespace hicma

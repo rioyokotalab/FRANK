@@ -138,53 +138,7 @@ void helmholtznd(
       A[i*A_stride+j] = std::exp(-1.0 * rij) / (std::sqrt(rij) + 1e-3);
     }
   }
-}
-  
-std::vector<std::string> split_line(const std::string& s, char c) {
-  std::vector<std::string> tokens;
-  
-  int i = 0;
-  int j = s.find(c);
-
-  while (j >= 0) {
-    tokens.push_back(s.substr(i, j-i));
-    i = ++j;
-    j = s.find(c, j);
-    
-    if (j < 0) {
-      tokens.push_back(s.substr(i, s.length()));
-    }
-  }
-
-  return tokens;
-}
-
-void read_hicmat(std::string filename, Dense& A) {
-  int64_t n, nb;
-  std::fstream file;
-  std::string line;
-  file.open(filename, std::ios::in);
-  
-  std::getline(file, line);  
-  auto tokens = split_line(line, ',');
-  n = stoi(tokens[0]);
-  nb = stoi(tokens[1]);
-  
-  while (std::getline(file, line)) {
-    int i, j;
-    double num;
-    
-    auto tokens1 = split_line(line, ',');
-    i = stoi(tokens1[0]);
-    j = stoi(tokens1[1]);
-    num = stod(tokens1[2]);
-
-    A(i, j) = num;
-  }
-
-  file.close();
-}
-  
+}  
 
 bool is_admissible_nd(
   const std::vector<std::vector<double>>& x,
@@ -245,16 +199,21 @@ bool is_admissible_nd_morton(
     void *starsh_data;
     std::vector<STARSH_int> starsh_index;
 
-    void matern_kernel_prepare(int64_t N, double beta, double nu, double noise,
-                               double sigma, int64_t add_diag) {
+    void exp_kernel_prepare(int64_t N, double beta, double nu, double noise,
+                               double sigma, int ndim) {
       // ./testing_dpotrf -N 27000 -t 2700 -e 1e-8 -u 200 -j 27000 -v -c 19 -G 200 -U 200 -D 2 -z 30 -Z 10 -Y 1
-      int ndim = 3;
       int info = 0;
       int ret = 0;
 
       enum STARSH_PARTICLES_PLACEMENT place = STARSH_PARTICLES_UNIFORM;
-      
-      kernel = starsh_ssdata_block_exp_kernel_3d;
+
+      if (ndim == 2) {
+        kernel = starsh_ssdata_block_exp_kernel_2d;
+      }
+      else if (ndim == 3) {
+        kernel = starsh_ssdata_block_exp_kernel_3d;
+      }
+
       info = starsh_ssdata_generate((STARSH_ssdata **)&starsh_data, N, ndim,
                                     beta, nu, noise,
                                     place, sigma);
@@ -263,13 +222,17 @@ bool is_admissible_nd_morton(
       }
     }
 
-    void matern_kernel_fill(double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+    void exp_kernel_fill(double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
                             const std::vector<std::vector<double>>& x,
                             int64_t row_start, int64_t col_start) {
 
-      kernel(A_cols, A_rows, starsh_index.data() + col_start, starsh_index.data() + row_start, starsh_data, starsh_data,
+      kernel(A_rows, A_cols, starsh_index.data() + row_start, starsh_index.data() + col_start, starsh_data, starsh_data,
              A, A_cols);
       
+    }
+
+    void exp_kernel_cleanup() {
+      starsh_ssdata_free((STARSH_ssdata *)starsh_data);
     }
   }
 
