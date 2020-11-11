@@ -7,8 +7,6 @@
 #include <cstdint>
 #include <random>
 #include <vector>
-#include <fstream>
-#include <iostream>
 
 #include <starsh.h>
 #include <starsh-randtlr.h>
@@ -138,7 +136,7 @@ void helmholtznd(
       A[i*A_stride+j] = std::exp(-1.0 * rij) / (std::sqrt(rij) + 1e-3);
     }
   }
-}  
+}
 
 bool is_admissible_nd(
   const std::vector<std::vector<double>>& x,
@@ -200,8 +198,7 @@ bool is_admissible_nd_morton(
     std::vector<STARSH_int> starsh_index;
 
     void exp_kernel_prepare(int64_t N, double beta, double nu, double noise,
-                               double sigma, int ndim) {
-      // ./testing_dpotrf -N 27000 -t 2700 -e 1e-8 -u 200 -j 27000 -v -c 19 -G 200 -U 200 -D 2 -z 30 -Z 10 -Y 1
+                            double sigma, int ndim) {
       int info = 0;
       int ret = 0;
 

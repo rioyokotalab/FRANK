@@ -6,7 +6,6 @@
 
 namespace hicma
 {
-
 void zeros(
   double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
   const std::vector<std::vector<double>>& x,

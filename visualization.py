@@ -81,7 +81,7 @@ def plot_hierarchical(node, gs_node, color=False):
 def plot_lowrank(xml_node, gs_node):
     dim = [int(xml_node.attrib['dim0']), int(xml_node.attrib['dim1'])]
     svalues = [float(x)+1e-10 for x in xml_node.attrib['svalues'].split(',')]
-    slog = np.log(svalues[0:min(20, *dim)])
+    slog = np.log(svalues[0:min(num_singular_values, *dim)])
     ax = plt.subplot(gs_node)
 
     count = 0
@@ -164,14 +164,13 @@ def plot_lowrank_shared_patches(
 def plot_dense(xml_node, gs_node):
     dim = [int(xml_node.attrib['dim0']), int(xml_node.attrib['dim1'])]
     svalues = [float(x)+1e-10 for x in xml_node.attrib['svalues'].split(',')]
-    slog = np.log(svalues[0:min(20, *dim)])
+    slog = np.log(svalues[0:min(num_singular_values, *dim)])
     ax = plt.subplot(gs_node)
 
     count = 0
     for sv in svalues:
         if sv > tolerance:
             count += 1
-
     ax.text(0.5, 0.5, f"{count}")
     # ax.text(
     #     0.5, 0.5,
