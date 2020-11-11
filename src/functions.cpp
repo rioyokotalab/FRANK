@@ -226,7 +226,8 @@ bool is_admissible_nd_morton(
                             const std::vector<std::vector<double>>& x,
                             int64_t row_start, int64_t col_start) {
 
-      kernel(A_rows, A_cols, starsh_index.data() + row_start, starsh_index.data() + col_start, starsh_data, starsh_data,
+      kernel(A_rows, A_cols, starsh_index.data() + row_start,
+             starsh_index.data() + col_start, starsh_data, starsh_data,
              A, A_cols);
       
     }

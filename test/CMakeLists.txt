@@ -19,7 +19,7 @@ list(
     "h_lu"
     "h_qr"
     "rsvd"
-    "hicmat-matern"
+    "blr-lu-exp3d"
     "kernel-test"
 )
   
@@ -32,5 +32,5 @@ foreach(EXECUTABLE ${EXECUTABLES})
     target_compile_options(${EXECUTABLE} PRIVATE ${HICMA_OPTIONS})
 endforeach()
 
-target_link_libraries(hicmat-matern starsh::starsh)
+target_link_libraries(blr-lu-exp3d starsh::starsh)
 target_link_libraries(kernel-test starsh::starsh)

@@ -27,35 +27,23 @@ int main(int argc, char** argv) {
   /* Default parameters for statistics */
   double beta = 0.1;
   double nu = 0.5;//in matern, nu=0.5 exp (half smooth), nu=inf sqexp (inifinetly smooth)
-  //nu is only used in matern kernel
-  //double noise = 1.e-2; // did not work for 10M in Lorapo
   double noise = 1.e-1;
   double sigma = 1.0;
-  double wave_k = 1.0;
-  int64_t add_diag = 108000;
+  
   starsh::exp_kernel_prepare(N, beta, nu, noise, sigma, 3);  
 
   std::vector<std::vector<double>> randx{get_sorted_random_vector(N)};
   
   Dense x(random_uniform, std::vector<std::vector<double>>(), N);
   Dense b(N);
-  Dense D(starsh::exp_kernel_fill, randx, N, N);
-
 
   print("Being compression");
   timing::start("Hierarchical compression");
+  start_schedule();
   Hierarchical A(starsh::exp_kernel_fill, randx, N, N, rank, nleaf, admis,
                nblocks, nblocks, basis);
-  timing::stop("Hierarchical compression");
-  printXML(A, std::to_string(N) + std::string("-") + std::to_string(nleaf) + std::string("-") +
-           std::to_string(rank) + std::string("-") + std::to_string(admis) + std::string(".xml"));
-
-  print("Compression Accuracy");
-  timing::start("Compression accuracy check");
-  double comp_error = l2_error(A, D);
-  double comp_rate = double(get_memory_usage(D)) / double(get_memory_usage(A));
-  timing::stop("Compression accuracy check");
-  print("Rel. L2 Error", comp_error, false);
+  execute_schedule();
+  double comp_time = timing::stop("Hierarchical compression");
 
   gemm(A, x, b, 1, 1);
 
@@ -65,11 +53,6 @@ int main(int argc, char** argv) {
   std::tie(L, U) = getrf(A);
   execute_schedule();
   double fact_time = timing::stop("LU decomposition");
-
-  Hierarchical prod(A.dim[0], A.dim[1]);
-  gemm(A, A, prod, 1, 0);
-
-  double prod_error = l2_error(prod, A);
 
   timing::start("Solution");
   trsm(L, b, TRSM_LOWER);
@@ -81,9 +64,9 @@ int main(int argc, char** argv) {
   print("Rel. L2 Error", solve_acc, false);
 
   std::ofstream file;
-  file.open("acc-result.csv", std::ios::app | std::ios::out);
-  file << N << "," << nleaf << "," << rank << "," << admis << "," << comp_error << "," << comp_rate
-       << ","  << solve_acc << "," << fact_time <<  std::endl;
+  file.open("blr-lu-exp3d.csv", std::ios::app | std::ios::out);
+  file << N << "," << nleaf << "," << rank << "," << admis << ","  << solve_acc
+       << "," << fact_time << "," << comp_time << ","  << std::getenv("STARPU_NCPU") <<  std::endl;
   file.close();
   
   return 0;
