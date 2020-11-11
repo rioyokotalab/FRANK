@@ -7,8 +7,6 @@
 #include <iostream>
 #include <fstream>
 
-#include <starsh.h>
-
 using namespace hicma;
 using namespace std;
 

@@ -30,6 +30,3 @@ foreach(EXECUTABLE ${EXECUTABLES})
     target_compile_features(${EXECUTABLE} PRIVATE ${HICMA_FEATURES})
     target_compile_options(${EXECUTABLE} PRIVATE ${HICMA_OPTIONS})
 endforeach()
-
-target_link_libraries(blr-lu-exp3d starsh::starsh)
-target_link_libraries(kernel-test starsh::starsh)
