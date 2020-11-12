@@ -1,0 +1,18 @@
+cmake_minimum_required(VERSION 3.5)
+include(ExternalProject)
+project(stars-h)
+ExternalProject_Add(${PROJECT_NAME}
+  GIT_REPOSITORY https://github.com/v0dro/stars-h.git
+  GIT_TAG        master
+  SOURCE_DIR          "@CMAKE_SOURCE_DIR@/dependencies/${PROJECT_NAME}"
+  BINARY_DIR          "@CMAKE_CURRENT_BINARY_DIR@/${PROJECT_NAME}_build"
+  INSTALL_DIR         @DEPENDENCY_INSTALL_PREFIX@
+  CMAKE_ARGS          -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+                      -DSTARPU=OFF
+                      -DTESTING=OFF
+                      -DEXAMPLES=OFF
+                      -DMPI=OFF
+                      -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+                      -DCMAKE_BUILD_TYPE=Debug
+                      -DCMAKE_C_FLAGS= -g
+)

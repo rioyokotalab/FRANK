@@ -9,6 +9,8 @@ import xml.etree.ElementTree as ET
 yrblue = '#005396'
 yrpink = '#cf006b'
 yrgreen = '#539600'
+num_singular_values = 20
+tolerance = 1e-5
 
 
 def read_xml(in_file):
@@ -52,11 +54,11 @@ def plot_hierarchical(node, gs_node, color=False):
                     )
                 )
             elif sub_type == 'LowRank':
-                # plot_lowrank(sub_node, gs_subgrid[i, j])
-                plot_lowrank_patches(
-                    sub_node, gs_subgrid[i, j], dim
-                    # (level == 0 and [i, j] in [[0, 0], [0, 1]]) or (color and i >= j)
-                )
+                plot_lowrank(sub_node, gs_subgrid[i, j])
+                # plot_lowrank_patches(
+                #     sub_node, gs_subgrid[i, j], dim
+                #     # (level == 0 and [i, j] in [[0, 0], [0, 1]]) or (color and i >= j)
+                # )
             elif sub_type == 'LowRankShared':
                 width = plot_lowrank_shared_patches(
                     sub_node, gs_subgrid[i, j], dim
@@ -67,20 +69,28 @@ def plot_hierarchical(node, gs_node, color=False):
                 shared_row_b[j]['exists'] = True
                 shared_row_b[i]['width'] = width
             elif sub_type == 'Dense':
-                # plot_dense(sub_node, gs_subgrid[i, j])
-                plot_dense_patch(
-                    sub_node, gs_subgrid[i, j]
-                    # (level == 0 and [i, j] in [[0, 0], [0, 1]]) or (color and i >= j),
-                    # 'lower'
-                )
+                plot_dense(sub_node, gs_subgrid[i, j])
+                # plot_dense_patch(
+                #     sub_node, gs_subgrid[i, j]
+                #     # (level == 0 and [i, j] in [[0, 0], [0, 1]]) or (color and i >= j),
+                #     # 'lower'
+                # )
     return shared_col_b, shared_row_b
 
 
 def plot_lowrank(xml_node, gs_node):
     dim = [int(xml_node.attrib['dim0']), int(xml_node.attrib['dim1'])]
     svalues = [float(x)+1e-10 for x in xml_node.attrib['svalues'].split(',')]
-    slog = np.log(svalues[0:min(10, *dim)])
+    slog = np.log(svalues[0:min(num_singular_values, *dim)])
     ax = plt.subplot(gs_node)
+
+    count = 0
+    for sv in svalues:
+        if sv > tolerance:
+            count += 1
+
+    ax.text(0.5, 0.5, f"{count}")
+
     # ax.text(
     #     0.5, 0.5,
     #     "{}\n({}, {})".format(
@@ -154,8 +164,14 @@ def plot_lowrank_shared_patches(
 def plot_dense(xml_node, gs_node):
     dim = [int(xml_node.attrib['dim0']), int(xml_node.attrib['dim1'])]
     svalues = [float(x)+1e-10 for x in xml_node.attrib['svalues'].split(',')]
-    slog = np.log(svalues[0:min(10, *dim)])
+    slog = np.log(svalues[0:min(num_singular_values, *dim)])
     ax = plt.subplot(gs_node)
+
+    count = 0
+    for sv in svalues:
+        if sv > tolerance:
+            count += 1
+    ax.text(0.5, 0.5, f"{count}")
     # ax.text(
     #     0.5, 0.5,
     #     "{}\n({}, {})".format(
@@ -279,7 +295,7 @@ def main():
     # TODO change figure size if width of bases varies (.set_size_inches)
     plt.tight_layout()
     plt.subplots_adjust(wspace=0, hspace=0)
-    plt.savefig("matrix.pdf")
+    plt.savefig(in_file + ".pdf")
     # plt.show()
 
 
