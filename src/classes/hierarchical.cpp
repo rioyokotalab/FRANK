@@ -9,6 +9,7 @@
 #include "hicma/classes/initialization_helpers/matrix_initializer.h"
 #include "hicma/classes/initialization_helpers/matrix_initializer_block.h"
 #include "hicma/classes/initialization_helpers/matrix_initializer_kernel.h"
+#include "hicma/classes/initialization_helpers/matrix_initializer_file.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/LAPACK.h"
 #include "hicma/operations/misc.h"
@@ -100,6 +101,30 @@ Hierarchical::Hierarchical(
   MatrixInitializerBlock initer(std::move(A), admis, rank);
   *this = Hierarchical(cluster_tree, initer);
 }
+
+  Hierarchical::Hierarchical(
+    std::string filename, int ordering,
+    const std::vector<std::vector<double>>& x,
+    int64_t n_rows, int64_t n_cols,
+    int64_t rank,
+    int64_t nleaf,
+    int64_t admis,
+    int64_t n_row_blocks, int64_t n_col_blocks,
+    int basis_type,
+    int64_t row_start, int64_t col_start
+  ) {
+    MatrixInitializerFile initer(filename, ordering, admis, rank, basis_type);
+    ClusterTree cluster_tree(
+                             {row_start, n_rows}, {col_start, n_cols}, n_row_blocks, n_col_blocks, nleaf
+                             );
+    if (basis_type == SHARED_BASIS) {
+      // TODO Admissibility is checked later AGAIN (avoid?). Possible solutions:
+      //  - Add appropirate booleans to ClusterTree
+      //  - Use Tracker in MatrixInitializer
+      initer.create_nested_basis(cluster_tree);
+    }
+    *this = Hierarchical(cluster_tree, initer);
+  }
 
 const MatrixProxy& Hierarchical::operator[](const ClusterTree& node) const {
   return (*this)(node.rel_pos[0], node.rel_pos[1]);
