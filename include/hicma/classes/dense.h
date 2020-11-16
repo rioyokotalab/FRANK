@@ -17,6 +17,8 @@ class DataHandler;
 class IndexRange;
 class Task;
 
+enum { MATRIX_ROW_MAJOR, MATRIX_COL_MAJOR };
+
 class Dense : public Matrix {
   // TODO Find way to avoid using friend here! Best not to rely on it.
   // Also don't wanna expose the DataHandler directly though...
@@ -62,6 +64,12 @@ class Dense : public Matrix {
       int64_t row_start, int64_t col_start
     ),
     const std::vector<std::vector<double>>& x,
+    int64_t n_rows, int64_t n_cols=1,
+    int64_t row_start=0, int64_t col_start=0
+  );
+
+  Dense(
+    std::string filename, int ordering,
     int64_t n_rows, int64_t n_cols=1,
     int64_t row_start=0, int64_t col_start=0
   );

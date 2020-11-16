@@ -6,6 +6,7 @@
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
 #include "hicma/classes/initialization_helpers/index_range.h"
+#include "hicma/classes/initialization_helpers/matrix_initializer_file.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
@@ -122,6 +123,18 @@ Dense::Dense(
   int64_t row_start, int64_t col_start
 ) : Dense(n_rows, n_cols) {
   add_kernel_task(func, *this, x, row_start, col_start);
+}
+
+Dense::Dense(
+  std::string filename, int ordering,
+  int64_t n_rows, int64_t n_cols,
+  int64_t row_start, int64_t col_start
+) : Dense(n_rows, n_cols) {
+  MatrixInitializerFile initer(filename, ordering, 0, 0, NORMAL_BASIS);
+  initer.fill_dense_representation(
+    *this,
+    IndexRange(row_start, n_rows), IndexRange(col_start, n_cols)
+  );
 }
 
 const Dense& Dense::operator=(const double a) {
