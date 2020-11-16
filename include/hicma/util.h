@@ -11,5 +11,6 @@
 #include "hicma/util/pre_scheduler.h"
 #include "hicma/util/print.h"
 #include "hicma/util/timer.h"
+#include "hicma/util/geometry_file.h"
 
 #endif // hicma_util_h
