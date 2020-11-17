@@ -33,7 +33,7 @@ class Dense;
  * The row-ID spans the row space of \p A and is defined as \f$A\approx XA(I_S,:)\f$.
  * The column-ID spans the column space of \p A and is defined as \f$A\approx A(:,J_S)Z\f$.
  * 
- * Depending on the value of `column`, either \p X or \p Z is returned in \p M and
+ * Depending on the value of \p column, either \p X or \p Z is returned in \p M and
  * \a k contains the corresponding index set (i.e. \f$I_S\f$ or \f$J_S\f$).
  */
 std::tuple<Dense, std::vector<int64_t>> one_sided_rid(
@@ -58,7 +58,7 @@ std::tuple<Dense, std::vector<int64_t>> one_sided_rid(
  * The row-ID spans the row space of \p A and is defined as \f$A\approx XA(I_S,:)\f$.
  * The column-ID spans the column space of \p A and is defined as \f$A\approx A(:,J_S)Z\f$.
  * 
- * Depending on the value of `column`, either \p X or \p Z is returned in \p M and
+ * Depending on the value of \p transA, either \p X or \p Z is returned in \p M and
  * \a k contains the corresponding index set (i.e. \f$I_S\f$ or \f$J_S\f$).
  * 
  * Due to the matrix approximation used, this function is considerably slower than `one_sided_rid()`.
