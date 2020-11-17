@@ -21,6 +21,7 @@ list(
   "rsvd"
   # "blr-lu-exp3d"
   # "kernel-test"
+  # "blr_compress"
 )
 foreach(EXECUTABLE ${EXECUTABLES})
   add_executable(${EXECUTABLE} ${EXECUTABLE}.cpp)
