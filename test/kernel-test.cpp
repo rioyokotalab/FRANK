@@ -10,10 +10,10 @@
 using namespace hicma;
 using namespace std;
 
-int main(int argc, char** argv) {
+int main([[maybe_unused]] int argc, char** argv) {
   timing::start("Overall");
   hicma::initialize();
-  
+
   int64_t nleaf = atoi(argv[1]);
   int64_t rank = atoi(argv[2]);
   int64_t N = atoi(argv[3]);
@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
   print("Generate hicma Cauchy 2D.");
   std::vector<std::vector<double>> randx1{get_sorted_random_vector(N), get_sorted_random_vector(N)};
   Hierarchical A1(cauchy2d, randx1, N, N, rank, nleaf, admis,
-               nblocks, nblocks, basis);  
+               nblocks, nblocks, basis);
   printXML(A1, std::string("cauchy2d-") + std::to_string(N) + std::string("-") + std::to_string(nleaf) + std::string("-") +
            std::to_string(rank) + std::string("-") + std::to_string(admis) + std::string(".xml"));
 
@@ -46,7 +46,6 @@ int main(int argc, char** argv) {
   //double noise = 1.e-2; // did not work for 10M in Lorapo
   double noise = 1.e-1;
   double sigma = 1.0;
-  double wave_k = 1.0;
   starsh::exp_kernel_prepare(N, beta, nu, noise, sigma, 3);
 
   Hierarchical A2(starsh::exp_kernel_fill, randx, N, N, rank, nleaf, admis,
@@ -63,6 +62,6 @@ int main(int argc, char** argv) {
   printXML(A3, std::string("exp-2d-") + std::to_string(N) + std::string("-") + std::to_string(nleaf) + std::string("-") +
            std::to_string(rank) + std::string("-") + std::to_string(admis) + std::string(".xml"));
   starsh::exp_kernel_cleanup();
-  
+
   return 0;
 }

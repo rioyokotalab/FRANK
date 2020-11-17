@@ -10,10 +10,10 @@
 using namespace hicma;
 using namespace std;
 
-int main(int argc, char** argv) {
+int main([[maybe_unused]] int argc, char** argv) {
   timing::start("Overall");
   hicma::initialize();
-  
+
   int64_t nleaf = atoi(argv[1]);
   int64_t rank = atoi(argv[2]);
   int64_t N = atoi(argv[3]);
@@ -27,11 +27,11 @@ int main(int argc, char** argv) {
   double nu = 0.5;//in matern, nu=0.5 exp (half smooth), nu=inf sqexp (inifinetly smooth)
   double noise = 1.e-1;
   double sigma = 1.0;
-  
-  starsh::exp_kernel_prepare(N, beta, nu, noise, sigma, 3);  
+
+  starsh::exp_kernel_prepare(N, beta, nu, noise, sigma, 3);
 
   std::vector<std::vector<double>> randx{get_sorted_random_vector(N)};
-  
+
   Dense x(random_uniform, std::vector<std::vector<double>>(), N);
   Dense b(N);
 
@@ -66,6 +66,6 @@ int main(int argc, char** argv) {
   file << N << "," << nleaf << "," << rank << "," << admis << ","  << solve_acc
        << "," << fact_time << "," << comp_time << ","  << std::getenv("STARPU_NCPU") <<  std::endl;
   file.close();
-  
+
   return 0;
 }
