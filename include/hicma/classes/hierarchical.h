@@ -18,6 +18,10 @@ class Dense;
 class ClusterTree;
 class MatrixInitializer;
 
+enum { NORMAL_BASIS, SHARED_BASIS };
+
+enum { POSITION_BASED_ADMIS, GEOMETRY_BASED_ADMIS };
+
 class Hierarchical : public Matrix {
  public:
   std::array<int64_t, 2> dim = {0, 0};
@@ -45,7 +49,9 @@ class Hierarchical : public Matrix {
 
   Hierarchical(
     const ClusterTree& node,
-    MatrixInitializer& initer
+    MatrixInitializer& initer,
+    const std::vector<std::vector<double>>& x=std::vector<std::vector<double>>(),
+    int admis_type=POSITION_BASED_ADMIS
   );
 
   Hierarchical(
@@ -60,6 +66,7 @@ class Hierarchical : public Matrix {
     int64_t nleaf,
     int64_t admis=1,
     int64_t n_row_blocks=2, int64_t n_col_blocks=2,
+    int admis_type=POSITION_BASED_ADMIS,
     int64_t row_start=0, int64_t col_start=0
   );
 
@@ -69,6 +76,7 @@ class Hierarchical : public Matrix {
     int64_t nleaf,
     int64_t admis=1,
     int64_t n_row_blocks=2, int64_t n_col_blocks=2,
+    int admis_type=POSITION_BASED_ADMIS,
     int64_t row_start=0, int64_t col_start=0
   );
 
@@ -80,7 +88,7 @@ class Hierarchical : public Matrix {
     int64_t nleaf,
     int64_t admis=1,
     int64_t n_row_blocks=2, int64_t n_col_blocks=2,
-    int basis_type=NORMAL_BASIS,
+    int basis_type=NORMAL_BASIS, int admis_type=POSITION_BASED_ADMIS,
     int64_t row_start=0, int64_t col_start=0
   );
 

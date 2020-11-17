@@ -20,6 +20,13 @@ class MatrixInitializer {
   int64_t admis;
   int64_t rank;
 
+  void find_admissible_blocks(const ClusterTree& node);
+  bool position_based_admissible(const ClusterTree& node) const;
+  bool geometry_based_admissible(
+    const ClusterTree& node,
+    const std::vector<std::vector<double>>& x
+  ) const;
+
  public:
   // Special member functions
   MatrixInitializer() = delete;
@@ -50,7 +57,12 @@ class MatrixInitializer {
 
   LowRank get_compressed_representation(const ClusterTree& node);
 
-  bool is_admissible(const ClusterTree& node) const;
+  bool is_admissible(
+    const ClusterTree& node,
+    const std::vector<std::vector<double>>& x=std::vector<std::vector<double>>(),
+    int admis_type=POSITION_BASED_ADMIS
+  ) const;
+
 };
 
 } // namespace hicma

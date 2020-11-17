@@ -133,39 +133,6 @@ void helmholtznd(
   }
 }
 
-bool is_admissible_nd(
-  const std::vector<std::vector<double>>& x,
-  int64_t n_rows, int64_t n_cols,
-  int64_t row_start, int64_t col_start,
-  double admis
-) {
-  //Calculate bounding boxes
-  double boxEps = 5e-1;
-  std::vector<double> bmax_i, bmin_i, center_i;
-  std::vector<double> bmax_j, bmin_j, center_j;
-  for(size_t k=0; k<x.size(); k++) {
-    bmin_i.push_back(-boxEps + *std::min_element(x[k].begin()+row_start, x[k].begin()+row_start+n_rows));
-    bmax_i.push_back(boxEps + *std::max_element(x[k].begin()+row_start, x[k].begin()+row_start+n_rows));
-    center_i.push_back(bmin_i[k] + (bmax_i[k]-bmin_i[k])/2.0);
-
-    bmin_j.push_back(-boxEps + *std::min_element(x[k].begin()+col_start, x[k].begin()+col_start+n_cols));
-    bmax_j.push_back(boxEps + *std::max_element(x[k].begin()+col_start, x[k].begin()+col_start+n_cols));
-    center_j.push_back(bmin_j[k] + (bmax_j[k]-bmin_j[k])/2.0);
-  }
-  //Calculate diameter and distance
-  double diam_i = 0.0;
-  double diam_j = 0.0;
-  double dist = 0.0;
-  for(size_t k=0; k<x.size(); k++) {
-    diam_i = std::max(diam_i, bmax_i[k] - bmin_i[k]);
-    diam_j = std::max(diam_j, bmax_j[k] - bmin_j[k]);
-    double d = std::fabs(center_i[k] - center_j[k]);
-    dist += d * d;
-  }
-  double diams = std::max(diam_i, diam_j);
-  return ((diams * diams) <= (admis * admis * dist));
-}
-
   // namespace starsh {
   //   STARSH_kernel *kernel;
   //   void *starsh_data;
