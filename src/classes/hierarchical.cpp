@@ -86,7 +86,7 @@ Hierarchical::Hierarchical(
   ClusterTree cluster_tree(
     {row_start, n_rows}, {col_start, n_cols}, n_row_blocks, n_col_blocks, nleaf
   );
-  *this = Hierarchical(cluster_tree, initer, x);
+  *this = Hierarchical(cluster_tree, initer, x, admis_type);
 }
 
 Hierarchical::Hierarchical(
@@ -127,7 +127,7 @@ Hierarchical::Hierarchical(
     //  - Use Tracker in MatrixInitializer
     initer.create_nested_basis(cluster_tree);
   }
-  *this = Hierarchical(cluster_tree, initer, x);
+  *this = Hierarchical(cluster_tree, initer, x, admis_type);
 }
 
 const MatrixProxy& Hierarchical::operator[](const ClusterTree& node) const {
