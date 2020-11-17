@@ -18,6 +18,7 @@ using namespace hicma;
 
 int main(int argc, char** argv) {
   hicma::initialize();
+  updateCounter("DISABLE_THREAD_UNSAFE_TIMER", 1);
   int64_t N = argc > 1 ? atoi(argv[1]) : 256;
   int64_t Nb = argc > 2 ? atoi(argv[2]) : 32;
   int64_t rank = argc > 3 ? atoi(argv[3]) : 16;
@@ -65,7 +66,6 @@ int main(int argc, char** argv) {
   print("Time");
   double tic = get_time();
   char dep[Nc][Nc];
-  // timing::start("Task-based BLR QR decomposition");
   #pragma omp parallel
   {
     #pragma omp single
@@ -96,7 +96,6 @@ int main(int argc, char** argv) {
       }
     }
   }
-  // timing::stopAndPrint("Task-based BLR QR decomposition", 1);
   double toc = get_time();
   print("Task-based BLR QR Decomposition", toc-tic);
 

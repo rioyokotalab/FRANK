@@ -1,6 +1,7 @@
 #include "hicma/util/timer.h"
 
 #include "hicma/util/print.h"
+#include "hicma/util/counter.h"
 
 #include <algorithm>
 #include <cassert>
@@ -21,28 +22,33 @@ Timer GlobalTimer;
 Timer* current_timer = &GlobalTimer;
 
 Timer& start(std::string event) {
-  // current_timer->start_subtimer(event);
-  // current_timer = &(*current_timer)[event];
+  if(getCounter("DISABLE_THREAD_UNSAFE_TIMER") != 1) {
+    current_timer->start_subtimer(event);
+    current_timer = &(*current_timer)[event];
+  }
   return *current_timer;
 }
 
 // TODO Refactor so this doesn't need event?
 double stop([[maybe_unused]] std::string event) {
-  // assert(current_timer->get_name() == event);
-  // double duration = current_timer->stop();
-  // if (current_timer->get_parent() != nullptr) {
-  //   current_timer = current_timer->get_parent();
-  // }
-  // return duration;
+  if(getCounter("DISABLE_THREAD_UNSAFE_TIMER") != 1) {
+    assert(current_timer->get_name() == event);
+    double duration = current_timer->stop();
+    if (current_timer->get_parent() != nullptr) {
+      current_timer = current_timer->get_parent();
+    }
+    return duration;
+  }
   return 0;
 }
 
 void clearTimers() { GlobalTimer.clear(); }
 
 void stopAndPrint(std::string event, int depth) {
-  // stop(event);
-  // printTime(event, depth);
-  return;
+  if(getCounter("DISABLE_THREAD_UNSAFE_TIMER") != 1) {
+    stop(event);
+    printTime(event, depth);
+  }
 }
 
 void printTime(std::string event, int depth) {
