@@ -14,7 +14,8 @@ int main(int argc, char** argv) {
   int64_t rank = 8;
   std::vector<std::vector<double>> randx{get_sorted_random_vector(N)};
   timing::start("Init matrix");
-  int64_t nblocks=0, admis=0;
+  int64_t nblocks=0;
+  double admis=0;
   if(argc < 2) {
     std::cout <<"Argument(s) needed" <<std::endl;
     exit(1);

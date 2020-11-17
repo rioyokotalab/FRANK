@@ -23,25 +23,25 @@ int main(int argc, char** argv) {
   Hierarchical D;
   if(matCode == 0) { //Laplace1D
     randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
-    A = Hierarchical(laplacend, randpts, N, N, rank, Nb, (int64_t)admis, Nc, Nc);
+    A = Hierarchical(laplacend, randpts, N, N, rank, Nb, admis, Nc, Nc);
     D = Hierarchical(laplacend, randpts, N, N, 0, Nb, Nc, Nc, Nc);
   } else if (matCode == 1) { //Laplace2D
     randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
     randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
-    A = Hierarchical(laplacend, randpts, N, N, rank, Nb, (int64_t)admis, Nc, Nc);
+    A = Hierarchical(laplacend, randpts, N, N, rank, Nb, admis, Nc, Nc);
     D = Hierarchical(laplacend, randpts, N, N, 0, Nb, Nc, Nc, Nc);
   } else if(matCode == 2) { //Helmholtz2D
     randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
     randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
-    A = Hierarchical(helmholtznd, randpts, N, N, rank, Nb, (int64_t)admis, Nc, Nc);
+    A = Hierarchical(helmholtznd, randpts, N, N, rank, Nb, admis, Nc, Nc);
     D = Hierarchical(helmholtznd, randpts, N, N, 0, Nb, Nc, Nc, Nc);
   } else { //Cauchy2D
     randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
     randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
-    A = Hierarchical(cauchy2d, randpts, N, N, rank, Nb, (int64_t)admis, Nc, Nc);
+    A = Hierarchical(cauchy2d, randpts, N, N, rank, Nb, admis, Nc, Nc);
     D = Hierarchical(cauchy2d, randpts, N, N, 0, Nb, Nc, Nc, Nc);
   }
-  Hierarchical Q(identity, std::vector<std::vector<double>>(), N, N, rank, Nb, (int64_t)admis, Nc, Nc);
+  Hierarchical Q(identity, std::vector<std::vector<double>>(), N, N, rank, Nb, admis, Nc, Nc);
   Hierarchical T(zeros, std::vector<std::vector<double>>(), N, N, 0, Nb, Nc, Nc, Nc);
 
   print("Cond(A)", cond(Dense(A)), false);

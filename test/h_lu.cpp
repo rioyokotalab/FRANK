@@ -15,7 +15,7 @@ int main(int argc, char** argv) {
   int64_t nleaf = argc > 2 ? atoi(argv[2]) : 16;
   int64_t rank = argc > 3 ? atoi(argv[3]) : 8;
   int64_t nblocks = argc > 4 ? atoi(argv[4]) : 2;
-  int64_t admis = argc > 5 ? atoi(argv[5]) : 0;
+  double admis = argc > 5 ? atof(argv[5]) : 0;
 
   std::vector<std::vector<double>> randx{get_sorted_random_vector(N)};
   Dense x(random_uniform, std::vector<std::vector<double>>(), N);

@@ -77,7 +77,7 @@ Hierarchical::Hierarchical(
   int64_t n_rows, int64_t n_cols,
   int64_t rank,
   int64_t nleaf,
-  int64_t admis,
+  double admis,
   int64_t n_row_blocks, int64_t n_col_blocks,
   int admis_type,
   int64_t row_start, int64_t col_start
@@ -93,7 +93,7 @@ Hierarchical::Hierarchical(
   Dense&& A,
   int64_t rank,
   int64_t nleaf,
-  int64_t admis,
+  double admis,
   int64_t n_row_blocks, int64_t n_col_blocks,
   int admis_type,
   int64_t row_start, int64_t col_start
@@ -112,7 +112,7 @@ Hierarchical::Hierarchical(
   int64_t n_rows, int64_t n_cols,
   int64_t rank,
   int64_t nleaf,
-  int64_t admis,
+  double admis,
   int64_t n_row_blocks, int64_t n_col_blocks,
   int basis_type, int admis_type,
   int64_t row_start, int64_t col_start

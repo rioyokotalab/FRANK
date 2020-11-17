@@ -17,7 +17,7 @@ class ClusterTree;
 
 class MatrixInitializer {
  private:
-  int64_t admis;
+  double admis;
   int64_t rank;
 
   void find_admissible_blocks(const ClusterTree& node);
@@ -42,7 +42,7 @@ class MatrixInitializer {
   MatrixInitializer& operator=(MatrixInitializer&& A) = default;
 
   // Additional constructors
-  MatrixInitializer(int64_t admis, int64_t rank);
+  MatrixInitializer(double admis, int64_t rank);
 
   // Utility methods
   virtual void fill_dense_representation(

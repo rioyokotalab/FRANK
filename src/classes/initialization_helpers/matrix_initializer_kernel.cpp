@@ -17,7 +17,7 @@ MatrixInitializerKernel::MatrixInitializerKernel(
     const std::vector<std::vector<double>>& x,
     int64_t row_start, int64_t col_start
   ),
-  const std::vector<std::vector<double>>& x, int64_t admis, int64_t rank
+  const std::vector<std::vector<double>>& x, double admis, int64_t rank
 ) : MatrixInitializer(admis, rank), kernel(kernel), x(x) {}
 
 void MatrixInitializerKernel::fill_dense_representation(

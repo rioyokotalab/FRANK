@@ -19,7 +19,7 @@
 namespace hicma
 {
 
-MatrixInitializer::MatrixInitializer(int64_t admis, int64_t rank)
+MatrixInitializer::MatrixInitializer(double admis, int64_t rank)
 : admis(admis), rank(rank) {}
 
 LowRank MatrixInitializer::get_compressed_representation(
@@ -45,7 +45,7 @@ bool MatrixInitializer::is_admissible(
 }
 
 bool MatrixInitializer::position_based_admissible(const ClusterTree& node) const {
-  return (node.dist_to_diag() > admis);
+  return (node.dist_to_diag() > (int64_t)admis);
 }
 
 bool MatrixInitializer::geometry_based_admissible(
