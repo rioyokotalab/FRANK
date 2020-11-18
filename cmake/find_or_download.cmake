@@ -21,7 +21,9 @@ function(find_or_download PACKAGE)
     endif()
     if(${ARGS_PKG_CONFIG})
         find_package(PkgConfig REQUIRED)
-        set(ENV{PKG_CONFIG_PATH} ${DEPENDENCY_INSTALL_PREFIX}/lib/pkgconfig)
+        set(ENV{PKG_CONFIG_PATH}
+            "$ENV{PKG_CONFIG_PATH};${DEPENDENCY_INSTALL_PREFIX}/lib/pkgconfig"
+        )
         if(${ARGS_VERSION})
             set(PC_FILE ${PACKAGE}-${ARGS_VERSION})
         else()
