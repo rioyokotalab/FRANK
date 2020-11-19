@@ -76,7 +76,6 @@ class Hierarchical : public Matrix {
     int64_t nleaf,
     double admis=1,
     int64_t n_row_blocks=2, int64_t n_col_blocks=2,
-    int admis_type=POSITION_BASED_ADMIS,
     int64_t row_start=0, int64_t col_start=0
   );
 

@@ -95,7 +95,6 @@ Hierarchical::Hierarchical(
   int64_t nleaf,
   double admis,
   int64_t n_row_blocks, int64_t n_col_blocks,
-  int admis_type,
   int64_t row_start, int64_t col_start
 ) {
   ClusterTree cluster_tree(
