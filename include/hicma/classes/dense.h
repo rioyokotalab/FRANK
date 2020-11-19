@@ -68,12 +68,6 @@ class Dense : public Matrix {
     int64_t row_start=0, int64_t col_start=0
   );
 
-  Dense(
-    std::string filename, int ordering,
-    int64_t n_rows, int64_t n_cols=1,
-    int64_t row_start=0, int64_t col_start=0
-  );
-
   // Additional operators
   const Dense& operator=(const double a);
 

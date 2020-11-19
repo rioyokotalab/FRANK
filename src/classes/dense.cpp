@@ -125,18 +125,6 @@ Dense::Dense(
   add_kernel_task(func, *this, x, row_start, col_start);
 }
 
-Dense::Dense(
-  std::string filename, int ordering,
-  int64_t n_rows, int64_t n_cols,
-  int64_t row_start, int64_t col_start
-) : Dense(n_rows, n_cols) {
-  MatrixInitializerFile initer(filename, ordering, 0, 0, NORMAL_BASIS);
-  initer.fill_dense_representation(
-    *this,
-    IndexRange(row_start, n_rows), IndexRange(col_start, n_cols)
-  );
-}
-
 const Dense& Dense::operator=(const double a) {
   add_assign_task(*this, a);
   return *this;
