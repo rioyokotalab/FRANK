@@ -11,7 +11,7 @@
 #include "hicma/operations/LAPACK.h"
 #include "hicma/operations/arithmetic.h"
 #include "hicma/operations/misc.h"
-#include "hicma/util/counter.h"
+#include "hicma/util/global_key_value.h"
 #include "hicma/util/omm_error_handler.h"
 #include "hicma/util/pre_scheduler.h"
 #include "hicma/util/timer.h"
@@ -242,9 +242,9 @@ define_method(Matrix&, addition_omm, (LowRank& A, const LowRank& B)) {
   assert(A.dim[0] == B.dim[0]);
   assert(A.dim[1] == B.dim[1]);
   assert(A.rank == B.rank);
-  if (getCounter("LRA") == 0) {
+  if (getGlobalValue("LRA") == 0) {
     naive_addition(A, B);
-  } else if (getCounter("LRA") == 1) {
+  } else if (getGlobalValue("LRA") == 1) {
     orthogonality_preserving_addition(A, B);
   } else {
     formatted_addition(A, B);

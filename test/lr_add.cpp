@@ -30,7 +30,7 @@ int main() {
   AWork = A;
   timing::stop("Init matrix");
   print("LR Add Naive");
-  updateCounter("LRA", 0);
+  setGlobalValue("LRA", 0);
   timing::start("LR Add Naive");
   start_schedule();
   AWork += B;
@@ -42,7 +42,7 @@ int main() {
   AWork = A;
   timing::stop("Init matrix");
   print("LR Add Orthogonal");
-  updateCounter("LRA", 1);
+  setGlobalValue("LRA", 1);
   timing::start("LR Add Orthogonal");
   start_schedule();
   AWork += B;

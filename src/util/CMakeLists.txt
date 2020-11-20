@@ -1,5 +1,5 @@
 target_sources(hicma PRIVATE
-  ${CMAKE_CURRENT_LIST_DIR}/counter.cpp
+  ${CMAKE_CURRENT_LIST_DIR}/global_key_value.cpp
   ${CMAKE_CURRENT_LIST_DIR}/experiment_setup.cpp
   ${CMAKE_CURRENT_LIST_DIR}/get_memory_usage.cpp
   ${CMAKE_CURRENT_LIST_DIR}/initialize.cpp
