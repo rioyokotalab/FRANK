@@ -17,6 +17,7 @@ class DataHandler;
 class IndexRange;
 class Task;
 
+//TODO consider using scoped (named) enum
 enum { MATRIX_ROW_MAJOR, MATRIX_COL_MAJOR };
 
 class Dense : public Matrix {

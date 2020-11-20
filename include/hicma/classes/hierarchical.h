@@ -18,8 +18,8 @@ class Dense;
 class ClusterTree;
 class MatrixInitializer;
 
+//TODO consider using scoped (named) enum
 enum { NORMAL_BASIS, SHARED_BASIS };
-
 enum { POSITION_BASED_ADMIS, GEOMETRY_BASED_ADMIS };
 
 class Hierarchical : public Matrix {
