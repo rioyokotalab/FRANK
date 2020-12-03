@@ -131,26 +131,23 @@ H(1,1) = A(1,1);
 #### Issues with this approach
 We don't want our code to depend on boost.
 
-## Idea 4: Create a wrapper class Any ourselves (current implementation)
+## Idea 4: Use a shared_ptr to Node
 #### Implementation
-Any owns a `unique_ptr<Node>` and forwards the getrf, trsm and gemm calls to
-the object pointed to (which may be `Dense`, `LowRank` or `Hierarchical`).
-An advantage of this approach is that the indirection through `Any` allows us
-to efficiently change what type of matrix is held at a certain index in
-`Hierarchical`. Say for example `H(0, 1)` is a `Dense` object, but we want to
-compress it to a `LowRank` object. We can call
 ```c++
-H(0, 1) = LowRank(H(0, 1));
+std::vector<std::shared_ptr<Node>> data;
+Node& operator(i,j) {data[2*i+j]};
 ```
-and the operation can happen without unnecessart data copies due to the c++11
-move semantics.\
-Another big advantage is the usage of `unique_ptr<Node>`, which allows for
-clear ownership of objects and ensures leak-free code.
+#### Example usage
+```c++
+Dense A;
+Hierarchical H;
+H(0,0) = A(0,0);
+H(0,1) = LowRank(A(0,1));
+H(1,0) = LowRank(A(1,0));
+H(1,1) = A(1,1);
+```
 #### Issues with this approach
-The classes `Any` and `Node` both fulfill the purpose of fascilitating runtime
-polymorphism for `Dense`, `LowRank` and `Hierarchical`. Uniting them into one
-class would be desirable, but is likely not possible.\
-Another issue is that some functions may need an additional interface taking in
-`Any` objects and forwarding to the `Node` they hold.
 
-# Parallel paradigms
+## Idea 5: Create a wrapper class Any ourselves
+
+## Idea 6: Create a wrapper class Any ourselves (current implementation)
