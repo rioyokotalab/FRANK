@@ -129,13 +129,7 @@ H(1,0) = LowRank(A(1,0));
 H(1,1) = A(1,1);
 ```
 #### Issues with this approach
-What we want to do during the hierarchical matrix operation is to distinguish operations like
-```c++
-L(1,1)=gemm(H(1,0),H(0,1))
-H(1,1)=gemm(H(1,0),H(0,1))
-```
-However, since the overloaded function gemm(Hierarchical, Hierarchical) does not distinguish between return types,
-we cannot automatically call two different gemm functions with different return types.
+We don't want our code to depend on boost.
 
 ## Idea 4: Create a wrapper class Any ourselves (current implementation)
 #### Implementation
