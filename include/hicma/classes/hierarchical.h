@@ -47,12 +47,7 @@ class Hierarchical : public Matrix {
   // Additional constructors
   Hierarchical(int64_t n_row_blocks, int64_t n_col_blocks=1);
 
-  Hierarchical(
-    const ClusterTree& node,
-    MatrixInitializer& initer,
-    const std::vector<std::vector<double>>& x=std::vector<std::vector<double>>(),
-    int admis_type=POSITION_BASED_ADMIS
-  );
+  Hierarchical(const ClusterTree& node, MatrixInitializer& initer);
 
   Hierarchical(
     void (*func)(
@@ -60,7 +55,7 @@ class Hierarchical : public Matrix {
       const std::vector<std::vector<double>>& x,
       int64_t row_start, int64_t col_start
     ),
-    const std::vector<std::vector<double>>& x,
+    const std::vector<std::vector<double>>& coords,
     int64_t n_rows, int64_t n_cols,
     int64_t rank,
     int64_t nleaf,
@@ -81,12 +76,20 @@ class Hierarchical : public Matrix {
 
   Hierarchical(
     std::string filename, int ordering,
-    const std::vector<std::vector<double>>& x,
+    const std::vector<std::vector<double>>& coords,
     int64_t n_rows, int64_t n_cols,
     int64_t rank,
     int64_t nleaf,
     double admis=1,
     int64_t n_row_blocks=2, int64_t n_col_blocks=2,
+    int basis_type=NORMAL_BASIS, int admis_type=POSITION_BASED_ADMIS,
+    int64_t row_start=0, int64_t col_start=0
+  );
+
+  Hierarchical(
+    int64_t N, int64_t nleaf, int64_t nblocks,
+    double beta, double nu, double noise, double sigma, int ndim,
+    double admis, int64_t rank,
     int basis_type=NORMAL_BASIS, int admis_type=POSITION_BASED_ADMIS,
     int64_t row_start=0, int64_t col_start=0
   );

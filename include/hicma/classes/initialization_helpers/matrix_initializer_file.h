@@ -33,7 +33,8 @@ class MatrixInitializerFile : public MatrixInitializer {
 
   // Additional constructors
   MatrixInitializerFile(
-    std::string filename, int ordering, double admis, int64_t rank, int basis_type
+    std::string filename, int ordering, double admis, int64_t rank, int basis_type,
+    int admis_type, const std::vector<std::vector<double>>& coords
   );
 
   // Utility methods

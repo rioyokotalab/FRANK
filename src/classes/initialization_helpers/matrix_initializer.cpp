@@ -19,8 +19,11 @@
 namespace hicma
 {
 
-MatrixInitializer::MatrixInitializer(double admis, int64_t rank)
-: admis(admis), rank(rank) {}
+MatrixInitializer::MatrixInitializer(
+  double admis, int64_t rank,
+  int admis_type, const std::vector<std::vector<double>>& coords
+) : admis(admis), rank(rank),
+    admis_type(admis_type), coords(coords) {}
 
 LowRank MatrixInitializer::get_compressed_representation(
   const ClusterTree& node
@@ -29,54 +32,50 @@ LowRank MatrixInitializer::get_compressed_representation(
   return LowRank(get_dense_representation(node), rank);
 }
 
-bool MatrixInitializer::is_admissible(
-  const ClusterTree& node,
-  const std::vector<std::vector<double>>& x,
-  int admis_type
-) const {
+std::vector<std::vector<double>> MatrixInitializer::get_coords_range(const IndexRange& range) const {
+  std::vector<std::vector<double>> coords_range;
+  for(size_t d=0; d<coords.size(); d++)
+    coords_range.push_back(std::vector<double>(coords[d].begin()+range.start, coords[d].begin()+range.start+range.n));
+  return coords_range;
+}
+
+bool MatrixInitializer::is_admissible(const ClusterTree& node) const {
   bool admissible = true;
-  if(admis_type == POSITION_BASED_ADMIS)
-    admissible &= position_based_admissible(node);
-  else
-    admissible &= geometry_based_admissible(node, x);
   // Vectors are never admissible
   admissible &= (node.rows.n > 1 && node.cols.n > 1);
+  if(admis_type == POSITION_BASED_ADMIS)
+    admissible &= (node.dist_to_diag() > (int64_t)admis);
+  else {
+    //Get actual coordinates
+    std::vector<std::vector<double>> row_coords = get_coords_range(node.rows);
+    std::vector<std::vector<double>> col_coords = get_coords_range(node.cols);
+    //Calculate bounding boxes
+    double offset = 5e-1;
+    std::vector<double> max_coord_row, min_coord_row, center_coord_row;
+    std::vector<double> max_coord_col, min_coord_col, center_coord_col;
+    for(size_t d=0; d<row_coords.size(); d++) {
+      min_coord_row.push_back(-offset + *std::min_element(row_coords[d].begin(), row_coords[d].end()));
+      max_coord_row.push_back(offset + *std::max_element(row_coords[d].begin(), row_coords[d].end()));
+      center_coord_row.push_back(min_coord_row[d] + (max_coord_row[d]-min_coord_row[d])/2.0);
+
+      min_coord_col.push_back(-offset + *std::min_element(col_coords[d].begin(), col_coords[d].end()));
+      max_coord_col.push_back(offset + *std::max_element(col_coords[d].begin(), col_coords[d].end()));
+      center_coord_col.push_back(min_coord_col[d] + (max_coord_col[d]-min_coord_col[d])/2.0);
+    }
+    //Calculate diameter and distance
+    double max_length_row = 0.0;
+    double max_length_col = 0.0;
+    double dist = 0.0;
+    for(size_t k=0; k<row_coords.size(); k++) {
+      max_length_row = std::max(max_length_row, max_coord_row[k] - min_coord_row[k]);
+      max_length_col = std::max(max_length_col, max_coord_col[k] - min_coord_col[k]);
+      double d = std::fabs(center_coord_row[k] - center_coord_col[k]);
+      dist += d * d;
+    }
+    double diam = std::max(max_length_row, max_length_col);
+    admissible &= ((diam * diam) <= (admis * admis * dist));
+  }
   return admissible;
-}
-
-bool MatrixInitializer::position_based_admissible(const ClusterTree& node) const {
-  return (node.dist_to_diag() > (int64_t)admis);
-}
-
-bool MatrixInitializer::geometry_based_admissible(
-  const ClusterTree& node,
-  const std::vector<std::vector<double>>& x
-) const {
-  //Calculate bounding boxes
-  double offset = 5e-1;
-  std::vector<double> xmax_row, xmin_row, center_row;
-  std::vector<double> xmax_col, xmin_col, center_col;
-  for(size_t k=0; k<x.size(); k++) {
-    xmin_row.push_back(-offset + *std::min_element(x[k].begin()+node.rows.start, x[k].begin()+node.rows.start+node.rows.n));
-    xmax_row.push_back(offset + *std::max_element(x[k].begin()+node.rows.start, x[k].begin()+node.rows.start+node.rows.n));
-    center_row.push_back(xmin_row[k] + (xmax_row[k]-xmin_row[k])/2.0);
-
-    xmin_col.push_back(-offset + *std::min_element(x[k].begin()+node.cols.start, x[k].begin()+node.cols.start+node.cols.n));
-    xmax_col.push_back(offset + *std::max_element(x[k].begin()+node.cols.start, x[k].begin()+node.cols.start+node.cols.n));
-    center_col.push_back(xmin_col[k] + (xmax_col[k]-xmin_col[k])/2.0);
-  }
-  //Calculate diameter and distance
-  double diam_row = 0.0;
-  double diam_col = 0.0;
-  double dist = 0.0;
-  for(size_t k=0; k<x.size(); k++) {
-    diam_row = std::max(diam_row, xmax_row[k] - xmin_row[k]);
-    diam_col = std::max(diam_col, xmax_col[k] - xmin_col[k]);
-    double d = std::fabs(center_row[k] - center_col[k]);
-    dist += d * d;
-  }
-  double diams = std::max(diam_row, diam_col);
-  return ((diams * diams) <= (admis * admis * dist));
 }
 
 } // namespace hicma

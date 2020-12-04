@@ -19,13 +19,11 @@ class MatrixInitializer {
  private:
   double admis;
   int64_t rank;
+  int admis_type;
+ protected:
+  const std::vector<std::vector<double>>& coords;
 
   void find_admissible_blocks(const ClusterTree& node);
-  bool position_based_admissible(const ClusterTree& node) const;
-  bool geometry_based_admissible(
-    const ClusterTree& node,
-    const std::vector<std::vector<double>>& x
-  ) const;
 
  public:
   // Special member functions
@@ -42,7 +40,11 @@ class MatrixInitializer {
   MatrixInitializer& operator=(MatrixInitializer&& A) = default;
 
   // Additional constructors
-  MatrixInitializer(double admis, int64_t rank);
+  MatrixInitializer(
+    double admis, int64_t rank,
+    int admis_type=POSITION_BASED_ADMIS,
+    const std::vector<std::vector<double>>& coords=std::vector<std::vector<double>>()
+  );
 
   // Utility methods
   virtual void fill_dense_representation(
@@ -57,11 +59,9 @@ class MatrixInitializer {
 
   LowRank get_compressed_representation(const ClusterTree& node);
 
-  bool is_admissible(
-    const ClusterTree& node,
-    const std::vector<std::vector<double>>& x=std::vector<std::vector<double>>(),
-    int admis_type=POSITION_BASED_ADMIS
-  ) const;
+  bool is_admissible(const ClusterTree& node) const;
+
+  virtual std::vector<std::vector<double>> get_coords_range(const IndexRange& range) const;
 
 };
 

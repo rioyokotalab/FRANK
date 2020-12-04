@@ -10,6 +10,7 @@
 #include "hicma/classes/initialization_helpers/matrix_initializer_block.h"
 #include "hicma/classes/initialization_helpers/matrix_initializer_kernel.h"
 #include "hicma/classes/initialization_helpers/matrix_initializer_file.h"
+#include "hicma/classes/initialization_helpers/matrix_initializer_starsh_exponential.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/LAPACK.h"
 #include "hicma/operations/misc.h"
@@ -48,14 +49,10 @@ define_method(Hierarchical&&, move_from_hierarchical, (Matrix& A)) {
 Hierarchical::Hierarchical(int64_t n_row_blocks, int64_t n_col_blocks)
 : dim{n_row_blocks, n_col_blocks}, data(dim[0]*dim[1]) {}
 
-Hierarchical::Hierarchical(
-  const ClusterTree& node,
-  MatrixInitializer& initer,
-  const std::vector<std::vector<double>>& x,
-  int admis_type
-) : dim(node.block_dim), data(dim[0]*dim[1]) {
+Hierarchical::Hierarchical(const ClusterTree& node, MatrixInitializer& initer)
+  : dim(node.block_dim), data(dim[0]*dim[1]) {
   for (const ClusterTree& child : node) {
-    if (initer.is_admissible(child, x, admis_type)) {
+    if (initer.is_admissible(child)) {
       (*this)[child] = initer.get_compressed_representation(child);
     } else {
       if (child.is_leaf()) {
@@ -73,7 +70,7 @@ Hierarchical::Hierarchical(
     const std::vector<std::vector<double>>& x,
     int64_t row_start, int64_t col_start
   ),
-  const std::vector<std::vector<double>>& x,
+  const std::vector<std::vector<double>>& coords,
   int64_t n_rows, int64_t n_cols,
   int64_t rank,
   int64_t nleaf,
@@ -82,11 +79,11 @@ Hierarchical::Hierarchical(
   int admis_type,
   int64_t row_start, int64_t col_start
 ) {
-  MatrixInitializerKernel initer(func, x, admis, rank);
+  MatrixInitializerKernel initer(func, coords, admis, rank, admis_type);
   ClusterTree cluster_tree(
     {row_start, n_rows}, {col_start, n_cols}, n_row_blocks, n_col_blocks, nleaf
   );
-  *this = Hierarchical(cluster_tree, initer, x, admis_type);
+  *this = Hierarchical(cluster_tree, initer);
 }
 
 Hierarchical::Hierarchical(
@@ -107,7 +104,7 @@ Hierarchical::Hierarchical(
 
 Hierarchical::Hierarchical(
   std::string filename, int ordering,
-  const std::vector<std::vector<double>>& x,
+  const std::vector<std::vector<double>>& coords,
   int64_t n_rows, int64_t n_cols,
   int64_t rank,
   int64_t nleaf,
@@ -116,7 +113,7 @@ Hierarchical::Hierarchical(
   int basis_type, int admis_type,
   int64_t row_start, int64_t col_start
 ) {
-  MatrixInitializerFile initer(filename, ordering, admis, rank, basis_type);
+  MatrixInitializerFile initer(filename, ordering, admis, rank, basis_type, admis_type, coords);
   ClusterTree cluster_tree(
                            {row_start, n_rows}, {col_start, n_cols}, n_row_blocks, n_col_blocks, nleaf
                            );
@@ -126,7 +123,24 @@ Hierarchical::Hierarchical(
     //  - Use Tracker in MatrixInitializer
     initer.create_nested_basis(cluster_tree);
   }
-  *this = Hierarchical(cluster_tree, initer, x, admis_type);
+  *this = Hierarchical(cluster_tree, initer);
+}
+
+Hierarchical::Hierarchical(
+  int64_t N, int64_t nleaf, int64_t nblocks, double beta,
+  double nu, double noise, double sigma, int ndim,
+  double admis, int64_t rank,
+  int basis_type, int admis_type,
+  int64_t row_start, int64_t col_start
+) {
+  MatrixInitializerStarshExponential initer(
+    N, beta, nu, noise, sigma, ndim,
+    admis, rank, basis_type, admis_type
+  );
+  ClusterTree cluster_tree(
+    {row_start, N}, {col_start, N}, nblocks, nblocks, nleaf
+  );
+  *this = Hierarchical(cluster_tree, initer);
 }
 
 const MatrixProxy& Hierarchical::operator[](const ClusterTree& node) const {

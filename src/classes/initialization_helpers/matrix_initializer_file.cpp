@@ -15,8 +15,10 @@ namespace hicma
 
 // Additional constructors
 MatrixInitializerFile::MatrixInitializerFile(
-  std::string filename, int ordering, double admis, int64_t rank, int basis_type
-) : MatrixInitializer(admis, rank, basis_type), filename(filename), ordering(ordering) {}
+  std::string filename, int ordering, double admis, int64_t rank, int basis_type,
+  int admis_type, const std::vector<std::vector<double>>& coords
+) : MatrixInitializer(admis, rank, basis_type, admis_type, coords),
+    filename(filename), ordering(ordering) {}
 
 // Utility methods
 void MatrixInitializerFile::fill_dense_representation(

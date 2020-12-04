@@ -23,7 +23,6 @@ class MatrixInitializerKernel : public MatrixInitializer {
     const std::vector<std::vector<double>>& x,
     int64_t row_start, int64_t col_start
   ) = nullptr;
-  const std::vector<std::vector<double>>& x;
  public:
 
   // Special member functions
@@ -46,7 +45,9 @@ class MatrixInitializerKernel : public MatrixInitializer {
       const std::vector<std::vector<double>>& x,
       int64_t row_start, int64_t col_start
     ),
-    const std::vector<std::vector<double>>& x, double admis, int64_t rank
+    const std::vector<std::vector<double>>& coords,
+    double admis, int64_t rank,
+    int admis_type
   );
 
   // Utility methods
