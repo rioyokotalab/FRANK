@@ -29,24 +29,36 @@ int main(int argc, char** argv) {
     D = Hierarchical(inputName+".csv", MATRIX_ROW_MAJOR, nodes, N, N, 0, Nb, Nc, Nc, Nc);
     A = Hierarchical(inputName+".csv", MATRIX_ROW_MAJOR, nodes, N, N, rank, Nb, admis, Nc, Nc, NORMAL_BASIS, GEOMETRY_BASED_ADMIS);
   }
-  else { //Use kernel and generated points
-    nodes.push_back(equallySpacedVector(N, 0.0, 1.0)); //x1,x2,...,xn
-    nodes.push_back(equallySpacedVector(N, 0.0, 1.0)); //y1,y2,...,yn
-    nodes.push_back(equallySpacedVector(N, 0.0, 1.0)); //z1,z2,...,zn
-    D = Hierarchical(laplacend, nodes, N, N, 0, Nb, Nc, Nc, Nc);
-    A = Hierarchical(laplacend, nodes, N, N, rank, Nb, admis, Nc, Nc, NORMAL_BASIS, GEOMETRY_BASED_ADMIS);
+  else { //Use starsh 3D exponential kernel
+    /* Default parameters for statistics */
+    double beta = 0.1;
+    double nu = 0.5;//in matern, nu=0.5 exp (half smooth), nu=inf sqexp (inifinetly smooth)
+    double noise = 1.e-1;
+    double sigma = 1.0;
+    int ndim = 3;
+    D = Hierarchical(N, Nb, Nc, beta, nu, noise, sigma, ndim, (double)Nc, Nb, NORMAL_BASIS, POSITION_BASED_ADMIS);
+    A = Hierarchical(N, Nb, Nc, beta, nu, noise, sigma, ndim, admis, rank, NORMAL_BASIS, GEOMETRY_BASED_ADMIS);
+
+    // std::vector<std::vector<double>> randx{get_sorted_random_vector(N)};
+    // starsh::exp_kernel_prepare(N, beta, nu, noise, sigma, ndim);
+    // D = Hierarchical(starsh::exp_kernel_fill, randx, N, N, Nb, Nb, (double)Nc);
+    // A = Hierarchical(starsh::exp_kernel_fill, randx, N, N, rank, Nb, admis);
   }
   print("Compression with BLR-matrix");
   std::cout <<inputName <<", N=" <<N <<",b=" <<Nb <<",rank=" <<rank <<",admis=" <<admis <<std::endl;
-  print("Rel. L2 Error", l2_error(D, A), false);
+  print("Rel. L2 Error", l2_error(A, D), false);
 
-  std::stringstream outName;
-  if(inputName.length () > 0)
-    outName <<inputName;
-  else
-    outName <<"Laplace3D_" <<N;
-  outName <<"_" <<Nb <<"_" <<admis <<".xml";
-  printXML(A, outName.str());
+  //Output matrix as XML
+  // std::stringstream outName;
+  // if(inputName.length () > 0)
+  //   outName <<inputName;
+  // else
+  //   outName <<"starsh_exp3d_" <<N;
+  // outName <<"_" <<Nb;
+  // printXML(D, outName.str() + ".xml");
+  // outName <<"_" <<admis;
+  // printXML(A, outName.str() + ".xml");
+
   return 0;
 }
 
