@@ -12,7 +12,7 @@
 namespace hicma
 {
 
-enum svdType {basic, powIt, powOrtho, singlePass};
+enum svdType {basic, powIt, powOrtho, singlePass, rankqr, ranklu, pqr};
 
 class LowRank : public Matrix {
  public:

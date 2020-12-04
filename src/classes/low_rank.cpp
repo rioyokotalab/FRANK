@@ -35,13 +35,22 @@ LowRank::LowRank(const Dense& A, int64_t k, svdType type)
   rank = std::min(std::min(k+5, dim[0]), dim[1]);
   Dense U_full, V_full;
   switch (type){
-    case powIt:         std::tie(U_full, S, V_full) = rsvd_pow(A, rank, 2);
+    case powIt:       std::tie(U_full, S, V_full) = rsvd_pow(A, rank, 2);
                       break;
 
     case powOrtho:    std::tie(U_full, S, V_full) = rsvd_powOrtho(A, rank, 2);
                       break;
 
     case singlePass:  std::tie(U_full, S, V_full) = rsvd_singlePass(A, rank);
+                      break;
+
+    case rankqr:      std::tie(U_full, S, V_full) = rrqr(A, k);
+                      break;
+
+    case ranklu:      std::tie(U_full, S, V_full) = rrlu(A, k);
+                      break;
+
+    case pqr:      std::tie(U_full, S, V_full) = pqr_block(true, A, k);
                       break;
 
     default:          std::tie(U_full, S, V_full) = rsvd(A, rank);

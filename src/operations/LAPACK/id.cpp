@@ -8,6 +8,7 @@
 #include "hicma/functions.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/util/omm_error_handler.h"
+#include "hicma/util/print.h"
 
 #include "yorel/yomm2/cute.hpp"
 
