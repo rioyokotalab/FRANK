@@ -242,9 +242,9 @@ define_method(Matrix&, addition_omm, (LowRank& A, const LowRank& B)) {
   assert(A.dim[0] == B.dim[0]);
   assert(A.dim[1] == B.dim[1]);
   assert(A.rank == B.rank);
-  if (getGlobalValue("LRA") == 0) {
+  if (getGlobalValue("HICMA_LRA") == "naive") {
     naive_addition(A, B);
-  } else if (getGlobalValue("LRA") == 1) {
+  } else if (getGlobalValue("HICMA_LRA") == "rounded_orth") {
     orthogonality_preserving_addition(A, B);
   } else {
     formatted_addition(A, B);

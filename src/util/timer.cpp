@@ -22,7 +22,7 @@ Timer GlobalTimer;
 Timer* current_timer = &GlobalTimer;
 
 Timer& start(std::string event) {
-  if(getGlobalValue("DISABLE_THREAD_UNSAFE_TIMER") != 1) {
+  if(getGlobalValue("HICMA_DISABLE_TIMER") != "1") {
     current_timer->start_subtimer(event);
     current_timer = &(*current_timer)[event];
   }
@@ -31,7 +31,7 @@ Timer& start(std::string event) {
 
 // TODO Refactor so this doesn't need event?
 double stop([[maybe_unused]] std::string event) {
-  if(getGlobalValue("DISABLE_THREAD_UNSAFE_TIMER") != 1) {
+  if(getGlobalValue("HICMA_DISABLE_TIMER") != "1") {
     assert(current_timer->get_name() == event);
     double duration = current_timer->stop();
     if (current_timer->get_parent() != nullptr) {
@@ -45,7 +45,7 @@ double stop([[maybe_unused]] std::string event) {
 void clearTimers() { GlobalTimer.clear(); }
 
 void stopAndPrint(std::string event, int depth) {
-  if(getGlobalValue("DISABLE_THREAD_UNSAFE_TIMER") != 1) {
+  if(getGlobalValue("HICMA_DISABLE_TIMER") != "1") {
     stop(event);
     printTime(event, depth);
   }

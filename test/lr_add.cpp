@@ -30,7 +30,7 @@ int main() {
   AWork = A;
   timing::stop("Init matrix");
   print("LR Add Naive");
-  setGlobalValue("LRA", 0);
+  setGlobalValue("HICMA_LRA", "naive");
   timing::start("LR Add Naive");
   start_schedule();
   AWork += B;
@@ -42,7 +42,7 @@ int main() {
   AWork = A;
   timing::stop("Init matrix");
   print("LR Add Orthogonal");
-  setGlobalValue("LRA", 1);
+  setGlobalValue("HICMA_LRA", "rounded_orth");
   timing::start("LR Add Orthogonal");
   start_schedule();
   AWork += B;

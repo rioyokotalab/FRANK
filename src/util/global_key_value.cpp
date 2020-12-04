@@ -1,16 +1,23 @@
 #include "hicma/util/global_key_value.h"
 
+#include <cstdlib>
+#include <map>
 
 namespace hicma {
 
-std::map<std::string, unsigned int> globalKeyValue;
+std::map<std::string, std::string> globalKeyValue;
 
-int getGlobalValue(std::string key) {
-  if(globalKeyValue.find(key) == globalKeyValue.end()) return -1;
-  else return (int)globalKeyValue[key];
+std::string getGlobalValue(std::string key) {
+  if(globalKeyValue.find(key) == globalKeyValue.end()) {
+    if(std::getenv(key.c_str()) != nullptr)
+      return std::string(std::getenv(key.c_str())); //Fallback to ENV Variable
+    else
+      return ""; //Return empty string if not found as well
+  }
+  else return globalKeyValue[key];
 }
 
-void setGlobalValue(std::string key, unsigned int value) {
+void setGlobalValue(std::string key, std::string value) {
   globalKeyValue[key] = value;
 }
 

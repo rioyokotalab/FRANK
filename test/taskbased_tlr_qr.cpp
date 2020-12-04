@@ -18,15 +18,15 @@ using namespace hicma;
 
 int main(int argc, char** argv) {
   hicma::initialize();
-  setGlobalValue("DISABLE_THREAD_UNSAFE_TIMER", 1);
   int64_t N = argc > 1 ? atoi(argv[1]) : 256;
   int64_t Nb = argc > 2 ? atoi(argv[2]) : 32;
   int64_t rank = argc > 3 ? atoi(argv[3]) : 16;
   double admis = argc > 4 ? atof(argv[4]) : 0;
   int64_t matCode = argc > 5 ? atoi(argv[5]) : 0;
-  int64_t lra = argc > 6 ? atoi(argv[6]) : 1; setGlobalValue("LRA", lra);
   int64_t Nc = N / Nb;
   std::vector<std::vector<double>> randpts;
+  setGlobalValue("HICMA_LRA", "rounded_orth");
+  setGlobalValue("HICMA_DISABLE_TIMER", "1");
 
   Hierarchical A;
   Hierarchical D;
