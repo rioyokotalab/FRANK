@@ -1,6 +1,7 @@
 #ifndef hicma_classes_hierarchical_h
 #define hicma_classes_hierarchical_h
 
+#include "hicma/definitions.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
 
@@ -18,9 +19,6 @@ class Dense;
 class ClusterTree;
 class MatrixInitializer;
 
-//TODO consider using scoped (named) enum
-enum { NORMAL_BASIS, SHARED_BASIS };
-enum { POSITION_BASED_ADMIS, GEOMETRY_BASED_ADMIS };
 
 class Hierarchical : public Matrix {
  public:
@@ -75,14 +73,14 @@ class Hierarchical : public Matrix {
   );
 
   Hierarchical(
-    std::string filename, int ordering,
+    std::string filename, MatrixLayout ordering,
     const std::vector<std::vector<double>>& coords,
     int64_t n_rows, int64_t n_cols,
     int64_t rank,
     int64_t nleaf,
     double admis=1,
     int64_t n_row_blocks=2, int64_t n_col_blocks=2,
-    int basis_type=NORMAL_BASIS, int admis_type=POSITION_BASED_ADMIS,
+    BasisType basis_type=NORMAL_BASIS, int admis_type=POSITION_BASED_ADMIS,
     int64_t row_start=0, int64_t col_start=0
   );
 
@@ -90,7 +88,7 @@ class Hierarchical : public Matrix {
     int64_t N, int64_t nleaf, int64_t nblocks,
     double beta, double nu, double noise, double sigma, int ndim,
     double admis, int64_t rank,
-    int basis_type=NORMAL_BASIS, int admis_type=POSITION_BASED_ADMIS,
+    BasisType basis_type=NORMAL_BASIS, int admis_type=POSITION_BASED_ADMIS,
     int64_t row_start=0, int64_t col_start=0
   );
 

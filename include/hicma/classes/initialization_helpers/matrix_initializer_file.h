@@ -1,6 +1,7 @@
 #ifndef hicma_classes_initialization_helpers_matrix_initializer_file_h
 #define hicma_classes_initialization_helpers_matrix_initializer_file_h
 
+#include "hicma/definitions.h"
 #include "hicma/classes/dense.h"
 #include "hicma/classes/initialization_helpers/matrix_initializer.h"
 
@@ -16,7 +17,7 @@ class IndexRange;
 class MatrixInitializerFile : public MatrixInitializer {
  private:
   std::string filename;
-  int ordering;
+  MatrixLayout ordering;
  public:
   // Special member functions
   MatrixInitializerFile() = delete;
@@ -33,7 +34,7 @@ class MatrixInitializerFile : public MatrixInitializer {
 
   // Additional constructors
   MatrixInitializerFile(
-    std::string filename, int ordering, double admis, int64_t rank, int basis_type,
+    std::string filename, MatrixLayout ordering, double admis, int64_t rank, BasisType basis_type,
     int admis_type, const std::vector<std::vector<double>>& coords
   );
 

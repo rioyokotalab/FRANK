@@ -1,6 +1,7 @@
 #ifndef hicma_classes_initialization_helpers_matrix_initializer_h
 #define hicma_classes_initialization_helpers_matrix_initializer_h
 
+#include "hicma/definitions.h"
 #include "hicma/classes/dense.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/initialization_helpers/index_range.h"

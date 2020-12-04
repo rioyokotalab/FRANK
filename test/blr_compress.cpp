@@ -26,8 +26,8 @@ int main(int argc, char** argv) {
   std::vector<std::vector<double>> nodes;
   if(inputName.length() > 0) { //Supply inputName.csv and inputName.geom files
     nodes = read_geometry_file(inputName+".geom");
-    D = Hierarchical(inputName+".csv", MATRIX_ROW_MAJOR, nodes, N, N, 0, Nb, Nc, Nc, Nc);
-    A = Hierarchical(inputName+".csv", MATRIX_ROW_MAJOR, nodes, N, N, rank, Nb, admis, Nc, Nc, NORMAL_BASIS, GEOMETRY_BASED_ADMIS);
+    D = Hierarchical(inputName+".csv", HICMA_ROW_MAJOR, nodes, N, N, 0, Nb, Nc, Nc, Nc);
+    A = Hierarchical(inputName+".csv", HICMA_ROW_MAJOR, nodes, N, N, rank, Nb, admis, Nc, Nc, NORMAL_BASIS, GEOMETRY_BASED_ADMIS);
   }
   else { //Use starsh 3D exponential kernel
     /* Default parameters for statistics */

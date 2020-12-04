@@ -103,14 +103,14 @@ Hierarchical::Hierarchical(
 }
 
 Hierarchical::Hierarchical(
-  std::string filename, int ordering,
+  std::string filename, MatrixLayout ordering,
   const std::vector<std::vector<double>>& coords,
   int64_t n_rows, int64_t n_cols,
   int64_t rank,
   int64_t nleaf,
   double admis,
   int64_t n_row_blocks, int64_t n_col_blocks,
-  int basis_type, int admis_type,
+  BasisType basis_type, int admis_type,
   int64_t row_start, int64_t col_start
 ) {
   MatrixInitializerFile initer(filename, ordering, admis, rank, basis_type, admis_type, coords);
@@ -130,7 +130,7 @@ Hierarchical::Hierarchical(
   int64_t N, int64_t nleaf, int64_t nblocks, double beta,
   double nu, double noise, double sigma, int ndim,
   double admis, int64_t rank,
-  int basis_type, int admis_type,
+  BasisType basis_type, int admis_type,
   int64_t row_start, int64_t col_start
 ) {
   MatrixInitializerStarshExponential initer(

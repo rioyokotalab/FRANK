@@ -1,7 +1,7 @@
 #ifndef hicma_h
 #define hicma_h
 
-
+#include "hicma/definitions.h"
 #include "hicma/classes.h"
 #include "hicma/functions.h"
 #include "hicma/operations.h"

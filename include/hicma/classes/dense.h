@@ -17,9 +17,6 @@ class DataHandler;
 class IndexRange;
 class Task;
 
-//TODO consider using scoped (named) enum
-enum { MATRIX_ROW_MAJOR, MATRIX_COL_MAJOR };
-
 class Dense : public Matrix {
   // TODO Find way to avoid using friend here! Best not to rely on it.
   // Also don't wanna expose the DataHandler directly though...

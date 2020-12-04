@@ -1,9 +1,8 @@
 #ifndef hicma_classes_initialization_helpers_matrix_initializer_kernel_h
 #define hicma_classes_initialization_helpers_matrix_initializer_kernel_h
 
+#include "hicma/definitions.h"
 #include "hicma/classes/dense.h"
-// TODO Note that this include is only for the enum (NORMAL_BASIS)
-#include "hicma/classes/hierarchical.h"
 #include "hicma/classes/initialization_helpers/matrix_initializer.h"
 
 #include <cstdint>

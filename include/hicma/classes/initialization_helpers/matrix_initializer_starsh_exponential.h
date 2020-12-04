@@ -1,6 +1,7 @@
 #ifndef MATRIX_INITIALIZER_STARSH_EXPONENTIAL_H
 #define MATRIX_INITIALIZER_STARSH_EXPONENTIAL_H
 
+#include "hicma/definitions.h"
 #include "hicma/classes/dense.h"
 #include "hicma/classes/initialization_helpers/matrix_initializer.h"
 
@@ -30,7 +31,7 @@ class MatrixInitializerStarshExponential : public MatrixInitializer {
 
   MatrixInitializerStarshExponential(
     int64_t N, double beta, double nu, double noise, double sigma, int ndim,
-    double admis, int64_t rank, int basis_type, int admis_type
+    double admis, int64_t rank, BasisType basis_type, int admis_type
   );
 
   ~MatrixInitializerStarshExponential();
