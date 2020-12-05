@@ -22,47 +22,26 @@ int main(int argc, char** argv) {
   int64_t Nb = argc > 2 ? atoi(argv[2]) : 32;
   int64_t rank = argc > 3 ? atoi(argv[3]) : 16;
   double admis = argc > 4 ? atof(argv[4]) : 0;
-  int64_t matCode = argc > 5 ? atoi(argv[5]) : 0;
   int64_t Nc = N / Nb;
-  std::vector<std::vector<double>> randpts;
   setGlobalValue("HICMA_LRA", "rounded_orth");
   setGlobalValue("HICMA_DISABLE_TIMER", "1");
 
-  Hierarchical A;
-  Hierarchical D;
-  if(matCode == 0) { //Laplace1D
-    randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
-    A = Hierarchical(laplacend, randpts, N, N, rank, Nb, admis, Nc, Nc);
-    D = Hierarchical(laplacend, randpts, N, N, 0, Nb, Nc, Nc, Nc);
-  } else if (matCode == 1) { //Laplace2D
-    randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
-    randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
-    A = Hierarchical(laplacend, randpts, N, N, rank, Nb, admis, Nc, Nc);
-    D = Hierarchical(laplacend, randpts, N, N, 0, Nb, Nc, Nc, Nc);
-  } else if(matCode == 2) { //Helmholtz2D
-    randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
-    randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
-    A = Hierarchical(helmholtznd, randpts, N, N, rank, Nb, admis, Nc, Nc);
-    D = Hierarchical(helmholtznd, randpts, N, N, 0, Nb, Nc, Nc, Nc);
-  } else { //Cauchy2D
-    randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
-    randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
-    A = Hierarchical(cauchy2d, randpts, N, N, rank, Nb, admis, Nc, Nc);
-    D = Hierarchical(cauchy2d, randpts, N, N, 0, Nb, Nc, Nc, Nc);
-  }
+  std::vector<std::vector<double>> randpts;
+  randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
+  randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
+  Hierarchical D(laplacend, randpts, N, N, Nb, Nb, Nc, Nc, Nc);
+  Hierarchical A(laplacend, randpts, N, N, rank, Nb, admis, Nc, Nc);
+  print("BLR Compression");
+  print("Compression Accuracy");
+  print("Rel. L2 Error", l2_error(A, D), false);
+
   Hierarchical Q(identity, std::vector<std::vector<double>>(), N, N, rank, Nb, admis, Nc, Nc);
-  Hierarchical T(zeros, std::vector<std::vector<double>>(), N, N, 0, Nb, Nc, Nc, Nc);
-
-  print("Cond(A)", cond(Dense(A)), false);
-
+  Hierarchical T(zeros, std::vector<std::vector<double>>(), N, N, Nb, Nb, Nc, Nc, Nc);
   // For residual measurement
   Dense x(N); x = 1.0;
   Dense Ax = gemm(A, x);
 
-  print("BLR QR Decomposition");
-  print("Compression Accuracy");
-  print("Rel. L2 Error", l2_error(A, D), false);
-
+  print("Hicma Forkjoin BLR QR Decomposition");
   print("Time");
   double tic = get_time();
   for(int64_t k = 0; k < Nc; k++) {
@@ -80,7 +59,7 @@ int main(int argc, char** argv) {
     }
   }
   double toc = get_time();
-  print("Fork-Join BLR QR Decomposition", toc-tic);
+  print("BLR QR Decomposition", toc-tic);
 
   //Build Q: Apply Q to Id
   for(int64_t k = Nc-1; k >= 0; k--) {
