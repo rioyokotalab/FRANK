@@ -168,7 +168,7 @@ int main() {
   timing::stopAndPrint("PQR", 2);
   //print("Rel. L2 Error", l2_error(D, QR), false);
   */
-  /*Dense U, S, V;
+  Dense U, S, V;
   timing::start("SVD");
   Dense DC(D);
   std::tie(U, S, V) = svd(DC);
@@ -179,7 +179,7 @@ int main() {
   timing::start("Randomized SVD");
   LowRank LR(D, rank);
   timing::stopAndPrint("Randomized SVD", 2);
-  print("Rel. L2 Error", l2_error(D, LR), false);*/
+  print("Rel. L2 Error", l2_error(D, LR), false);
   /*
   print("RSVD - Power Iteration");
   timing::start("Randomized SVD pow");
@@ -215,7 +215,7 @@ int main() {
   for (size_t i=0; i<perm.size();++i)
   printf("%dl\n", perm[i]);*/
 
-  /*print("ID");
+  print("ID");
   //Dense U, S, V;
   timing::start("ID");
   Dense Dwork(D);
@@ -244,7 +244,7 @@ int main() {
   for (int64_t i=0; i<rank; ++i)
     P(i, selected_cols[i]) = 1;
   test = gemm(V, gemm(P, D), 1, true, false);
-  print("Rel. L2 Error", l2_error(D, test), false);*/
+  print("Rel. L2 Error", l2_error(D, test), false);
   
   print("adaptive cross approximation ACA");
   Dense U,V;
