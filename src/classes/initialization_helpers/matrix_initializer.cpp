@@ -73,7 +73,7 @@ bool MatrixInitializer::is_admissible(const ClusterTree& node) const {
       dist += d * d;
     }
     double diam = std::max(max_length_row, max_length_col);
-    admissible &= ((diam * diam) <= (admis * admis * dist));
+    admissible &= ((admis * admis * diam * diam) <= dist);
   }
   return admissible;
 }
