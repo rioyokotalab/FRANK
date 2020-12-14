@@ -13,7 +13,7 @@ extern bool VERBOSE;
 
 std::string type(const Matrix&);
 
-void printXML(const Matrix& A, std::string filename = "matrix.xml");
+void write_JSON(const Matrix& A, std::string filename = "matrix.json");
 
 void print(const Matrix&);
 

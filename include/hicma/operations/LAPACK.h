@@ -56,7 +56,7 @@ std::tuple<Dense, Dense, Dense> svd(Dense& A);
 std::tuple<Dense, Dense, Dense> sdd(Dense& A);
 
 // TODO Does this need to be in the header?
-Dense get_singular_values(Dense& A);
+std::vector<double> get_singular_values(Dense& A);
 
 void tpmqrt(const Matrix&, const Matrix&, Matrix&, Matrix&, bool);
 

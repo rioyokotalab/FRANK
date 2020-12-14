@@ -54,8 +54,8 @@ find_or_download(starpu PKG_CONFIG VERSION 1.3)
 link_directories(${starpu_LIBRARY_DIRS})
 
 # Boost
-find_or_download(Boost VERSION 1.65.0 EXACT)
-list(APPEND HICMA_DEPENDENCIES Boost::boost)
+find_or_download(nlohmann_json)
+list(APPEND HICMA_DEPENDENCIES nlohmann_json::nlohmann_json)
 
 # MKL or other BLAS/LAPACK libraries (default is other)
 option(USE_MKL "Use Intel Math Kernel Libraries (MKL)" OFF)
