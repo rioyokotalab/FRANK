@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
     laplacend, randx, N, N, rank, nleaf, admis, nblocks, nblocks, basis);
   execute_schedule();
   timing::stop("Hierarchical compression");
-  // printXML(A);
+  // write_JSON(A);
   gemm(A, x, b, 1, 1);
 
   print("Compression Accuracy");

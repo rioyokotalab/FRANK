@@ -25,7 +25,7 @@ namespace hicma
 
 double cond(Dense A) {
   int64_t k = std::min(A.dim[0], A.dim[1]);
-  Dense S = get_singular_values(A);
+  std::vector<double> S = get_singular_values(A);
   return (S[0] / S[k-1]);
 }
 

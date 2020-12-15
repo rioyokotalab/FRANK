@@ -7,16 +7,16 @@
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/nested_basis.h"
 #include "hicma/operations/LAPACK.h"
+#include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
 
-#include "boost/property_tree/ptree.hpp"
-#include "boost/property_tree/xml_parser.hpp"
-namespace pt = boost::property_tree;
+#include "nlohmann/json.hpp"
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
 
 #include <cstdint>
-#include <cstdlib>
+#include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <string>
 
@@ -51,100 +51,83 @@ define_method(std::string, type_omm, ([[maybe_unused]] const Matrix&)) {
 }
 
 declare_method(
-  void, fillXML_omm,
-  (virtual_<const Matrix&>, pt::ptree&, int64_t, int64_t, int64_t)
+  void, to_json_omm,
+  (virtual_<const Matrix&>, nlohmann::json&, int64_t, int64_t, int64_t)
 )
 
-void fillXML(
-  const Matrix& A, pt::ptree& tree,
+void to_json(
+  nlohmann::json& json, const Matrix& A,
   int64_t i_abs=0, int64_t j_abs=0, int64_t level=0
 ) {
-  fillXML_omm(A, tree, i_abs, j_abs, level);
+  json["type"] = type(A);
+  json["dim"] = {get_n_rows(A), get_n_cols(A)};
+  to_json_omm(A, json, i_abs, j_abs, level);
 }
 
 define_method(
-  void, fillXML_omm,
+  void, to_json_omm,
   (
-    const Hierarchical& A, pt::ptree& tree,
+    const Hierarchical& A, nlohmann::json& json,
     int64_t i_abs, int64_t j_abs, int64_t level
   )
 ) {
+  json["abs_pos"] = {i_abs, j_abs};
+  json["level"] = level;
+  json["children"] = {};
   for (int64_t i=0; i<A.dim[0]; i++) {
+    std::vector<nlohmann::json> row(A.dim[1]);
     for (int64_t j=0; j<A.dim[1]; j++) {
-      pt::ptree el_subtree{};
-      fillXML(A(i, j), el_subtree, i_abs*A.dim[0]+i, j_abs*A.dim[1]+j, level+1);
-      std::string el_name = "i" + std::to_string(i) + "j" + std::to_string(j);
-      tree.add_child(el_name, el_subtree);
-      tree.put(el_name + ".<xmlattr>.type", type(A(i, j)));
+      to_json(row[j], A(i, j), i_abs*A.dim[0]+i, j_abs*A.dim[1]+j, level+1);
+      // std::string el_name = "i" + std::to_string(i) + "j" + std::to_string(j);
+      // tree.add_child(el_name, el_subtree);
+      // tree.put(el_name + ".<xmlattr>.type", type(A(i, j)));
     }
+    json["children"].push_back(row);
   }
-  tree.put("<xmlattr>.type", type(A));
-  tree.put("<xmlattr>.dim0", A.dim[0]);
-  tree.put("<xmlattr>.dim1", A.dim[1]);
-  tree.put("<xmlattr>.i_abs", i_abs);
-  tree.put("<xmlattr>.j_abs", j_abs);
-  tree.put("<xmlattr>.level", level);
 }
 
 define_method(
-  void, fillXML_omm,
+  void, to_json_omm,
   (
-    const LowRank& A, pt::ptree& tree,
+    const LowRank& A, nlohmann::json& json,
     int64_t i_abs, int64_t j_abs, int64_t level
   )
 ) {
+  json["abs_pos"] = {i_abs, j_abs};
+  json["level"] = level;
   Dense AD(A);
-  Dense S = get_singular_values(AD);
-  std::string singular_values = std::to_string(S[0]);
-  for (int64_t i=1; i<S.dim[0]; ++i)
-    singular_values += std::string(",") + std::to_string(S[i]);
-  tree.put("<xmlattr>.type", type(A));
-  tree.put("<xmlattr>.dim0", A.dim[0]);
-  tree.put("<xmlattr>.dim1", A.dim[1]);
-  tree.put("<xmlattr>.i_abs", i_abs);
-  tree.put("<xmlattr>.j_abs", j_abs);
-  tree.put("<xmlattr>.level", level);
-  tree.put("<xmlattr>.rank", A.rank);
-  tree.put("<xmlattr>.svalues", singular_values);
+  json["svalues"] = get_singular_values(AD);
+  json["rank"] = A.rank;
 }
 
 define_method(
-  void, fillXML_omm,
-  (const Dense& A, pt::ptree& tree, int64_t i_abs, int64_t j_abs, int64_t level)
-) {
-  Dense A_(A);
-  Dense S = get_singular_values(A_);
-  std::string singular_values = std::to_string(S[0]);
-  for (int64_t i=1; i<S.dim[0]; ++i)
-    singular_values += std::string(",") + std::to_string(S[i]);
-  tree.put("<xmlattr>.type", type(A));
-  tree.put("<xmlattr>.dim0", A.dim[0]);
-  tree.put("<xmlattr>.dim1", A.dim[1]);
-  tree.put("<xmlattr>.i_abs", i_abs);
-  tree.put("<xmlattr>.j_abs", j_abs);
-  tree.put("<xmlattr>.level", level);
-  tree.put("<xmlattr>.svalues", singular_values);
-}
-
-define_method(
-  void, fillXML_omm,
+  void, to_json_omm,
   (
-    const Matrix& A, [[maybe_unused]] pt::ptree& tree,
+    const Dense& A, nlohmann::json& json,
+    int64_t i_abs, int64_t j_abs, int64_t level
+  )
+) {
+  json["abs_pos"] = {i_abs, j_abs};
+  json["level"] = level;
+  Dense A_(A);
+  json["svalues"] = get_singular_values(A_);
+}
+
+define_method(
+  void, to_json_omm,
+  (
+    const Matrix& A, [[maybe_unused]] nlohmann::json& json,
     [[maybe_unused]] int64_t i_abs, [[maybe_unused]] int64_t j_abs,
     [[maybe_unused]] int64_t level
   )
 ) {
-  omm_error_handler("fillXML", {A}, __FILE__, __LINE__);
+  omm_error_handler("to_json", {A}, __FILE__, __LINE__);
 }
 
-void printXML(const Matrix& A, std::string filename) {
-  pt::ptree tree;
-  // Write any header info you want here, like a time stamp
-  // And then pass pass A into printXML along with the basic ptree
-  pt::ptree root_el;
-  fillXML(A, root_el);
-  tree.add_child("root", root_el);
-  write_xml(filename.c_str(), tree, std::locale());
+void write_JSON(const Matrix& A, std::string filename) {
+  nlohmann::json json(A);
+  std::ofstream out_file(filename);
+  out_file << json;
 }
 
 void print(const Matrix& A) {

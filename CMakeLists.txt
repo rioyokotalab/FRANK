@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.6)
 
 project(HICMA
-    LANGUAGES CXX
-    VERSION 1.0
+  LANGUAGES CXX
+  VERSION 1.0
 )
 
 # Use Release build by default
@@ -12,18 +12,18 @@ endif()
 
 # Require C++ 17
 if(${CMAKE_VERSION} VERSION_LESS "3.8.2")
-    # TODO This is not compiler agnostic (only clang, gcc)
-    list(APPEND HICMA_OPTIONS -std=c++17)
+  # TODO This is not compiler agnostic (only clang, gcc)
+  list(APPEND HICMA_OPTIONS -std=c++17)
 else()
-    list(APPEND HICMA_FEATURES cxx_std_17)
+  list(APPEND HICMA_FEATURES cxx_std_17)
 endif()
 
 # Set warnings and optimization level
 list(APPEND HICMA_OPTIONS -Wall -Wextra -pedantic)
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    list(APPEND HICMA_OPTIONS -O3)
+  list(APPEND HICMA_OPTIONS -O3)
 elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    list(APPEND HICMA_OPTIONS -g)
+  list(APPEND HICMA_OPTIONS -g)
 endif()
 
 # Decide where build results should be saved
@@ -32,9 +32,9 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 # Set default install path
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    set(CMAKE_INSTALL_PREFIX
-        "${CMAKE_SOURCE_DIR}/install" CACHE PATH "Default install path" FORCE
-    )
+  set(CMAKE_INSTALL_PREFIX
+    "${CMAKE_SOURCE_DIR}/install" CACHE PATH "Default install path" FORCE
+  )
 endif()
 
 
@@ -46,7 +46,7 @@ include(find_or_download)
 # Check for OpenMP
 find_package(OpenMP)
 if(OpenMP_FOUND)
-    list(APPEND HICMA_OPTIONS ${OpenMP_CXX_FLAGS})
+  list(APPEND HICMA_OPTIONS ${OpenMP_CXX_FLAGS})
 endif()
 
 # StarPU
@@ -54,23 +54,23 @@ find_or_download(starpu PKG_CONFIG VERSION 1.3)
 link_directories(${starpu_LIBRARY_DIRS})
 
 # Boost
-find_or_download(Boost VERSION 1.65.0 EXACT)
-list(APPEND HICMA_DEPENDENCIES Boost::boost)
+find_or_download(nlohmann_json)
+list(APPEND HICMA_DEPENDENCIES nlohmann_json::nlohmann_json)
 
 # MKL or other BLAS/LAPACK libraries (default is other)
 option(USE_MKL "Use Intel Math Kernel Libraries (MKL)" OFF)
 if(${USE_MKL})
-    list(APPEND HICMA_DEFINITIONS USE_MKL)
-    set(BLA_VENDOR Intel10_64lp)
-    find_package(BLAS REQUIRED)
-    find_package(LAPACK REQUIRED)
-    list(APPEND HICMA_DEPENDENCIES ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+  list(APPEND HICMA_DEFINITIONS USE_MKL)
+  set(BLA_VENDOR Intel10_64lp)
+  find_package(BLAS REQUIRED)
+  find_package(LAPACK REQUIRED)
+  list(APPEND HICMA_DEPENDENCIES ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 else()
-    find_package(BLAS REQUIRED)
-    find_package(LAPACK REQUIRED)
-    find_or_download(CBLAS)
-    find_or_download(LAPACKE)
-    list(APPEND HICMA_DEPENDENCIES cblas lapacke)
+  find_package(BLAS REQUIRED)
+  find_package(LAPACK REQUIRED)
+  find_or_download(CBLAS)
+  find_or_download(LAPACKE)
+  list(APPEND HICMA_DEPENDENCIES cblas lapacke)
 endif()
 
 # Open Multi-Method depdency
@@ -88,10 +88,10 @@ add_subdirectory(src)
 ## Testing code
 option(BUILD_TESTS "Build unit and other tests" ON)
 if(${BUILD_TESTS})
-    find_or_download(GTest)
-    # Enable test for googletest
-    enable_testing()
-    add_subdirectory(test)
+  find_or_download(GTest)
+  # Enable test for googletest
+  enable_testing()
+  add_subdirectory(test)
 endif()
 
 ## Install instruction
@@ -115,6 +115,6 @@ install(EXPORT HiCMATargets
 )
 # Copy headers to install directory
 install(
-    DIRECTORY ${CMAKE_SOURCE_DIR}/include/hicma
-    DESTINATION include
+  DIRECTORY ${CMAKE_SOURCE_DIR}/include/hicma
+  DESTINATION include
 )

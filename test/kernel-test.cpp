@@ -29,14 +29,14 @@ int main([[maybe_unused]] int argc, char** argv) {
   Hierarchical A(laplacend, randx, N, N, rank, nleaf, admis,
                nblocks, nblocks, basis);
   timing::stop("Hierarchical compression");
-  printXML(A, std::string("laplace1d-") + std::to_string(N) + std::string("-") + std::to_string(nleaf) + std::string("-") +
+  write_JSON(A, std::string("laplace1d-") + std::to_string(N) + std::string("-") + std::to_string(nleaf) + std::string("-") +
            std::to_string(rank) + std::string("-") + std::to_string(admis) + std::string(".xml"));
 
   print("Generate hicma Cauchy 2D.");
   std::vector<std::vector<double>> randx1{get_sorted_random_vector(N), get_sorted_random_vector(N)};
   Hierarchical A1(cauchy2d, randx1, N, N, rank, nleaf, admis,
                nblocks, nblocks, basis);
-  printXML(A1, std::string("cauchy2d-") + std::to_string(N) + std::string("-") + std::to_string(nleaf) + std::string("-") +
+  write_JSON(A1, std::string("cauchy2d-") + std::to_string(N) + std::string("-") + std::to_string(nleaf) + std::string("-") +
            std::to_string(rank) + std::string("-") + std::to_string(admis) + std::string(".xml"));
 
   print("Generate stars-h 3D exponential.");
@@ -50,7 +50,7 @@ int main([[maybe_unused]] int argc, char** argv) {
 
   Hierarchical A2(starsh::exp_kernel_fill, randx, N, N, rank, nleaf, admis,
                  nblocks, nblocks, basis);
-  printXML(A2, std::string("exp-3d-") + std::to_string(N) + std::string("-") + std::to_string(nleaf) + std::string("-") +
+  write_JSON(A2, std::string("exp-3d-") + std::to_string(N) + std::string("-") + std::to_string(nleaf) + std::string("-") +
            std::to_string(rank) + std::string("-") + std::to_string(admis) + std::string(".xml"));
   starsh::exp_kernel_cleanup();
 
@@ -59,7 +59,7 @@ int main([[maybe_unused]] int argc, char** argv) {
 
   Hierarchical A3(starsh::exp_kernel_fill, randx, N, N, rank, nleaf, admis,
                   nblocks, nblocks, basis);
-  printXML(A3, std::string("exp-2d-") + std::to_string(N) + std::string("-") + std::to_string(nleaf) + std::string("-") +
+  write_JSON(A3, std::string("exp-2d-") + std::to_string(N) + std::string("-") + std::to_string(nleaf) + std::string("-") +
            std::to_string(rank) + std::string("-") + std::to_string(admis) + std::string(".xml"));
   starsh::exp_kernel_cleanup();
 

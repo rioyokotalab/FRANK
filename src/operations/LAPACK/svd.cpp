@@ -14,6 +14,7 @@
 #include <cstdint>
 #include <tuple>
 #include <utility>
+#include <vector>
 
 
 namespace hicma
@@ -55,8 +56,8 @@ std::tuple<Dense, Dense, Dense> sdd(Dense& A) {
   return {std::move(U), std::move(S), std::move(V)};
 }
 
-Dense get_singular_values(Dense& A) {
-  Dense Sdiag(std::min(A.dim[0], A.dim[1]), 1);
+std::vector<double> get_singular_values(Dense& A) {
+  std::vector<double> Sdiag(std::min(A.dim[0], A.dim[1]), 1);
   Dense work(A.dim[1]-1,1);
   // Since we use 'N' we can avoid allocating memory for U and V
   LAPACKE_dgesvd(
@@ -64,7 +65,7 @@ Dense get_singular_values(Dense& A) {
     'N', 'N',
     A.dim[0], A.dim[1],
     &A, A.stride,
-    &Sdiag,
+    Sdiag.data(),
     &work, A.stride,
     &work, A.stride,
     &work
