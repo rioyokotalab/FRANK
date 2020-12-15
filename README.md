@@ -10,12 +10,12 @@ Library for hierarchical low-rank matrix operations that calls kblas.
 
 ## ABCI
 
-Run the following in the project root:
+How to build and make
 ```
-module load cmake gcc/7.4.0 intel-mkl intel
 mkdir build
 cd build
 cmake -DUSE_MKL=ON ..
+make
 ```
 
 # Classes and their details
