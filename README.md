@@ -6,17 +6,14 @@ opposite direction.” - Albert Einstein
 
 Library for hierarchical low-rank matrix operations that calls kblas.
 
-# Compiling
-
-## ABCI
-
-How to build and make
+# How to build and make
 ```
 mkdir build
 cd build
 cmake -DUSE_MKL=ON ..
 make
 ```
+binaries will be compiled into bin.
 
 # Classes and their details
 ```c++
