@@ -4,6 +4,7 @@
 #include "hicma/functions.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/LAPACK.h"
+#include "hicma/operations/misc.h"
 
 #include <cstdint>
 #include <tuple>
@@ -31,6 +32,27 @@ std::tuple<Dense, Dense, Dense> rid(
 }
 
 std::tuple<Dense, std::vector<int64_t>> one_sided_rid(
+  const Dense& A, int64_t sample_size, int64_t rank, bool column
+) {
+  // Number of random samples: ColumnID -> m, RowID -> n
+  Dense RN(
+    random_uniform, std::vector<std::vector<double>>(),
+    A.dim[column? 0 : 1], sample_size
+  );
+  Dense Y;
+  if (column) {
+    Y = gemm(RN, A, 1, true, false);
+  }
+  else {
+    Y = transpose(gemm(A, RN));
+  }
+  Dense V;
+  std::vector<int64_t> selected_cols;
+  std::tie(V, selected_cols) = one_sided_id(Y, rank);
+  return {std::move(V), std::move(selected_cols)};
+}
+
+std::tuple<Dense, std::vector<int64_t>> old_one_sided_rid(
   const Dense& A, int64_t sample_size, int64_t rank, bool transA
 ) {
   Dense RN(
