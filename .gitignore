@@ -2,8 +2,10 @@ build
 bin
 lib
 install
+.env
 
 *.json
+*.pdf
 TAGS
 *~
 
