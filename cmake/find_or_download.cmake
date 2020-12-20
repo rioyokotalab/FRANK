@@ -1,4 +1,4 @@
-function(find_or_download PACKAGE)
+macro(find_or_download PACKAGE)
   set(options EXACT PKG_CONFIG INSTALL_WITH_HiCMA)
   set(oneValueArgs VERSION)
   cmake_parse_arguments(ARGS
@@ -91,4 +91,4 @@ function(find_or_download PACKAGE)
     endif()
     message(STATUS "Using ${PACKAGE} from ${DEPENDENCY_INSTALL_PREFIX}.")
   endif()
-endfunction()
+endmacro()
