@@ -50,7 +50,7 @@ if(OpenMP_FOUND)
 endif()
 
 # StarPU
-find_or_download(starpu PKG_CONFIG VERSION 1.3)
+find_or_download(starpu PKG_CONFIG VERSION 1.3 INSTALL_WITH_HiCMA)
 link_directories(${starpu_LIBRARY_DIRS})
 
 # Boost
@@ -93,6 +93,23 @@ if(${BUILD_TESTS})
   enable_testing()
   add_subdirectory(test)
 endif()
+
+# Use the full RPATH for the build tree
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+# When building, don't use the install RPATH (but later on when installing)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+# Add the automatically determined parts of the RPATH which point to directories
+# outside the build tree to the install RPATH
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+# the RPATH to be used when installing, but only if it's not a system directory
+list(
+  FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES
+  "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir
+)
+if("${isSystemDir}" STREQUAL "-1")
+    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+endif("${isSystemDir}" STREQUAL "-1")
 
 ## Install instruction
 # Create version file for cmake package
