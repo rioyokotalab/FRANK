@@ -24,7 +24,9 @@ std::tuple<MatrixProxy, MatrixProxy> getrf(Matrix&);
 std::tuple<Dense, std::vector<int64_t>> one_sided_id(Matrix& A, int64_t k);
 
 // TODO Does this need to be in the header?
+// Used in tests for randomized ID
 Dense get_cols(const Dense& A, std::vector<int64_t> P);
+Dense get_rows(const Dense& A, std::vector<int64_t> P);
 
 std::tuple<Dense, Dense, Dense> id(Matrix& A, int64_t k);
 

@@ -18,6 +18,7 @@ namespace hicma
 std::tuple<Dense, Dense, Dense> rid(
   const Dense& A, int64_t sample_size, int64_t rank
 ) {
+  //Why can the sampling only be specified in the ID and not the SVD?
   Dense RN(
     random_uniform, std::vector<std::vector<double>>(), A.dim[1], sample_size);
   Dense Y = gemm(A, RN);

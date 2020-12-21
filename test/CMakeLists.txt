@@ -1,4 +1,4 @@
-list(APPEND GTEST_TESTS "dense" "id")
+list(APPEND GTEST_TESTS "dense" "id" "rand_factorizations")
 foreach(TEST ${GTEST_TESTS})
   add_executable(${TEST}_test ${TEST}_test.cpp)
   target_link_libraries(${TEST}_test hicma GTest::gtest_main stdc++ m dl)
