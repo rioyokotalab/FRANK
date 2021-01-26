@@ -30,23 +30,23 @@ static const int decimal = 7; //!< Decimal precision
 
 std::string type(const Matrix& A) { return type_omm(A); }
 
-define_method(std::string, type_omm, ([[maybe_unused]] const Dense& A)) {
+define_method(std::string, type_omm, (const Dense&)) {
   return "Dense";
 }
 
-define_method(std::string, type_omm, ([[maybe_unused]] const LowRank& A)) {
+define_method(std::string, type_omm, (const LowRank&)) {
   return "LowRank";
 }
 
-define_method(std::string, type_omm, ([[maybe_unused]] const Hierarchical& A)) {
+define_method(std::string, type_omm, (const Hierarchical&)) {
   return "Hierarchical";
 }
 
-define_method(std::string, type_omm, ([[maybe_unused]] const NestedBasis& A)) {
+define_method(std::string, type_omm, (const NestedBasis&)) {
   return "NestedBasis";
 }
 
-define_method(std::string, type_omm, ([[maybe_unused]] const Matrix&)) {
+define_method(std::string, type_omm, (const Matrix&)) {
   return "Matrix";
 }
 
@@ -115,11 +115,7 @@ define_method(
 
 define_method(
   void, to_json_omm,
-  (
-    const Matrix& A, [[maybe_unused]] nlohmann::json& json,
-    [[maybe_unused]] int64_t i_abs, [[maybe_unused]] int64_t j_abs,
-    [[maybe_unused]] int64_t level
-  )
+  (const Matrix& A, nlohmann::json&, int64_t, int64_t, int64_t)
 ) {
   omm_error_handler("to_json", {A}, __FILE__, __LINE__);
 }

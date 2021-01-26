@@ -8,7 +8,7 @@ ExternalProject_Add(${PROJECT_NAME}
   BINARY_DIR          "@CMAKE_CURRENT_BINARY_DIR@/${PROJECT_NAME}_build"
   INSTALL_DIR         @DEPENDENCY_INSTALL_PREFIX@
   UPDATE_COMMAND      ""
-  CONFIGURE_COMMAND   <SOURCE_DIR>/configure
+  CONFIGURE_COMMAND   <SOURCE_DIR>/configure CC=@CMAKE_CXX_COMPILER@
                       --disable-build-examples
                       --disable-build-tests
                       --disable-static

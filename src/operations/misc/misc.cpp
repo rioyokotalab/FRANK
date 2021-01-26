@@ -295,9 +295,8 @@ define_method(
   Hierarchical, split_omm,
   (
     const Matrix& A,
-    [[maybe_unused]] const std::vector<IndexRange>&,
-    [[maybe_unused]] const std::vector<IndexRange>&,
-    [[maybe_unused]] bool)
+    const std::vector<IndexRange>&, const std::vector<IndexRange>&, bool
+  )
 ) {
   omm_error_handler("split", {A}, __FILE__, __LINE__);
   std::abort();

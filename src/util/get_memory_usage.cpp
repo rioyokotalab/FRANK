@@ -89,10 +89,7 @@ define_method(
   return memory_usage;
 }
 
-define_method(
-  unsigned long, get_memory_usage_omm,
-  (const Matrix& A, [[maybe_unused]] bool include_structure)
-) {
+define_method(unsigned long, get_memory_usage_omm, (const Matrix& A, bool)) {
   omm_error_handler("get_memory_usage", {A}, __FILE__, __LINE__);
   std::abort();
 }

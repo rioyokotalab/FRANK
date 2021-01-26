@@ -27,7 +27,7 @@ define_method(
   assert(n_cols <= A.dim[1]);
   Dense resized(n_rows, n_cols);
   add_copy_task(A, resized);
-  return resized;
+  return std::move(resized);
 }
 
 define_method(MatrixProxy, resize_omm, (const Matrix& A, int64_t, int64_t)) {

@@ -56,6 +56,8 @@ endif("${isSystemDir}" STREQUAL "-1")
 
 
 ## Dependencies
+# Standard library dependency
+list(APPEND HICMA_DEPENDENCIES stdc++ m dl)
 # Import external dependency loading script
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(find_or_download)

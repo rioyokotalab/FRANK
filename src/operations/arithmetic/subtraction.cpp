@@ -25,7 +25,7 @@ MatrixProxy operator-(const Matrix& A, const Matrix& B) {
 define_method(MatrixProxy, subtraction_omm, (const Dense& A, const Dense& B)) {
   Dense out(A);
   add_subtraction_task(out, B);
-  return out;
+  return std::move(out);
 }
 
 define_method(

@@ -18,8 +18,7 @@ namespace hicma
 
 void zeros(
   double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-  [[maybe_unused]] const std::vector<std::vector<double>>& x,
-  [[maybe_unused]] int64_t row_start, [[maybe_unused]] int64_t col_start
+  const std::vector<std::vector<double>>&, int64_t, int64_t
 ) {
   for (uint64_t i=0; i<A_rows; i++) {
     for (uint64_t j=0; j<A_cols; j++) {
@@ -30,8 +29,7 @@ void zeros(
 
 void identity(
   double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-  [[maybe_unused]] const std::vector<std::vector<double>>& x,
-  int64_t row_start, int64_t col_start
+  const std::vector<std::vector<double>>&, int64_t row_start, int64_t col_start
 ) {
   for (uint64_t i=0; i<A_rows; i++) {
     for (uint64_t j=0; j<A_cols; j++) {
@@ -42,8 +40,7 @@ void identity(
 
 void random_normal(
   double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-  [[maybe_unused]] const std::vector<std::vector<double>>& x,
-  [[maybe_unused]] int64_t row_start, [[maybe_unused]] int64_t col_start
+  const std::vector<std::vector<double>>&, int64_t, int64_t
 ) {
   std::random_device rd;
   std::mt19937 gen(rd());
@@ -59,8 +56,7 @@ void random_normal(
 
 void random_uniform(
   double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-  [[maybe_unused]] const std::vector<std::vector<double>>& x,
-  [[maybe_unused]] int64_t row_start, [[maybe_unused]] int64_t col_start
+  const std::vector<std::vector<double>>&, int64_t, int64_t
 ) {
   std::random_device rd;
   std::mt19937 gen(rd());
@@ -76,8 +72,7 @@ void random_uniform(
 
 void arange(
   double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-  [[maybe_unused]] const std::vector<std::vector<double>>& x,
-  [[maybe_unused]] int64_t row_start, [[maybe_unused]] int64_t col_start
+  const std::vector<std::vector<double>>&, int64_t, int64_t
 ) {
   for (uint64_t i=0; i<A_rows; i++) {
     for (uint64_t j=0; j<A_cols; j++) {
@@ -216,7 +211,7 @@ bool is_admissible_nd_morton(
 
     void exp_kernel_fill(
       double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-      [[maybe_unused]] const std::vector<std::vector<double>>& x,
+      const std::vector<std::vector<double>>&,
       int64_t row_start, int64_t col_start
     ) {
       kernel(

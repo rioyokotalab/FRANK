@@ -125,9 +125,7 @@ define_method(
   void, trmm_omm,
   (
     const Matrix& A, Matrix& B,
-    [[maybe_unused]] const char& side, [[maybe_unused]] const char& uplo,
-    [[maybe_unused]] const char& trans, [[maybe_unused]] const char& diag,
-    [[maybe_unused]] double alpha
+    const char&, const char&, const char&, const char&, double
   )
 ) {
   omm_error_handler("trmm", {A, B}, __FILE__, __LINE__);

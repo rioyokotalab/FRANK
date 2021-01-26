@@ -44,9 +44,7 @@ define_method(
   return A;
 }
 
-define_method(
-  Matrix&, multiplication_omm, (Matrix& A, [[maybe_unused]] double b)
-) {
+define_method(Matrix&, multiplication_omm, (Matrix& A, double)) {
   omm_error_handler("operator*<double>", {A}, __FILE__, __LINE__);
   std::abort();
 }

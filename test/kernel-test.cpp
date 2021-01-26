@@ -10,7 +10,7 @@
 using namespace hicma;
 using namespace std;
 
-int main([[maybe_unused]] int argc, char** argv) {
+int main(int, char** argv) {
   timing::start("Overall");
   hicma::initialize();
 

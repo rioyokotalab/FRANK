@@ -163,7 +163,7 @@ define_method(
     TransB ? get_n_rows(B) : get_n_cols(B)
   );
   gemm(A, B, C, alpha, 0, TransA, TransB);
-  return C;
+  return std::move(C);
 }
 
 define_method(
@@ -759,11 +759,7 @@ define_method(
 // Fallback default, abort with error message
 define_method(
   void, gemm_omm,
-  (
-    const Matrix& A, const Matrix& B, Matrix& C,
-    [[maybe_unused]] double alpha, [[maybe_unused]] double beta,
-    [[maybe_unused]] bool TransA, [[maybe_unused]] bool TransB
-  )
+  (const Matrix& A, const Matrix& B, Matrix& C, double, double, bool, bool)
 ) {
   omm_error_handler("gemm", {A, B, C}, __FILE__, __LINE__);
   std::abort();

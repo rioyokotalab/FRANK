@@ -66,10 +66,7 @@ define_method(DenseIndexSetPair, one_sided_id_omm, (Dense& A, int64_t k)) {
 }
 
 // Fallback default, abort with error message
-define_method(
-  DenseIndexSetPair, one_sided_id_omm,
-  (Matrix& A, [[maybe_unused]] int64_t k)
-) {
+define_method(DenseIndexSetPair, one_sided_id_omm, (Matrix& A, int64_t)) {
   omm_error_handler("id", {A}, __FILE__, __LINE__);
   std::abort();
 }
@@ -112,10 +109,7 @@ define_method(DenseTriplet, id_omm, (Dense& A, int64_t k)) {
 }
 
 // Fallback default, abort with error message
-define_method(
-  DenseTriplet, id_omm,
-  (Matrix& A, [[maybe_unused]] int64_t k)
-) {
+define_method(DenseTriplet, id_omm, (Matrix& A, int64_t)) {
   omm_error_handler("id", {A}, __FILE__, __LINE__);
   std::abort();
 }

@@ -240,10 +240,7 @@ define_method(
 // Fallback default, abort with error message
 define_method(
   void, tpmqrt_omm,
-  (
-    const Matrix& V, const Matrix& T, Matrix& A, Matrix& B,
-    [[maybe_unused]] bool trans
-  )
+  (const Matrix& V, const Matrix& T, Matrix& A, Matrix& B, bool)
 ) {
   omm_error_handler("tpmqrt", {V, T, A, B}, __FILE__, __LINE__);
   std::abort();

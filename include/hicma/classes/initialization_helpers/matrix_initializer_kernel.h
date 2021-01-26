@@ -37,7 +37,7 @@ class MatrixInitializerKernel : public MatrixInitializer {
 
   MatrixInitializerKernel(MatrixInitializerKernel&& A) = delete;
 
-  MatrixInitializerKernel& operator=(MatrixInitializerKernel&& A) = default;
+  MatrixInitializerKernel& operator=(MatrixInitializerKernel&& A) = delete;
 
   // Additional constructors
   MatrixInitializerKernel(

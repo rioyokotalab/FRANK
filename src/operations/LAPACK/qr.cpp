@@ -129,11 +129,7 @@ define_method(
 }
 
 define_method(
-  void, update_splitted_size_omm,
-  (
-    [[maybe_unused]] const Matrix& A,
-    [[maybe_unused]] int64_t& rows, [[maybe_unused]] int64_t& cols
-  )
+  void, update_splitted_size_omm, (const Matrix&, int64_t& rows, int64_t&)
 ) {
   rows++;
 }
@@ -166,7 +162,7 @@ define_method(
     storage(currentRow, i) = splitted(0, i);
   }
   currentRow++;
-  return Qu;
+  return std::move(Qu);
 }
 
 define_method(
@@ -183,8 +179,7 @@ define_method(
 }
 
 define_method(
-  MatrixProxy, split_by_column_omm,
-  (const Matrix& A, Matrix& storage, [[maybe_unused]] int64_t& currentRow)
+  MatrixProxy, split_by_column_omm, (const Matrix& A, Matrix& storage, int64_t&)
 ) {
   omm_error_handler("split_by_column", {A, storage}, __FILE__, __LINE__);
   std::abort();
@@ -194,8 +189,7 @@ define_method(
 define_method(
   MatrixProxy, concat_columns_omm,
   (
-    [[maybe_unused]] const Dense& A, const Hierarchical& splitted,
-    [[maybe_unused]] const Dense& Q,
+    const Dense&, const Hierarchical& splitted, const Dense&,
     int64_t& currentRow
   )
 ) {
@@ -208,7 +202,7 @@ define_method(
   assert(A.dim[0] == concatenatedRow.dim[0]);
   assert(A.dim[1] == concatenatedRow.dim[1]);
   currentRow++;
-  return concatenatedRow;
+  return std::move(concatenatedRow);
 }
 
 define_method(
@@ -235,15 +229,15 @@ define_method(
   _A.S = Dense(
     identity, std::vector<std::vector<double>>(), _A.rank, _A.rank);
   currentRow++;
-  return _A;
+  return std::move(_A);
 }
 
 define_method(
   MatrixProxy, concat_columns_omm,
   (
-    const Hierarchical& A, const Hierarchical& splitted,
-    [[maybe_unused]] const Dense& Q,
-    int64_t& currentRow)
+    const Hierarchical& A, const Hierarchical& splitted, const Dense&,
+    int64_t& currentRow
+  )
   ) {
   //In case of hierarchical, just put element in respective cells
   assert(splitted.dim[1] == A.dim[1]);
@@ -254,15 +248,12 @@ define_method(
     }
     currentRow++;
   }
-  return concatenatedRow;
+  return std::move(concatenatedRow);
 }
 
 define_method(
   MatrixProxy, concat_columns_omm,
-  (
-    const Matrix& A, const Matrix& splitted, const Matrix& Q,
-    [[maybe_unused]] int64_t& currentRow
-  )
+  (const Matrix& A, const Matrix& splitted, const Matrix& Q, int64_t&)
 ) {
   omm_error_handler("concat_columns", {A, splitted, Q}, __FILE__, __LINE__);
   std::abort();
@@ -309,7 +300,9 @@ define_method(void, zero_whole_omm, (Matrix& A)) {
 }
 
 
-std::tuple<Hierarchical, Hierarchical> split_block_col(int64_t j, const Hierarchical& A) {
+std::tuple<Hierarchical, Hierarchical> split_block_col(
+  int64_t j, const Hierarchical& A
+) {
   int64_t splitRowSize = 0;
   int64_t splitColSize = 1;
   for(int64_t i=0; i<A.dim[0]; i++) {
@@ -324,7 +317,10 @@ std::tuple<Hierarchical, Hierarchical> split_block_col(int64_t j, const Hierarch
   return {std::move(splitA), std::move(QL)};
 }
 
-void restore_block_col(int64_t j, const Hierarchical& Q_splitA, const Hierarchical& QL, Hierarchical& Q) {
+void restore_block_col(
+  int64_t j,
+  const Hierarchical& Q_splitA, const Hierarchical& QL, Hierarchical& Q
+) {
   assert(QL.dim[0] == Q.dim[0]);
   int64_t curRow = 0;
   for(int64_t i=0; i<Q.dim[0]; i++) {

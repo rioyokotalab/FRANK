@@ -57,7 +57,7 @@ define_method(
       out(i, j) = tracked_copy(A(i, j));
     }
   }
-  return out;
+  return std::move(out);
 }
 
 define_method(MatrixProxy, tracked_copy, (const Dense& A)) {

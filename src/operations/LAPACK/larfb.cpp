@@ -108,8 +108,7 @@ define_method(
 
 // Fallback default, abort with error message
 define_method(
-  void, larfb_omm,
-  (const Matrix& V, const Matrix& T, Matrix& C, [[maybe_unused]] bool trans)
+  void, larfb_omm, (const Matrix& V, const Matrix& T, Matrix& C, bool)
 ) {
   omm_error_handler("larfb", {V, T, C}, __FILE__, __LINE__);
   std::abort();

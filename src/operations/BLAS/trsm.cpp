@@ -144,7 +144,7 @@ define_method(MatrixProxy, decouple, (const Hierarchical& A)) {
       decoupled(i, j) = decouple(A(i, j));
     }
   }
-  return decoupled;
+  return std::move(decoupled);
 }
 
 define_method(MatrixProxy, decouple, (const Matrix& A)) {
@@ -163,13 +163,7 @@ define_method(
 }
 
 // Fallback default, abort with error message
-define_method(
-  void, trsm_omm,
-  (
-    const Matrix& A, Matrix& B,
-    [[maybe_unused]] int uplo, [[maybe_unused]] int lr
-  )
-) {
+define_method(void, trsm_omm, (const Matrix& A, Matrix& B, int, int)) {
   omm_error_handler("trsm", {A, B}, __FILE__, __LINE__);
   std::abort();
 }

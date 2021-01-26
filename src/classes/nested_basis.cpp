@@ -112,7 +112,7 @@ define_method(MatrixProxy, share_basis_omm, (const Hierarchical& A)) {
       new_shared(i, j) = share_basis(A(i, j));
     }
   }
-  return new_shared;
+  return std::move(new_shared);
 }
 
 define_method(MatrixProxy, share_basis_omm, (const Matrix& A)) {
