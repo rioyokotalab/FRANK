@@ -14,11 +14,7 @@ macro(find_or_download PACKAGE)
     set(EXACT "EXACT")
   endif()
 
-  if(${ARGS_INSTALL_WITH_HiCMA})
-    set(DEPENDENCY_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
-  else()
-    set(DEPENDENCY_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/dependencies)
-  endif()
+  set(DEPENDENCY_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/dependencies/${PACKAGE})
   if(${ARGS_PKG_CONFIG})
     find_package(PkgConfig REQUIRED)
     set(ENV{PKG_CONFIG_PATH}
@@ -87,6 +83,14 @@ macro(find_or_download PACKAGE)
       find_package(${PACKAGE}
         ${ARGS_VERSION} ${EXACT} REQUIRED NO_DEFAULT_PATH
         PATHS "${DEPENDENCY_INSTALL_PREFIX}"
+      )
+    endif()
+    # Install the built package alongside HiCMA if so desired, by copying the
+    # install made in the build tree
+    if(${ARGS_INSTALL_WITH_HiCMA})
+      install(
+        DIRECTORY ${DEPENDENCY_INSTALL_PREFIX}/
+        DESTINATION ${CMAKE_INSTALL_PREFIX}
       )
     endif()
     message(STATUS "Using ${PACKAGE} from ${DEPENDENCY_INSTALL_PREFIX}.")

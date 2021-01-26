@@ -4,7 +4,7 @@ project(LAPACKE)
 ExternalProject_Add(${PROJECT_NAME}
   DOWNLOAD_COMMAND    ""
   @ADDITIONAL_GIT_SETTINGS@
-  SOURCE_DIR          "@CMAKE_SOURCE_DIR@/dependencies/CBLAS"
+  SOURCE_DIR          "@CMAKE_SOURCE_DIR@/dependencies/sources/CBLAS"
   BINARY_DIR          "@CMAKE_CURRENT_BINARY_DIR@/${PROJECT_NAME}_build"
   INSTALL_DIR         @DEPENDENCY_INSTALL_PREFIX@
   UPDATE_COMMAND      ""
