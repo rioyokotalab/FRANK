@@ -189,7 +189,7 @@ define_method(
 define_method(
   MatrixProxy, concat_columns_omm,
   (
-    const Dense&, const Hierarchical& splitted, const Dense&,
+    [[maybe_unused]] const Dense& A, const Hierarchical& splitted, const Dense&,
     int64_t& currentRow
   )
 ) {
