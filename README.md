@@ -128,28 +128,172 @@ This approach requires .D, .L, .H to be specified and will not work
 
 ## Idea 3: Use boost::any (works, but not elegant)
 #### Implementation
-Rio will add stuff here.
-
-## Idea 4: Create a wrapper class Any ourselves (current implementation)
-#### Implementation
-Any owns a `unique_ptr<Node>` and forwards the getrf, trsm and gemm calls to
-the object pointed to (which may be `Dense`, `LowRank` or `Hierarchical`).
-An advantage of this approach is that the indirection through `Any` allows us
-to efficiently change what type of matrix is held at a certain index in
-`Hierarchical`. Say for example `H(0, 1)` is a `Dense` object, but we want to
-compress it to a `LowRank` object. We can call
 ```c++
-H(0, 1) = LowRank(H(0, 1));
+std::vector<boost::any> data;
+boost::any& operator(i,j) {data[2*i+j]};
 ```
-and the operation can happen without unnecessart data copies due to the c++11
-move semantics.\
-Another big advantage is the usage of `unique_ptr<Node>`, which allows for
-clear ownership of objects and ensures leak-free code.
+#### Example usage
+```c++
+Dense A;
+Hierarchical H;
+H(0,0) = A(0,0);
+H(0,1) = LowRank(A(0,1));
+H(1,0) = LowRank(A(1,0));
+H(1,1) = A(1,1);
+```
 #### Issues with this approach
-The classes `Any` and `Node` both fulfill the purpose of fascilitating runtime
-polymorphism for `Dense`, `LowRank` and `Hierarchical`. Uniting them into one
-class would be desirable, but is likely not possible.\
-Another issue is that some functions may need an additional interface taking in
-`Any` objects and forwarding to the `Node` they hold.
+We don't want our code to depend on boost.
+No way of inferring the correct overloaded function for each type.
+Which resulted in many if statements for each type.
+For GEMM it has three nested if statement.
+All arguments including output were passed as variables to all functions.
 
-# Parallel paradigms
+## Idea 4: Use a shared_ptr to Node
+#### Implementation
+```c++
+std::vector<std::shared_ptr<Node>> data;
+Node& operator(i,j) {data[2*i+j]};
+
+enum{
+  HICMA_NODE;
+  HICMA_DENSE;
+  HICMA_LOWRANK;
+  HICMA_HIERARCHIAL;
+}
+Hierarchical::is(const int enum_id) {
+  return enum_id == HICMA_HIERARCHICAL;
+}
+```
+#### Features
+This solved the dependency on boost.
+
+Inferring the correct overloaded function for each type is now done through an is() function.
+
+Now you could return Dense, LowRank, Hierarchical types from functions as shared_ptr<Node>.
+
+#### Issues with this approach
+We still have many if statements for each type (although it uses is() now).
+
+We cannot operate on the return values as Dense, LowRank, Hierarchical types because they are shared_ptr<Node> type.
+
+Following assignments no longer work:
+```c++
+Dense A;
+Hierarchical H;
+H(0,0) = A(0,0);
+H(0,1) = LowRank(A(0,1));
+H(1,0) = LowRank(A(1,0));
+H(1,1) = A(1,1);
+```
+
+## Idea 5: Subclass the shared_ptr class as a BlockPtr class
+#### Implementation
+```c++
+template<Typename T = Node>
+class BlockPtr : public std::shared_ptr<T> {
+  void getrf();
+  void trsm(const Node&, const char&);
+  void gemm(const Node&, const Node&);
+}
+typedef std::vector<BlockPtr> NodePtr;
+NodePtr data;
+NodePtr operator(i,j) {data[2*i+j]};
+
+enum{
+  HICMA_NODE;
+  HICMA_DENSE;
+  HICMA_LOWRANK;
+  HICMA_HIERARCHIAL;
+}
+Hierarchical::is(const int enum_id) {
+  return enum_id == HICMA_HIERARCHICAL;
+}
+```
+#### Features
+By subclassing the shared_ptr class we can define functions within the subclass BlockPtr,
+which then allows us operate on the return values of Dense, LowRank, Hierarchical types.
+
+Following assignments are possible again:
+```c++
+Dense A;
+Hierarchical H;
+H(0,0) = A(0,0);
+H(0,1) = LowRank(A(0,1));
+H(1,0) = LowRank(A(1,0));
+H(1,1) = A(1,1);
+```
+
+#### Issues with this approach
+Data ownership of data for the BlockPtr is not clear.
+
+## Idea 6: Create a class Any (formerly Block) which contains a unique_ptr<Node>
+```c++
+class Any {
+  std::unique_ptr<Node> ptr;
+}
+std::vector<Any> data;
+
+const Node& operator(i,j) {data[2*i+j]};
+Any& operator(i,j) {data[2*i+j]};
+
+enum{
+  HICMA_NODE;
+  HICMA_DENSE;
+  HICMA_LOWRANK;
+  HICMA_HIERARCHIAL;
+}
+Hierarchical::is(const int enum_id) {
+  return enum_id == HICMA_HIERARCHICAL;
+}
+```
+
+#### Features
+Has almost the same functionality as BlockPtr, but a little bit cleaner.
+
+#### Issues with this approach
+All functions {gemm, trsm, etc.} are defined in all classes {Dense, LowRank, etc.}
+
+Using if checks in all functions {gemm, trsm, etc.} to determine the right combination of classes {Dense, LowRank, etc.}
+
+## Idea 7: Add multimethods through YOMM. Define functions {gemm, trsm, etc.} outside of the classes {Dense, LowRank, etc.}.
+```c++
+class Any {
+  std::unique_ptr<Node> ptr;
+}
+std::vector<Any> data;
+
+const Node& operator(i,j) {data[2*i+j]};
+Any& operator(i,j) {data[2*i+j]};
+
+void getrf(Any& A) {
+  getrf_omm(*A.ptr.get());
+}
+void getrf(Node& A) {
+  getrf_omm(A);
+}
+```
+
+#### Features
+With multimethods we no longer need checks for classes {Dense, LowRank, etc.}.
+
+#### Issues with this approach
+*A.ptr.get() is ugly and pointer is exposed
+
+## Minor fix
+#### Name change
+Any is now MatrixProxy
+Node is now Matrix
+
+#### Private pointers
+```c++
+class MatrixProxy {
+private:
+  std::unique_ptr<Matrix> ptr;
+}
+```
+
+#### Conversion operators so that MatrixProxy is automatically converted to Matrix
+```c++
+operator const Matrix&() const;
+operator Matrix&();
+```
