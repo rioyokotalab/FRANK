@@ -18,9 +18,7 @@ int main(int, char** argv) {
   int64_t rank = atoi(argv[2]);
   int64_t N = atoi(argv[3]);
   int64_t admis = atoi(argv[4]);
-  int64_t basis = 0;
   int64_t nblocks = N / nleaf;
-  assert(basis == NORMAL_BASIS || basis == SHARED_BASIS);
 
   /* Default parameters for statistics */
   double beta = 0.1;
@@ -39,7 +37,7 @@ int main(int, char** argv) {
   timing::start("Hierarchical compression");
   start_schedule();
   Hierarchical A(starsh::exp_kernel_fill, randx, N, N, rank, nleaf, admis,
-               nblocks, nblocks, basis);
+               nblocks, nblocks);
   execute_schedule();
   double comp_time = timing::stop("Hierarchical compression");
 
