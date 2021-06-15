@@ -22,12 +22,8 @@ class MatrixInitializer {
  private:
   int64_t admis;
   int64_t rank;
-  BasisTracker<IndexRange, MatrixProxy> col_basis, row_basis;
-  NestedTracker col_tracker, row_tracker;
 
-  void find_admissible_blocks(const ClusterTree& node);
  public:
-
   // Special member functions
   MatrixInitializer() = delete;
 
