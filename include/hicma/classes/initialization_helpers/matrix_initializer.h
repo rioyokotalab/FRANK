@@ -2,10 +2,7 @@
 #define hicma_classes_initialization_helpers_matrix_initializer_h
 
 #include "hicma/classes/dense.h"
-// TODO Note that this include is only for the enum (NORMAL_BASIS)
-#include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
-#include "hicma/classes/initialization_helpers/basis_tracker.h"
 #include "hicma/classes/initialization_helpers/index_range.h"
 
 #include <cstdint>
