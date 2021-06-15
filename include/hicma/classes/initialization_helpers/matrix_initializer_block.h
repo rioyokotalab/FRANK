@@ -30,9 +30,7 @@ class MatrixInitializerBlock : public MatrixInitializer {
   MatrixInitializerBlock& operator=(MatrixInitializerBlock&& A) = default;
 
   // Additional constructors
-  MatrixInitializerBlock(
-    Dense&& A, int64_t admis, int64_t rank, int basis_type
-  );
+  MatrixInitializerBlock(Dense&& A, int64_t admis, int64_t rank);
 
   // Utility methods
   void fill_dense_representation(

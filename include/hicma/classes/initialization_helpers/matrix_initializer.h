@@ -24,15 +24,8 @@ class MatrixInitializer {
   int64_t rank;
   BasisTracker<IndexRange, MatrixProxy> col_basis, row_basis;
   NestedTracker col_tracker, row_tracker;
-  int basis_type = NORMAL_BASIS;
 
   void find_admissible_blocks(const ClusterTree& node);
-
-  Dense make_block_row(const NestedTracker& tracker) const;
-  void construct_nested_col_basis(NestedTracker& row_tracker);
-
-  Dense make_block_col(const NestedTracker& tracker) const;
-  void construct_nested_row_basis(NestedTracker& col_tracker);
  public:
 
   // Special member functions
@@ -49,9 +42,7 @@ class MatrixInitializer {
   MatrixInitializer& operator=(MatrixInitializer&& A) = default;
 
   // Additional constructors
-  MatrixInitializer(
-    int64_t admis, int64_t rank, int basis_type
-  );
+  MatrixInitializer(int64_t admis, int64_t rank);
 
   // Utility methods
   virtual void fill_dense_representation(
@@ -65,8 +56,6 @@ class MatrixInitializer {
   virtual Dense get_dense_representation(const ClusterTree& node) const = 0;
 
   LowRank get_compressed_representation(const ClusterTree& node);
-
-  void create_nested_basis(const ClusterTree& node);
 
   bool is_admissible(const ClusterTree& node) const;
 };
