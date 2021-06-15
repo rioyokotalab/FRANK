@@ -40,7 +40,6 @@ MatrixProxy::operator Matrix&() {
   return *ptr;
 }
 
-
 define_method(std::unique_ptr<Matrix>, clone, (const Dense& A)) {
   return std::make_unique<Dense>(A);
 }
@@ -50,10 +49,6 @@ define_method(std::unique_ptr<Matrix>, clone, (const LowRank& A)) {
 }
 define_method(std::unique_ptr<Matrix>, clone, (const Hierarchical& A)) {
   return std::make_unique<Hierarchical>(A);
-}
-
-define_method(std::unique_ptr<Matrix>, clone, (const NestedBasis& A)) {
-  return std::make_unique<NestedBasis>(A);
 }
 
 define_method(std::unique_ptr<Matrix>, clone, (const Matrix& A)) {
@@ -71,11 +66,6 @@ define_method(std::unique_ptr<Matrix>, move_clone, (LowRank&& A)) {
 
 define_method(std::unique_ptr<Matrix>, move_clone, (Hierarchical&& A)) {
   return std::make_unique<Hierarchical>(std::move(A));
-}
-
-
-define_method(std::unique_ptr<Matrix>, move_clone, (NestedBasis&& A)) {
-  return std::make_unique<NestedBasis>(std::move(A));
 }
 
 define_method(std::unique_ptr<Matrix>, move_clone, (Matrix&& A)) {

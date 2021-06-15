@@ -86,70 +86,15 @@ define_method(void, trsm_omm, (const Dense& A, Dense& B, int uplo, int lr)) {
   timing::stop("DTRSM");
 }
 
-declare_method(MatrixProxy, decouple, (virtual_<const Matrix&>))
-
-define_method(
-  void, trsm_omm,
-  (const Hierarchical& A, NestedBasis& B, int uplo, int lr)
-) {
-  B.sub_bases = decouple(B.sub_bases);
-  trsm(A, B.sub_bases, uplo, lr);
-}
-
-define_method(
-  void, trsm_omm, (const Dense& A, NestedBasis& B, int uplo, int lr)
-) {
-  B.sub_bases = decouple(B.sub_bases);
-  trsm(A, B.sub_bases, uplo, lr);
-}
-
 define_method(void, trsm_omm, (const Matrix& A, LowRank& B, int uplo, int lr)) {
   switch (lr) {
   case TRSM_LEFT:
-    // Decouple basis
-    // TODO This introduces unneeded copies in the non-shared case! Find a way
-    // around that.
-    B.U = decouple(B.U);
     trsm(A, B.U, uplo, lr);
     break;
   case TRSM_RIGHT:
-    // Decouple basis
-    // TODO This introduces unneeded copies in the non-shared case! Find a way
-    // around that.
-    B.V = decouple(B.V);
     trsm(A, B.V, uplo, lr);
     break;
   }
-}
-
-define_method(MatrixProxy, decouple, (const Dense& A)) {
-  if (!matrix_is_tracked("decoupling", A)) {
-    register_matrix("decoupling", A, Dense(A));
-  }
-  return get_tracked_content("decoupling", A).share();
-}
-
-define_method(MatrixProxy, decouple, (const NestedBasis& A)) {
-  return NestedBasis(
-    A.sub_bases,
-    decouple(A.translation),
-    A.col_basis
-  );
-}
-
-define_method(MatrixProxy, decouple, (const Hierarchical& A)) {
-  Hierarchical decoupled(A.dim[0], A.dim[1]);
-  for (int64_t i=0; i<A.dim[0]; ++i) {
-    for (int64_t j=0; j<A.dim[1]; ++j) {
-      decoupled(i, j) = decouple(A(i, j));
-    }
-  }
-  return std::move(decoupled);
-}
-
-define_method(MatrixProxy, decouple, (const Matrix& A)) {
-  omm_error_handler("decouple", {A}, __FILE__, __LINE__);
-  std::abort();
 }
 
 define_method(
