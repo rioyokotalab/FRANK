@@ -7,6 +7,5 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix_proxy.h"
 #include "hicma/classes/matrix.h"
-#include "hicma/classes/nested_basis.h"
 
 #endif // hicma_classes_h

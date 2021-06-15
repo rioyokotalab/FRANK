@@ -40,6 +40,8 @@ Hierarchical split(
 
 Hierarchical split(const Matrix& A, const Hierarchical& like, bool copy=false);
 
+MatrixProxy shallow_copy(const Matrix& A);
+
 double norm(const Matrix&);
 
 MatrixProxy transpose(const Matrix&);

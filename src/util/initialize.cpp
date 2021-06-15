@@ -16,7 +16,6 @@ register_class(Matrix)
 register_class(Dense, Matrix)
 register_class(LowRank, Matrix)
 register_class(Hierarchical, Matrix)
-register_class(NestedBasis, Matrix)
 
 void shutdown() {
   clear_trackers();

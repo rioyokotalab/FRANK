@@ -3,7 +3,6 @@
 
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/dense.h"
-#include "hicma/classes/nested_basis.h"
 #include "hicma/classes/initialization_helpers/index_range.h"
 
 #include <cstdint>

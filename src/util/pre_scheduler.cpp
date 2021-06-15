@@ -1006,7 +1006,7 @@ void add_gemm_task(
     && gemm_tracker[A][B]->args.TransA == TransA
     && gemm_tracker[A][B]->args.TransB == TransB
   ) {
-    if (is_shared(C, gemm_tracker[A][B]->modified[0])) {
+    if (C.is_shared_with(gemm_tracker[A][B]->modified[0])) {
       return;
     } else
     if (beta == 0) {

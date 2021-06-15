@@ -152,10 +152,10 @@ void naive_addition(LowRank& A, const LowRank& B) {
   } else {
     Hierarchical U_merge(1, 2);
     U_merge[0] = std::move(A.U);
-    U_merge[1] = share_basis(B.U);
+    U_merge[1] = shallow_copy(B.U);
     Hierarchical V_merge(2, 1);
     V_merge[0] = std::move(A.V);
-    V_merge[1] = share_basis(B.V);
+    V_merge[1] = shallow_copy(B.V);
     Hierarchical S_merge(2, 2);
     S_merge(0, 0) = std::move(A.S);
     S_merge(0, 1) = Dense(A.rank, B.rank);
@@ -185,7 +185,7 @@ void orthogonality_preserving_addition(LowRank& A, const LowRank& B) {
   // version and avoid copies?)
   Hierarchical V_mergeH(2, 1);
   V_mergeH[0] = std::move(A.V);
-  V_mergeH[1] = share_basis(B.V);
+  V_mergeH[1] = shallow_copy(B.V);
   Dense V_merge(V_mergeH);
   Dense Rv(V_merge.dim[0], V_merge.dim[0]);
   Dense Qv(V_merge.dim[0], V_merge.dim[1]);
