@@ -194,7 +194,7 @@ define_method(
   if (TransA) std::abort();
   Dense AVxB = gemm(A.V, B, alpha, false, TransB);
   C.S *= beta;
-  LowRank AxB(A.U, A.S, AVxB);
+  LowRank AxB(A.U, A.S, AVxB, false);
   C += AxB;
 }
 
@@ -211,7 +211,7 @@ define_method(
   if (TransB) std::abort();
   Dense AxBU = gemm(A, B.U, alpha, TransA, false);
   C.S *= beta;
-  LowRank AxB(AxBU, B.S, B.V);
+  LowRank AxB(AxBU, B.S, B.V, false);
   C += AxB;
 }
 
@@ -230,7 +230,7 @@ define_method(
   Dense SxVxU = gemm(A.S, gemm(A.V, B.U, alpha));
   Dense SxVxUxS = gemm(SxVxU, B.S);
   C.S *= beta;
-  LowRank AxB(A.U, SxVxUxS, B.V);
+  LowRank AxB(A.U, SxVxUxS, B.V, false);
   C += AxB;
 }
 
@@ -246,7 +246,7 @@ define_method(
   // TODO Not implemented
   if (TransA || TransB) std::abort();
   MatrixProxy AxBU = gemm(A, B.U, alpha, TransA, false);
-  LowRank AxB(AxBU, B.S, B.V);
+  LowRank AxB(AxBU, B.S, B.V, false);
   C.S *= beta;
   C += AxB;
 }
@@ -263,7 +263,7 @@ define_method(
   // TODO Not implemented
   if (TransA || TransB) std::abort();
   MatrixProxy AVxB = gemm(A.V, B, alpha, false, TransB);
-  LowRank AxB(A.U, A.S, AVxB);
+  LowRank AxB(A.U, A.S, AVxB, false);
   C.S *= beta;
   C += AxB;
 }
@@ -280,7 +280,7 @@ define_method(
   // TODO Not implemented
   if (TransA || TransB) std::abort();
   Dense SxVxUxS = gemm(gemm(A.S, gemm(A.V, B.U, alpha)), B.S);
-  LowRank AxB(A.U, SxVxUxS, B.V);
+  LowRank AxB(A.U, SxVxUxS, B.V, false);
   C *= beta;
   C += AxB;
 }
