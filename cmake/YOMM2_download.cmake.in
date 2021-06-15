@@ -3,7 +3,7 @@ include(ExternalProject)
 project(YOMM2)
 ExternalProject_Add(${PROJECT_NAME}
   GIT_REPOSITORY      https://github.com/jll63/yomm2.git
-  GIT_TAG             boost-download
+  GIT_TAG             master
   @ADDITIONAL_GIT_SETTINGS@
   SOURCE_DIR          "@CMAKE_SOURCE_DIR@/dependencies/sources/${PROJECT_NAME}"
   BINARY_DIR          "@CMAKE_CURRENT_BINARY_DIR@/${PROJECT_NAME}_build"
