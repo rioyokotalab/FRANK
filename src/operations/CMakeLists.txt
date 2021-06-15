@@ -18,7 +18,6 @@ target_sources(hicma PRIVATE
   ${CMAKE_CURRENT_LIST_DIR}/misc/get_dim.cpp
   ${CMAKE_CURRENT_LIST_DIR}/misc/misc.cpp
   ${CMAKE_CURRENT_LIST_DIR}/misc/norm.cpp
-  ${CMAKE_CURRENT_LIST_DIR}/misc/recompress.cpp
   ${CMAKE_CURRENT_LIST_DIR}/misc/resize.cpp
   ${CMAKE_CURRENT_LIST_DIR}/misc/transpose.cpp
   ${CMAKE_CURRENT_LIST_DIR}/randomized/rid.cpp
