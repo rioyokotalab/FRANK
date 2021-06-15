@@ -5,7 +5,6 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
-#include "hicma/classes/initialization_helpers/basis_tracker.h"
 #include "hicma/classes/initialization_helpers/cluster_tree.h"
 #include "hicma/classes/initialization_helpers/matrix_initializer.h"
 #include "hicma/classes/initialization_helpers/matrix_initializer_block.h"
@@ -30,60 +29,6 @@ using yorel::yomm2::virtual_;
 
 namespace hicma
 {
-
-declare_method(
-  MatrixProxy, tracked_copy, (virtual_<const Matrix&>)
-)
-
-Hierarchical::Hierarchical(const Hierarchical& A)
-: Hierarchical(tracked_copy(A)) {
-  clear_tracker("hierarchical_copy");
-}
-
-Hierarchical& Hierarchical::operator=(const Hierarchical& A) {
-  *this = tracked_copy(A);
-  clear_tracker("hierarchical_copy");
-  return *this;
-}
-
-define_method(
-  MatrixProxy, tracked_copy,
-  (const Hierarchical& A)
-) {
-  Hierarchical out(A.dim[0], A.dim[1]);
-  for (int64_t i=0; i<A.dim[0]; ++i) {
-    for (int64_t j=0; j<A.dim[1]; ++j) {
-      out(i, j) = tracked_copy(A(i, j));
-    }
-  }
-  return std::move(out);
-}
-
-define_method(MatrixProxy, tracked_copy, (const Dense& A)) {
-  if (!matrix_is_tracked("hierarchical_copy", A)) {
-    register_matrix("hierarchical_copy", A, Dense(A));
-  }
-  return get_tracked_content("hierarchical_copy", A).share();
-}
-
-define_method(MatrixProxy, tracked_copy, (const NestedBasis& A)) {
-  return NestedBasis(
-    tracked_copy(A.sub_bases),
-    tracked_copy(A.translation),
-    A.is_col_basis()
-  );
-}
-
-define_method(
-  MatrixProxy, tracked_copy, (const LowRank& A)
-) {
-  return LowRank(tracked_copy(A.U), A.S, tracked_copy(A.V), true);
-}
-
-define_method(MatrixProxy, tracked_copy, (const Matrix& A)) {
-  omm_error_handler("tracked_copy", {A}, __FILE__, __LINE__);
-  std::abort();
-}
 
 declare_method(Hierarchical&&, move_from_hierarchical, (virtual_<Matrix&>))
 
@@ -187,24 +132,5 @@ MatrixProxy& Hierarchical::operator()(int64_t i, int64_t j) {
   assert(j < dim[1]);
   return data[i*dim[1]+j];
 }
-
-define_method(void, unshare_omm, (LowRank& A)) {
-  A.U = Dense(A.U);
-  A.V = Dense(A.V);
-}
-
-define_method(void, unshare_omm, (Hierarchical& A)) {
-  for (int64_t i=0; i<A.dim[0]; ++i) {
-    for (int64_t j=0; j<A.dim[1]; ++j) {
-      unshare_omm(A(i, j));
-    }
-  }
-}
-
-define_method(void, unshare_omm, (Matrix&)) {
-  // Do nothing
-}
-
-void unshare(Matrix& A) { unshare_omm(A); }
 
 } // namespace hicma
