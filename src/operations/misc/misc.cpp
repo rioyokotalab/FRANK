@@ -112,109 +112,6 @@ define_method(
   return out;
 }
 
-declare_method(
-  LowRank, resolve_nested_basis,
-  (virtual_<const Matrix&>, virtual_<const Matrix&>, const Dense&, bool)
-)
-
-define_method(
-  LowRank, resolve_nested_basis,
-  (const NestedBasis& U, const NestedBasis& V, const Dense& S, bool)
-) {
-  return LowRank(
-    U.sub_bases, gemm(gemm(U.translation, S), V.translation), V.sub_bases,
-    false
-  );
-}
-
-define_method(
-  LowRank, resolve_nested_basis,
-  (const Hierarchical& U, const NestedBasis& V, const Dense& S, bool)
-) {
-  return LowRank(U, gemm(S, V.translation), V.sub_bases, false);
-}
-
-define_method(
-  LowRank, resolve_nested_basis,
-  (const NestedBasis& U, const Hierarchical& V, const Dense& S, bool)
-) {
-  return LowRank(U.sub_bases, gemm(U.translation, S), V, false);
-}
-
-define_method(
-  LowRank, resolve_nested_basis,
-  (const Dense& U, const Dense& V, const Dense& S, bool copy_S)
-) {
-  return LowRank(U, S, V, copy_S);
-}
-
-define_method(
-  LowRank, resolve_nested_basis,
-  (const Matrix& U, const Matrix& V, const Dense&, bool)
-) {
-  omm_error_handler("resolve_nested_basis", {U, V}, __FILE__, __LINE__);
-  std::abort();
-}
-
-declare_method(
-  NestedBasis, resolve_nested_basis,
-  (virtual_<const Matrix&>, const Dense&, bool, bool)
-)
-
-define_method(
-  NestedBasis, resolve_nested_basis,
-  (const Dense& basis, const Dense& S, bool, bool is_col_basis)
-) {
-  // TODO No difference for copying/non-copying version atm!
-  return NestedBasis(basis.share(), S.share(), is_col_basis);
-}
-
-define_method(
-  NestedBasis, resolve_nested_basis,
-  (const NestedBasis& basis, const Dense& S, bool, bool is_col_basis)
-) {
-  // TODO No difference for copying/non-copying version atm!
-  return NestedBasis(
-    basis.sub_bases,
-    is_col_basis ? gemm(basis.translation, S) : gemm(S, basis.translation),
-    is_col_basis
-  );
-}
-
-define_method(
-  NestedBasis, resolve_nested_basis,
-  (const Matrix& basis, const Dense&, bool, bool)
-) {
-  omm_error_handler("resolve_nested_basis", {basis}, __FILE__, __LINE__);
-  std::abort();
-}
-
-define_method(
-  Hierarchical, split_omm,
-  (
-    const NestedBasis& A,
-    const std::vector<IndexRange>& row_splits,
-    const std::vector<IndexRange>& col_splits,
-    bool copy
-  )
-) {
-  assert(
-    (A.is_col_basis() && col_splits.size() == 1)
-    || (A.is_row_basis() && row_splits.size() == 1)
-  );
-  Hierarchical out(row_splits.size(), col_splits.size());
-  // TODO Possibly wrong dimensions for subbasis!
-  Hierarchical sub_basis_split = split_omm(
-    A.sub_bases, row_splits, col_splits, copy
-  );
-  for (int64_t i=0; i<out.dim[A.is_col_basis() ? 0 : 1]; ++i) {
-    out[i] = resolve_nested_basis(
-      sub_basis_split[i], A.translation, copy, A.is_col_basis()
-    );
-  }
-  return out;
-}
-
 define_method(
   Hierarchical, split_omm,
   (
@@ -253,7 +150,7 @@ define_method(
   }
   for (uint64_t i=0; i<row_splits.size(); ++i) {
     for (uint64_t j=0; j<col_splits.size(); ++j) {
-      out(i, j) = resolve_nested_basis(U_splits[i], V_splits[j], A.S, copy);
+      out(i, j) = LowRank(U_splits[i], A.S, V_splits[j], copy);
     }
   }
   return out;
