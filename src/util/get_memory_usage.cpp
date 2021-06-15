@@ -45,21 +45,6 @@ define_method(
 
 define_method(
   unsigned long, get_memory_usage_omm,
-  (const NestedBasis& A, bool include_structure)
-) {
-  // Otherwise calculate size and recurse
-  unsigned long memory_usage = get_memory_usage_omm(
-    A.sub_bases, include_structure
-  );
-  memory_usage += get_memory_usage_omm(A.translation, include_structure);
-  if (include_structure) {
-    memory_usage += sizeof(NestedBasis);
-  }
-  return memory_usage;
-}
-
-define_method(
-  unsigned long, get_memory_usage_omm,
   (const LowRank& A, bool include_structure)
 ) {
   unsigned long memory_usage = 0;

@@ -89,70 +89,6 @@ define_method(
 define_method(
   MatrixProxy, gemm_omm,
   (
-    const Dense& A, const NestedBasis& B,
-    double alpha, bool TransA, bool TransB
-  )
-) {
-  // D NB new
-  // TODO Not implemented
-  if (TransA || TransB) std::abort();
-  if (!B.is_col_basis()) std::abort();
-  Dense A_basis = gemm(A, B.sub_bases, alpha);
-  return NestedBasis(std::move(A_basis), B.translation, true);
-}
-
-define_method(
-  MatrixProxy, gemm_omm,
-  (
-    const NestedBasis& A, const Dense& B,
-    double alpha, bool TransA, bool TransB
-  )
-) {
-  // NB D new
-  // TODO Not implemented
-  if (TransA || TransB) std::abort();
-  if (!A.is_row_basis()) std::abort();
-  Dense basis_B = gemm(A.sub_bases, B, alpha);
-  return NestedBasis(std::move(basis_B), A.translation, false);
-}
-
-define_method(
-  MatrixProxy, gemm_omm,
-  (
-    const LowRank& A, const NestedBasis& B,
-    double alpha, bool TransA, bool TransB
-  )
-) {
-  // LR NB new
-  // TODO Not implemented
-  if (TransA || TransB) std::abort();
-  if (!B.is_col_basis()) std::abort();
-  MatrixProxy AV_basis = gemm(A.V, B.sub_bases, alpha);
-  Dense S_AV_basis = gemm(A.S, AV_basis);
-  Dense S_AV_basis_trans = gemm(B.translation, S_AV_basis);
-  return NestedBasis(A.U, S_AV_basis_trans, true);
-}
-
-define_method(
-  MatrixProxy, gemm_omm,
-  (
-    const NestedBasis& A, const LowRank& B,
-    double alpha, bool TransA, bool TransB
-  )
-) {
-  // LR NB new
-  // TODO Not implemented
-  if (TransA || TransB) std::abort();
-  if (!A.is_row_basis()) std::abort();
-  MatrixProxy basis_BU = gemm(A.sub_bases, B.U, alpha);
-  Dense basis_BU_S = gemm(basis_BU, B.S);
-  Dense trans_basis_BU_S = gemm(A.translation, basis_BU_S);
-  return NestedBasis(B.V, trans_basis_BU_S, false);
-}
-
-define_method(
-  MatrixProxy, gemm_omm,
-  (
     const Matrix& A, const Matrix& B,
     double alpha, bool TransA, bool TransB
   )
@@ -177,90 +113,6 @@ define_method(
   timing::start("DGEMM");
   add_gemm_task(A, B, C, alpha, beta, TransA, TransB);
   timing::stop("DGEMM");
-}
-
-define_method(
-  void, gemm_omm,
-  (
-    const NestedBasis& A, const Dense& B, Dense& C,
-    double alpha, double beta,
-    bool TransA, bool TransB
-  )
-) {
-  // NB D D
-  if (A.is_col_basis()) {
-    gemm(gemm(A.sub_bases, A.translation), B, C, alpha, beta, TransA, TransB);
-  } else {
-    gemm(gemm(A.translation, A.sub_bases), B, C, alpha, beta, TransA, TransB);
-  }
-}
-
-define_method(
-  void, gemm_omm,
-  (
-    const Dense& A, const NestedBasis& B, Dense& C,
-    double alpha, double beta,
-    bool TransA, bool TransB
-  )
-) {
-  // D NB D
-  if (B.is_col_basis()) {
-    gemm(A, gemm(B.sub_bases, B.translation), C, alpha, beta, TransA, TransB);
-  } else {
-    gemm(A, gemm(B.translation, B.sub_bases), C, alpha, beta, TransA, TransB);
-  }
-}
-
-define_method(
-  void, gemm_omm,
-  (
-    const NestedBasis& A, const NestedBasis& B, Dense& C,
-    double alpha, double beta,
-    bool TransA, bool TransB
-  )
-) {
-  // NB NB D
-  // TODO Not implemented
-  if (TransA || TransB) std::abort();
-  if (!(A.is_row_basis() && B.is_col_basis())) std::abort();
-  gemm(
-    gemm(A.translation, gemm(A.sub_bases, B.sub_bases, alpha)),
-    B.translation, C, 1, beta
-  );
-}
-
-define_method(
-  void, gemm_omm,
-  (
-    const NestedBasis& A, const Dense& B, NestedBasis& C,
-    double alpha, double beta,
-    bool TransA, bool TransB
-  )
-) {
-  // NB D NB
-  // TODO Not implemented
-  if (TransA || TransB) std::abort();
-  if (!A.is_row_basis()) std::abort();
-  MatrixProxy basis_B = gemm(A.sub_bases, B, alpha);
-  C.translation *= beta;
-  recompress_row(C.sub_bases, basis_B, C.translation, A.translation);
-}
-
-define_method(
-  void, gemm_omm,
-  (
-    const Dense& A, const NestedBasis& B, NestedBasis& C,
-    double alpha, double beta,
-    bool TransA, bool TransB
-  )
-) {
-  // D NB NB
-  // TODO Not implemented
-  if (TransA || TransB) std::abort();
-  if (!B.is_col_basis()) std::abort();
-  MatrixProxy A_basis = gemm(A, B.sub_bases, alpha);
-  C.translation *= beta;
-  recompress_col(C.sub_bases, A_basis, C.translation, B.translation);
 }
 
 define_method(
@@ -315,52 +167,6 @@ define_method(
     ), 1, TransA, false
   );
   gemm(Abasis_inner_matrices, TransB ? B.U : B.V, C, 1, beta, false, TransB);
-}
-
-define_method(
-  void, gemm_omm,
-  (
-    const NestedBasis& A, const LowRank& B, NestedBasis& C,
-    double alpha, double beta,
-    bool TransA, bool TransB
-  )
-) {
-  // NB LR NB
-  // TODO Not implemented
-  if (TransA || TransB) std::abort();
-  if (!(A.is_row_basis() && C.is_row_basis())) std::abort();
-  Dense basis_BU = gemm(A.sub_bases, B.U, alpha);
-  Dense basis_BU_S = gemm(basis_BU, B.S);
-  if (is_shared(B.V, C.sub_bases)) {
-    gemm(A.translation, basis_BU_S, C.translation, 1, beta);
-  } else {
-    Dense trans_basis_BU_S = gemm(A.translation, basis_BU_S);
-    C.translation *= beta;
-    recompress_row(C.sub_bases, B.V, C.translation, trans_basis_BU_S);
-  }
-}
-
-define_method(
-  void, gemm_omm,
-  (
-    const LowRank& A, const NestedBasis& B, NestedBasis& C,
-    double alpha, double beta,
-    bool TransA, bool TransB
-  )
-) {
-  // LR NB NB
-  // TODO Not implemented
-  if (TransA || TransB) std::abort();
-  if (!(B.is_col_basis() && C.is_col_basis())) std::abort();
-  Dense AV_basis = gemm(A.V, B.sub_bases, alpha);
-  Dense S_AV_basis = gemm(A.S, AV_basis);
-  if (is_shared(A.U, C.sub_bases)) {
-    gemm(S_AV_basis, B.translation, C.translation, 1, beta);
-  } else {
-    Dense S_AV_basis_trans = gemm(S_AV_basis, B.translation);
-    C.translation *= beta;
-    recompress_col(C.sub_bases, A.U, C.translation, S_AV_basis_trans);
-  }
 }
 
 define_method(
@@ -493,40 +299,6 @@ define_method(
     C.S *= beta;
     C += AxB;
   }
-}
-
-define_method(
-  void, gemm_omm,
-  (
-    const Hierarchical& A, const NestedBasis& B, NestedBasis& C,
-    double alpha, double beta,
-    bool TransA, bool TransB
-  )
-) {
-  // H NB NB
-  // TODO Not implemented
-  if (TransA || TransB) std::abort();
-  Hierarchical BH = split(B, A.dim[1], 1);
-  Hierarchical CH = split(C, A.dim[0], 1);
-  gemm(A, BH, CH, alpha, beta, TransA, TransB);
-  recombine_col(CH, C.sub_bases, C.translation);
-}
-
-define_method(
-  void, gemm_omm,
-  (
-    const NestedBasis& A, const Hierarchical& B, NestedBasis& C,
-    double alpha, double beta,
-    bool TransA, bool TransB
-  )
-) {
-  // NB H NB
-  // TODO Not implemented
-  if (TransA || TransB) std::abort();
-  Hierarchical AH = split(A, 1, B.dim[0]);
-  Hierarchical CH = split(C, 1, B.dim[1]);
-  gemm(AH, B, CH, alpha, beta, TransA, TransB);
-  recombine_row(CH, C.sub_bases, C.translation);
 }
 
 define_method(

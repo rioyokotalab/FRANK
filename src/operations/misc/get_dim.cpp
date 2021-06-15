@@ -31,11 +31,6 @@ define_method(int64_t, get_n_rows_omm, (const Hierarchical& A)) {
   return n_rows;
 }
 
-define_method(int64_t, get_n_rows_omm, (const NestedBasis& A)) {
-  // TODO This can be made simpler if we store Vt instead of V
-  return A.is_col_basis() ? get_n_rows(A.sub_bases) : get_n_rows(A.translation);
-}
-
 define_method(int64_t, get_n_rows_omm, (const Matrix& A)) {
   omm_error_handler("get_n_rows", {A}, __FILE__, __LINE__);
   std::abort();
@@ -54,11 +49,6 @@ define_method(int64_t, get_n_cols_omm, (const Hierarchical& A)) {
     n_cols += get_n_cols(A(0, j));
   }
   return n_cols;
-}
-
-define_method(int64_t, get_n_cols_omm, (const NestedBasis& A)) {
-  // TODO This can be made simpler if we store Vt instead of V
-  return A.is_row_basis() ? get_n_cols(A.sub_bases) : get_n_cols(A.translation);
 }
 
 define_method(int64_t, get_n_cols_omm, (const Matrix& A)) {

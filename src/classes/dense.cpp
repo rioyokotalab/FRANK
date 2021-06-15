@@ -78,16 +78,6 @@ define_method(void, fill_dense_from, (const LowRank& A, Dense& B)) {
   timing::stop("make_dense(LR)");
 }
 
-define_method(void, fill_dense_from, (const NestedBasis& A, Dense& B)) {
-  timing::start("make_dense(NestedBasis)");
-  if (A.is_col_basis()) {
-    gemm(A.sub_bases, A.translation, B, 1, 0);
-  } else {
-    gemm(A.translation, A.sub_bases, B, 1, 0);
-  }
-  timing::stop("make_dense(NestedBasis)");
-}
-
 define_method(void, fill_dense_from, (const Dense& A, Dense& B)) {
   assert(A.dim[0] == B.dim[0]);
   assert(A.dim[1] == B.dim[1]);

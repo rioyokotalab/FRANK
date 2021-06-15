@@ -42,10 +42,6 @@ define_method(std::string, type_omm, (const Hierarchical&)) {
   return "Hierarchical";
 }
 
-define_method(std::string, type_omm, (const NestedBasis&)) {
-  return "NestedBasis";
-}
-
 define_method(std::string, type_omm, (const Matrix&)) {
   return "Matrix";
 }
@@ -167,17 +163,6 @@ define_method(void, print_omm, (const Hierarchical& A)) {
       print(A(i,j));
     }
     std::cout << std::endl;
-  }
-  print_separation_line();
-}
-
-define_method(void, print_omm, (const NestedBasis& A)) {
-  if (A.is_col_basis()) {
-    print(A.sub_bases);
-    print(A.translation);
-  } else {
-    print(A.translation);
-    print(A.sub_bases);
   }
   print_separation_line();
 }
