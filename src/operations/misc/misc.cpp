@@ -203,9 +203,8 @@ MatrixProxy shallow_copy(const Matrix& A) {
 }
 
 define_method(MatrixProxy, shallow_copy_omm, (const Dense& A)) {
-  // TODO Having this work for Dense might not be desirable (see is_shared check
-  // above)
-  return A.share();
+  // TODO Having this work for Dense might not be desirable
+  return A.shallow_copy();
 }
 
 define_method(MatrixProxy, shallow_copy_omm, (const Hierarchical& A)) {

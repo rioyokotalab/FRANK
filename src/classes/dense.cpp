@@ -167,7 +167,7 @@ double* Dense::operator&() { return data_ptr; }
 
 const double* Dense::operator&() const { return data_ptr; }
 
-Dense Dense::share() const {
+Dense Dense::shallow_copy() const {
   Dense out;
   out.dim = dim;
   out.stride = stride;
@@ -176,8 +176,6 @@ Dense Dense::share() const {
   out.data_ptr = data_ptr;
   return out;
 }
-
-bool Dense::is_shared() const { return (data.use_count() > 1); }
 
 bool Dense::is_shared_with(const Dense& A) const {
   bool shared = (data == A.data);
