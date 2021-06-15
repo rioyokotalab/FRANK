@@ -16,8 +16,6 @@ int main(int argc, char** argv) {
   int64_t rank = argc > 3 ? atoi(argv[3]) : 8;
   int64_t nblocks = argc > 4 ? atoi(argv[4]) : 2;
   int64_t admis = argc > 5 ? atoi(argv[5]) : 0;
-  int64_t basis = argc > 6 ? atoi(argv[6]) : 0;
-  assert(basis == NORMAL_BASIS || basis == SHARED_BASIS);
 
   std::vector<std::vector<double>> randx{get_sorted_random_vector(N)};
   Dense x(random_uniform, std::vector<std::vector<double>>(), N);
@@ -25,8 +23,7 @@ int main(int argc, char** argv) {
   Dense D(laplacend, randx, N, N);
   timing::start("Hierarchical compression");
   start_schedule();
-  Hierarchical A(
-    laplacend, randx, N, N, rank, nleaf, admis, nblocks, nblocks, basis);
+  Hierarchical A(laplacend, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   execute_schedule();
   timing::stop("Hierarchical compression");
   // write_JSON(A);

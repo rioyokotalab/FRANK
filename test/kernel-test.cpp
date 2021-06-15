@@ -18,24 +18,20 @@ int main(int, char** argv) {
   int64_t rank = atoi(argv[2]);
   int64_t N = atoi(argv[3]);
   int64_t admis = atoi(argv[4]);
-  int64_t basis = 0;
   int64_t nblocks = N / nleaf;
-  assert(basis == NORMAL_BASIS || basis == SHARED_BASIS);
 
   std::vector<std::vector<double>> randx{get_sorted_random_vector(N)};
 
   print("Generate hicma laplace 1D.");
   timing::start("Hierarchical compression");
-  Hierarchical A(laplacend, randx, N, N, rank, nleaf, admis,
-               nblocks, nblocks, basis);
+  Hierarchical A(laplacend, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   timing::stop("Hierarchical compression");
   write_JSON(A, std::string("laplace1d-") + std::to_string(N) + std::string("-") + std::to_string(nleaf) + std::string("-") +
            std::to_string(rank) + std::string("-") + std::to_string(admis) + std::string(".xml"));
 
   print("Generate hicma Cauchy 2D.");
   std::vector<std::vector<double>> randx1{get_sorted_random_vector(N), get_sorted_random_vector(N)};
-  Hierarchical A1(cauchy2d, randx1, N, N, rank, nleaf, admis,
-               nblocks, nblocks, basis);
+  Hierarchical A1(cauchy2d, randx1, N, N, rank, nleaf, admis, nblocks, nblocks);
   write_JSON(A1, std::string("cauchy2d-") + std::to_string(N) + std::string("-") + std::to_string(nleaf) + std::string("-") +
            std::to_string(rank) + std::string("-") + std::to_string(admis) + std::string(".xml"));
 
@@ -49,7 +45,7 @@ int main(int, char** argv) {
   starsh::exp_kernel_prepare(N, beta, nu, noise, sigma, 3);
 
   Hierarchical A2(starsh::exp_kernel_fill, randx, N, N, rank, nleaf, admis,
-                 nblocks, nblocks, basis);
+                 nblocks, nblocks);
   write_JSON(A2, std::string("exp-3d-") + std::to_string(N) + std::string("-") + std::to_string(nleaf) + std::string("-") +
            std::to_string(rank) + std::string("-") + std::to_string(admis) + std::string(".xml"));
   starsh::exp_kernel_cleanup();
@@ -58,7 +54,7 @@ int main(int, char** argv) {
   starsh::exp_kernel_prepare(N, beta, nu, noise, sigma, 2);
 
   Hierarchical A3(starsh::exp_kernel_fill, randx, N, N, rank, nleaf, admis,
-                  nblocks, nblocks, basis);
+                  nblocks, nblocks);
   write_JSON(A3, std::string("exp-2d-") + std::to_string(N) + std::string("-") + std::to_string(nleaf) + std::string("-") +
            std::to_string(rank) + std::string("-") + std::to_string(admis) + std::string(".xml"));
   starsh::exp_kernel_cleanup();
