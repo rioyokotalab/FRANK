@@ -46,9 +46,7 @@ class MatrixInitializerKernel : public MatrixInitializer {
       const std::vector<std::vector<double>>& x,
       int64_t row_start, int64_t col_start
     ),
-    const std::vector<std::vector<double>>& x,
-    int64_t admis, int64_t rank,
-    int basis_type
+    const std::vector<std::vector<double>>& x, int64_t admis, int64_t rank
   );
 
   // Utility methods
