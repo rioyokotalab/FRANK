@@ -6,7 +6,6 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/nested_basis.h"
-#include "hicma/gpu_batch/batch.h"
 #include "hicma/operations/arithmetic.h"
 #include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"

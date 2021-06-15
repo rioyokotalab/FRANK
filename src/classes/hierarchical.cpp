@@ -10,7 +10,6 @@
 #include "hicma/classes/initialization_helpers/matrix_initializer.h"
 #include "hicma/classes/initialization_helpers/matrix_initializer_block.h"
 #include "hicma/classes/initialization_helpers/matrix_initializer_kernel.h"
-#include "hicma/gpu_batch/batch.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/LAPACK.h"
 #include "hicma/operations/misc.h"

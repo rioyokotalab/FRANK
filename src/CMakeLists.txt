@@ -1,6 +1,5 @@
 add_library(hicma SHARED functions.cpp)
 add_subdirectory(classes)
-add_subdirectory(gpu_batch)
 add_subdirectory(operations)
 add_subdirectory(starpu)
 add_subdirectory(util)

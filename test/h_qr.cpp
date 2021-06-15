@@ -50,7 +50,6 @@ int main(int argc, char** argv) {
   timing::start("CPU compression");
   Hierarchical A(laplacend, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   timing::stop("CPU compression");
-  rsvd_batch();
   Hierarchical Q(zeros, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   Hierarchical R(zeros, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   Hierarchical QR(zeros, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
