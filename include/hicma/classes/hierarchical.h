@@ -29,9 +29,9 @@ class Hierarchical : public Matrix {
 
   virtual ~Hierarchical() = default;
 
-  Hierarchical(const Hierarchical& A);
+  Hierarchical(const Hierarchical& A) = default;
 
-  Hierarchical& operator=(const Hierarchical& A);
+  Hierarchical& operator=(const Hierarchical& A) = default;
 
   Hierarchical(Hierarchical&& A) = default;
 
@@ -86,8 +86,6 @@ class Hierarchical : public Matrix {
   MatrixProxy& operator()(int64_t i, int64_t j);
 
 };
-
-void unshare(Matrix& A);
 
 } // namespace hicma
 
