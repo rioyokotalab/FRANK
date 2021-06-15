@@ -5,7 +5,6 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
-#include "hicma/classes/nested_basis.h"
 #include "hicma/classes/initialization_helpers/index_range.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/misc.h"

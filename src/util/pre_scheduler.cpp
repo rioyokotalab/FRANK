@@ -2,7 +2,6 @@
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
-#include "hicma/classes/nested_basis.h"
 #include "hicma/classes/initialization_helpers/basis_tracker.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/LAPACK.h"
