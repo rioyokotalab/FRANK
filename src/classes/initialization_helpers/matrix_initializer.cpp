@@ -3,7 +3,6 @@
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
-#include "hicma/classes/initialization_helpers/basis_tracker.h"
 #include "hicma/classes/initialization_helpers/cluster_tree.h"
 #include "hicma/functions.h"
 #include "hicma/operations/BLAS.h"

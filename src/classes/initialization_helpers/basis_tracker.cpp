@@ -2,7 +2,6 @@
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/matrix.h"
-#include "hicma/classes/nested_basis.h"
 #include "hicma/classes/initialization_helpers/index_range.h"
 #include "hicma/util/omm_error_handler.h"
 #include "hicma/util/timer.h"
@@ -60,11 +59,11 @@ namespace hicma
 {
 
 BasisKey::BasisKey(const BasisKey& A)
-: data_ptr(A.data_ptr), D(share_basis(A.D)), dim(A.dim) {}
+: data_ptr(A.data_ptr), D(A.D.share()), dim(A.dim) {}
 
 BasisKey& BasisKey::operator=(const BasisKey& A) {
   data_ptr = A.data_ptr;
-  D = share_basis(A.D);
+  D = A.D.share();
   dim = A.dim;
   return *this;
 }
