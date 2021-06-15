@@ -26,7 +26,7 @@ define_method(MatrixProxy, transpose_omm, (const Dense& A)) {
 }
 
 define_method(MatrixProxy, transpose_omm, (const LowRank& A)) {
-  LowRank transposed(transpose(A.V), transpose(A.S), transpose(A.U), false);
+  LowRank transposed(transpose(A.V), transpose(A.S), transpose(A.U));
   return std::move(transposed);
 }
 

@@ -129,7 +129,7 @@ define_method(
   } else {
     U_splits = Hierarchical(1, 1);
     if (copy) {
-      U_splits(0, 0) = A.U;
+      U_splits(0, 0) = Dense(A.U);
     } else {
       U_splits(0, 0) = shallow_copy(A.U);
     }
@@ -142,7 +142,7 @@ define_method(
   } else {
     V_splits = Hierarchical(1, 1);
     if (copy) {
-      V_splits(0, 0) = A.V;
+      V_splits(0, 0) = Dense(A.V);
     } else {
       V_splits(0, 0) = shallow_copy(A.V);
     }

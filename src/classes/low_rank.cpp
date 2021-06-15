@@ -37,12 +37,7 @@ define_method(LowRank&&, move_from_low_rank, (Matrix& A)) {
 }
 
 LowRank::LowRank(int64_t n_rows, int64_t n_cols, int64_t k)
-: dim{n_rows, n_cols}, rank(k)
-{
-  U = Dense(dim[0], k);
-  S = Dense(k, k);
-  V = Dense(k, dim[1]);
-}
+: dim{n_rows, n_cols}, rank(k), U(dim[0], k), S(k, k), V(k, dim[1]) {}
 
 LowRank::LowRank(const Dense& A, int64_t k)
 : Matrix(A), dim{A.dim[0], A.dim[1]} {
@@ -56,10 +51,14 @@ LowRank::LowRank(const Dense& A, int64_t k)
   rank = k;
 }
 
-LowRank::LowRank(
-  const Matrix& U, const Dense& S, const Matrix& V, bool copy_S
-) : U(shallow_copy(U)), V(shallow_copy(V)),
-    S(copy_S ? Dense(S) : S.share()),
-    dim{get_n_rows(U), get_n_cols(V)}, rank(S.dim[0]) {}
+LowRank::LowRank(const Matrix& U, const Dense& S, const Matrix& V, bool copy)
+: dim{get_n_rows(U), get_n_cols(V)}, rank(S.dim[0]),
+  U(copy ? MatrixProxy(U) : shallow_copy(U)),
+  S(copy ? MatrixProxy(S) : shallow_copy(S)),
+  V(copy ? MatrixProxy(V) : shallow_copy(V)) {}
+
+LowRank::LowRank(Dense&& U, Dense&& S, Dense&& V)
+: dim{U.dim[0], V.dim[1]}, rank(S.dim[0]),
+  U(std::move(U)), S(std::move(S)), V(std::move(V)) {}
 
 } // namespace hicma
