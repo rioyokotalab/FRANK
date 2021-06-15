@@ -4,7 +4,6 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
-#include "hicma/classes/nested_basis.h"
 #include "hicma/extension_headers/classes.h"
 #include "hicma/operations/randomized_factorizations.h"
 #include "hicma/operations/misc.h"
@@ -59,7 +58,7 @@ LowRank::LowRank(const Dense& A, int64_t k)
 
 LowRank::LowRank(
   const Matrix& U, const Dense& S, const Matrix& V, bool copy_S
-) : U(share_basis(U)), V(share_basis(V)),
+) : U(shallow_copy(U)), V(shallow_copy(V)),
     S(copy_S ? Dense(S) : S.share()),
     dim{get_n_rows(U), get_n_cols(V)}, rank(S.dim[0]) {}
 

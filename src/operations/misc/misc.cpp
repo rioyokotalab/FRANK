@@ -5,7 +5,6 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
-#include "hicma/classes/nested_basis.h"
 #include "hicma/classes/initialization_helpers/index_range.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/LAPACK.h"
@@ -132,7 +131,7 @@ define_method(
     if (copy) {
       U_splits(0, 0) = A.U;
     } else {
-      U_splits(0, 0) = share_basis(A.U);
+      U_splits(0, 0) = shallow_copy(A.U);
     }
   }
   Hierarchical V_splits;
@@ -145,7 +144,7 @@ define_method(
     if (copy) {
       V_splits(0, 0) = A.V;
     } else {
-      V_splits(0, 0) = share_basis(A.V);
+      V_splits(0, 0) = shallow_copy(A.V);
     }
   }
   for (uint64_t i=0; i<row_splits.size(); ++i) {
@@ -181,7 +180,7 @@ define_method(
       if (copy) {
         out(i, j) = A(i, j);
       } else {
-        out(i, j) = share_basis(A(i, j));
+        out(i, j) = shallow_copy(A(i, j));
       }
     }
   }
@@ -196,6 +195,31 @@ define_method(
   )
 ) {
   omm_error_handler("split", {A}, __FILE__, __LINE__);
+  std::abort();
+}
+
+MatrixProxy shallow_copy(const Matrix& A) {
+  return shallow_copy_omm(A);
+}
+
+define_method(MatrixProxy, shallow_copy_omm, (const Dense& A)) {
+  // TODO Having this work for Dense might not be desirable (see is_shared check
+  // above)
+  return A.share();
+}
+
+define_method(MatrixProxy, shallow_copy_omm, (const Hierarchical& A)) {
+  Hierarchical new_shared(A.dim[0], A.dim[1]);
+  for (int64_t i=0; i<A.dim[0]; ++i) {
+    for (int64_t j=0; j<A.dim[1]; ++j) {
+      new_shared(i, j) = shallow_copy(A(i, j));
+    }
+  }
+  return std::move(new_shared);
+}
+
+define_method(MatrixProxy, shallow_copy_omm, (const Matrix& A)) {
+  omm_error_handler("shallow_copy", {A}, __FILE__, __LINE__);
   std::abort();
 }
 
