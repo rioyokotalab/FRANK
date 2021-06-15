@@ -208,13 +208,13 @@ define_method(MatrixProxy, shallow_copy_omm, (const Dense& A)) {
 }
 
 define_method(MatrixProxy, shallow_copy_omm, (const Hierarchical& A)) {
-  Hierarchical new_shared(A.dim[0], A.dim[1]);
+  Hierarchical new_shallow_copy(A.dim[0], A.dim[1]);
   for (int64_t i=0; i<A.dim[0]; ++i) {
     for (int64_t j=0; j<A.dim[1]; ++j) {
-      new_shared(i, j) = shallow_copy(A(i, j));
+      new_shallow_copy(i, j) = shallow_copy(A(i, j));
     }
   }
-  return std::move(new_shared);
+  return std::move(new_shallow_copy);
 }
 
 define_method(MatrixProxy, shallow_copy_omm, (const Matrix& A)) {

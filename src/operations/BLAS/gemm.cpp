@@ -155,7 +155,7 @@ define_method(
   )
 ) {
   // LR LR D
-  // TODO Many optimizations possible here with shared basis
+  // TODO Many optimizations possible
   // Even in non-shared case, UxS, SxV may be optimized across blocks!
   Dense Abasis_inner_matrices = gemm(
     TransA ? A.V : A.U, gemm(

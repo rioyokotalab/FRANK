@@ -36,8 +36,6 @@ declare_method(
   void, fill_dense_from, (virtual_<const Matrix&>, virtual_<Matrix&>)
 )
 
-declare_method(void, unshare_omm, (virtual_<Matrix&>))
-
 } // namespace hicma
 
 #endif // hicma_extension_headers_classes_h
