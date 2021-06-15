@@ -4,7 +4,6 @@
 
 #include "hicma/classes.h"
 #include "hicma/functions.h"
-#include "hicma/gpu_batch/batch.h"
 #include "hicma/operations.h"
 #include "hicma/util.h"
 
