@@ -240,16 +240,6 @@ define_method(Matrix&, addition_omm, (LowRank& A, const LowRank& B)) {
   assert(A.dim[0] == B.dim[0]);
   assert(A.dim[1] == B.dim[1]);
   assert(A.rank == B.rank);
-  if (is_shared(A.U, B.U) && is_shared(A.V, B.V)) {
-    A.S += B.S;
-    return A;
-  } else if (!is_shared(A.U, B.U) && is_shared(A.V, B.V)) {
-    recompress_col(A.U, B.U, A.S, B.S);
-    return A;
-  } else if (is_shared(A.U, B.U) && !is_shared(A.V, B.V)) {
-    recompress_row(A.V, B.V, A.S, B.S);
-    return A;
-  }
   if (getCounter("LR_ADDITION_COUNTER") == 1) updateCounter("LR-addition", 1);
   if (getCounter("LRA") == 0) {
     naive_addition(A, B);

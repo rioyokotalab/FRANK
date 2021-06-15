@@ -54,22 +54,6 @@ void add_gemm_task(
 
 void add_svd_task(Dense& A, Dense& U, Dense& S, Dense& V);
 
-void add_recompress_col_task(
-  Dense& AU, const Dense& BU, Dense& AS, const Dense& BS
-);
-
-void add_recompress_row_task(
-  Dense& AV, const Dense& BV, Dense& AS, const Dense& BS
-);
-
-void add_recombine_col_task(
-  const std::vector<Dense>& trans_orig, Dense& S_orig, std::vector<Dense>& trans
-);
-
-void add_recombine_row_task(
-  const std::vector<Dense>& trans_orig, Dense& S_orig, std::vector<Dense>& trans
-);
-
 void start_schedule();
 
 void execute_schedule();
