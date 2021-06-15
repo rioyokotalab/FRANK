@@ -160,7 +160,7 @@ void naive_addition(LowRank& A, const LowRank& B) {
     S_merge(0, 0) = std::move(A.S);
     S_merge(0, 1) = Dense(A.rank, B.rank);
     S_merge(1, 0) = Dense(B.rank, A.rank);
-    S_merge(1, 1) = B.S.share();
+    S_merge(1, 1) = B.S.shallow_copy();
     A.rank += B.rank;
     A.U = Dense(U_merge);
     A.S = Dense(S_merge);

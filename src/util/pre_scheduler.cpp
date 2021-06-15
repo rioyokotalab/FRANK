@@ -64,10 +64,10 @@ class Task {
     std::vector<std::reference_wrapper<Dense>> modified_
   ) {
     for (size_t i=0; i<constant_.size(); ++i) {
-      constant.push_back(constant_[i].get().share());
+      constant.push_back(constant_[i].get().shallow_copy());
     }
     for (size_t i=0; i<modified_.size(); ++i) {
-      modified.push_back(modified_[i].get().share());
+      modified.push_back(modified_[i].get().shallow_copy());
     }
   }
 
@@ -1010,7 +1010,7 @@ void add_gemm_task(
       return;
     } else
     if (beta == 0) {
-      C = gemm_tracker[A][B]->modified[0].share();
+      C = gemm_tracker[A][B]->modified[0].shallow_copy();
       return;
     }
   }

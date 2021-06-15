@@ -59,17 +59,17 @@ namespace hicma
 {
 
 BasisKey::BasisKey(const BasisKey& A)
-: data_ptr(A.data_ptr), D(A.D.share()), dim(A.dim) {}
+: data_ptr(A.data_ptr), D(A.D.shallow_copy()), dim(A.dim) {}
 
 BasisKey& BasisKey::operator=(const BasisKey& A) {
   data_ptr = A.data_ptr;
-  D = A.D.share();
+  D = A.D.shallow_copy();
   dim = A.dim;
   return *this;
 }
 
 BasisKey::BasisKey(const Dense& A)
-: data_ptr(&A), D(A.share()), dim(A.dim) {}
+: data_ptr(&A), D(A.shallow_copy()), dim(A.dim) {}
 
 bool operator==(const BasisKey& A, const BasisKey& B) {
   return (A.data_ptr == B.data_ptr) && (A.dim == B.dim);
