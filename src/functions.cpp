@@ -8,10 +8,10 @@
 #include <random>
 #include <vector>
 
-#include <starsh.h>
-#include <starsh-randtlr.h>
-#include <starsh-electrodynamics.h>
-#include <starsh-spatial.h>
+// #include <starsh.h>
+// #include <starsh-randtlr.h>
+// #include <starsh-electrodynamics.h>
+// #include <starsh-spatial.h>
 
 namespace hicma
 {
@@ -187,44 +187,44 @@ bool is_admissible_nd_morton(
   return (std::max(diamI, diamJ) <= (admis * dist));
 }
 
-  namespace starsh {
-    STARSH_kernel *kernel;
-    void *starsh_data;
-    std::vector<STARSH_int> starsh_index;
+  // namespace starsh {
+  //   STARSH_kernel *kernel;
+  //   void *starsh_data;
+  //   std::vector<STARSH_int> starsh_index;
 
-    void exp_kernel_prepare(
-      int64_t N, double beta, double nu, double noise,double sigma, int ndim
-    ) {
-      enum STARSH_PARTICLES_PLACEMENT place = STARSH_PARTICLES_UNIFORM;
-      if (ndim == 2) {
-        kernel = starsh_ssdata_block_exp_kernel_2d;
-      } else if (ndim == 3) {
-        kernel = starsh_ssdata_block_exp_kernel_3d;
-      }
-      starsh_ssdata_generate(
-        (STARSH_ssdata **)&starsh_data, N, ndim, beta, nu, noise, place, sigma
-      );
-      for (int j = 0; j < N; ++j) {
-        starsh_index.push_back(j);
-      }
-    }
+  //   void exp_kernel_prepare(
+  //     int64_t N, double beta, double nu, double noise,double sigma, int ndim
+  //   ) {
+  //     enum STARSH_PARTICLES_PLACEMENT place = STARSH_PARTICLES_UNIFORM;
+  //     if (ndim == 2) {
+  //       kernel = starsh_ssdata_block_exp_kernel_2d;
+  //     } else if (ndim == 3) {
+  //       kernel = starsh_ssdata_block_exp_kernel_3d;
+  //     }
+  //     starsh_ssdata_generate(
+  //       (STARSH_ssdata **)&starsh_data, N, ndim, beta, nu, noise, place, sigma
+  //     );
+  //     for (int j = 0; j < N; ++j) {
+  //       starsh_index.push_back(j);
+  //     }
+  //   }
 
-    void exp_kernel_fill(
-      double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-      const std::vector<std::vector<double>>&,
-      int64_t row_start, int64_t col_start
-    ) {
-      kernel(
-        A_rows, A_cols,
-        starsh_index.data() + row_start, starsh_index.data() + col_start,
-        starsh_data, starsh_data,
-        A, A_stride
-      );
-    }
+  //   void exp_kernel_fill(
+  //     double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  //     const std::vector<std::vector<double>>&,
+  //     int64_t row_start, int64_t col_start
+  //   ) {
+  //     kernel(
+  //       A_rows, A_cols,
+  //       starsh_index.data() + row_start, starsh_index.data() + col_start,
+  //       starsh_data, starsh_data,
+  //       A, A_stride
+  //     );
+  //   }
 
-    void exp_kernel_cleanup() {
-      starsh_ssdata_free((STARSH_ssdata *)starsh_data);
-    }
-  }
+  //   void exp_kernel_cleanup() {
+  //     starsh_ssdata_free((STARSH_ssdata *)starsh_data);
+  //   }
+  // }
 
 } // namespace hicma
