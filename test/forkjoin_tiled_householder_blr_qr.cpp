@@ -31,17 +31,14 @@ int main(int argc, char** argv) {
   randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
   Hierarchical D(laplacend, randpts, N, N, Nb, Nb, Nc, Nc, Nc);
   Hierarchical A(laplacend, randpts, N, N, rank, Nb, admis, Nc, Nc);
-  print("BLR Compression");
-  print("Compression Accuracy");
-  print("Rel. L2 Error", l2_error(A, D), false);
+  Hierarchical A_copy(A);
+  print("BLR Compression Accuracy");
+  print("Rel. L2 Error", l2_error(D, A), false);
 
   Hierarchical Q(identity, std::vector<std::vector<double>>(), N, N, rank, Nb, admis, Nc, Nc);
   Hierarchical T(zeros, std::vector<std::vector<double>>(), N, N, Nb, Nb, Nc, Nc, Nc);
-  // For residual measurement
-  Dense x(N); x = 1.0;
-  Dense Ax = gemm(A, x);
 
-  print("Hicma Forkjoin BLR QR Decomposition");
+  print("Forkjoin Tiled Householder BLR-QR");
   print("Time");
   double tic = get_time();
   for(int64_t k = 0; k < Nc; k++) {
@@ -59,8 +56,7 @@ int main(int argc, char** argv) {
     }
   }
   double toc = get_time();
-  print("BLR QR Decomposition", toc-tic);
-
+  print("BLR-QR", toc-tic);
   //Build Q: Apply Q to Id
   for(int64_t k = Nc-1; k >= 0; k--) {
     for(int64_t i = Nc-1; i > k; i--) {
@@ -74,7 +70,6 @@ int main(int argc, char** argv) {
       larfb(A(k, k), T(k, k), Q(k, j), false);
     }
   }
-
   //Build R: Take upper triangular part of modified A
   for(int64_t i=0; i<A.dim[0]; i++) {
     for(int64_t j=0; j<=i; j++) {
@@ -84,16 +79,16 @@ int main(int argc, char** argv) {
         zero_whole(A(i, j));
     }
   }
+
+  print("BLR-QR Accuracy");
   //Residual
-  Dense Rx = gemm(A, x);
-  Dense QRx = gemm(Q, Rx);
-  print("Residual");
-  print("Rel. Error (operator norm)", l2_error(QRx, Ax), false);
+  Hierarchical QR(zeros, std::vector<std::vector<double>>(), N, N, rank, Nb, admis, Nc, Nc);
+  gemm(Q, A, QR, 1, 0);
+  print("Residual", l2_error(A_copy, QR), false);  
   //Orthogonality
-  Dense Qx = gemm(Q, x);
+  Hierarchical QtQ(zeros, std::vector<std::vector<double>>(), N, N, rank, Nb, admis, Nc, Nc);
   Hierarchical Qt = transpose(Q);
-  Dense QtQx = gemm(Qt, Qx);
-  print("Orthogonality");
-  print("Rel. Error (operator norm)", l2_error(QtQx, x), false);
+  gemm(Qt, Q, QtQ, 1, 0);
+  print("Orthogonality", l2_error(Dense(identity, std::vector<std::vector<double>>(), N, N), QtQ), false);
   return 0;
 }

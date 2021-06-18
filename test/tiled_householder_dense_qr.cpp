@@ -37,18 +37,15 @@ int main(int argc, char** argv) {
     latms(dist, iseed, sym, d, mode, conditionNumber, dmax, kl, ku, pack, DA);
     A = split(DA, Nc, Nc, true);
   }
+  Hierarchical A_copy(A);
   Hierarchical T(zeros, std::vector<std::vector<double>>(), N, N, 0, Nb, Nc, Nc, Nc);
   Hierarchical Q(identity, std::vector<std::vector<double>>(), N, N, 0, Nb, Nc, Nc, Nc);
 
   print("Cond(A)", cond(Dense(A)), false);
 
-  // For residual measurement
-  Dense x(N); x = 1.0;
-  Dense Ax = gemm(A, x);
-
-  print("Tiled QR Decomposition");
+  print("Tiled Householder Dense-QR");
   print("Time");
-  timing::start("QR decomposition");
+  timing::start("Dense-QR");
   for(int64_t k = 0; k < Nc; k++) {
     geqrt(A(k, k), T(k, k));
     for(int64_t j = k+1; j < Nc; j++) {
@@ -61,7 +58,7 @@ int main(int argc, char** argv) {
       }
     }
   }
-  timing::stopAndPrint("QR decomposition");
+  timing::stopAndPrint("Dense-QR", 1);
   //Build Q: Apply Q to Id
   for(int64_t k = Nc-1; k >= 0; k--) {
     for(int64_t i = Nc-1; i > k; i--) {
@@ -82,16 +79,16 @@ int main(int argc, char** argv) {
         zero_whole(A(i, j));
     }
   }
+
+  print("Dense-QR Accuracy");
   //Residual
-  Dense Rx = gemm(A, x);
-  Dense QRx = gemm(Q, Rx);
-  print("Accuracy");
-  print("Rel. Error (operator norm)", l2_error(QRx, Ax), false);
+  Hierarchical QR(zeros, std::vector<std::vector<double>>(), N, N, 0, Nb, Nc, Nc, Nc);
+  gemm(Q, A, QR, 1, 0);
+  print("Residual", l2_error(A_copy, QR), false);    
   //Orthogonality
-  Dense Qx = gemm(Q, x);
+  Hierarchical QtQ(zeros, std::vector<std::vector<double>>(), N, N, 0, Nb, Nc, Nc, Nc);
   Hierarchical Qt = transpose(Q);
-  Dense QtQx = gemm(Qt, Qx);
-  print("Orthogonality");
-  print("Rel. Error (operator norm)", l2_error(QtQx, x), false);
+  gemm(Qt, Q, QtQ, 1, 0);
+  print("Orthogonality", l2_error(Dense(identity, std::vector<std::vector<double>>(), N, N), QtQ), false);
   return 0;
 }

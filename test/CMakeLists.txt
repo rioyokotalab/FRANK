@@ -12,12 +12,11 @@ endforeach()
 list(
   APPEND EXECUTABLES
   "lr_add"
-  "block_qr"
-  "tiled_qr"
-  "tlr_qr"
-  "blr_qr"
+  "tiled_householder_dense_qr"
+  "blocked_mgs_blr_qr"
+  "tiled_householder_blr_qr"
+  "blocked_mgs_h_qr"
   "h_lu"
-  "h_qr"
   "rsvd"
   # "blr-lu-exp3d"
   # "kernel-test"
@@ -35,9 +34,9 @@ endforeach()
 if(OpenMP_FOUND)
   list(
     APPEND MULTITHREADED_EXECUTABLES
-    "forkjoin_blr_qr"
-    "forkjoin_tlr_qr"
-    "taskbased_tlr_qr"
+    "forkjoin_blocked_mgs_blr_qr"
+    "forkjoin_tiled_householder_blr_qr"
+    "taskbased_tiled_householder_blr_qr"
   )
 foreach(EXECUTABLE ${MULTITHREADED_EXECUTABLES})
     add_executable(${EXECUTABLE} ${EXECUTABLE}.cpp)

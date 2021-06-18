@@ -23,32 +23,27 @@ int main(int argc, char** argv) {
   randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
   Hierarchical D(laplacend, randpts, N, N, Nb, Nb, Nc, Nc, Nc);
   Hierarchical A(laplacend, randpts, N, N, rank, Nb, admis, Nc, Nc);
-  print("BLR Compression");
-  print("Compression Accuracy");
-  print("Rel. L2 Error", l2_error(A, D), false);
+  Hierarchical A_copy(A);
+  print("BLR Compression Accuracy");
+  print("Rel. L2 Error", l2_error(D, A), false);
 
   Hierarchical Q(zeros, std::vector<std::vector<double>>(), N, N, rank, Nb, admis, Nc, Nc);
   Hierarchical R(zeros, std::vector<std::vector<double>>(), N, N, rank, Nb, admis, Nc, Nc);
-  //For residual measurement
-  Dense x(N); x = 1.0;
-  Dense Ax = gemm(A, x);
-
-  print("Ida's BLR QR Decomposition");
+  print("Blocked Modified Gram-Schmidt BLR-QR");
   print("Time");
-  timing::start("BLR QR decomposition");
+  timing::start("BLR-QR");
   qr(A, Q, R);
-  timing::stopAndPrint("BLR QR decomposition", 1);
+  timing::stopAndPrint("BLR-QR", 1);
 
+  print("BLR-QR Accuracy");
   //Residual
-  Dense Rx = gemm(R, x);
-  Dense QRx = gemm(Q, Rx);
-  print("Residual");
-  print("Rel. Error (operator norm)", l2_error(QRx, Ax), false);
+  Hierarchical QR(zeros, std::vector<std::vector<double>>(), N, N, rank, Nb, admis, Nc, Nc);
+  gemm(Q, R, QR, 1, 0);
+  print("Residual", l2_error(A_copy, QR), false);
   //Orthogonality
-  Dense Qx = gemm(Q, x);
+  Hierarchical QtQ(zeros, std::vector<std::vector<double>>(), N, N, rank, Nb, admis, Nc, Nc);
   Hierarchical Qt = transpose(Q);
-  Dense QtQx = gemm(Qt, Qx);
-  print("Orthogonality");
-  print("Rel. Error (operator norm)", l2_error(QtQx, x), false);
+  gemm(Qt, Q, QtQ, 1, 0);
+  print("Orthogonality", l2_error(Dense(identity, std::vector<std::vector<double>>(), N, N), QtQ), false);
   return 0;
 }
