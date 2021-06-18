@@ -110,19 +110,13 @@ Hierarchical::Hierarchical(
   int64_t nleaf,
   double admis,
   int64_t n_row_blocks, int64_t n_col_blocks,
-  BasisType basis_type, int admis_type,
+  int admis_type,
   int64_t row_start, int64_t col_start
 ) {
-  MatrixInitializerFile initer(filename, ordering, admis, rank, basis_type, admis_type, coords);
+  MatrixInitializerFile initer(filename, ordering, admis, rank, admis_type, coords);
   ClusterTree cluster_tree(
                            {row_start, n_rows}, {col_start, n_cols}, n_row_blocks, n_col_blocks, nleaf
                            );
-  if (basis_type == SHARED_BASIS) {
-    // TODO Admissibility is checked later AGAIN (avoid?). Possible solutions:
-    //  - Add appropirate booleans to ClusterTree
-    //  - Use Tracker in MatrixInitializer
-    initer.create_nested_basis(cluster_tree);
-  }
   *this = Hierarchical(cluster_tree, initer);
 }
 
@@ -130,12 +124,12 @@ Hierarchical::Hierarchical(
   int64_t N, int64_t nleaf, int64_t nblocks, double beta,
   double nu, double noise, double sigma, int ndim,
   double admis, int64_t rank,
-  BasisType basis_type, int admis_type,
+  int admis_type,
   int64_t row_start, int64_t col_start
 ) {
   MatrixInitializerStarshExponential initer(
     N, beta, nu, noise, sigma, ndim,
-    admis, rank, basis_type, admis_type
+    admis, rank, admis_type
   );
   ClusterTree cluster_tree(
     {row_start, N}, {col_start, N}, nblocks, nblocks, nleaf

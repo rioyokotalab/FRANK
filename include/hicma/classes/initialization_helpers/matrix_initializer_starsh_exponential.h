@@ -31,7 +31,7 @@ class MatrixInitializerStarshExponential : public MatrixInitializer {
 
   MatrixInitializerStarshExponential(
     int64_t N, double beta, double nu, double noise, double sigma, int ndim,
-    double admis, int64_t rank, BasisType basis_type, int admis_type
+    double admis, int64_t rank, int admis_type
   );
 
   ~MatrixInitializerStarshExponential();

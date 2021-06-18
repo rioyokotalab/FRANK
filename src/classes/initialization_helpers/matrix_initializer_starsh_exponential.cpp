@@ -14,8 +14,8 @@ namespace hicma
 {
   MatrixInitializerStarshExponential::MatrixInitializerStarshExponential(
     int64_t N, double beta, double nu, double noise, double sigma, int ndim,
-    double admis, int64_t rank, BasisType basis_type, int admis_type
-  ) : MatrixInitializer(admis, rank, basis_type, admis_type),
+    double admis, int64_t rank, int admis_type
+  ) : MatrixInitializer(admis, rank, admis_type),
     N(N), beta(beta), nu(nu), noise(noise), sigma(sigma), ndim(ndim) {
     enum STARSH_PARTICLES_PLACEMENT place = STARSH_PARTICLES_UNIFORM;
     if (ndim == 2) {
