@@ -38,8 +38,13 @@ int main(int argc, char** argv) {
     A = split(DA, Nc, Nc, true);
   }
   Hierarchical A_copy(A);
-  Hierarchical T(zeros, std::vector<std::vector<double>>(), N, N, 0, Nb, Nc, Nc, Nc);
   Hierarchical Q(identity, std::vector<std::vector<double>>(), N, N, 0, Nb, Nc, Nc, Nc);
+  Hierarchical T(Nc, Nc);
+  for(int64_t j = 0; j < Nc; j++) {
+    for(int64_t i = j; i < Nc; i++) {
+      T(i, j) = Dense(get_n_cols(A(j, j)), get_n_cols(A(j, j)));
+    }
+  }
 
   print("Cond(A)", cond(Dense(A)), false);
 

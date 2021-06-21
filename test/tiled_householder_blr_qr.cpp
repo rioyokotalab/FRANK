@@ -27,7 +27,12 @@ int main(int argc, char** argv) {
   print("Rel. L2 Error", l2_error(D, A), false);
 
   Hierarchical Q(identity, std::vector<std::vector<double>>(), N, N, rank, Nb, admis, Nc, Nc);
-  Hierarchical T(zeros, std::vector<std::vector<double>>(), N, N, Nb, Nb, Nc, Nc, Nc);
+  Hierarchical T(Nc, Nc);
+  for(int64_t j = 0; j < Nc; j++) {
+    for(int64_t i = j; i < Nc; i++) {
+      T(i, j) = Dense(get_n_cols(A(j, j)), get_n_cols(A(j, j)));
+    }
+  }
   print("Tiled Householder BLR-QR");
   print("Time");
   timing::start("BLR-QR");
