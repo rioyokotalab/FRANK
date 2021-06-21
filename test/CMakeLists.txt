@@ -13,6 +13,7 @@ list(
   APPEND EXECUTABLES
   "lr_add"
   "tiled_householder_dense_qr"
+  "blr_compress"
   "blocked_mgs_blr_qr"
   "blocked_householder_blr_qr"
   "tiled_householder_blr_qr"
@@ -21,7 +22,6 @@ list(
   "rsvd"
   # "blr-lu-exp3d"
   # "kernel-test"
-  # "blr_compress"
 )
 foreach(EXECUTABLE ${EXECUTABLES})
   add_executable(${EXECUTABLE} ${EXECUTABLE}.cpp)
