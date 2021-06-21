@@ -12,6 +12,7 @@ namespace hicma
 class Matrix;
 class MatrixProxy;
 class Dense;
+class Hierarchical;
 
 std::tuple<Dense, std::vector<int64_t>> geqp3(Matrix& A);
 
@@ -50,6 +51,10 @@ void orthogonalize_block_col(int64_t, const Matrix&, Matrix&, Matrix&);
 void zero_lowtri(Matrix&);
 
 void zero_whole(Matrix&);
+
+void triangularize_block_col(int64_t, Hierarchical&, Hierarchical&);
+
+void apply_block_col_householder(const Hierarchical&, const Hierarchical&, int64_t, bool, Hierarchical&, int64_t);
 
 void rq(Matrix&, Matrix&, Matrix&);
 

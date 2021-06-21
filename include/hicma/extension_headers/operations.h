@@ -124,6 +124,15 @@ declare_method(void, zero_lowtri_omm, (virtual_<Matrix&>))
 declare_method(void, zero_whole_omm, (virtual_<Matrix&>))
 
 declare_method(
+  Dense, get_right_factor_omm,
+  (virtual_<const Matrix&>)
+)
+declare_method(
+  void, update_right_factor_omm,
+  (virtual_<Matrix&>, virtual_<Matrix&>)
+)
+
+declare_method(
   void, rq_omm,
   (virtual_<Matrix&>, virtual_<Matrix&>, virtual_<Matrix&>)
 )

@@ -14,6 +14,7 @@ list(
   "lr_add"
   "tiled_householder_dense_qr"
   "blocked_mgs_blr_qr"
+  "blocked_householder_blr_qr"
   "tiled_householder_blr_qr"
   "blocked_mgs_h_qr"
   "h_lu"
@@ -35,6 +36,7 @@ if(OpenMP_FOUND)
   list(
     APPEND MULTITHREADED_EXECUTABLES
     "forkjoin_blocked_mgs_blr_qr"
+    "forkjoin_blocked_householder_blr_qr"
     "forkjoin_tiled_householder_blr_qr"
     "taskbased_tiled_householder_blr_qr"
   )
