@@ -5,7 +5,7 @@
 namespace hicma
 {
 
-void initialize();
+void initialize(bool init_starpu=true);
 
 } // namespace hicma
 

@@ -17,25 +17,30 @@ register_class(Dense, Matrix)
 register_class(LowRank, Matrix)
 register_class(Hierarchical, Matrix)
 
-void shutdown() {
-  clear_trackers();
-  starpu_shutdown();
-}
-
 class Runtime {
+ private:
+  bool init_starpu;
  public:
-  Runtime() { initialize_starpu(); }
+  Runtime() {}
 
-  ~Runtime() { shutdown(); }
+  ~Runtime() {
+    clear_trackers();
+    if(init_starpu) starpu_shutdown();
+  }
 
-  void start() {
-  // Update virtual tables for open multi methods
+  void start(bool starpu) {
+    init_starpu = starpu;
+    if(init_starpu) initialize_starpu();
+    // Update virtual tables for open multi methods
     yorel::yomm2::update_methods();
   }
+
 };
 
 static Runtime runtime;
 
-void initialize() { runtime.start(); }
+void initialize(bool init_starpu) {
+  runtime.start(init_starpu);
+}
 
 } // namespace hicma
