@@ -419,7 +419,7 @@ class Addition_task : public Task {
 };
 
 void add_addition_task(Dense& A, const Dense& B) {
-  if (!matrix_is_tracked("addition_task", A, B)) {
+  if (!matrix_is_tracked("addition_task", A, B) || !is_tracking) {
     add_task(std::make_shared<Addition_task>(A, B));
     register_matrix("addition_task", A, B);
   }
@@ -876,7 +876,7 @@ class TRSM_task : public Task {
 };
 
 void add_trsm_task(const Dense& A, Dense& B, int uplo, int lr) {
-  if (!matrix_is_tracked("trsm_task", A, B)) {
+  if (!matrix_is_tracked("trsm_task", A, B) || !is_tracking) {
     add_task(std::make_shared<TRSM_task>(A, B, uplo, lr));
     register_matrix("trsm_task", A, B);
   }
