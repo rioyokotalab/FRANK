@@ -1,6 +1,7 @@
 #include "hicma/classes/dense.h"
 #include "hicma/extension_headers/classes.h"
 
+#include "hicma/classes/empty.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
@@ -81,6 +82,12 @@ define_method(void, fill_dense_from, (const Dense& A, Dense& B)) {
   assert(A.dim[0] == B.dim[0]);
   assert(A.dim[1] == B.dim[1]);
   add_copy_task(A, B);
+}
+
+define_method(void, fill_dense_from, (const Empty& A, Dense& B)) {
+  assert(A.dim[0] == B.dim[0]);
+  assert(A.dim[1] == B.dim[1]);
+  add_assign_task(B, 0.0);
 }
 
 define_method(void, fill_dense_from, (const Matrix& A, Matrix& B)) {

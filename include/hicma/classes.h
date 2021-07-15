@@ -3,6 +3,7 @@
 
 
 #include "hicma/classes/dense.h"
+#include "hicma/classes/empty.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix_proxy.h"

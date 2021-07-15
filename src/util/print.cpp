@@ -2,6 +2,7 @@
 #include "hicma/extension_headers/util.h"
 
 #include "hicma/classes/dense.h"
+#include "hicma/classes/empty.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
@@ -31,6 +32,10 @@ std::string type(const Matrix& A) { return type_omm(A); }
 
 define_method(std::string, type_omm, (const Dense&)) {
   return "Dense";
+}
+
+define_method(std::string, type_omm, (const Empty&)) {
+  return "Empty";
 }
 
 define_method(std::string, type_omm, (const LowRank&)) {
