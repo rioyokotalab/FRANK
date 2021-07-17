@@ -7,7 +7,7 @@ namespace hicma
 
 class Matrix;
 
-double l2_error(const Matrix&, const Matrix&);
+float l2_error(const Matrix&, const Matrix&);
 
 } // namespace hicma
 

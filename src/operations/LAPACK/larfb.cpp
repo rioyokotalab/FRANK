@@ -31,7 +31,7 @@ define_method(
   void, larfb_omm,
   (const Dense& V, const Dense& T, Dense& C, bool trans)
 ) {
-  LAPACKE_dlarfb(
+  LAPACKE_slarfb(
     LAPACK_ROW_MAJOR,
     'L', (trans ? 'T' : 'N'), 'F', 'C',
     C.dim[0], C.dim[1], T.dim[1],

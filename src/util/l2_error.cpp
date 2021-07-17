@@ -21,14 +21,14 @@
 namespace hicma
 {
 
-std::tuple<double, double> collect_diff_norm(const Matrix& A, const Matrix& B) {
+std::tuple<float, float> collect_diff_norm(const Matrix& A, const Matrix& B) {
   return collect_diff_norm_omm(A, B);
 }
 
-double l2_error(const Matrix& A, const Matrix& B) {
+float l2_error(const Matrix& A, const Matrix& B) {
   assert(get_n_rows(A) == get_n_rows(B));
   assert(get_n_cols(A) == get_n_cols(B));
-  double diff, mat_norm;
+  float diff, mat_norm;
   std::tie(diff, mat_norm) = collect_diff_norm(A, B);
   return std::sqrt(diff/mat_norm);
 }
@@ -36,8 +36,8 @@ double l2_error(const Matrix& A, const Matrix& B) {
 define_method(
   DoublePair, collect_diff_norm_omm, (const Dense& A, const Dense& B)
 ) {
-  double diff = norm(A - B);
-  double mat_norm = norm(A);
+  float diff = norm(A - B);
+  float mat_norm = norm(A);
   return {diff, mat_norm};
 }
 
@@ -78,10 +78,10 @@ define_method(
   (const Hierarchical& A, const Hierarchical& B)
 ) {
   if (A.dim[0] == B.dim[0] && A.dim[1] == B.dim[1]) {
-    double total_diff = 0, total_norm = 0;
+    float total_diff = 0, total_norm = 0;
     for (int64_t i=0; i<A.dim[0]; ++i) {
       for (int64_t j=0; j<A.dim[1]; ++j) {
-        double diff, mat_norm;
+        float diff, mat_norm;
         std::tie(diff, mat_norm) = collect_diff_norm_omm(A(i, j), B(i, j));
         total_diff += diff;
         total_norm += mat_norm;

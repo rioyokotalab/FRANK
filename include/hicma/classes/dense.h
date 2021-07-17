@@ -28,7 +28,7 @@ class Dense : public Matrix {
   std::shared_ptr<DataHandler> data;
   std::array<int64_t, 2> rel_start = {0, 0};
  protected:
-  double* data_ptr = nullptr;
+  float* data_ptr = nullptr;
  public:
   // Special member functions
   Dense() = default;
@@ -57,29 +57,29 @@ class Dense : public Matrix {
   // initialization with functions like identity and random_uniform easier.
   Dense(
     void (*func)(
-      double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-      const std::vector<std::vector<double>>& x,
+      float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+      const std::vector<std::vector<float>>& x,
       int64_t row_start, int64_t col_start
     ),
-    const std::vector<std::vector<double>>& x,
+    const std::vector<std::vector<float>>& x,
     int64_t n_rows, int64_t n_cols=1,
     int64_t row_start=0, int64_t col_start=0
   );
 
   // Additional operators
-  const Dense& operator=(const double a);
+  const Dense& operator=(const float a);
 
-  double& operator[](int64_t i);
+  float& operator[](int64_t i);
 
-  const double& operator[](int64_t i) const;
+  const float& operator[](int64_t i) const;
 
-  double& operator()(int64_t i, int64_t j);
+  float& operator()(int64_t i, int64_t j);
 
-  const double& operator()(int64_t i, int64_t j) const;
+  const float& operator()(int64_t i, int64_t j) const;
 
-  double* operator&();
+  float* operator&();
 
-  const double* operator&() const;
+  const float* operator&() const;
 
   // Utility methods
   Dense shallow_copy() const;

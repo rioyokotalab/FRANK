@@ -21,16 +21,16 @@ int main(int, char** argv) {
   int64_t nblocks = N / nleaf;
 
   /* Default parameters for statistics */
-  double beta = 0.1;
-  double nu = 0.5;//in matern, nu=0.5 exp (half smooth), nu=inf sqexp (inifinetly smooth)
-  double noise = 1.e-1;
-  double sigma = 1.0;
+  float beta = 0.1;
+  float nu = 0.5;//in matern, nu=0.5 exp (half smooth), nu=inf sqexp (inifinetly smooth)
+  float noise = 1.e-1;
+  float sigma = 1.0;
 
   starsh::exp_kernel_prepare(N, beta, nu, noise, sigma, 3);
 
-  std::vector<std::vector<double>> randx{get_sorted_random_vector(N)};
+  std::vector<std::vector<float>> randx{get_sorted_random_vector(N)};
 
-  Dense x(random_uniform, std::vector<std::vector<double>>(), N);
+  Dense x(random_uniform, std::vector<std::vector<float>>(), N);
   Dense b(N);
 
   print("Being compression");
@@ -39,7 +39,7 @@ int main(int, char** argv) {
   Hierarchical A(starsh::exp_kernel_fill, randx, N, N, rank, nleaf, admis,
                nblocks, nblocks);
   execute_schedule();
-  double comp_time = timing::stop("Hierarchical compression");
+  float comp_time = timing::stop("Hierarchical compression");
 
   gemm(A, x, b, 1, 1);
 
@@ -48,14 +48,14 @@ int main(int, char** argv) {
   start_schedule();
   std::tie(L, U) = getrf(A);
   execute_schedule();
-  double fact_time = timing::stop("LU decomposition");
+  float fact_time = timing::stop("LU decomposition");
 
   timing::start("Solution");
   trsm(L, b, TRSM_LOWER);
   trsm(U, b, TRSM_UPPER);
   timing::stopAndPrint("Solution");
 
-  double solve_acc = l2_error(x, b);
+  float solve_acc = l2_error(x, b);
   print("LU Accuracy");
   print("Rel. L2 Error", solve_acc, false);
 

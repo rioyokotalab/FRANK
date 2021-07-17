@@ -26,7 +26,7 @@ namespace hicma
 void tpqrt(Matrix& A, Matrix& B, Matrix& T) { tpqrt_omm(A, B, T); }
 
 define_method(void, tpqrt_omm, (Dense& A, Dense& B, Dense& T)) {
-  LAPACKE_dtpqrt2(
+  LAPACKE_stpqrt2(
     LAPACK_ROW_MAJOR,
     B.dim[0], B.dim[1], 0,
     &A, A.stride,

@@ -21,18 +21,18 @@ int64_t get_n_rows(const Matrix&);
 
 int64_t get_n_cols(const Matrix&);
 
-double cond(Dense A);
+float cond(Dense A);
 
-double diam(const std::vector<double>& x, int64_t n, int64_t offset);
+float diam(const std::vector<float>& x, int64_t n, int64_t offset);
 
-double mean(const std::vector<double>& x, int64_t n, int64_t offset);
+float mean(const std::vector<float>& x, int64_t n, int64_t offset);
 
 std::vector<int64_t> getIndex(int64_t dim, int64_t mortonIndex);
 
 int64_t getMortonIndex(std::vector<int64_t> index, int64_t level);
 
-std::vector<double> equallySpacedVector(
-  int64_t N, double minVal, double maxVal);
+std::vector<float> equallySpacedVector(
+  int64_t N, float minVal, float maxVal);
 
 Hierarchical split(
   const Matrix& A, int64_t n_row_blocks, int64_t n_col_blocks, bool copy=false
@@ -42,7 +42,7 @@ Hierarchical split(const Matrix& A, const Hierarchical& like, bool copy=false);
 
 MatrixProxy shallow_copy(const Matrix& A);
 
-double norm(const Matrix&);
+float norm(const Matrix&);
 
 MatrixProxy transpose(const Matrix&);
 

@@ -13,7 +13,7 @@ int main() {
   int64_t rank = 16;
 
   timing::start("Init matrix");
-  std::vector<std::vector<double>> randx{get_sorted_random_vector(2*N)};
+  std::vector<std::vector<float>> randx{get_sorted_random_vector(2*N)};
   Dense D(laplacend, randx, N, N, 0, N);
   timing::stopAndPrint("Init matrix");
 

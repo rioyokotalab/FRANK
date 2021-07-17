@@ -8,8 +8,8 @@
 namespace hicma
 {
 
-std::vector<double> get_sorted_random_vector(int64_t N);
-std::vector<double> get_non_negative_vector(int64_t N);
+std::vector<float> get_sorted_random_vector(int64_t N);
+std::vector<float> get_non_negative_vector(int64_t N);
  
 } // namespace hicma
 

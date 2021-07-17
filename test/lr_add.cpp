@@ -10,7 +10,7 @@ int main() {
   hicma::initialize();
   int64_t N = 128;
   int64_t rank = 16;
-  std::vector<std::vector<double>> randx{get_sorted_random_vector(2*N)};
+  std::vector<std::vector<float>> randx{get_sorted_random_vector(2*N)};
   timing::start("Init matrix");
   Dense D(laplacend, randx, N, N, 0, N);
   LowRank A(D, rank);

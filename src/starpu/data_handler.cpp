@@ -26,8 +26,8 @@ DataHandler::~DataHandler() {
   }
 }
 
-DataHandler::DataHandler(int64_t n_rows, int64_t n_cols, double val)
-: data(std::make_shared<std::vector<double>>(n_rows*n_cols, val))
+DataHandler::DataHandler(int64_t n_rows, int64_t n_cols, float val)
+: data(std::make_shared<std::vector<float>>(n_rows*n_cols, val))
 {
   if (starpu_is_initialized()) {
     starpu_matrix_data_register(
@@ -39,13 +39,13 @@ DataHandler::DataHandler(int64_t n_rows, int64_t n_cols, double val)
 
 DataHandler::DataHandler(
   std::shared_ptr<DataHandler> parent,
-  std::shared_ptr<std::vector<double>> data,
+  std::shared_ptr<std::vector<float>> data,
   starpu_data_handle_t handle
 ) : data(data), parent(parent), handle(handle) {}
 
-double& DataHandler::operator[](int64_t i) { return (*data)[i]; }
+float& DataHandler::operator[](int64_t i) { return (*data)[i]; }
 
-const double& DataHandler::operator[](int64_t i) const { return (*data)[i]; }
+const float& DataHandler::operator[](int64_t i) const { return (*data)[i]; }
 
 uint64_t DataHandler::size() const { return data->size(); }
 

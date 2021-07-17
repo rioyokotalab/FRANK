@@ -14,7 +14,7 @@ class IndexRange;
 
 class DataHandler {
  private:
-  std::shared_ptr<std::vector<double>> data;
+  std::shared_ptr<std::vector<float>> data;
   std::shared_ptr<DataHandler> parent;
   std::vector<std::vector<starpu_data_handle_t>> splits;
   starpu_data_handle_t handle;
@@ -32,17 +32,17 @@ class DataHandler {
 
   DataHandler& operator=(DataHandler&& A) = delete;
 
-  DataHandler(int64_t n_rows, int64_t n_cols, double val=0);
+  DataHandler(int64_t n_rows, int64_t n_cols, float val=0);
 
   DataHandler(
     std::shared_ptr<DataHandler> parent,
-    std::shared_ptr<std::vector<double>> data,
+    std::shared_ptr<std::vector<float>> data,
     starpu_data_handle_t handle
   );
 
-  double& operator[](int64_t i);
+  float& operator[](int64_t i);
 
-  const double& operator[](int64_t i) const;
+  const float& operator[](int64_t i) const;
 
   uint64_t size() const;
 

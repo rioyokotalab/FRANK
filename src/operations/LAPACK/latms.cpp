@@ -18,15 +18,15 @@ namespace hicma
     const char& dist,
     std::vector<int>& iseed,
     const char& sym,
-    std::vector<double>& d,
+    std::vector<float>& d,
     int mode,
-    double cond,
-    double dmax,
+    float cond,
+    float dmax,
     int kl, int ku,
     const char& pack,
     Dense& A
   ) {
-    LAPACKE_dlatms(
+    LAPACKE_slatms(
       LAPACK_ROW_MAJOR, A.dim[0], A.dim[1],
       dist, &iseed[0], sym, &d[0], mode, cond, dmax, kl, ku, pack,
       &A, A.stride

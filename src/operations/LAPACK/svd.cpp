@@ -39,7 +39,7 @@ std::tuple<Dense, Dense, Dense> sdd(Dense& A) {
   Dense U(A.dim[0], dim_min);
   Dense V(dim_min, A.dim[1]);
   // dgesdd is faster, but makes little/no difference in randomized SVD
-  LAPACKE_dgesdd(
+  LAPACKE_sgesdd(
     LAPACK_ROW_MAJOR,
     'S',
     A.dim[0], A.dim[1],
@@ -56,11 +56,11 @@ std::tuple<Dense, Dense, Dense> sdd(Dense& A) {
   return {std::move(U), std::move(S), std::move(V)};
 }
 
-std::vector<double> get_singular_values(Dense& A) {
-  std::vector<double> Sdiag(std::min(A.dim[0], A.dim[1]), 1);
+std::vector<float> get_singular_values(Dense& A) {
+  std::vector<float> Sdiag(std::min(A.dim[0], A.dim[1]), 1);
   Dense work(A.dim[1]-1,1);
   // Since we use 'N' we can avoid allocating memory for U and V
-  LAPACKE_dgesvd(
+  LAPACKE_sgesvd(
     LAPACK_ROW_MAJOR,
     'N', 'N',
     A.dim[0], A.dim[1],

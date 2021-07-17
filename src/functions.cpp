@@ -17,8 +17,8 @@ namespace hicma
 {
 
 void zeros(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-  const std::vector<std::vector<double>>&, int64_t, int64_t
+  float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<float>>&, int64_t, int64_t
 ) {
   for (uint64_t i=0; i<A_rows; i++) {
     for (uint64_t j=0; j<A_cols; j++) {
@@ -28,8 +28,8 @@ void zeros(
 }
 
 void identity(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-  const std::vector<std::vector<double>>&, int64_t row_start, int64_t col_start
+  float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<float>>&, int64_t row_start, int64_t col_start
 ) {
   for (uint64_t i=0; i<A_rows; i++) {
     for (uint64_t j=0; j<A_cols; j++) {
@@ -39,14 +39,14 @@ void identity(
 }
 
 void random_normal(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-  const std::vector<std::vector<double>>&, int64_t, int64_t
+  float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<float>>&, int64_t, int64_t
 ) {
   std::random_device rd;
   std::mt19937 gen(rd());
   // TODO Remove random seed when experiments end
   gen.seed(0);
-  std::normal_distribution<double> dist(0.0, 1.0);
+  std::normal_distribution<float> dist(0.0, 1.0);
   for (uint64_t i=0; i<A_rows; i++) {
     for (uint64_t j=0; j<A_cols; j++) {
       A[i*A_stride+j] = dist(gen);
@@ -55,14 +55,14 @@ void random_normal(
 }
 
 void random_uniform(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-  const std::vector<std::vector<double>>&, int64_t, int64_t
+  float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<float>>&, int64_t, int64_t
 ) {
   std::random_device rd;
   std::mt19937 gen(rd());
   // TODO Remove random seed when experiments end
   gen.seed(0);
-  std::uniform_real_distribution<double> dist(0.0, 1.0);
+  std::uniform_real_distribution<float> dist(0.0, 1.0);
   for (uint64_t i=0; i<A_rows; i++) {
     for (uint64_t j=0; j<A_cols; j++) {
       A[i*A_stride+j] = dist(gen);
@@ -71,38 +71,38 @@ void random_uniform(
 }
 
 void arange(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-  const std::vector<std::vector<double>>&, int64_t, int64_t
+  float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<float>>&, int64_t, int64_t
 ) {
   for (uint64_t i=0; i<A_rows; i++) {
     for (uint64_t j=0; j<A_cols; j++) {
-      A[i*A_stride+j] = (double)(i*A_cols+j);
+      A[i*A_stride+j] = (float)(i*A_cols+j);
     }
   }
 }
 
 void cauchy2d(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-  const std::vector<std::vector<double>>& x,
+  float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<float>>& x,
   int64_t row_start, int64_t col_start
 ) {
   for (uint64_t i=0; i<A_rows; i++) {
     for (uint64_t j=0; j<A_cols; j++) {
-      // double sgn = (arc4random() % 2 ? 1.0 : -1.0);
-      double rij = (x[0][i+row_start] - x[1][j+col_start]) + 1e-2;
+      // float sgn = (arc4random() % 2 ? 1.0 : -1.0);
+      float rij = (x[0][i+row_start] - x[1][j+col_start]) + 1e-2;
       A[i*A_stride+j] = 1.0 / rij;
     }
   }
 }
 
 void laplacend(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-  const std::vector<std::vector<double>>& x,
+  float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<float>>& x,
   int64_t row_start, int64_t col_start
 ) {
   for (uint64_t i=0; i<A_rows; i++) {
     for (uint64_t j=0; j<A_cols; j++) {
-      double rij = 0.0;
+      float rij = 0.0;
       for(size_t k=0; k<x.size(); k++) {
         rij += (
           (x[k][i+row_start] - x[k][j+col_start])
@@ -115,13 +115,13 @@ void laplacend(
 }
 
 void helmholtznd(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-  const std::vector<std::vector<double>>& x,
+  float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<float>>& x,
   int64_t row_start, int64_t col_start
 ) {
   for (uint64_t i=0; i<A_rows; i++) {
     for (uint64_t j=0; j<A_cols; j++) {
-      double rij = 0.0;
+      float rij = 0.0;
       for(size_t k=0; k<x.size(); k++) {
         rij += (
           (x[k][i+row_start] - x[k][j+col_start])
@@ -134,21 +134,21 @@ void helmholtznd(
 }
 
 bool is_admissible_nd(
-  const std::vector<std::vector<double>>& x,
+  const std::vector<std::vector<float>>& x,
   int64_t n_rows, int64_t n_cols,
   int64_t row_start, int64_t col_start,
-  double admis
+  float admis
 ) {
-  std::vector<double> diamsI, diamsJ, centerI, centerJ;
+  std::vector<float> diamsI, diamsJ, centerI, centerJ;
   for(size_t k=0; k<x.size(); k++) {
     diamsI.push_back(diam(x[k], n_rows, row_start));
     diamsJ.push_back(diam(x[k], n_cols, col_start));
     centerI.push_back(mean(x[k], n_rows, row_start));
     centerJ.push_back(mean(x[k], n_cols, col_start));
   }
-  double diamI = *std::max_element(diamsI.begin(), diamsI.end());
-  double diamJ = *std::max_element(diamsJ.begin(), diamsJ.end());
-  double dist = 0.0;
+  float diamI = *std::max_element(diamsI.begin(), diamsI.end());
+  float diamJ = *std::max_element(diamsJ.begin(), diamsJ.end());
+  float dist = 0.0;
   for(size_t k=0; k<x.size(); k++) {
     dist += (centerI[k]-centerJ[k])*(centerI[k]-centerJ[k]);
   }
@@ -157,30 +157,30 @@ bool is_admissible_nd(
 }
 
 bool is_admissible_nd_morton(
-  const std::vector<std::vector<double>>& x,
+  const std::vector<std::vector<float>>& x,
   int64_t n_rows, int64_t n_cols,
   int64_t row_start, int64_t col_start,
-  double admis
+  float admis
 ) {
-  std::vector<double> diamsI, diamsJ, centerI, centerJ;
+  std::vector<float> diamsI, diamsJ, centerI, centerJ;
   for(size_t k=0; k<x.size(); k++) {
     diamsI.push_back(diam(x[k], n_rows, row_start));
     diamsJ.push_back(diam(x[k], n_cols, col_start));
     centerI.push_back(mean(x[k], n_rows, row_start));
     centerJ.push_back(mean(x[k], n_cols, col_start));
   }
-  double diamI = *std::max_element(diamsI.begin(), diamsI.end());
-  double diamJ = *std::max_element(diamsJ.begin(), diamsJ.end());
+  float diamI = *std::max_element(diamsI.begin(), diamsI.end());
+  float diamJ = *std::max_element(diamsJ.begin(), diamsJ.end());
   //Compute distance based on morton index of box
   int64_t boxSize = std::min(n_rows, n_cols);
   int64_t npartitions = x[0].size()/boxSize;
-  int64_t level = (int64_t)log2((double)npartitions);
+  int64_t level = (int64_t)log2((float)npartitions);
   std::vector<int64_t> indexI(x.size(), 0), indexJ(x.size(), 0);
   for(size_t k=0; k<x.size(); k++) {
     indexI[k] = row_start/boxSize;
     indexJ[k] = col_start/boxSize;
   }
-  double dist = std::abs(
+  float dist = std::abs(
     getMortonIndex(indexI, level)
     - getMortonIndex(indexJ, level)
   );
@@ -193,7 +193,7 @@ bool is_admissible_nd_morton(
   //   std::vector<STARSH_int> starsh_index;
 
   //   void exp_kernel_prepare(
-  //     int64_t N, double beta, double nu, double noise,double sigma, int ndim
+  //     int64_t N, float beta, float nu, float noise,float sigma, int ndim
   //   ) {
   //     enum STARSH_PARTICLES_PLACEMENT place = STARSH_PARTICLES_UNIFORM;
   //     if (ndim == 2) {
@@ -210,8 +210,8 @@ bool is_admissible_nd_morton(
   //   }
 
   //   void exp_kernel_fill(
-  //     double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-  //     const std::vector<std::vector<double>>&,
+  //     float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  //     const std::vector<std::vector<float>>&,
   //     int64_t row_start, int64_t col_start
   //   ) {
   //     kernel(

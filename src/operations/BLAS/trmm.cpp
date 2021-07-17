@@ -27,7 +27,7 @@ namespace hicma
 void trmm(
   const Matrix& A, Matrix& B,
   const char& side, const char& uplo, const char& trans, const char& diag,
-  double alpha
+  float alpha
 ) {
   trmm_omm(A, B, side, uplo, trans, diag, alpha);
 }
@@ -35,7 +35,7 @@ void trmm(
 void trmm(
   const Matrix& A, Matrix& B,
   const char& side, const char& uplo,
-  double alpha
+  float alpha
 ) {
   trmm_omm(A, B, side, uplo, 'n', 'n', alpha);
 }
@@ -45,12 +45,12 @@ define_method(
   (
     const Dense& A, Dense& B,
     const char& side, const char& uplo, const char& trans, const char& diag,
-    double alpha
+    float alpha
   )
 ) {
   assert(A.dim[0] == A.dim[1]);
   assert(A.dim[0] == (side == 'l' ? B.dim[0] : B.dim[1]));
-  cblas_dtrmm(
+  cblas_strmm(
     CblasRowMajor,
     side == 'l' ? CblasLeft : CblasRight,
     uplo == 'u' ? CblasUpper : CblasLower,
@@ -65,7 +65,7 @@ define_method(
   (
     const Dense& A, LowRank& B,
     const char& side, const char& uplo,  const char& trans, const char& diag,
-    double alpha
+    float alpha
   )
 ) {
   assert(A.dim[0] == A.dim[1]);
@@ -81,7 +81,7 @@ define_method(
   (
     const Hierarchical& A, Hierarchical& B,
     const char& side, const char& uplo, const char& trans, const char& diag,
-    double alpha
+    float alpha
   )
 ) {
   assert(A.dim[0] == A.dim[1]);
@@ -125,7 +125,7 @@ define_method(
   void, trmm_omm,
   (
     const Matrix& A, Matrix& B,
-    const char&, const char&, const char&, const char&, double
+    const char&, const char&, const char&, const char&, float
   )
 ) {
   omm_error_handler("trmm", {A, B}, __FILE__, __LINE__);

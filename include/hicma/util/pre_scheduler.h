@@ -17,11 +17,11 @@ void add_task(std::shared_ptr<Task> task);
 
 void add_kernel_task(
   void (*kernel)(
-    double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-    const std::vector<std::vector<double>>& x,
+    float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+    const std::vector<std::vector<float>>& x,
     int64_t row_start, int64_t col_start
   ),
-  Dense& A, const std::vector<std::vector<double>>& x,
+  Dense& A, const std::vector<std::vector<float>>& x,
   int64_t row_start, int64_t col_start
 );
 
@@ -31,13 +31,13 @@ void add_copy_task(
 
 void add_transpose_task(const Dense& A, Dense& B);
 
-void add_assign_task(Dense& A, double value);
+void add_assign_task(Dense& A, float value);
 
 void add_addition_task(Dense& A, const Dense& B);
 
 void add_subtraction_task(Dense& A, const Dense& B);
 
-void add_multiplication_task(Dense& A, double factor);
+void add_multiplication_task(Dense& A, float factor);
 
 void add_getrf_task(Dense& AU, Dense& L);
 
@@ -49,7 +49,7 @@ void add_trsm_task(const Dense& A, Dense& B, int uplo, int lr);
 
 void add_gemm_task(
   const Dense& A, const Dense& B, Dense& C,
-  double alpha, double beta, bool TransA, bool TransB
+  float alpha, float beta, bool TransA, bool TransB
 );
 
 void add_svd_task(Dense& A, Dense& U, Dense& S, Dense& V);

@@ -15,26 +15,26 @@
 namespace hicma
 {
 
-Matrix& operator*=(Matrix& A, double b) {
+Matrix& operator*=(Matrix& A, float b) {
   return multiplication_omm(A, b);
 }
 
 define_method(
-  Matrix&, multiplication_omm, (Dense& A, double b)
+  Matrix&, multiplication_omm, (Dense& A, float b)
 ) {
   add_multiplication_task(A, b);
   return A;
 }
 
 define_method(
-  Matrix&, multiplication_omm, (LowRank& A, double b)
+  Matrix&, multiplication_omm, (LowRank& A, float b)
 ) {
   A.S *= b;
   return A;
 }
 
 define_method(
-  Matrix&, multiplication_omm, (Hierarchical& A, double b)
+  Matrix&, multiplication_omm, (Hierarchical& A, float b)
 ) {
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {
@@ -44,8 +44,8 @@ define_method(
   return A;
 }
 
-define_method(Matrix&, multiplication_omm, (Matrix& A, double)) {
-  omm_error_handler("operator*<double>", {A}, __FILE__, __LINE__);
+define_method(Matrix&, multiplication_omm, (Matrix& A, float)) {
+  omm_error_handler("operator*<float>", {A}, __FILE__, __LINE__);
   std::abort();
 }
 

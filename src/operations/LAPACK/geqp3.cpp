@@ -35,8 +35,8 @@ define_method(DenseIndexSetPair, geqp3_omm, (Dense& A)) {
   // can be wrong. See netlib dgeqp3 reference.
   // However, much faster with -1... maybe better starting values exist?
   std::vector<int> jpvt(A.dim[1], 0);
-  std::vector<double> tau(std::min(A.dim[0], A.dim[1]), 0);
-  LAPACKE_dgeqp3(
+  std::vector<float> tau(std::min(A.dim[0], A.dim[1]), 0);
+  LAPACKE_sgeqp3(
     LAPACK_ROW_MAJOR,
     A.dim[0], A.dim[1],
     &A, A.stride,

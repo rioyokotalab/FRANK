@@ -20,7 +20,7 @@ class Dense;
 
 class BasisKey {
  public:
-  const double* data_ptr;
+  const float* data_ptr;
   // Hold a shared version of the origin of the key. This way we can avoid the
   // memory from being released as long as the key is in use. Important since we
   // use the pointer to hash and compare the keys.

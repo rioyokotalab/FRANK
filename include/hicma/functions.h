@@ -7,72 +7,72 @@
 namespace hicma
 {
 void zeros(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-  const std::vector<std::vector<double>>& x,
+  float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<float>>& x,
   int64_t row_start, int64_t col_start
 );
 
 void identity(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-  const std::vector<std::vector<double>>& x,
+  float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<float>>& x,
   int64_t row_start, int64_t col_start
 );
 
 void random_normal(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-  const std::vector<std::vector<double>>& x,
+  float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<float>>& x,
   int64_t row_start, int64_t col_start
 );
 
 void random_uniform(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-  const std::vector<std::vector<double>>& x,
+  float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<float>>& x,
   int64_t row_start, int64_t col_start
 );
 
 void arange(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-  const std::vector<std::vector<double>>& x,
+  float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<float>>& x,
   int64_t row_start, int64_t col_start
 );
 
 void cauchy2d(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-  const std::vector<std::vector<double>>& x,
+  float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<float>>& x,
   int64_t row_start, int64_t col_start
 );
 
 void laplacend(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-  const std::vector<std::vector<double>>& x,
+  float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<float>>& x,
   int64_t row_start, int64_t col_start
 );
 
 void helmholtznd(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-  const std::vector<std::vector<double>>& x,
+  float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<float>>& x,
   int64_t row_start, int64_t col_start
 );
 
 bool is_admissible_nd(
-  const std::vector<std::vector<double>>& x,
+  const std::vector<std::vector<float>>& x,
   int64_t n_rows, int64_t n_cols,
   int64_t row_start, int64_t col_start,
-  double admis
+  float admis
 );
 
 bool is_admissible_nd_morton(
-  const std::vector<std::vector<double>>& x,
+  const std::vector<std::vector<float>>& x,
   int64_t n_rows, int64_t n_cols,
   int64_t row_start, int64_t col_start,
-  double admis
+  float admis
 );
 
   // namespace starsh {
-  //   void exp_kernel_prepare(int64_t N, double beta, double nu, double noise,
-  //                           double sigma, int ndim);
-  //   void exp_kernel_fill(double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-  //                        const std::vector<std::vector<double>>& x,
+  //   void exp_kernel_prepare(int64_t N, float beta, float nu, float noise,
+  //                           float sigma, int ndim);
+  //   void exp_kernel_fill(float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  //                        const std::vector<std::vector<float>>& x,
   //                        int64_t row_start, int64_t col_start);
   //   void exp_kernel_cleanup();
   // }

@@ -19,7 +19,7 @@ TEST(IDTest, Precision) {
   int64_t k = 32;
 
   timing::start("Initialization");
-  std::vector<std::vector<double>> randx = {
+  std::vector<std::vector<float>> randx = {
     get_sorted_random_vector(std::max(2*M, 2*N))
   };
   Hierarchical H(laplacend, randx, M*2, N*2, k, std::max(M, N), 1);

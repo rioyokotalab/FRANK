@@ -18,7 +18,7 @@ Dense operator+(const Dense&, const Dense&);
 MatrixProxy operator-(const Matrix&, const Matrix&);
 
 // Multiplication
-Matrix& operator*=(Matrix&, double);
+Matrix& operator*=(Matrix&, float);
 
 } // namespace hicma
 

@@ -17,8 +17,8 @@ int main(int argc, char** argv) {
   int64_t nblocks = argc > 4 ? atoi(argv[4]) : 2;
   int64_t admis = argc > 5 ? atoi(argv[5]) : 0;
 
-  std::vector<std::vector<double>> randx{get_sorted_random_vector(N)};
-  Dense x(random_uniform, std::vector<std::vector<double>>(), N);
+  std::vector<std::vector<float>> randx{get_sorted_random_vector(N)};
+  Dense x(random_uniform, std::vector<std::vector<float>>(), N);
   Dense b(N);
   Dense D(laplacend, randx, N, N);
   timing::start("Hierarchical compression");
@@ -31,8 +31,8 @@ int main(int argc, char** argv) {
 
   print("Compression Accuracy");
   timing::start("Compression accuracy check");
-  double comp_error = l2_error(A, D);
-  double comp_rate = double(get_memory_usage(D)) / double(get_memory_usage(A));
+  float comp_error = l2_error(A, D);
+  float comp_rate = float(get_memory_usage(D)) / float(get_memory_usage(A));
   timing::stop("Compression accuracy check");
   print("Rel. L2 Error", comp_error, false);
   print("Compression factor", comp_rate);

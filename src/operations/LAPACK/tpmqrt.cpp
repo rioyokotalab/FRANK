@@ -35,7 +35,7 @@ define_method(
   void, tpmqrt_omm,
   (const Dense& V, const Dense& T, Dense& A, Dense& B, bool trans)
 ) {
-  LAPACKE_dtprfb(
+  LAPACKE_stprfb(
     LAPACK_ROW_MAJOR,
     'L', (trans ? 'T': 'N'), 'F', 'C',
     B.dim[0], B.dim[1], T.dim[1], 0,
@@ -55,7 +55,7 @@ define_method(
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(
-    Dense(identity, std::vector<std::vector<double>>(), C.dim[0], C.dim[0]),
+    Dense(identity, std::vector<std::vector<float>>(), C.dim[0], C.dim[0]),
     C, A, -1, 1
   ); //A = A - I*C
   gemm(V, C, B, -1, 1); //B = B - Y*C
@@ -69,7 +69,7 @@ define_method(
   gemm(V, B, C, 1, 1, true, false); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(
-    Dense(identity, std::vector<std::vector<double>>(), C.dim[0], C.dim[0]),
+    Dense(identity, std::vector<std::vector<float>>(), C.dim[0], C.dim[0]),
     C, A, -1, 1
   ); //A = A - I*C //Recompression
   gemm(V, C, B, -1, 1); //B = B - Y*C
@@ -84,7 +84,7 @@ define_method(
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(
-    Dense(identity, std::vector<std::vector<double>>(), C.dim[0], C.dim[0]),
+    Dense(identity, std::vector<std::vector<float>>(), C.dim[0], C.dim[0]),
     C, A, -1, 1
   ); //A = A - I*C
   gemm(V, C, B, -1, 1); //B = B - Y*C
@@ -128,7 +128,7 @@ define_method(
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(
-    Dense(identity, std::vector<std::vector<double>>(), C.dim[0], C.dim[0]),
+    Dense(identity, std::vector<std::vector<float>>(), C.dim[0], C.dim[0]),
     C, A, -1, 1
   ); //A = A - I*C
   gemm(V, C, B, -1, 1); //B = B - Y*C
@@ -143,7 +143,7 @@ define_method(
   gemm(Vt, B, C, 1, 1); //C = A + Y^t * B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(
-    Dense(identity, std::vector<std::vector<double>>(), C.dim[0], C.dim[0]),
+    Dense(identity, std::vector<std::vector<float>>(), C.dim[0], C.dim[0]),
     C, A, -1, 1
   ); //A = A - I*C
   gemm(V, C, B, -1, 1); //B = B - Y*C
@@ -158,7 +158,7 @@ define_method(
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(
-    Dense(identity, std::vector<std::vector<double>>(), C.dim[0], C.dim[0]),
+    Dense(identity, std::vector<std::vector<float>>(), C.dim[0], C.dim[0]),
     C, A, -1, 1
   ); //A = A - I*C
   gemm(V, C, B, -1, 1); //B = B - Y*C
@@ -173,7 +173,7 @@ define_method(
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(
-    Dense(identity, std::vector<std::vector<double>>(), C.dim[0], C.dim[0]),
+    Dense(identity, std::vector<std::vector<float>>(), C.dim[0], C.dim[0]),
     C, A, -1, 1
   ); //A = A - I*C
   gemm(V, C, B, -1, 1); //B = B - Y*C

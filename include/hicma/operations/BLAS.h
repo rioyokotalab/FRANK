@@ -11,13 +11,13 @@ class Matrix;
 
 void gemm(
   const Matrix& A, const Matrix& B, Matrix& C,
-  double alpha=1, double beta=1,
+  float alpha=1, float beta=1,
   bool TransA=false, bool TransB=false
 );
 
 MatrixProxy gemm(
   const Matrix& A, const Matrix& B,
-  double alpha=1,
+  float alpha=1,
   bool TransA=false, bool TransB=false
 );
 
@@ -27,13 +27,13 @@ enum { TRSM_LEFT, TRSM_RIGHT };
 void trmm(
   const Matrix& A, Matrix& B,
   const char& side, const char& uplo, const char& trans, const char& diag,
-  double alpha
+  float alpha
 );
 
 void trmm(
   const Matrix& A, Matrix& B,
   const char& side, const char& uplo,
-  double alpha
+  float alpha
 );
 
 void trsm(const Matrix&, Matrix&, int uplo, int lr=TRSM_LEFT);

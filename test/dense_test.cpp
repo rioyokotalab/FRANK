@@ -16,7 +16,7 @@ TEST(DenseTest, ContructorHierarchical) {
   int64_t nleaf = N / nblocks;
   // Construct single level all-dense hierarchical
   Hierarchical H(
-    random_uniform, std::vector<std::vector<double>>(),
+    random_uniform, std::vector<std::vector<float>>(),
     N, N, 0, nleaf, nblocks, nblocks, nblocks
   );
   Dense D(H);
@@ -39,7 +39,7 @@ TEST(DenseTest, Split1DTest) {
   int64_t nblocks = 2;
   int64_t nleaf = N / nblocks;
   start_schedule();
-  Dense D(random_uniform, std::vector<std::vector<double>>(), N, N);
+  Dense D(random_uniform, std::vector<std::vector<float>>(), N, N);
   Hierarchical DH = split(D, nblocks, nblocks);
   Hierarchical DH_copy = split(D, nblocks, nblocks, true);
   execute_schedule();
@@ -74,8 +74,8 @@ TEST(DenseTest, SplitTest) {
   int64_t N = 128;
   int64_t nblocks = 4;
   int64_t nleaf = N / nblocks;
-  Dense col(random_normal, std::vector<std::vector<double>>(), N, nleaf);
-  Dense row(random_normal, std::vector<std::vector<double>>(), nleaf, N);
+  Dense col(random_normal, std::vector<std::vector<float>>(), N, nleaf);
+  Dense row(random_normal, std::vector<std::vector<float>>(), nleaf, N);
   // start_schedule();
   Dense test1 = gemm(row, col);
   test1 *= 2;
@@ -98,7 +98,7 @@ TEST(DenseTest, Resize) {
   timing::start("Init");
   hicma::initialize();
   int64_t N = 1024;
-  Dense D(random_normal, std::vector<std::vector<double>>(), N, N);
+  Dense D(random_normal, std::vector<std::vector<float>>(), N, N);
   timing::stopAndPrint("Init");
   timing::start("Resize");
   Dense D_resized = resize(D, N-N/8, N-N/8);

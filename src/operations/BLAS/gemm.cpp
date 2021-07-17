@@ -25,7 +25,7 @@ namespace hicma
 
 void gemm(
   const Matrix& A, const Matrix& B, Matrix& C,
-  double alpha, double beta,
+  float alpha, float beta,
   bool TransA, bool TransB
 ) {
   assert((TransA ? get_n_cols(A) : get_n_rows(A)) == get_n_rows(C));
@@ -38,7 +38,7 @@ void gemm(
 }
 
 MatrixProxy gemm(
-  const Matrix& A, const Matrix& B, double alpha, bool TransA, bool TransB
+  const Matrix& A, const Matrix& B, float alpha, bool TransA, bool TransB
 ) {
   assert(
     (TransA ? get_n_rows(A) : get_n_cols(A))
@@ -51,7 +51,7 @@ define_method(
   MatrixProxy, gemm_omm,
   (
     const Hierarchical& A, const Hierarchical& B,
-    double alpha, bool TransA, bool TransB
+    float alpha, bool TransA, bool TransB
   )
 ) {
   // H H new
@@ -89,7 +89,7 @@ define_method(
   MatrixProxy, gemm_omm,
   (
     const Matrix& A, const Matrix& B,
-    double alpha, bool TransA, bool TransB
+    float alpha, bool TransA, bool TransB
   )
 ) {
   Dense C(
@@ -104,7 +104,7 @@ define_method(
   void, gemm_omm,
   (
     const Dense& A, const Dense& B, Dense& C,
-    double alpha, double beta,
+    float alpha, float beta,
     bool TransA, bool TransB
   )
 ) {
@@ -118,7 +118,7 @@ define_method(
   void, gemm_omm,
   (
     const LowRank& A, const Dense& B, Dense& C,
-    double alpha, double beta,
+    float alpha, float beta,
     bool TransA, bool TransB
   )
 ) {
@@ -134,7 +134,7 @@ define_method(
   void, gemm_omm,
   (
     const Dense& A, const LowRank& B, Dense& C,
-    double alpha, double beta,
+    float alpha, float beta,
     bool TransA, bool TransB
   )
 ) {
@@ -150,7 +150,7 @@ define_method(
   void, gemm_omm,
   (
     const LowRank& A, const LowRank& B, Dense& C,
-    double alpha, double beta,
+    float alpha, float beta,
     bool TransA, bool TransB
   )
 ) {
@@ -172,7 +172,7 @@ define_method(
   void, gemm_omm,
   (
     const Dense& A, const Dense& B, LowRank& C,
-    double alpha, double beta,
+    float alpha, float beta,
     bool TransA, bool TransB
   )
 ) {
@@ -185,7 +185,7 @@ define_method(
   void, gemm_omm,
   (
     const LowRank& A, const Dense& B, LowRank& C,
-    double alpha, double beta,
+    float alpha, float beta,
     bool TransA, bool TransB
   )
 ) {
@@ -202,7 +202,7 @@ define_method(
   void, gemm_omm,
   (
     const Dense& A, const LowRank& B, LowRank& C,
-    double alpha, double beta,
+    float alpha, float beta,
     bool TransA, bool TransB
   )
 ) {
@@ -219,7 +219,7 @@ define_method(
   void, gemm_omm,
   (
     const LowRank& A, const LowRank& B, LowRank& C,
-    double alpha, double beta,
+    float alpha, float beta,
     bool TransA, bool TransB
   )
 ) {
@@ -238,7 +238,7 @@ define_method(
   void, gemm_omm,
   (
     const Hierarchical& A, const LowRank& B, LowRank& C,
-    double alpha, double beta,
+    float alpha, float beta,
     bool TransA, bool TransB
   )
 ) {
@@ -255,7 +255,7 @@ define_method(
   void, gemm_omm,
   (
     const LowRank& A, const Hierarchical& B, LowRank& C,
-    double alpha, double beta,
+    float alpha, float beta,
     bool TransA, bool TransB
   )
 ) {
@@ -272,7 +272,7 @@ define_method(
   void, gemm_omm,
   (
     const LowRank& A, const LowRank& B, Hierarchical& C,
-    double alpha, double beta,
+    float alpha, float beta,
     bool TransA, bool TransB
   )
 ) {
@@ -289,7 +289,7 @@ define_method(
   void, gemm_omm,
   (
     const Hierarchical& A, const Hierarchical& B, LowRank& C,
-    double alpha, double beta,
+    float alpha, float beta,
     bool TransA, bool TransB
   )
 ) {
@@ -310,7 +310,7 @@ define_method(
   void, gemm_omm,
   (
     const Hierarchical& A, const Hierarchical& B, Hierarchical& C,
-    double alpha, double beta,
+    float alpha, float beta,
     bool TransA, bool TransB
   )
 ) {
@@ -334,7 +334,7 @@ define_method(
   void, gemm_omm,
   (
     const Dense& A, const Dense& B, Hierarchical& C,
-    double alpha, double beta,
+    float alpha, float beta,
     bool TransA, bool TransB
   )
 ) {
@@ -358,7 +358,7 @@ define_method(
   void, gemm_omm,
   (
     const Matrix& A, const Hierarchical& B, Hierarchical& C,
-    double alpha, double beta,
+    float alpha, float beta,
     bool TransA, bool TransB
   )
 ) {
@@ -385,7 +385,7 @@ define_method(
   void, gemm_omm,
   (
     const Hierarchical& A, const Matrix& B, Hierarchical& C,
-    double alpha, double beta,
+    float alpha, float beta,
     bool TransA, bool TransB
   )
 ) {
@@ -412,7 +412,7 @@ define_method(
   void, gemm_omm,
   (
     const Hierarchical& A, const Hierarchical& B, Dense& C,
-    double alpha, double beta,
+    float alpha, float beta,
     bool TransA, bool TransB
   )
 ) {
@@ -432,7 +432,7 @@ define_method(
   void, gemm_omm,
   (
     const Matrix& A, const Hierarchical& B, Dense& C,
-    double alpha, double beta,
+    float alpha, float beta,
     bool TransA, bool TransB
   )
 ) {
@@ -465,7 +465,7 @@ define_method(
   void, gemm_omm,
   (
     const Hierarchical& A, const Matrix& B, Dense& C,
-    double alpha, double beta,
+    float alpha, float beta,
     bool TransA, bool TransB
   )
 ) {
@@ -497,7 +497,7 @@ define_method(
 // Fallback default, abort with error message
 define_method(
   void, gemm_omm,
-  (const Matrix& A, const Matrix& B, Matrix& C, double, double, bool, bool)
+  (const Matrix& A, const Matrix& B, Matrix& C, float, float, bool, bool)
 ) {
   omm_error_handler("gemm", {A, B, C}, __FILE__, __LINE__);
   std::abort();

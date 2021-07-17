@@ -23,7 +23,7 @@ namespace std
 size_t hash<hicma::BasisKey>::operator()(const hicma::BasisKey& key) const {
   return (
     ((
-      hash<const double*>()(key.data_ptr)
+      hash<const float*>()(key.data_ptr)
       ^ (hash<int64_t>()(key.dim[0]) << 1)
     ) >> 1)
     ^ (hash<int64_t>()(key.dim[1]) << 1)

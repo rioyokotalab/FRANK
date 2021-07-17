@@ -35,7 +35,7 @@ declare_method(
 
 declare_method(
   Matrix&, multiplication_omm,
-  (virtual_<Matrix&>, double)
+  (virtual_<Matrix&>, float)
 )
 
 // BLAS
@@ -43,14 +43,14 @@ declare_method(
   void, gemm_omm,
   (
     virtual_<const Matrix&>, virtual_<const Matrix&>, virtual_<Matrix&>,
-    double, double, bool, bool
+    float, float, bool, bool
   )
 )
 declare_method(
   MatrixProxy, gemm_omm,
   (
     virtual_<const Matrix&>, virtual_<const Matrix&>,
-    double, bool, bool
+    float, bool, bool
   )
 )
 
@@ -59,7 +59,7 @@ declare_method(
   (
     virtual_<const Matrix&>, virtual_<Matrix&>,
     const char&, const char&, const char&, const char&,
-    double
+    float
   )
 )
 
@@ -146,7 +146,7 @@ declare_method(int64_t, get_n_rows_omm, (virtual_<const Matrix&>))
 
 declare_method(int64_t, get_n_cols_omm, (virtual_<const Matrix&>))
 
-declare_method(double, norm_omm, (virtual_<const Matrix&>))
+declare_method(float, norm_omm, (virtual_<const Matrix&>))
 
 declare_method(MatrixProxy, transpose_omm, (virtual_<const Matrix&>))
 

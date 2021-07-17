@@ -19,11 +19,11 @@ class IndexRange;
 class MatrixInitializerKernel : public MatrixInitializer {
  private:
   void (*kernel)(
-    double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-    const std::vector<std::vector<double>>& x,
+    float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+    const std::vector<std::vector<float>>& x,
     int64_t row_start, int64_t col_start
   ) = nullptr;
-  const std::vector<std::vector<double>>& x;
+  const std::vector<std::vector<float>>& x;
  public:
 
   // Special member functions
@@ -42,11 +42,11 @@ class MatrixInitializerKernel : public MatrixInitializer {
   // Additional constructors
   MatrixInitializerKernel(
     void (*kernel)(
-      double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-      const std::vector<std::vector<double>>& x,
+      float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+      const std::vector<std::vector<float>>& x,
       int64_t row_start, int64_t col_start
     ),
-    const std::vector<std::vector<double>>& x, int64_t admis, int64_t rank
+    const std::vector<std::vector<float>>& x, int64_t admis, int64_t rank
   );
 
   // Utility methods

@@ -92,16 +92,16 @@ void add_task(std::shared_ptr<Task> task) {
 
 struct kernel_args {
   void (*kernel)(
-    double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-    const std::vector<std::vector<double>>& x,
+    float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+    const std::vector<std::vector<float>>& x,
     int64_t row_start, int64_t col_start
   ) = nullptr;
-  const std::vector<std::vector<double>>& x;
+  const std::vector<std::vector<float>>& x;
   int64_t row_start, col_start;
 };
 
 void kernel_cpu_starpu_interface(void* buffers[], void* cl_args) {
-  double* A = (double *)STARPU_MATRIX_GET_PTR(buffers[0]);
+  float* A = (float *)STARPU_MATRIX_GET_PTR(buffers[0]);
   uint64_t A_dim0 = STARPU_MATRIX_GET_NY(buffers[0]);
   uint64_t A_dim1 = STARPU_MATRIX_GET_NX(buffers[0]);
   uint64_t A_stride = STARPU_MATRIX_GET_LD(buffers[0]);
@@ -127,11 +127,11 @@ class Kernel_task : public Task {
   kernel_args args;
   Kernel_task(
     void (*kernel)(
-      double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-      const std::vector<std::vector<double>>& x,
+      float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+      const std::vector<std::vector<float>>& x,
       int64_t row_start, int64_t col_start
     ),
-    Dense& A, const std::vector<std::vector<double>>& x,
+    Dense& A, const std::vector<std::vector<float>>& x,
     int64_t row_start, int64_t col_start
   ) : Task({}, {A}), args{kernel, x, row_start, col_start} {
     if (schedule_started) {
@@ -157,11 +157,11 @@ class Kernel_task : public Task {
 
 void add_kernel_task(
   void (*kernel)(
-    double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-    const std::vector<std::vector<double>>& x,
+    float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+    const std::vector<std::vector<float>>& x,
     int64_t row_start, int64_t col_start
   ),
-  Dense& A, const std::vector<std::vector<double>>& x,
+  Dense& A, const std::vector<std::vector<float>>& x,
   int64_t row_start, int64_t col_start
 ) {
   add_task(std::make_shared<Kernel_task>(kernel, A, x, row_start, col_start));
@@ -170,8 +170,8 @@ void add_kernel_task(
 struct copy_args { int64_t row_start, col_start; };
 
 void copy_cpu_func(
-  const double* A, uint64_t A_stride,
-  double* B, uint64_t B_dim0, uint64_t B_dim1, uint64_t B_stride,
+  const float* A, uint64_t A_stride,
+  float* B, uint64_t B_dim0, uint64_t B_dim1, uint64_t B_stride,
   copy_args& args
 ) {
   if (args.row_start == 0 && args.col_start == 0) {
@@ -190,9 +190,9 @@ void copy_cpu_func(
 }
 
 void copy_cpu_starpu_interface(void* buffers[], void* cl_args) {
-  const double* A = (double *)STARPU_MATRIX_GET_PTR(buffers[0]);
+  const float* A = (float *)STARPU_MATRIX_GET_PTR(buffers[0]);
   uint64_t A_stride = STARPU_MATRIX_GET_LD(buffers[0]);
-  double* B = (double *)STARPU_MATRIX_GET_PTR(buffers[1]);
+  float* B = (float *)STARPU_MATRIX_GET_PTR(buffers[1]);
   uint64_t B_dim0 = STARPU_MATRIX_GET_NY(buffers[1]);
   uint64_t B_dim1 = STARPU_MATRIX_GET_NX(buffers[1]);
   uint64_t B_stride = STARPU_MATRIX_GET_LD(buffers[1]);
@@ -245,8 +245,8 @@ void add_copy_task(
 }
 
 void transpose_cpu_func(
-  const double* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
-  double* B, uint64_t B_stride
+  const float* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
+  float* B, uint64_t B_stride
 ) {
   for (uint64_t i=0; i<A_dim0; i++) {
     for (uint64_t j=0; j<A_dim1; j++) {
@@ -256,11 +256,11 @@ void transpose_cpu_func(
 }
 
 void transpose_cpu_starpu_interface(void* buffers[], void*) {
-  const double* A = (double *)STARPU_MATRIX_GET_PTR(buffers[0]);
+  const float* A = (float *)STARPU_MATRIX_GET_PTR(buffers[0]);
   uint64_t A_dim0 = STARPU_MATRIX_GET_NY(buffers[0]);
   uint64_t A_dim1 = STARPU_MATRIX_GET_NX(buffers[0]);
   uint64_t A_stride = STARPU_MATRIX_GET_LD(buffers[0]);
-  double* B = (double *)STARPU_MATRIX_GET_PTR(buffers[1]);
+  float* B = (float *)STARPU_MATRIX_GET_PTR(buffers[1]);
   uint64_t B_stride = STARPU_MATRIX_GET_LD(buffers[1]);
   transpose_cpu_func(A, A_dim0, A_dim1, A_stride, B, B_stride);
 }
@@ -303,10 +303,10 @@ void add_transpose_task(const Dense& A, Dense& B) {
   add_task(std::make_shared<Transpose_task>(A, B));
 }
 
-struct assign_args { double value; };
+struct assign_args { float value; };
 
 void assign_cpu_func(
-  double* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
+  float* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
   assign_args& args
 ) {
   for (uint64_t i=0; i<A_dim0; i++) {
@@ -317,7 +317,7 @@ void assign_cpu_func(
 }
 
 void assign_cpu_starpu_interface(void* buffers[], void* cl_args) {
-  double* A = (double *)STARPU_MATRIX_GET_PTR(buffers[0]);
+  float* A = (float *)STARPU_MATRIX_GET_PTR(buffers[0]);
   uint64_t A_dim0 = STARPU_MATRIX_GET_NY(buffers[0]);
   uint64_t A_dim1 = STARPU_MATRIX_GET_NX(buffers[0]);
   uint64_t A_stride = STARPU_MATRIX_GET_LD(buffers[0]);
@@ -339,7 +339,7 @@ void make_assign_codelet() {
 class Assign_task : public Task {
  public:
   assign_args args;
-  Assign_task(Dense& A, double value) : Task({}, {A}), args{value} {
+  Assign_task(Dense& A, float value) : Task({}, {A}), args{value} {
     if (schedule_started) {
       task = starpu_task_create();
       task->cl = &assign_cl;
@@ -359,13 +359,13 @@ class Assign_task : public Task {
   }
 };
 
-void add_assign_task(Dense& A, double value) {
+void add_assign_task(Dense& A, float value) {
   add_task(std::make_shared<Assign_task>(A, value));
 }
 
 void addition_cpu_func(
-  double* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
-  const double* B, uint64_t B_stride
+  float* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
+  const float* B, uint64_t B_stride
 ) {
   for (uint64_t i=0; i<A_dim0; i++) {
     for (uint64_t j=0; j<A_dim1; j++) {
@@ -375,11 +375,11 @@ void addition_cpu_func(
 }
 
 void addition_cpu_starpu_interface(void* buffers[], void*) {
-  double* A = (double *)STARPU_MATRIX_GET_PTR(buffers[0]);
+  float* A = (float *)STARPU_MATRIX_GET_PTR(buffers[0]);
   uint64_t A_dim0 = STARPU_MATRIX_GET_NY(buffers[0]);
   uint64_t A_dim1 = STARPU_MATRIX_GET_NX(buffers[0]);
   uint64_t A_stride = STARPU_MATRIX_GET_LD(buffers[0]);
-  const double* B = (double *)STARPU_MATRIX_GET_PTR(buffers[1]);
+  const float* B = (float *)STARPU_MATRIX_GET_PTR(buffers[1]);
   uint64_t B_stride = STARPU_MATRIX_GET_LD(buffers[1]);
   addition_cpu_func(A, A_dim0, A_dim1, A_stride, B, B_stride);
 }
@@ -426,8 +426,8 @@ void add_addition_task(Dense& A, const Dense& B) {
 }
 
 void subtraction_cpu_func(
-  double* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
-  const double* B, uint64_t B_stride
+  float* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
+  const float* B, uint64_t B_stride
 ) {
   for (uint64_t i=0; i<A_dim0; i++) {
     for (uint64_t j=0; j<A_dim1; j++) {
@@ -437,11 +437,11 @@ void subtraction_cpu_func(
 }
 
 void subtraction_cpu_starpu_interface(void* buffers[], void*) {
-  double* A = (double *)STARPU_MATRIX_GET_PTR(buffers[0]);
+  float* A = (float *)STARPU_MATRIX_GET_PTR(buffers[0]);
   uint64_t A_dim0 = STARPU_MATRIX_GET_NY(buffers[0]);
   uint64_t A_dim1 = STARPU_MATRIX_GET_NX(buffers[0]);
   uint64_t A_stride = STARPU_MATRIX_GET_LD(buffers[0]);
-  const double* B = (double *)STARPU_MATRIX_GET_PTR(buffers[1]);
+  const float* B = (float *)STARPU_MATRIX_GET_PTR(buffers[1]);
   uint64_t B_stride = STARPU_MATRIX_GET_LD(buffers[1]);
   subtraction_cpu_func(A, A_dim0, A_dim1, A_stride, B, B_stride);
 }
@@ -484,10 +484,10 @@ void add_subtraction_task(Dense& A, const Dense& B) {
   add_task(std::make_shared<Subtraction_task>(A, B));
 }
 
-struct multiplication_args { double factor; };
+struct multiplication_args { float factor; };
 
 void multiplication_cpu_func(
-  double* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
+  float* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
   multiplication_args& args
 ) {
   for (uint64_t i=0; i<A_dim0; i++) {
@@ -498,7 +498,7 @@ void multiplication_cpu_func(
 }
 
 void multiplication_cpu_starpu_interface(void* buffers[], void* cl_args) {
-  double* A = (double *)STARPU_MATRIX_GET_PTR(buffers[0]);
+  float* A = (float *)STARPU_MATRIX_GET_PTR(buffers[0]);
   uint64_t A_dim0 = STARPU_MATRIX_GET_NY(buffers[0]);
   uint64_t A_dim1 = STARPU_MATRIX_GET_NX(buffers[0]);
   uint64_t A_stride = STARPU_MATRIX_GET_LD(buffers[0]);
@@ -520,7 +520,7 @@ void make_multiplication_codelet() {
 class Multiplication_task : public Task {
  public:
   multiplication_args args;
-  Multiplication_task(Dense& A, double factor) : Task({}, {A}), args{factor} {
+  Multiplication_task(Dense& A, float factor) : Task({}, {A}), args{factor} {
     if (schedule_started) {
       task = starpu_task_create();
       task->cl = &multiplication_cl;
@@ -540,7 +540,7 @@ class Multiplication_task : public Task {
   }
 };
 
-void add_multiplication_task(Dense& A, double factor) {
+void add_multiplication_task(Dense& A, float factor) {
   // Don't do anything if factor == 1
   if (factor != 1) {
     add_task(std::make_shared<Multiplication_task>(A, factor));
@@ -548,11 +548,11 @@ void add_multiplication_task(Dense& A, double factor) {
 }
 
 void getrf_cpu_func(
-  double* AU, uint64_t AU_dim0, uint64_t AU_dim1, uint64_t AU_stride,
-  double* L, uint64_t L_stride
+  float* AU, uint64_t AU_dim0, uint64_t AU_dim1, uint64_t AU_stride,
+  float* L, uint64_t L_stride
 ) {
   std::vector<int> ipiv(std::min(AU_dim0, AU_dim1));
-  LAPACKE_dgetrf(
+  LAPACKE_sgetrf(
     LAPACK_ROW_MAJOR,
     AU_dim0, AU_dim1,
     AU, AU_stride,
@@ -568,11 +568,11 @@ void getrf_cpu_func(
 }
 
 void getrf_cpu_starpu_interface(void* buffers[], void*) {
-  double* AU = (double*)STARPU_MATRIX_GET_PTR(buffers[0]);
+  float* AU = (float*)STARPU_MATRIX_GET_PTR(buffers[0]);
   uint64_t AU_dim0 = STARPU_MATRIX_GET_NY(buffers[0]);
   uint64_t AU_dim1 = STARPU_MATRIX_GET_NX(buffers[0]);
   uint64_t AU_stride = STARPU_MATRIX_GET_LD(buffers[0]);
-  double* L = (double*)STARPU_MATRIX_GET_PTR(buffers[1]);
+  float* L = (float*)STARPU_MATRIX_GET_PTR(buffers[1]);
   uint64_t L_stride = STARPU_MATRIX_GET_LD(buffers[1]);
   getrf_cpu_func(AU, AU_dim0, AU_dim1, AU_stride, L, L_stride);
 }
@@ -616,14 +616,14 @@ void add_getrf_task(Dense& AU, Dense& L) {
 }
 
 void qr_cpu_func(
-  double* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
-  double* Q, uint64_t Q_dim0, uint64_t Q_dim1, uint64_t Q_stride,
-  double* R, uint64_t, uint64_t, uint64_t R_stride
+  float* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
+  float* Q, uint64_t Q_dim0, uint64_t Q_dim1, uint64_t Q_stride,
+  float* R, uint64_t, uint64_t, uint64_t R_stride
 ) {
   uint64_t k = std::min(A_dim0, A_dim1);
-  std::vector<double> tau(k);
+  std::vector<float> tau(k);
   for (uint64_t i=0; i<std::min(Q_dim0, Q_dim1); i++) Q[i*Q_stride+i] = 1.0;
-  LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, A_dim0, A_dim1, A, A_stride, &tau[0]);
+  LAPACKE_sgeqrf(LAPACK_ROW_MAJOR, A_dim0, A_dim1, A, A_stride, &tau[0]);
   // TODO Consider using A for the dorgqr and moving to Q afterwards! That
   // also simplify this loop.
   for(uint64_t i=0; i<Q_dim0; i++) {
@@ -641,21 +641,21 @@ void qr_cpu_func(
   // Alternatively, create Dense deriative that remains in elementary
   // reflector form, uses dormqr instead of gemm and can be transformed to
   // Dense via dorgqr!
-  LAPACKE_dorgqr(
+  LAPACKE_sorgqr(
     LAPACK_ROW_MAJOR, Q_dim0, Q_dim1, k, Q, Q_stride, &tau[0]
   );
 }
 
 void qr_cpu_starpu_interface(void* buffers[], void*) {
-  double* A = (double*)STARPU_MATRIX_GET_PTR(buffers[0]);
+  float* A = (float*)STARPU_MATRIX_GET_PTR(buffers[0]);
   uint64_t A_dim0 = STARPU_MATRIX_GET_NY(buffers[0]);
   uint64_t A_dim1 = STARPU_MATRIX_GET_NX(buffers[0]);
   uint64_t A_stride = STARPU_MATRIX_GET_LD(buffers[0]);
-  double* Q = (double*)STARPU_MATRIX_GET_PTR(buffers[1]);
+  float* Q = (float*)STARPU_MATRIX_GET_PTR(buffers[1]);
   uint64_t Q_dim0 = STARPU_MATRIX_GET_NY(buffers[1]);
   uint64_t Q_dim1 = STARPU_MATRIX_GET_NX(buffers[1]);
   uint64_t Q_stride = STARPU_MATRIX_GET_LD(buffers[1]);
-  double* R = (double*)STARPU_MATRIX_GET_PTR(buffers[2]);
+  float* R = (float*)STARPU_MATRIX_GET_PTR(buffers[2]);
   uint64_t R_dim0 = STARPU_MATRIX_GET_NY(buffers[2]);
   uint64_t R_dim1 = STARPU_MATRIX_GET_NX(buffers[2]);
   uint64_t R_stride = STARPU_MATRIX_GET_LD(buffers[2]);
@@ -713,13 +713,13 @@ void add_qr_task(Dense& A, Dense& Q, Dense& R) {
 }
 
 void rq_cpu_func(
-  double* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
-  double* R, uint64_t R_dim0, uint64_t R_dim1, uint64_t R_stride,
-  double* Q, uint64_t Q_dim0, uint64_t Q_dim1, uint64_t Q_stride
+  float* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
+  float* R, uint64_t R_dim0, uint64_t R_dim1, uint64_t R_stride,
+  float* Q, uint64_t Q_dim0, uint64_t Q_dim1, uint64_t Q_stride
 ) {
   uint64_t k = std::min(A_dim0, A_dim1);
-  std::vector<double> tau(k);
-  LAPACKE_dgerqf(LAPACK_ROW_MAJOR, A_dim0, A_dim1, A, A_stride, &tau[0]);
+  std::vector<float> tau(k);
+  LAPACKE_sgerqf(LAPACK_ROW_MAJOR, A_dim0, A_dim1, A, A_stride, &tau[0]);
   // TODO Consider making special function for this. Performance heavy and not
   // always needed. If Q should be applied to something, use directly!
   // Alternatively, create Dense deriative that remains in elementary reflector
@@ -735,21 +735,21 @@ void rq_cpu_func(
       Q[i*Q_stride+j] = A[i*A_stride+j];
     }
   }
-  LAPACKE_dorgrq(
+  LAPACKE_sorgrq(
     LAPACK_ROW_MAJOR, Q_dim0, Q_dim1, k, Q, Q_stride, &tau[0]
   );
 }
 
 void rq_cpu_starpu_interface(void* buffers[], void*) {
-  double* A = (double*)STARPU_MATRIX_GET_PTR(buffers[0]);
+  float* A = (float*)STARPU_MATRIX_GET_PTR(buffers[0]);
   uint64_t A_dim0 = STARPU_MATRIX_GET_NY(buffers[0]);
   uint64_t A_dim1 = STARPU_MATRIX_GET_NX(buffers[0]);
   uint64_t A_stride = STARPU_MATRIX_GET_LD(buffers[0]);
-  double* R = (double*)STARPU_MATRIX_GET_PTR(buffers[1]);
+  float* R = (float*)STARPU_MATRIX_GET_PTR(buffers[1]);
   uint64_t R_dim0 = STARPU_MATRIX_GET_NY(buffers[1]);
   uint64_t R_dim1 = STARPU_MATRIX_GET_NX(buffers[1]);
   uint64_t R_stride = STARPU_MATRIX_GET_LD(buffers[1]);
-  double* Q = (double*)STARPU_MATRIX_GET_PTR(buffers[2]);
+  float* Q = (float*)STARPU_MATRIX_GET_PTR(buffers[2]);
   uint64_t Q_dim0 = STARPU_MATRIX_GET_NY(buffers[2]);
   uint64_t Q_dim1 = STARPU_MATRIX_GET_NX(buffers[2]);
   uint64_t Q_stride = STARPU_MATRIX_GET_LD(buffers[2]);
@@ -809,11 +809,11 @@ void add_rq_task(Dense& A, Dense& R, Dense& Q) {
 struct trsm_args { int uplo; int lr; };
 
 void trsm_cpu_func(
-  const double* A, uint64_t A_stride,
-  double* B, uint64_t B_dim0, uint64_t B_dim1, uint64_t B_stride,
+  const float* A, uint64_t A_stride,
+  float* B, uint64_t B_dim0, uint64_t B_dim1, uint64_t B_stride,
   trsm_args& args
 ) {
-  cblas_dtrsm(
+  cblas_strsm(
     CblasRowMajor,
     args.lr==TRSM_LEFT?CblasLeft:CblasRight,
     args.uplo==TRSM_UPPER?CblasUpper:CblasLower,
@@ -827,9 +827,9 @@ void trsm_cpu_func(
 }
 
 void trsm_cpu_starpu_interface(void* buffers[], void* cl_args) {
-  const double* A = (double *)STARPU_MATRIX_GET_PTR(buffers[0]);
+  const float* A = (float *)STARPU_MATRIX_GET_PTR(buffers[0]);
   uint64_t A_stride = STARPU_MATRIX_GET_LD(buffers[0]);
-  double* B = (double *)STARPU_MATRIX_GET_PTR(buffers[1]);
+  float* B = (float *)STARPU_MATRIX_GET_PTR(buffers[1]);
   uint64_t B_dim0 = STARPU_MATRIX_GET_NY(buffers[1]);
   uint64_t B_dim1 = STARPU_MATRIX_GET_NX(buffers[1]);
   uint64_t B_stride = STARPU_MATRIX_GET_LD(buffers[1]);
@@ -882,16 +882,16 @@ void add_trsm_task(const Dense& A, Dense& B, int uplo, int lr) {
   }
 }
 
-struct gemm_args { double alpha, beta; bool TransA, TransB;  };
+struct gemm_args { float alpha, beta; bool TransA, TransB;  };
 
 void gemm_cpu_func(
-  const double* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
-  const double* B, uint64_t, uint64_t B_dim1, uint64_t B_stride,
-  double* C, uint64_t C_dim0, uint64_t C_dim1, uint64_t C_stride,
+  const float* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
+  const float* B, uint64_t, uint64_t B_dim1, uint64_t B_stride,
+  float* C, uint64_t C_dim0, uint64_t C_dim1, uint64_t C_stride,
   gemm_args& args
 ) {
   if (B_dim1 == 1) {
-    cblas_dgemv(
+    cblas_sgemv(
       CblasRowMajor,
       CblasNoTrans,
       A_dim0, A_dim1,
@@ -904,7 +904,7 @@ void gemm_cpu_func(
   }
   else {
     int64_t k = args.TransA ? A_dim0 : A_dim1;
-    cblas_dgemm(
+    cblas_sgemm(
       CblasRowMajor,
       args.TransA?CblasTrans:CblasNoTrans, args.TransB?CblasTrans:CblasNoTrans,
       C_dim0, C_dim1, k,
@@ -918,15 +918,15 @@ void gemm_cpu_func(
 }
 
 void gemm_cpu_starpu_interface(void* buffers[], void* cl_args) {
-  const double* A = (double *)STARPU_MATRIX_GET_PTR(buffers[0]);
+  const float* A = (float *)STARPU_MATRIX_GET_PTR(buffers[0]);
   uint64_t A_dim0 = STARPU_MATRIX_GET_NY(buffers[0]);
   uint64_t A_dim1 = STARPU_MATRIX_GET_NX(buffers[0]);
   uint64_t A_stride = STARPU_MATRIX_GET_LD(buffers[0]);
-  const double* B = (double *)STARPU_MATRIX_GET_PTR(buffers[1]);
+  const float* B = (float *)STARPU_MATRIX_GET_PTR(buffers[1]);
   uint64_t B_dim0 = STARPU_MATRIX_GET_NY(buffers[1]);
   uint64_t B_dim1 = STARPU_MATRIX_GET_NX(buffers[1]);
   uint64_t B_stride = STARPU_MATRIX_GET_LD(buffers[1]);
-  double* C = (double *)STARPU_MATRIX_GET_PTR(buffers[2]);
+  float* C = (float *)STARPU_MATRIX_GET_PTR(buffers[2]);
   uint64_t C_dim0 = STARPU_MATRIX_GET_NY(buffers[2]);
   uint64_t C_dim1 = STARPU_MATRIX_GET_NX(buffers[2]);
   uint64_t C_stride = STARPU_MATRIX_GET_LD(buffers[2]);
@@ -957,7 +957,7 @@ class GEMM_task : public Task {
   gemm_args args;
   GEMM_task(
     const Dense& A, const Dense& B, Dense& C,
-    double alpha, double beta, bool TransA, bool TransB
+    float alpha, float beta, bool TransA, bool TransB
   ) : Task({A, B}, {C}), args{alpha, beta, TransA, TransB} {
     if (schedule_started) {
       task = starpu_task_create();
@@ -995,7 +995,7 @@ BasisTracker<
 
 void add_gemm_task(
   const Dense& A, const Dense& B, Dense& C,
-  double alpha, double beta, bool TransA, bool TransB
+  float alpha, float beta, bool TransA, bool TransB
 ) {
   if (
     is_tracking
@@ -1024,14 +1024,14 @@ void add_gemm_task(
 }
 
 void svd_cpu_func(
-  double* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
-  double* U, uint64_t, uint64_t, uint64_t U_stride,
-  double* S, uint64_t S_dim0, uint64_t, uint64_t S_stride,
-  double* V, uint64_t, uint64_t, uint64_t V_stride
+  float* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
+  float* U, uint64_t, uint64_t, uint64_t U_stride,
+  float* S, uint64_t S_dim0, uint64_t, uint64_t S_stride,
+  float* V, uint64_t, uint64_t, uint64_t V_stride
 ) {
-  std::vector<double> Sdiag(S_dim0, 0);
-  std::vector<double> work(S_dim0-1, 0);
-  LAPACKE_dgesvd(
+  std::vector<float> Sdiag(S_dim0, 0);
+  std::vector<float> work(S_dim0-1, 0);
+  LAPACKE_sgesvd(
     LAPACK_ROW_MAJOR,
     'S', 'S',
     A_dim0, A_dim1,
@@ -1047,19 +1047,19 @@ void svd_cpu_func(
 }
 
 void svd_cpu_starpu_interface(void* buffers[], void*) {
-  double* A = (double *)STARPU_MATRIX_GET_PTR(buffers[0]);
+  float* A = (float *)STARPU_MATRIX_GET_PTR(buffers[0]);
   uint64_t A_dim0 = STARPU_MATRIX_GET_NY(buffers[0]);
   uint64_t A_dim1 = STARPU_MATRIX_GET_NX(buffers[0]);
   uint64_t A_stride = STARPU_MATRIX_GET_LD(buffers[0]);
-  double* U = (double *)STARPU_MATRIX_GET_PTR(buffers[1]);
+  float* U = (float *)STARPU_MATRIX_GET_PTR(buffers[1]);
   uint64_t U_dim0 = STARPU_MATRIX_GET_NY(buffers[1]);
   uint64_t U_dim1 = STARPU_MATRIX_GET_NX(buffers[1]);
   uint64_t U_stride = STARPU_MATRIX_GET_LD(buffers[1]);
-  double* S = (double *)STARPU_MATRIX_GET_PTR(buffers[2]);
+  float* S = (float *)STARPU_MATRIX_GET_PTR(buffers[2]);
   uint64_t S_dim0 = STARPU_MATRIX_GET_NY(buffers[2]);
   uint64_t S_dim1 = STARPU_MATRIX_GET_NX(buffers[2]);
   uint64_t S_stride = STARPU_MATRIX_GET_LD(buffers[2]);
-  double* V = (double *)STARPU_MATRIX_GET_PTR(buffers[3]);
+  float* V = (float *)STARPU_MATRIX_GET_PTR(buffers[3]);
   uint64_t V_dim0 = STARPU_MATRIX_GET_NY(buffers[3]);
   uint64_t V_dim1 = STARPU_MATRIX_GET_NX(buffers[3]);
   uint64_t V_stride = STARPU_MATRIX_GET_LD(buffers[3]);

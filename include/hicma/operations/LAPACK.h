@@ -34,10 +34,10 @@ void latms(
   const char& dist,
   std::vector<int>& iseed,
   const char& sym,
-  std::vector<double>& d,
+  std::vector<float>& d,
   int mode,
-  double cond,
-  double dmax,
+  float cond,
+  float dmax,
   int kl, int ku,
   const char& pack,
   Dense& A
@@ -56,7 +56,7 @@ std::tuple<Dense, Dense, Dense> svd(Dense& A);
 std::tuple<Dense, Dense, Dense> sdd(Dense& A);
 
 // TODO Does this need to be in the header?
-std::vector<double> get_singular_values(Dense& A);
+std::vector<float> get_singular_values(Dense& A);
 
 void tpmqrt(const Matrix&, const Matrix&, Matrix&, Matrix&, bool);
 

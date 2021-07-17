@@ -14,11 +14,11 @@ int main(int argc, char** argv) {
   int64_t N = argc > 1 ? atoi(argv[1]) : 256;
   int64_t Nb = argc > 2 ? atoi(argv[2]) : 32;
   int64_t rank = argc > 3 ? atoi(argv[3]) : 16;
-  double admis = argc > 4 ? atof(argv[4]) : 0;
+  float admis = argc > 4 ? atof(argv[4]) : 0;
   int64_t matCode = argc > 5 ? atoi(argv[5]) : 0;
   int64_t lra = argc > 6 ? atoi(argv[6]) : 1; updateCounter("LRA", lra);
   int64_t Nc = N / Nb;
-  std::vector<std::vector<double>> randpts;
+  std::vector<std::vector<float>> randpts;
   updateCounter("LR_ADDITION_COUNTER", 1); //Enable LR addition counter
 
   Hierarchical A;
@@ -43,8 +43,8 @@ int main(int argc, char** argv) {
     A = Hierarchical(cauchy2d, randpts, N, N, rank, Nb, (int64_t)admis, Nc, Nc);
     D = Hierarchical(cauchy2d, randpts, N, N, 0, Nb, Nc, Nc, Nc);
   }
-  Hierarchical Q(zeros, std::vector<std::vector<double>>(), N, N, rank, Nb, (int64_t)admis, Nc, Nc);
-  Hierarchical R(zeros, std::vector<std::vector<double>>(), N, N, rank, Nb, (int64_t)admis, Nc, Nc);
+  Hierarchical Q(zeros, std::vector<std::vector<float>>(), N, N, rank, Nb, (int64_t)admis, Nc, Nc);
+  Hierarchical R(zeros, std::vector<std::vector<float>>(), N, N, rank, Nb, (int64_t)admis, Nc, Nc);
 
   print("Cond(A)", cond(Dense(A)), false);
 

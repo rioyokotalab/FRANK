@@ -13,11 +13,11 @@ namespace hicma
 
 MatrixInitializerKernel::MatrixInitializerKernel(
   void (*kernel)(
-    double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-    const std::vector<std::vector<double>>& x,
+    float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+    const std::vector<std::vector<float>>& x,
     int64_t row_start, int64_t col_start
   ),
-  const std::vector<std::vector<double>>& x, int64_t admis, int64_t rank
+  const std::vector<std::vector<float>>& x, int64_t admis, int64_t rank
 ) : MatrixInitializer(admis, rank), kernel(kernel), x(x) {}
 
 void MatrixInitializerKernel::fill_dense_representation(

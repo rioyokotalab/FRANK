@@ -98,7 +98,7 @@ define_method(void, qr_omm, (Matrix& A, Matrix& Q, Matrix& R)) {
 
 
 define_method(DensePair, make_left_orthogonal_omm, (const Dense& A)) {
-  Dense Id(identity, std::vector<std::vector<double>>(), A.dim[0], A.dim[0]);
+  Dense Id(identity, std::vector<std::vector<float>>(), A.dim[0], A.dim[0]);
   return {std::move(Id), A};
 }
 
@@ -227,7 +227,7 @@ define_method(
   _A.U = Dense(Q);
   _A.V = std::move(concatenatedRow);
   _A.S = Dense(
-    identity, std::vector<std::vector<double>>(), _A.rank, _A.rank);
+    identity, std::vector<std::vector<float>>(), _A.rank, _A.rank);
   currentRow++;
   return std::move(_A);
 }
@@ -284,12 +284,12 @@ define_method(void, zero_whole_omm, (Dense& A)) {
 
 define_method(void, zero_whole_omm, (LowRank& A)) {
   A.U = Dense(
-    identity, std::vector<std::vector<double>>(),
+    identity, std::vector<std::vector<float>>(),
     get_n_rows(A.U), get_n_cols(A.U)
   );
   A.S = 0.0;
   A.V = Dense(
-    identity, std::vector<std::vector<double>>(),
+    identity, std::vector<std::vector<float>>(),
     get_n_rows(A.V), get_n_cols(A.V)
   );
 }

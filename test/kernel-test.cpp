@@ -20,7 +20,7 @@ int main(int, char** argv) {
   int64_t admis = atoi(argv[4]);
   int64_t nblocks = N / nleaf;
 
-  std::vector<std::vector<double>> randx{get_sorted_random_vector(N)};
+  std::vector<std::vector<float>> randx{get_sorted_random_vector(N)};
 
   print("Generate hicma laplace 1D.");
   timing::start("Hierarchical compression");
@@ -30,18 +30,18 @@ int main(int, char** argv) {
            std::to_string(rank) + std::string("-") + std::to_string(admis) + std::string(".xml"));
 
   print("Generate hicma Cauchy 2D.");
-  std::vector<std::vector<double>> randx1{get_sorted_random_vector(N), get_sorted_random_vector(N)};
+  std::vector<std::vector<float>> randx1{get_sorted_random_vector(N), get_sorted_random_vector(N)};
   Hierarchical A1(cauchy2d, randx1, N, N, rank, nleaf, admis, nblocks, nblocks);
   write_JSON(A1, std::string("cauchy2d-") + std::to_string(N) + std::string("-") + std::to_string(nleaf) + std::string("-") +
            std::to_string(rank) + std::string("-") + std::to_string(admis) + std::string(".xml"));
 
   print("Generate stars-h 3D exponential.");
-  double beta = 0.1;
-  double nu = 0.5;//in matern, nu=0.5 exp (half smooth), nu=inf sqexp (inifinetly smooth)
+  float beta = 0.1;
+  float nu = 0.5;//in matern, nu=0.5 exp (half smooth), nu=inf sqexp (inifinetly smooth)
   //nu is only used in matern kernel
-  //double noise = 1.e-2; // did not work for 10M in Lorapo
-  double noise = 1.e-1;
-  double sigma = 1.0;
+  //float noise = 1.e-2; // did not work for 10M in Lorapo
+  float noise = 1.e-1;
+  float sigma = 1.0;
   starsh::exp_kernel_prepare(N, beta, nu, noise, sigma, 3);
 
   Hierarchical A2(starsh::exp_kernel_fill, randx, N, N, rank, nleaf, admis,

@@ -27,7 +27,7 @@ void geqrt(Matrix& A, Matrix& T) { geqrt_omm(A, T); }
 define_method(void, geqrt_omm, (Dense& A, Dense& T)) {
   assert(T.dim[0] == A.dim[1]);
   assert(T.dim[1] == A.dim[1]);
-  LAPACKE_dgeqrt3(
+  LAPACKE_sgeqrt3(
     LAPACK_ROW_MAJOR,
     A.dim[0], A.dim[1],
     &A, A.stride,
@@ -60,7 +60,7 @@ define_method(void, geqrt_omm, (Matrix& A, Matrix& T)) {
 void geqrt2(Dense& A, Dense& T) {
   assert(T.dim[0] == A.dim[1]);
   assert(T.dim[1] == A.dim[1]);
-  LAPACKE_dgeqrt2(
+  LAPACKE_sgeqrt2(
     LAPACK_ROW_MAJOR,
     A.dim[0], A.dim[1],
     &A, A.stride,

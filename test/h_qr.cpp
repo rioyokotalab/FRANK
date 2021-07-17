@@ -12,7 +12,7 @@ int main(int argc, char** argv) {
   int64_t N = 128;
   int64_t nleaf = 16;
   int64_t rank = 8;
-  std::vector<std::vector<double>> randx{get_sorted_random_vector(N)};
+  std::vector<std::vector<float>> randx{get_sorted_random_vector(N)};
   timing::start("Init matrix");
   int64_t nblocks=0, admis=0;
   if(argc < 2) {

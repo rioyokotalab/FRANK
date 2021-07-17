@@ -22,19 +22,19 @@
 namespace hicma
 {
 
-double cond(Dense A) {
+float cond(Dense A) {
   int64_t k = std::min(A.dim[0], A.dim[1]);
-  std::vector<double> S = get_singular_values(A);
+  std::vector<float> S = get_singular_values(A);
   return (S[0] / S[k-1]);
 }
 
-double diam(const std::vector<double>& x, int64_t n, int64_t offset) {
-  double xmax = *std::max_element(x.begin()+offset, x.begin()+offset+n);
-  double xmin = *std::min_element(x.begin()+offset, x.begin()+offset+n);
+float diam(const std::vector<float>& x, int64_t n, int64_t offset) {
+  float xmax = *std::max_element(x.begin()+offset, x.begin()+offset+n);
+  float xmin = *std::min_element(x.begin()+offset, x.begin()+offset+n);
   return std::abs(xmax-xmin);
 }
 
-double mean(const std::vector<double>& x, int64_t n, int64_t offset) {
+float mean(const std::vector<float>& x, int64_t n, int64_t offset) {
   return std::accumulate(x.begin()+offset, x.begin()+offset+n, 0.0)/n;
 }
 
@@ -61,11 +61,11 @@ int64_t getMortonIndex(std::vector<int64_t> index, int64_t level) {
   return mortonIndex;
 }
 
-std::vector<double> equallySpacedVector(int64_t N, double minVal, double maxVal) {
-  std::vector<double> res(N, 0.0);
-  double rnge = maxVal - minVal;
+std::vector<float> equallySpacedVector(int64_t N, float minVal, float maxVal) {
+  std::vector<float> res(N, 0.0);
+  float rnge = maxVal - minVal;
   for(int64_t i=0; i<N; i++) {
-    res[i] = minVal + ((double)i/(double)rnge);
+    res[i] = minVal + ((float)i/(float)rnge);
   }
   return res;
 }

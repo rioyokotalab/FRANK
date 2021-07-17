@@ -19,7 +19,7 @@ typedef std::tuple<Dense, Dense> DensePair;
 typedef std::tuple<Dense, Dense, Dense> DenseTriplet;
 typedef std::tuple<Dense, std::vector<int64_t>> DenseIndexSetPair;
 
-typedef std::tuple<double, double> DoublePair;
+typedef std::tuple<float, float> DoublePair;
 
 } // namespace hicma
 
