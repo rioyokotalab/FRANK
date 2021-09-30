@@ -56,6 +56,14 @@ void orthogonalize_block_col(int64_t j, const Matrix& A, Matrix& Q, Matrix& R) {
   orthogonalize_block_col_omm(j, A, Q, R);
 }
 
+Dense get_right_factor(const Matrix& A) {
+  return get_right_factor_omm(A);
+}
+
+void update_right_factor(Matrix& A, Matrix& R) {
+  update_right_factor_omm(A, R);
+}
+
 
 define_method(void, qr_omm, (Dense& A, Dense& Q, Dense& R)) {
   assert(Q.dim[0] == A.dim[0]);
@@ -364,6 +372,90 @@ define_method(
   Hierarchical Q_splitA(splitA);
   qr(splitA, Q_splitA, R);
   restore_block_col(j, Q_splitA, QL, Q);
+}
+
+
+define_method(Dense, get_right_factor_omm, (const Dense& A)) {
+  return Dense(A);
+}
+
+define_method(Dense, get_right_factor_omm, (const LowRank& A)) {
+  Dense SV = gemm(A.S, A.V);
+  return std::move(SV);
+}
+
+define_method(
+  void, update_right_factor_omm,
+  (Dense& A, Dense& R)
+) {
+  A = std::move(R);
+}
+
+define_method(
+  void, update_right_factor_omm,
+  (LowRank& A, Dense& R)
+) {
+  A.S = 0.0;
+  for(int64_t i=0; i<std::min(A.S.dim[0], A.S.dim[1]); i++) {
+    A.S(i, i) = 1.0;
+  }
+  A.V = std::move(R);
+}
+
+void triangularize_block_col(int64_t j, Hierarchical& A, Hierarchical& T) {
+  //Put right factors of Aj into Rj
+  Hierarchical Rj(A.dim[0]-j, 1);
+  for(int64_t i=0; i<Rj.dim[0]; i++) {
+    Rj(i, 0) = get_right_factor(A(j+i, j));
+  }
+  //QR on concatenated right factors
+  Dense DRj(Rj);
+  Dense Tj(DRj.dim[1], DRj.dim[1]);
+  geqrt(DRj, Tj);
+  T(j, 0) = std::move(Tj);
+  //Slice DRj based on Rj
+  int64_t rowOffset = 0;
+  for(int64_t i=0; i<Rj.dim[0]; i++) {
+    assert(DRj.dim[1] == get_n_cols(Rj(i, 0)));
+    int64_t dim_Rij[2]{get_n_rows(Rj(i, 0)), get_n_cols(Rj(i, 0))};
+    Dense Rij(dim_Rij[0], dim_Rij[1]);
+    add_copy_task(DRj, Rij, rowOffset, 0);
+    Rj(i, 0) = std::move(Rij);
+    rowOffset += dim_Rij[0];
+  }
+  //Multiple block householder vectors with respective left factors
+  for(int64_t i=0; i<Rj.dim[0]; i++) {
+    update_right_factor(A(j+i, j), Rj(i, 0));
+  }
+}
+
+void apply_block_col_householder(const Hierarchical& Y, const Hierarchical& T, int64_t k, bool trans, Hierarchical& A, int64_t j) {
+  assert(A.dim[0] == Y.dim[0]);
+  Hierarchical YkT(1, Y.dim[0]-k);
+  for(int64_t i=0; i<YkT.dim[1]; i++)
+    YkT(0, i) = transpose(Y(i+k,k));
+
+  Hierarchical C(1, 1);
+  C(0, 0) = A(k, j); //C = Akj
+  trmm(Y(k, k), C(0, 0), 'l', 'l', 't', 'u', 1); //C = Ykk^T x Akj
+  for(int64_t i=k+1; i<A.dim[0]; i++) {
+    gemm(YkT(0, i-k), A(i, j), C(0, 0), 1, 1); //C += Yik^T x Aij
+  }
+  trmm(T(k, 0), C(0, 0), 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = (T or T^T) x C
+  for(int64_t i=k; i<A.dim[0]; i++) {
+    //Aij = Aij - Yik x C
+    if(i == k) { //Use trmm since Ykk is unit lower triangular
+      Hierarchical _C(C);
+      trmm(Y(k, k), _C(0, 0), 'l', 'l', 'n', 'u', 1);
+      gemm(
+        Dense(identity, std::vector<std::vector<double>>(), get_n_rows(_C(0, 0)), get_n_rows(_C(0, 0))),
+        _C(0, 0), A(k, j), -1, 1
+      );
+    }
+    else { //Use gemm otherwise
+      gemm(Y(i, k), C(0, 0), A(i, j), -1, 1);
+    }
+  }
 }
 
 

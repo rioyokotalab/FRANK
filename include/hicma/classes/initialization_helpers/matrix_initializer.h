@@ -11,6 +11,7 @@
 #ifndef hicma_classes_initialization_helpers_matrix_initializer_h
 #define hicma_classes_initialization_helpers_matrix_initializer_h
 
+#include "hicma/definitions.h"
 #include "hicma/classes/dense.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/initialization_helpers/index_range.h"
@@ -46,8 +47,13 @@ class ClusterTree;
  */
 class MatrixInitializer {
  private:
-  int64_t admis;
+  double admis;
   int64_t rank;
+  int admis_type;
+ protected:
+  const std::vector<std::vector<double>>& params;
+
+  void find_admissible_blocks(const ClusterTree& node);
 
  public:
   // Special member functions
@@ -67,11 +73,20 @@ class MatrixInitializer {
    * @brief Construct a new `MatrixInitializer`
    *
    * @param admis
-   * Distance-to-diagonal admissibility condition.
+   * Distance-to-diagonal or standard admissibility condition constant.
    * @param rank
    * Fixed rank to be used for approximating admissible submatrices.
+   * @param params
+   * Vector containing parameters used as input to the kernel
+   * and as coordinate of particles
+   * @param admis_type
+   * Either POSITION_BASED_ADMIS (Default) or GEOMETRY_BASED_ADMIS
    */
-  MatrixInitializer(int64_t admis, int64_t rank);
+  MatrixInitializer(
+    double admis, int64_t rank,
+    const std::vector<std::vector<double>>& params=std::vector<std::vector<double>>(),
+    int admis_type=POSITION_BASED_ADMIS
+  );
 
   /**
    * @brief Pure virtual function for assigning matrix elements
@@ -129,6 +144,9 @@ class MatrixInitializer {
    * If the node is not admissible.
    */
   bool is_admissible(const ClusterTree& node) const;
+
+  virtual std::vector<std::vector<double>> get_coords_range(const IndexRange& range) const;
+
 };
 
 } // namespace hicma

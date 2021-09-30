@@ -7,6 +7,8 @@
 #ifndef hicma_classes_initialization_helpers_matrix_initializer_kernel_h
 #define hicma_classes_initialization_helpers_matrix_initializer_kernel_h
 
+#include "hicma/definitions.h"
+#include "hicma/classes/dense.h"
 #include "hicma/classes/initialization_helpers/matrix_initializer.h"
 
 #include <cstdint>
@@ -34,7 +36,6 @@ class MatrixInitializerKernel : public MatrixInitializer {
     const std::vector<std::vector<double>>& params,
     int64_t row_start, int64_t col_start
   ) = nullptr;
-  const std::vector<std::vector<double>>& params;
  public:
 
   // Special member functions
@@ -58,11 +59,11 @@ class MatrixInitializerKernel : public MatrixInitializer {
    * @param params
    * Vector with parameters used as input to the kernel.
    * @param admis
-   * Distance-to-diagonal admissibility condition.
+   * Distance-to-diagonal or standard admissibility condition constant.
    * @param rank
    * Fixed rank to be used for approximating admissible submatrices.
-   * @param basis_type
-   * Either ::NORMAL_BASIS or ::NESTED_BASIS.
+   * @param admis_type
+   * Either POSITION_BASED_ADMIS or GEOMETRY_BASED_ADMIS
    */
   MatrixInitializerKernel(
     void (*kernel)(
@@ -70,7 +71,8 @@ class MatrixInitializerKernel : public MatrixInitializer {
       const std::vector<std::vector<double>>& params,
       int64_t row_start, int64_t col_start
     ),
-    const std::vector<std::vector<double>>& params, int64_t admis, int64_t rank
+    const std::vector<std::vector<double>>& params,
+    double admis, int64_t rank, int admis_type
   );
 
   /**

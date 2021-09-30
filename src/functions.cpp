@@ -133,60 +133,6 @@ void helmholtznd(
   }
 }
 
-bool is_admissible_nd(
-  const std::vector<std::vector<double>>& x,
-  int64_t n_rows, int64_t n_cols,
-  int64_t row_start, int64_t col_start,
-  double admis
-) {
-  std::vector<double> diamsI, diamsJ, centerI, centerJ;
-  for(size_t k=0; k<x.size(); k++) {
-    diamsI.push_back(diam(x[k], n_rows, row_start));
-    diamsJ.push_back(diam(x[k], n_cols, col_start));
-    centerI.push_back(mean(x[k], n_rows, row_start));
-    centerJ.push_back(mean(x[k], n_cols, col_start));
-  }
-  double diamI = *std::max_element(diamsI.begin(), diamsI.end());
-  double diamJ = *std::max_element(diamsJ.begin(), diamsJ.end());
-  double dist = 0.0;
-  for(size_t k=0; k<x.size(); k++) {
-    dist += (centerI[k]-centerJ[k])*(centerI[k]-centerJ[k]);
-  }
-  dist = std::sqrt(dist);
-  return (std::max(diamI, diamJ) <= (admis * dist));
-}
-
-bool is_admissible_nd_morton(
-  const std::vector<std::vector<double>>& x,
-  int64_t n_rows, int64_t n_cols,
-  int64_t row_start, int64_t col_start,
-  double admis
-) {
-  std::vector<double> diamsI, diamsJ, centerI, centerJ;
-  for(size_t k=0; k<x.size(); k++) {
-    diamsI.push_back(diam(x[k], n_rows, row_start));
-    diamsJ.push_back(diam(x[k], n_cols, col_start));
-    centerI.push_back(mean(x[k], n_rows, row_start));
-    centerJ.push_back(mean(x[k], n_cols, col_start));
-  }
-  double diamI = *std::max_element(diamsI.begin(), diamsI.end());
-  double diamJ = *std::max_element(diamsJ.begin(), diamsJ.end());
-  //Compute distance based on morton index of box
-  int64_t boxSize = std::min(n_rows, n_cols);
-  int64_t npartitions = x[0].size()/boxSize;
-  int64_t level = (int64_t)log2((double)npartitions);
-  std::vector<int64_t> indexI(x.size(), 0), indexJ(x.size(), 0);
-  for(size_t k=0; k<x.size(); k++) {
-    indexI[k] = row_start/boxSize;
-    indexJ[k] = col_start/boxSize;
-  }
-  double dist = std::abs(
-    getMortonIndex(indexI, level)
-    - getMortonIndex(indexJ, level)
-  );
-  return (std::max(diamI, diamJ) <= (admis * dist));
-}
-
   // namespace starsh {
   //   STARSH_kernel *kernel;
   //   void *starsh_data;

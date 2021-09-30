@@ -17,8 +17,10 @@ MatrixInitializerKernel::MatrixInitializerKernel(
     const std::vector<std::vector<double>>& params,
     int64_t row_start, int64_t col_start
   ),
-  const std::vector<std::vector<double>>& params, int64_t admis, int64_t rank
-) : MatrixInitializer(admis, rank), kernel(kernel), params(params) {}
+  const std::vector<std::vector<double>>& params,
+  double admis, int64_t rank, int admis_type
+) : MatrixInitializer(admis, rank, params, admis_type),
+    kernel(kernel) {}
 
 void MatrixInitializerKernel::fill_dense_representation(
   Dense& A, const IndexRange& row_range, const IndexRange& col_range

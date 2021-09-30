@@ -9,4 +9,6 @@ target_sources(hicma PRIVATE
   ${CMAKE_CURRENT_LIST_DIR}/initialization_helpers/matrix_initializer.cpp
   ${CMAKE_CURRENT_LIST_DIR}/initialization_helpers/matrix_initializer_block.cpp
   ${CMAKE_CURRENT_LIST_DIR}/initialization_helpers/matrix_initializer_kernel.cpp
+  ${CMAKE_CURRENT_LIST_DIR}/initialization_helpers/matrix_initializer_file.cpp
+  # ${CMAKE_CURRENT_LIST_DIR}/initialization_helpers/matrix_initializer_starsh_exponential.cpp
 )

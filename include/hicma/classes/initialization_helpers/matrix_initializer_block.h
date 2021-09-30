@@ -7,6 +7,7 @@
 #ifndef hicma_classes_initialization_helpers_matrix_initializer_block_h
 #define hicma_classes_initialization_helpers_matrix_initializer_block_h
 
+#include "hicma/definitions.h"
 #include "hicma/classes/dense.h"
 #include "hicma/classes/initialization_helpers/matrix_initializer.h"
 
@@ -53,7 +54,7 @@ class MatrixInitializerBlock : public MatrixInitializer {
    * @param rank
    * Fixed rank to be used for approximating admissible submatrices.
    */
-  MatrixInitializerBlock(Dense&& A, int64_t admis, int64_t rank);
+  MatrixInitializerBlock(Dense&& A, double admis, int64_t rank);
 
   /**
    * @brief Specialization for assigning matrix elements

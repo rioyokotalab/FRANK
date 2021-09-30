@@ -14,6 +14,9 @@ TAGS
 # VSCode ignore
 .vscode
 
+# MACOS Ignore
+.DS_Store
+
 # core dumps
 vgcore.[0-9]*
 

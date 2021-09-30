@@ -7,6 +7,7 @@
 #ifndef hicma_classes_hierarchical_h
 #define hicma_classes_hierarchical_h
 
+#include "hicma/definitions.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
 
@@ -129,13 +130,14 @@ class Hierarchical : public Matrix {
    * Maximum size for leaf level submatrices.
    * @param admis
    * Admissibility in terms of distance from the diagonal of the matrix on the
-   * current recursion level.
+   * current recursion level (for `POSITION_BASED_ADMIS`) or admissibility constant
+   * (for `GEOMETRY_BASED_ADMIS`)
+   * @param admis_type
+   * Either `POSITION_BASED_ADMIS` or `GEOMETRY_BASED_ADMIS`
    * @param n_row_blocks
    * Number of blocks rows of the new `Hierarchical` matrix.
    * @param n_col_blocks
    * Number of blocks columns of the new `Hierarchical` matrix.
-   * @param basis_type
-   * Type of basis according to #BasisType.
    * @param row_start
    * Starting index into the vector \p params of the rows of the new matrix.
    * @param col_start
@@ -161,8 +163,9 @@ class Hierarchical : public Matrix {
     int64_t n_rows, int64_t n_cols,
     int64_t rank,
     int64_t nleaf,
-    int64_t admis=1,
+    double admis=0,
     int64_t n_row_blocks=2, int64_t n_col_blocks=2,
+    int admis_type=POSITION_BASED_ADMIS,
     int64_t row_start=0, int64_t col_start=0
   );
 
@@ -196,8 +199,20 @@ class Hierarchical : public Matrix {
     Dense&& A,
     int64_t rank,
     int64_t nleaf,
-    int64_t admis=1,
+    double admis=0,
     int64_t n_row_blocks=2, int64_t n_col_blocks=2,
+    int64_t row_start=0, int64_t col_start=0
+  );
+
+  Hierarchical(
+    std::string filename, MatrixLayout ordering,
+    const std::vector<std::vector<double>>& params,
+    int64_t n_rows, int64_t n_cols,
+    int64_t rank,
+    int64_t nleaf,
+    double admis=0,
+    int64_t n_row_blocks=2, int64_t n_col_blocks=2,
+    int admis_type=POSITION_BASED_ADMIS,
     int64_t row_start=0, int64_t col_start=0
   );
 

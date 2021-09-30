@@ -15,6 +15,7 @@ namespace hicma
 class Matrix;
 class MatrixProxy;
 class Dense;
+class Hierarchical;
 
 std::tuple<Dense, std::vector<int64_t>> geqp3(Matrix& A);
 
@@ -168,6 +169,8 @@ void latms(
  */
 void qr(Matrix& A, Matrix& Q, Matrix& R);
 
+void orthogonalize_block_col(int64_t, const Matrix&, Matrix&, Matrix&);
+
 /**
  * @brief Zero the lower triangular portion of a matrix
  *
@@ -197,6 +200,10 @@ void zero_lowtri(Matrix& A);
  * Read \ext_hicma for more information.
  */
 void zero_whole(Matrix& A);
+
+void triangularize_block_col(int64_t, Hierarchical&, Hierarchical&);
+
+void apply_block_col_householder(const Hierarchical&, const Hierarchical&, int64_t, bool, Hierarchical&, int64_t);
 
 /**
  * @brief Perform RQ factorization of a `Dense` matrix

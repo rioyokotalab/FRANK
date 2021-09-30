@@ -7,6 +7,7 @@
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
 #include "hicma/classes/initialization_helpers/index_range.h"
+#include "hicma/classes/initialization_helpers/matrix_initializer_file.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"

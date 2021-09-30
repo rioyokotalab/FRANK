@@ -70,13 +70,7 @@ int64_t get_n_cols(const Matrix&);
  */
 double cond(Dense A);
 
-double diam(const std::vector<double>& x, int64_t n, int64_t offset);
-
-double mean(const std::vector<double>& x, int64_t n, int64_t offset);
-
-std::vector<int64_t> getIndex(int64_t dim, int64_t mortonIndex);
-
-int64_t getMortonIndex(std::vector<int64_t> index, int64_t level);
+void sortByMortonIndex(std::vector<std::vector<double>> &x, int64_t level, std::vector<int64_t>& perm);
 
 /**
  * @brief Generate equally spaced floating points between a specified range

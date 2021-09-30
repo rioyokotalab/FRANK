@@ -223,19 +223,6 @@ void helmholtznd(
   int64_t row_start, int64_t col_start
 );
 
-bool is_admissible_nd(
-  const std::vector<std::vector<double>>& x,
-  int64_t n_rows, int64_t n_cols,
-  int64_t row_start, int64_t col_start,
-  double admis
-);
-
-bool is_admissible_nd_morton(
-  const std::vector<std::vector<double>>& x,
-  int64_t n_rows, int64_t n_cols,
-  int64_t row_start, int64_t col_start,
-  double admis
-);
 
   // namespace starsh {
   //   void exp_kernel_prepare(int64_t N, double beta, double nu, double noise,
