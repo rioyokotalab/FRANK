@@ -21,9 +21,9 @@ namespace hicma
 
 MatrixInitializer::MatrixInitializer(
   double admis, int64_t rank,
-  int admis_type, const std::vector<std::vector<double>>& params
+  const std::vector<std::vector<double>>& params, int admis_type
 ) : admis(admis), rank(rank),
-    admis_type(admis_type), params(params) {}
+    params(params), admis_type(admis_type) {}
 
 Dense MatrixInitializer::get_dense_representation(
   const ClusterTree& node

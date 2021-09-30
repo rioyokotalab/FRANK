@@ -35,7 +35,7 @@ class MatrixInitializerFile : public MatrixInitializer {
   // Additional constructors
   MatrixInitializerFile(
     std::string filename, MatrixLayout ordering, double admis, int64_t rank,
-    int admis_type, const std::vector<std::vector<double>>& coords
+    const std::vector<std::vector<double>>& params, int admis_type
   );
 
   void fill_dense_representation(

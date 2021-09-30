@@ -76,16 +76,16 @@ class MatrixInitializer {
    * Distance-to-diagonal or standard admissibility condition constant.
    * @param rank
    * Fixed rank to be used for approximating admissible submatrices.
-   * @param admis_type
-   * Either POSITION_BASED_ADMIS (Default) or GEOMETRY_BASED_ADMIS
    * @param params
    * Vector containing parameters used as input to the kernel
    * and as coordinate of particles
+   * @param admis_type
+   * Either POSITION_BASED_ADMIS (Default) or GEOMETRY_BASED_ADMIS
    */
   MatrixInitializer(
     double admis, int64_t rank,
-    int admis_type=POSITION_BASED_ADMIS,
-    const std::vector<std::vector<double>>& params=std::vector<std::vector<double>>()
+    const std::vector<std::vector<double>>& params=std::vector<std::vector<double>>(),
+    int admis_type=POSITION_BASED_ADMIS
   );
 
   /**

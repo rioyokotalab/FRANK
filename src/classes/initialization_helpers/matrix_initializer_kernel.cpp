@@ -19,7 +19,7 @@ MatrixInitializerKernel::MatrixInitializerKernel(
   ),
   const std::vector<std::vector<double>>& params,
   double admis, int64_t rank, int admis_type
-) : MatrixInitializer(admis, rank, admis_type, params),
+) : MatrixInitializer(admis, rank, params, admis_type),
     kernel(kernel) {}
 
 void MatrixInitializerKernel::fill_dense_representation(

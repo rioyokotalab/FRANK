@@ -114,7 +114,7 @@ Hierarchical::Hierarchical(
   int admis_type,
   int64_t row_start, int64_t col_start
 ) {
-  MatrixInitializerFile initializer(filename, ordering, admis, rank, admis_type, params);
+  MatrixInitializerFile initializer(filename, ordering, admis, rank, params, admis_type);
   ClusterTree cluster_tree(
     {row_start, n_rows}, {col_start, n_cols},
     n_row_blocks, n_col_blocks, nleaf
