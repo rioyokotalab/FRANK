@@ -21,9 +21,17 @@ namespace hicma
 
 MatrixInitializer::MatrixInitializer(
   double admis, int64_t rank,
-  int admis_type, const std::vector<std::vector<double>>& coords
+  int admis_type, const std::vector<std::vector<double>>& params
 ) : admis(admis), rank(rank),
-    admis_type(admis_type), coords(coords) {}
+    admis_type(admis_type), params(params) {}
+
+Dense MatrixInitializer::get_dense_representation(
+  const ClusterTree& node
+) const {
+  Dense representation(node.rows.n, node.cols.n);
+  fill_dense_representation(representation, node.rows, node.cols);
+  return representation;
+}
 
 LowRank MatrixInitializer::get_compressed_representation(
   const ClusterTree& node
@@ -34,8 +42,8 @@ LowRank MatrixInitializer::get_compressed_representation(
 
 std::vector<std::vector<double>> MatrixInitializer::get_coords_range(const IndexRange& range) const {
   std::vector<std::vector<double>> coords_range;
-  for(size_t d=0; d<coords.size(); d++)
-    coords_range.push_back(std::vector<double>(coords[d].begin()+range.start, coords[d].begin()+range.start+range.n));
+  for(size_t d=0; d<params.size(); d++)
+    coords_range.push_back(std::vector<double>(params[d].begin()+range.start, params[d].begin()+range.start+range.n));
   return coords_range;
 }
 

@@ -2,6 +2,7 @@
 #include "hicma/extension_headers/classes.h"
 
 #include "hicma/classes/dense.h"
+#include "hicma/classes/empty.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
@@ -43,6 +44,10 @@ define_method(std::unique_ptr<Matrix>, clone, (const Dense& A)) {
   return std::make_unique<Dense>(A);
 }
 
+define_method(std::unique_ptr<Matrix>, clone, (const Empty& A)) {
+  return std::make_unique<Empty>(A);
+}
+
 define_method(std::unique_ptr<Matrix>, clone, (const LowRank& A)) {
   return std::make_unique<LowRank>(A);
 }
@@ -57,6 +62,10 @@ define_method(std::unique_ptr<Matrix>, clone, (const Matrix& A)) {
 
 define_method(std::unique_ptr<Matrix>, move_clone, (Dense&& A)) {
   return std::make_unique<Dense>(std::move(A));
+}
+
+define_method(std::unique_ptr<Matrix>, move_clone, (Empty&& A)) {
+  return std::make_unique<Empty>(std::move(A));
 }
 
 define_method(std::unique_ptr<Matrix>, move_clone, (LowRank&& A)) {

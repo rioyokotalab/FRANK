@@ -14,33 +14,18 @@ namespace hicma
 MatrixInitializerKernel::MatrixInitializerKernel(
   void (*kernel)(
     double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-    const std::vector<std::vector<double>>& x,
+    const std::vector<std::vector<double>>& params,
     int64_t row_start, int64_t col_start
   ),
-  const std::vector<std::vector<double>>& coords,
+  const std::vector<std::vector<double>>& params,
   double admis, int64_t rank, int admis_type
-) : MatrixInitializer(admis, rank, admis_type, coords),
+) : MatrixInitializer(admis, rank, admis_type, params),
     kernel(kernel) {}
-
-void MatrixInitializerKernel::fill_dense_representation(
-  Dense& A,
-  const ClusterTree& node
-) const {
-  fill_dense_representation(A, node.rows, node.cols);
-}
 
 void MatrixInitializerKernel::fill_dense_representation(
   Dense& A, const IndexRange& row_range, const IndexRange& col_range
 ) const {
-  add_kernel_task(kernel, A, coords, row_range.start, col_range.start);
-}
-
-Dense MatrixInitializerKernel::get_dense_representation(
-  const ClusterTree& node
-) const {
-  Dense representation(node.rows.n, node.cols.n);
-  fill_dense_representation(representation, node.rows, node.cols);
-  return representation;
+  add_kernel_task(kernel, A, params, row_range.start, col_range.start);
 }
 
 } // namespace hicma

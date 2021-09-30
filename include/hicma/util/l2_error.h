@@ -2,6 +2,9 @@
 #define hicma_util_l2_error_h
 
 
+/**
+ * @brief General namespace of the HiCMA library
+ */
 namespace hicma
 {
 

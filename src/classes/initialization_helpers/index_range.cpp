@@ -4,7 +4,6 @@
 #include "hicma/operations/misc.h"
 
 #include <cstdint>
-#include <tuple>
 #include <vector>
 
 
@@ -12,9 +11,6 @@ namespace hicma
 {
 
 IndexRange::IndexRange(int64_t start, int64_t n) : start(start), n(n) {}
-
-IndexRange::IndexRange(std::tuple<int64_t, int64_t> A)
-: start(std::get<0>(A)), n(std::get<1>(A)) {}
 
 std::vector<IndexRange> IndexRange::split(int64_t n_splits) const {
   std::vector<IndexRange> children(n_splits);

@@ -111,6 +111,13 @@ list(APPEND HICMA_DEPENDENCIES YOMM2::yomm2)
 add_subdirectory(src)
 
 
+## Add documentation
+option(BUILD_DOCS "Build documentation using doxygen" OFF)
+if(${BUILD_DOCS})
+  add_subdirectory(docs)
+endif()
+
+
 ## Testing code
 option(BUILD_TESTS "Build unit and other tests" ON)
 if(${BUILD_TESTS})

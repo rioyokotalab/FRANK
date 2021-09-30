@@ -2,6 +2,7 @@
 #include "hicma/extension_headers/operations.h"
 
 #include "hicma/classes/dense.h"
+#include "hicma/classes/empty.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
@@ -41,9 +42,11 @@ define_method(MatrixPair, getrf_omm, (Hierarchical& A)) {
     std::tie(L(i, i), A(i, i)) = getrf_omm(A(i, i));
     for (int64_t i_c=i+1; i_c<L.dim[0]; i_c++) {
       L(i_c, i) = std::move(A(i_c, i));
+      A(i_c, i) = Empty(get_n_rows(L(i_c, i)), get_n_cols(L(i_c, i)));
       trsm(A(i, i), L(i_c, i), TRSM_UPPER, TRSM_RIGHT);
     }
     for (int64_t j=i+1; j<A.dim[1]; j++) {
+      L(i, j) = Empty(get_n_rows(A(i, j)), get_n_cols(A(i, j)));
       trsm(L(i, i), A(i, j), TRSM_LOWER, TRSM_LEFT);
     }
     for (int64_t i_c=i+1; i_c<L.dim[0]; i_c++) {

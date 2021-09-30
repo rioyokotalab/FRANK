@@ -1,8 +1,10 @@
+# Ignore build artifact folders
 build
 bin
 lib
 install
 .env
+dependencies
 
 *.json
 *.pdf
@@ -22,8 +24,5 @@ GPATH
 GRPATH
 GTAGS
 GRTAGS
-
-dependencies
-output
 
 job.sh

@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
     nblocks = 2; // Hierarchical (log_2(N/nleaf) levels)
     admis = 0; // Weak admissibility
   }
-  else if (atoi(argv[1]) == 6) {
+  else {
     nblocks = 2; // Hierarchical (log_2(N/nleaf) levels)
     admis = 1; // Strong admissibility
   }

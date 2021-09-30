@@ -48,28 +48,30 @@ define_method(Hierarchical&&, move_from_hierarchical, (Matrix& A)) {
 Hierarchical::Hierarchical(int64_t n_row_blocks, int64_t n_col_blocks)
 : dim{n_row_blocks, n_col_blocks}, data(dim[0]*dim[1]) {}
 
-Hierarchical::Hierarchical(const ClusterTree& node, MatrixInitializer& initer)
-  : dim(node.block_dim), data(dim[0]*dim[1]) {
+Hierarchical::Hierarchical(
+  const ClusterTree& node,
+  MatrixInitializer& initializer
+) : dim(node.block_dim), data(dim[0]*dim[1]) {
   for (const ClusterTree& child : node) {
-    if (initer.is_admissible(child)) {
-      (*this)[child] = initer.get_compressed_representation(child);
+    if (initializer.is_admissible(child)) {
+      (*this)[child.rel_pos] = initializer.get_compressed_representation(child);
     } else {
       if (child.is_leaf()) {
-        (*this)[child] = initer.get_dense_representation(child);
+        (*this)[child.rel_pos] = initializer.get_dense_representation(child);
       } else {
-        (*this)[child] = Hierarchical(child, initer);
+        (*this)[child.rel_pos] = Hierarchical(child, initializer);
       }
     }
   }
 }
 
 Hierarchical::Hierarchical(
-  void (*func)(
+  void (*kernel)(
     double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-    const std::vector<std::vector<double>>& x,
+    const std::vector<std::vector<double>>& params,
     int64_t row_start, int64_t col_start
   ),
-  const std::vector<std::vector<double>>& coords,
+  const std::vector<std::vector<double>>& params,
   int64_t n_rows, int64_t n_cols,
   int64_t rank,
   int64_t nleaf,
@@ -78,11 +80,11 @@ Hierarchical::Hierarchical(
   int admis_type,
   int64_t row_start, int64_t col_start
 ) {
-  MatrixInitializerKernel initer(func, coords, admis, rank, admis_type);
+  MatrixInitializerKernel initializer(kernel, params, admis, rank, admis_type);
   ClusterTree cluster_tree(
     {row_start, n_rows}, {col_start, n_cols}, n_row_blocks, n_col_blocks, nleaf
   );
-  *this = Hierarchical(cluster_tree, initer);
+  *this = Hierarchical(cluster_tree, initializer);
 }
 
 Hierarchical::Hierarchical(
@@ -97,13 +99,13 @@ Hierarchical::Hierarchical(
     {row_start, A.dim[0]}, {col_start, A.dim[1]},
     n_row_blocks, n_col_blocks, nleaf
   );
-  MatrixInitializerBlock initer(std::move(A), admis, rank);
-  *this = Hierarchical(cluster_tree, initer);
+  MatrixInitializerBlock initializer(std::move(A), admis, rank);
+  *this = Hierarchical(cluster_tree, initializer);
 }
 
 Hierarchical::Hierarchical(
   std::string filename, MatrixLayout ordering,
-  const std::vector<std::vector<double>>& coords,
+  const std::vector<std::vector<double>>& params,
   int64_t n_rows, int64_t n_cols,
   int64_t rank,
   int64_t nleaf,
@@ -112,36 +114,22 @@ Hierarchical::Hierarchical(
   int admis_type,
   int64_t row_start, int64_t col_start
 ) {
-  MatrixInitializerFile initer(filename, ordering, admis, rank, admis_type, coords);
+  MatrixInitializerFile initializer(filename, ordering, admis, rank, admis_type, params);
   ClusterTree cluster_tree(
-                           {row_start, n_rows}, {col_start, n_cols}, n_row_blocks, n_col_blocks, nleaf
-                           );
-  *this = Hierarchical(cluster_tree, initer);
+    {row_start, n_rows}, {col_start, n_cols},
+    n_row_blocks, n_col_blocks, nleaf
+  );
+  *this = Hierarchical(cluster_tree, initializer);
 }
 
-// Hierarchical::Hierarchical(
-//   int64_t N, int64_t nleaf, int64_t nblocks, double beta,
-//   double nu, double noise, double sigma, int ndim,
-//   double admis, int64_t rank,
-//   int admis_type,
-//   int64_t row_start, int64_t col_start
-// ) {
-//   MatrixInitializerStarshExponential initer(
-//     N, beta, nu, noise, sigma, ndim,
-//     admis, rank, admis_type
-//   );
-//   ClusterTree cluster_tree(
-//     {row_start, N}, {col_start, N}, nblocks, nblocks, nleaf
-//   );
-//   *this = Hierarchical(cluster_tree, initer);
-// }
-
-const MatrixProxy& Hierarchical::operator[](const ClusterTree& node) const {
-  return (*this)(node.rel_pos[0], node.rel_pos[1]);
+const MatrixProxy& Hierarchical::operator[](
+  const std::array<int64_t, 2>& pos
+) const {
+  return (*this)(pos[0], pos[1]);
 }
 
-MatrixProxy& Hierarchical::operator[](const ClusterTree& node) {
-  return (*this)(node.rel_pos[0], node.rel_pos[1]);
+MatrixProxy& Hierarchical::operator[](const std::array<int64_t, 2>& pos) {
+  return (*this)(pos[0], pos[1]);
 }
 
 const MatrixProxy& Hierarchical::operator[](int64_t i) const {

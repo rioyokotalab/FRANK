@@ -2,6 +2,9 @@
 #define hicma_util_initialize_h
 
 
+/**
+ * @brief General namespace of the HiCMA library
+ */
 namespace hicma
 {
 

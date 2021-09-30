@@ -25,12 +25,11 @@ int main(int argc, char** argv) {
 
   Hierarchical A,D;
   std::vector<std::vector<double>> nodes;
-  if(inputName.length() == 0) { //Default to Laplace2D kernel
-    nodes.push_back(equallySpacedVector(N, 0.0, 1.0));
+  if(inputName.length() == 0) { //Default to Laplace1D kernel
     nodes.push_back(equallySpacedVector(N, 0.0, 1.0));
     D = Hierarchical(laplacend, nodes, N, N, Nb, Nb, Nc, Nc, Nc);
     A = Hierarchical(laplacend, nodes, N, N, rank, Nb, admis, Nc, Nc, POSITION_BASED_ADMIS);
-    outName <<"Laplace2D_"<<N;
+    outName <<"Laplace1D_"<<N;
   }
   else if(inputName == "starsh") { // 3D Exponential kernel from Stars-H
     /* Temporarily disabled
@@ -63,10 +62,10 @@ int main(int argc, char** argv) {
   print("Rel. L2 Error", l2_error(D, A), false);
 
   //Write matrices to JSON file
-  outName <<"_"<<Nb;
-  write_JSON(D, outName.str() + "_dense.json");
-  outName <<"_" <<admis;
-  write_JSON(A, outName.str() + ".json");
+  // outName <<"_"<<Nb;
+  // write_JSON(D, outName.str() + "_dense.json");
+  // outName <<"_" <<admis;
+  // write_JSON(A, outName.str() + ".json");
   
   return 0;
 }

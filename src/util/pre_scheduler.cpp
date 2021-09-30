@@ -419,7 +419,7 @@ class Addition_task : public Task {
 };
 
 void add_addition_task(Dense& A, const Dense& B) {
-  if (!matrix_is_tracked("addition_task", A, B)) {
+  if (!matrix_is_tracked("addition_task", A, B) || !is_tracking) {
     add_task(std::make_shared<Addition_task>(A, B));
     register_matrix("addition_task", A, B);
   }
@@ -638,7 +638,7 @@ void qr_cpu_func(
   }
   // TODO Consider making special function for this. Performance heavy
   // and not always needed. If Q should be applied to something, use directly!
-  // Alternatively, create Dense deriative that remains in elementary
+  // Alternatively, create Dense derivative that remains in elementary
   // reflector form, uses dormqr instead of gemm and can be transformed to
   // Dense via dorgqr!
   LAPACKE_dorgqr(
@@ -722,7 +722,7 @@ void rq_cpu_func(
   LAPACKE_dgerqf(LAPACK_ROW_MAJOR, A_dim0, A_dim1, A, A_stride, &tau[0]);
   // TODO Consider making special function for this. Performance heavy and not
   // always needed. If Q should be applied to something, use directly!
-  // Alternatively, create Dense deriative that remains in elementary reflector
+  // Alternatively, create Dense derivative that remains in elementary reflector
   // form, uses dormqr instead of gemm and can be transformed to Dense via
   // dorgqr!
   for (uint64_t i=0; i<R_dim0; i++) {
@@ -876,7 +876,7 @@ class TRSM_task : public Task {
 };
 
 void add_trsm_task(const Dense& A, Dense& B, int uplo, int lr) {
-  if (!matrix_is_tracked("trsm_task", A, B)) {
+  if (!matrix_is_tracked("trsm_task", A, B) || !is_tracking) {
     add_task(std::make_shared<TRSM_task>(A, B, uplo, lr));
     register_matrix("trsm_task", A, B);
   }
@@ -990,7 +990,7 @@ class GEMM_task : public Task {
 };
 
 BasisTracker<
-  BasisKey, BasisTracker<BasisKey, std::shared_ptr<GEMM_task>>
+  uint64_t, BasisTracker<uint64_t, std::shared_ptr<GEMM_task>>
 > gemm_tracker;
 
 void add_gemm_task(
@@ -1000,17 +1000,17 @@ void add_gemm_task(
   if (
     is_tracking
     && !C.is_submatrix()
-    && gemm_tracker.has_key(A) && gemm_tracker[A].has_key(B)
-    && gemm_tracker[A][B]->args.alpha == alpha
-    && gemm_tracker[A][B]->args.beta == beta
-    && gemm_tracker[A][B]->args.TransA == TransA
-    && gemm_tracker[A][B]->args.TransB == TransB
+    && gemm_tracker.has_key(A.id()) && gemm_tracker[A.id()].has_key(B.id())
+    && gemm_tracker[A.id()][B.id()]->args.alpha == alpha
+    && gemm_tracker[A.id()][B.id()]->args.beta == beta
+    && gemm_tracker[A.id()][B.id()]->args.TransA == TransA
+    && gemm_tracker[A.id()][B.id()]->args.TransB == TransB
   ) {
-    if (C.is_shared_with(gemm_tracker[A][B]->modified[0])) {
+    if (C.id() == gemm_tracker[A.id()][B.id()]->modified[0].id()) {
       return;
     } else
     if (beta == 0) {
-      C = gemm_tracker[A][B]->modified[0].shallow_copy();
+      C = gemm_tracker[A.id()][B.id()]->modified[0].shallow_copy();
       return;
     }
   }
@@ -1018,7 +1018,7 @@ void add_gemm_task(
     A, B, C, alpha, beta, TransA, TransB
   );
   if (is_tracking && !C.is_submatrix()) {
-    gemm_tracker[A][B] = task;
+    gemm_tracker[A.id()][B.id()] = task;
   }
   add_task(task);
 }

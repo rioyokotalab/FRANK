@@ -1,6 +1,7 @@
 #include "hicma/classes/dense.h"
 #include "hicma/extension_headers/classes.h"
 
+#include "hicma/classes/empty.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
@@ -30,8 +31,11 @@ using yorel::yomm2::virtual_;
 namespace hicma
 {
 
+uint64_t next_unique_id = 0;
+
 Dense::Dense(const Dense& A)
-: Matrix(A), dim{A.dim[0], A.dim[1]}, stride(A.dim[1]), rel_start{0, 0}
+: Matrix(A), dim{A.dim[0], A.dim[1]}, stride(A.dim[1]), rel_start{0, 0},
+  unique_id(next_unique_id++)
 {
   timing::start("Dense cctor");
   data = std::make_shared<DataHandler>(dim[0], dim[1], 0);
@@ -49,6 +53,7 @@ Dense& Dense::operator=(const Dense& A) {
   rel_start = {0, 0};
   data_ptr = &(*data)[0];
   fill_dense_from(A, *this);
+  unique_id = next_unique_id++;
   timing::stop("Dense copy assignment");
   return *this;
 }
@@ -56,7 +61,7 @@ Dense& Dense::operator=(const Dense& A) {
 Dense::Dense(const Matrix& A)
 : Matrix(A), dim{get_n_rows(A), get_n_cols(A)}, stride(dim[1]),
   data(std::make_shared<DataHandler>(dim[0], dim[1], 0)),
-  rel_start{0, 0}, data_ptr(&(*data)[0])
+  rel_start{0, 0}, data_ptr(&(*data)[0]), unique_id(next_unique_id++)
 {
   fill_dense_from(A, *this);
 }
@@ -84,6 +89,12 @@ define_method(void, fill_dense_from, (const Dense& A, Dense& B)) {
   add_copy_task(A, B);
 }
 
+define_method(void, fill_dense_from, (const Empty& A, Dense& B)) {
+  assert(A.dim[0] == B.dim[0]);
+  assert(A.dim[1] == B.dim[1]);
+  add_assign_task(B, 0.0);
+}
+
 define_method(void, fill_dense_from, (const Matrix& A, Matrix& B)) {
   omm_error_handler("fill_dense_from", {A, B}, __FILE__, __LINE__);
   std::abort();
@@ -104,7 +115,7 @@ define_method(Dense&&, move_from_dense, (Matrix& A)) {
 }
 
 Dense::Dense(int64_t n_rows, int64_t n_cols)
-: dim{n_rows, n_cols}, stride(dim[1]) {
+: dim{n_rows, n_cols}, stride(dim[1]), unique_id(next_unique_id++) {
   timing::start("Dense alloc");
   data = std::make_shared<DataHandler>(dim[0], dim[1], 0);
   rel_start = {0, 0};
@@ -113,19 +124,19 @@ Dense::Dense(int64_t n_rows, int64_t n_cols)
 }
 
 Dense::Dense(
-  void (*func)(
+  void (*kernel)(
     double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-    const std::vector<std::vector<double>>& x,
+    const std::vector<std::vector<double>>& params,
     int64_t row_start, int64_t col_start
   ),
-  const std::vector<std::vector<double>>& x,
+  const std::vector<std::vector<double>>& params,
   int64_t n_rows, int64_t n_cols,
   int64_t row_start, int64_t col_start
 ) : Dense(n_rows, n_cols) {
-  add_kernel_task(func, *this, x, row_start, col_start);
+  add_kernel_task(kernel, *this, params, row_start, col_start);
 }
 
-const Dense& Dense::operator=(const double a) {
+Dense& Dense::operator=(const double a) {
   add_assign_task(*this, a);
   return *this;
 }
@@ -175,15 +186,8 @@ Dense Dense::shallow_copy() const {
   out.data = data;
   out.rel_start = rel_start;
   out.data_ptr = data_ptr;
+  out.unique_id = unique_id;
   return out;
-}
-
-bool Dense::is_shared_with(const Dense& A) const {
-  bool shared = (data == A.data);
-  shared &= (data_ptr == A.data_ptr);
-  shared &= (rel_start == A.rel_start);
-  shared &= (dim == A.dim);
-  return shared;
 }
 
 bool Dense::is_submatrix() const {
@@ -192,6 +196,8 @@ bool Dense::is_submatrix() const {
   out &= (data->size() == uint64_t(dim[0] * dim[1]));
   return !out;
 }
+
+uint64_t Dense::id() const { return unique_id; }
 
 std::vector<Dense> Dense::split(
   const std::vector<IndexRange>& row_ranges,
@@ -222,6 +228,7 @@ std::vector<Dense> Dense::split(
         child.data_ptr = &(*child.data)[
           child.rel_start[0]*child.stride + child.rel_start[1]
         ];
+        child.unique_id = next_unique_id++;
         out[i*col_ranges.size()+j] = std::move(child);
       }
     }
