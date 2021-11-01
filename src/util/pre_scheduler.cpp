@@ -1152,10 +1152,6 @@ void initialize_starpu() {
   make_svd_codelet();
 }
 
-void clear_task_trackers() {
-  gemm_tracker.clear();
-}
-
 void start_tracking() {
   assert(!is_tracking);
   is_tracking = true;
