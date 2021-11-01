@@ -22,9 +22,7 @@ int main(int argc, char** argv) {
   Dense b(N);
   Dense D(laplacend, randx, N, N);
   timing::start("Hierarchical compression");
-  start_schedule();
   Hierarchical A(laplacend, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
-  execute_schedule();
   timing::stop("Hierarchical compression");
   // write_JSON(A);
   gemm(A, x, b, 1, 1);
@@ -42,9 +40,7 @@ int main(int argc, char** argv) {
 
   timing::start("LU decomposition");
   Hierarchical L, U;
-  start_schedule();
   std::tie(L, U) = getrf(A);
-  execute_schedule();
   timing::stopAndPrint("LU decomposition", 2);
 
   timing::start("Solution");
