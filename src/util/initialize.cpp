@@ -4,7 +4,7 @@
 #include "hicma/classes/initialization_helpers/basis_tracker.h"
 #include "hicma/util/pre_scheduler.h"
 
-#include "starpu.h"
+//#include "starpu.h"
 #include "yorel/yomm2/cute.hpp"
 
 
@@ -26,12 +26,12 @@ class Runtime {
 
   ~Runtime() {
     clear_trackers();
-    if(init_starpu) starpu_shutdown();
+    //if(init_starpu) starpu_shutdown();
   }
 
   void start(bool starpu) {
     init_starpu = starpu;
-    if(init_starpu) initialize_starpu();
+    //if(init_starpu) initialize_starpu();
     // Update virtual tables for open multi methods
     yorel::yomm2::update_methods();
   }
