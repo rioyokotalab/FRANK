@@ -113,15 +113,6 @@ void kernel_cpu_starpu_interface(void* buffers[], void* cl_args) {
 
 struct starpu_codelet kernel_cl;
 
-void make_kernel_codelet() {
-  starpu_codelet_init(&kernel_cl);
-  kernel_cl.cpu_funcs[0] = kernel_cpu_starpu_interface;
-  kernel_cl.cpu_funcs_name[0] = "kernel_cpu_func";
-  kernel_cl.name = "Kernel";
-  kernel_cl.nbuffers = 1;
-  kernel_cl.modes[0] = STARPU_W;
-}
-
 class Kernel_task : public Task {
  public:
   kernel_args args;
@@ -202,15 +193,6 @@ void copy_cpu_starpu_interface(void* buffers[], void* cl_args) {
 
 struct starpu_codelet copy_cl;
 
-void make_copy_codelet() {
-  starpu_codelet_init(&copy_cl);
-  copy_cl.cpu_funcs[0] = copy_cpu_starpu_interface;
-  copy_cl.cpu_funcs_name[0] = "copy_cpu_func";
-  copy_cl.name = "Copy";
-  copy_cl.nbuffers = 2;
-  copy_cl.modes[0] = STARPU_R;
-  copy_cl.modes[1] = STARPU_W;
-}
 
 class Copy_task : public Task {
  public:
@@ -267,15 +249,6 @@ void transpose_cpu_starpu_interface(void* buffers[], void*) {
 
 struct starpu_codelet transpose_cl;
 
-void make_transpose_codelet() {
-  starpu_codelet_init(&transpose_cl);
-  transpose_cl.cpu_funcs[0] = transpose_cpu_starpu_interface;
-  transpose_cl.cpu_funcs_name[0] = "transpose_cpu_func";
-  transpose_cl.name = "Transpose";
-  transpose_cl.nbuffers = 2;
-  transpose_cl.modes[0] = STARPU_R;
-  transpose_cl.modes[1] = STARPU_W;
-}
 
 class Transpose_task : public Task {
  public:
@@ -327,14 +300,6 @@ void assign_cpu_starpu_interface(void* buffers[], void* cl_args) {
 
 struct starpu_codelet assign_cl;
 
-void make_assign_codelet() {
-  starpu_codelet_init(&assign_cl);
-  assign_cl.cpu_funcs[0] = assign_cpu_starpu_interface;
-  assign_cl.cpu_funcs_name[0] = "assign_cpu_func";
-  assign_cl.name = "Assign";
-  assign_cl.nbuffers = 1;
-  assign_cl.modes[0] = STARPU_W;
-}
 
 class Assign_task : public Task {
  public:
@@ -386,15 +351,6 @@ void addition_cpu_starpu_interface(void* buffers[], void*) {
 
 struct starpu_codelet addition_cl;
 
-void make_addition_codelet() {
-  starpu_codelet_init(&addition_cl);
-  addition_cl.cpu_funcs[0] = addition_cpu_starpu_interface;
-  addition_cl.cpu_funcs_name[0] = "addition_cpu_func";
-  addition_cl.name = "Addition";
-  addition_cl.nbuffers = 2;
-  addition_cl.modes[0] = STARPU_RW;
-  addition_cl.modes[1] = STARPU_R;
-}
 
 class Addition_task : public Task {
  public:
@@ -448,15 +404,6 @@ void subtraction_cpu_starpu_interface(void* buffers[], void*) {
 
 struct starpu_codelet subtraction_cl;
 
-void make_subtraction_codelet() {
-  starpu_codelet_init(&subtraction_cl);
-  subtraction_cl.cpu_funcs[0] = subtraction_cpu_starpu_interface;
-  subtraction_cl.cpu_funcs_name[0] = "subtraction_cpu_func";
-  subtraction_cl.name = "Subtraction";
-  subtraction_cl.nbuffers = 2;
-  subtraction_cl.modes[0] = STARPU_RW;
-  subtraction_cl.modes[1] = STARPU_R;
-}
 
 class Subtraction_task : public Task {
  public:
@@ -508,14 +455,6 @@ void multiplication_cpu_starpu_interface(void* buffers[], void* cl_args) {
 
 struct starpu_codelet multiplication_cl;
 
-void make_multiplication_codelet() {
-  starpu_codelet_init(&multiplication_cl);
-  multiplication_cl.cpu_funcs[0] = multiplication_cpu_starpu_interface;
-  multiplication_cl.cpu_funcs_name[0] = "multiplication_cpu_func";
-  multiplication_cl.name = "Multiplication";
-  multiplication_cl.nbuffers = 1;
-  multiplication_cl.modes[0] = STARPU_W;
-}
 
 class Multiplication_task : public Task {
  public:
@@ -579,15 +518,6 @@ void getrf_cpu_starpu_interface(void* buffers[], void*) {
 
 struct starpu_codelet getrf_cl;
 
-void make_getrf_codelet() {
-  starpu_codelet_init(&getrf_cl);
-  getrf_cl.cpu_funcs[0] = getrf_cpu_starpu_interface;
-  getrf_cl.cpu_funcs_name[0] = "getrf_cpu_func";
-  getrf_cl.name = "GETRF";
-  getrf_cl.nbuffers = 2;
-  getrf_cl.modes[0] = STARPU_RW;
-  getrf_cl.modes[1] = STARPU_W;
-}
 
 class GETRF_task : public Task {
  public:
@@ -668,16 +598,6 @@ void qr_cpu_starpu_interface(void* buffers[], void*) {
 
 struct starpu_codelet qr_cl;
 
-void make_qr_codelet() {
-  starpu_codelet_init(&qr_cl);
-  qr_cl.cpu_funcs[0] = qr_cpu_starpu_interface;
-  qr_cl.cpu_funcs_name[0] = "qr_cpu_func";
-  qr_cl.name = "QR";
-  qr_cl.nbuffers = 3;
-  qr_cl.modes[0] = STARPU_RW;
-  qr_cl.modes[1] = STARPU_W;
-  qr_cl.modes[2] = STARPU_W;
-}
 
 class QR_task : public Task {
  public:
@@ -762,16 +682,6 @@ void rq_cpu_starpu_interface(void* buffers[], void*) {
 
 struct starpu_codelet rq_cl;
 
-void make_rq_codelet() {
-  starpu_codelet_init(&rq_cl);
-  rq_cl.cpu_funcs[0] = rq_cpu_starpu_interface;
-  rq_cl.cpu_funcs_name[0] = "rq_cpu_func";
-  rq_cl.name = "RQ";
-  rq_cl.nbuffers = 3;
-  rq_cl.modes[0] = STARPU_RW;
-  rq_cl.modes[1] = STARPU_W;
-  rq_cl.modes[2] = STARPU_W;
-}
 
 class RQ_task : public Task {
  public:
@@ -839,15 +749,6 @@ void trsm_cpu_starpu_interface(void* buffers[], void* cl_args) {
 
 struct starpu_codelet trsm_cl;
 
-void make_trsm_codelet() {
-  starpu_codelet_init(&trsm_cl);
-  trsm_cl.cpu_funcs[0] = trsm_cpu_starpu_interface;
-  trsm_cl.cpu_funcs_name[0] = "trsm_cpu_func";
-  trsm_cl.name = "TRSM";
-  trsm_cl.nbuffers = 2;
-  trsm_cl.modes[0] = STARPU_R;
-  trsm_cl.modes[1] = STARPU_RW;
-}
 
 class TRSM_task : public Task {
  public:
@@ -940,17 +841,6 @@ void gemm_cpu_starpu_interface(void* buffers[], void* cl_args) {
 }
 
 struct starpu_codelet gemm_cl;
-
-void make_gemm_codelet() {
-  starpu_codelet_init(&gemm_cl);
-  gemm_cl.cpu_funcs[0] = gemm_cpu_starpu_interface;
-  gemm_cl.cpu_funcs_name[0] = "gemm_cpu_func";
-  gemm_cl.name = "GEMM";
-  gemm_cl.nbuffers = 3;
-  gemm_cl.modes[0] = STARPU_R;
-  gemm_cl.modes[1] = STARPU_R;
-  gemm_cl.modes[2] = STARPU_RW;
-}
 
 class GEMM_task : public Task {
  public:
@@ -1073,17 +963,6 @@ void svd_cpu_starpu_interface(void* buffers[], void*) {
 
 struct starpu_codelet svd_cl;
 
-void make_svd_codelet() {
-  starpu_codelet_init(&svd_cl);
-  svd_cl.cpu_funcs[0] = svd_cpu_starpu_interface;
-  svd_cl.cpu_funcs_name[0] = "svd_cpu_func";
-  svd_cl.name = "SVD";
-  svd_cl.nbuffers = 4;
-  svd_cl.modes[0] = STARPU_RW;
-  svd_cl.modes[1] = STARPU_W;
-  svd_cl.modes[2] = STARPU_W;
-  svd_cl.modes[3] = STARPU_W;
-}
 
 class SVD_task : public Task {
  public:
@@ -1137,19 +1016,18 @@ void execute_schedule() {
 
 void initialize_starpu() {
   STARPU_CHECK_RETURN_VALUE(starpu_init(NULL), "init");
-  make_kernel_codelet();
-  make_copy_codelet();
-  make_transpose_codelet();
-  make_assign_codelet();
-  make_addition_codelet();
-  make_subtraction_codelet();
-  make_multiplication_codelet();
-  make_getrf_codelet();
-  make_qr_codelet();
-  make_rq_codelet();
-  make_trsm_codelet();
-  make_gemm_codelet();
-  make_svd_codelet();
+  //make_copy_codelet();
+  //make_transpose_codelet();
+  //make_assign_codelet();
+  //make_addition_codelet();
+  //make_subtraction_codelet();
+  //make_multiplication_codelet();
+  //make_getrf_codelet();
+  //make_qr_codelet();
+  //make_rq_codelet();
+  //make_trsm_codelet();
+  //make_gemm_codelet();
+  //make_svd_codelet();
 }
 
 void start_tracking() {
