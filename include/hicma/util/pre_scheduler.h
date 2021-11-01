@@ -63,8 +63,6 @@ void execute_schedule();
 
 void initialize_starpu();
 
-void clear_task_trackers();
-
 void start_tracking();
 
 void stop_tracking();
