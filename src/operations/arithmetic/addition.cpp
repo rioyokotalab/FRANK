@@ -25,6 +25,7 @@ using yorel::yomm2::virtual_;
 #include <cstdlib>
 #include <tuple>
 #include <utility>
+#include <iostream>
 
 
 namespace hicma
@@ -33,7 +34,11 @@ namespace hicma
 Matrix& operator+=(Matrix& A, const Matrix& B) { return addition_omm(A, B); }
 
 define_method(Matrix&, addition_omm, (Dense& A, const Dense& B)) {
-  add_addition_task(A, B);
+  for (int64_t i=0; i<A.dim[0]; i++) {
+    for (int64_t j=0; j<A.dim[1]; j++) {
+      A(i, j) += B(i, j);
+    }
+  }
   return A;
 }
 

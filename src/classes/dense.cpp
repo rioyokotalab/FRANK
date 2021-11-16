@@ -86,13 +86,15 @@ define_method(void, fill_dense_from, (const LowRank& A, Dense& B)) {
 define_method(void, fill_dense_from, (const Dense& A, Dense& B)) {
   assert(A.dim[0] == B.dim[0]);
   assert(A.dim[1] == B.dim[1]);
-  add_copy_task(A, B);
+  //add_copy_task(A, B);
+  A.copy_to(B);
 }
 
 define_method(void, fill_dense_from, (const Empty& A, Dense& B)) {
   assert(A.dim[0] == B.dim[0]);
   assert(A.dim[1] == B.dim[1]);
-  add_assign_task(B, 0.0);
+  //add_assign_task(B, 0.0);
+  B = 0.0;
 }
 
 define_method(void, fill_dense_from, (const Matrix& A, Matrix& B)) {
@@ -136,8 +138,30 @@ Dense::Dense(
   add_kernel_task(kernel, *this, params, row_start, col_start);
 }
 
+void Dense::copy_to(Dense &A, int64_t row_start, int64_t col_start) const {
+  assert(dim[0]-row_start >= A.dim[0]);
+  assert(dim[1]-col_start >= A.dim[1]);
+  if (row_start == 0 && col_start == 0) {
+    for (int64_t i=0; i<A.dim[0]; i++) {
+      for (int64_t j=0; j<A.dim[1]; j++) {
+        A(i, j) = (*this)(i, j);
+      }
+    }
+  } else {
+    for (int64_t i=0; i<A.dim[0]; i++) {
+      for (int64_t j=0; j<A.dim[1]; j++) {
+        A(i, j) = (*this)(row_start+i, col_start+j);
+      }
+    }
+  }
+}
+
 Dense& Dense::operator=(const double a) {
-  add_assign_task(*this, a);
+  for (int64_t i=0; i<dim[0]; i++) {
+    for (int64_t j=0; j<dim[1]; j++) {
+      (*this)(i, j) = a;
+    }
+  }
   return *this;
 }
 
@@ -209,7 +233,8 @@ std::vector<Dense> Dense::split(
     for (uint64_t i=0; i<row_ranges.size(); ++i) {
       for (uint64_t j=0; j<col_ranges.size(); ++j) {
         Dense child(row_ranges[i].n, col_ranges[j].n);
-        add_copy_task(*this, child, row_ranges[i].start, col_ranges[j].start);
+        //add_copy_task(*this, child, row_ranges[i].start, col_ranges[j].start);
+        copy_to(child, row_ranges[i].start, col_ranges[j].start);
         out[i*col_ranges.size()+j] = std::move(child);
       }
     }

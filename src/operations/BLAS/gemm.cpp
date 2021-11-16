@@ -6,6 +6,7 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/operations/arithmetic.h"
+#include "hicma/operations/BLAS.h"
 #include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
 #include "hicma/util/pre_scheduler.h"
@@ -13,6 +14,13 @@
 
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
+
+#ifdef USE_MKL
+#include <mkl.h>
+#else
+#include <cblas.h>
+#include <lapacke.h>
+#endif
 
 #include <cassert>
 #include <cstdint>
@@ -96,7 +104,7 @@ define_method(
     TransB ? get_n_rows(B) : get_n_cols(B)
   );
   gemm(A, B, C, alpha, 0, TransA, TransB);
-  return std::move(C);
+  return C;
 }
 
 define_method(
@@ -109,7 +117,32 @@ define_method(
 ) {
   // D D D
   timing::start("DGEMM");
-  add_gemm_task(A, B, C, alpha, beta, TransA, TransB);
+  //TODO is it data or data_ptr?
+    if (B.dim[1] == 1) {
+    cblas_dgemv(
+      CblasRowMajor,
+      CblasNoTrans,
+      A.dim[0], A.dim[1],
+      alpha,
+      &A, A.stride,
+      &B, B.stride,
+      beta,
+      &C, C.stride
+    );
+  }
+  else {
+    int64_t k = TransA ? A.dim[0] : A.dim[1];
+    cblas_dgemm(
+      CblasRowMajor,
+      TransA?CblasTrans:CblasNoTrans, TransB?CblasTrans:CblasNoTrans,
+      C.dim[0], C.dim[1], k,
+      alpha,
+      &A, A.stride,
+      &B, B.stride,
+      beta,
+      &C, C.stride
+    );
+  }
   timing::stop("DGEMM");
 }
 

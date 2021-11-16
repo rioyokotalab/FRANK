@@ -12,6 +12,13 @@
 
 #include "yorel/yomm2/cute.hpp"
 
+#ifdef USE_MKL
+#include <mkl.h>
+#else
+#include <cblas.h>
+#include <lapacke.h>
+#endif
+
 #include <cassert>
 #include <cstdint>
 #include <cstdlib>
@@ -80,7 +87,18 @@ define_method(
 
 define_method(void, trsm_omm, (const Dense& A, Dense& B, int uplo, int lr)) {
   timing::start("DTRSM");
-  add_trsm_task(A, B, uplo, lr);
+  //add_trsm_task(A, B, uplo, lr);
+    cblas_dtrsm(
+    CblasRowMajor,
+    lr==TRSM_LEFT?CblasLeft:CblasRight,
+    uplo==TRSM_UPPER?CblasUpper:CblasLower,
+    CblasNoTrans,
+    uplo==TRSM_UPPER?CblasNonUnit:CblasUnit,
+    B.dim[0], B.dim[1],
+    1,
+    &A, A.stride,
+    &B, B.stride
+  );
   timing::stop("DTRSM");
 }
 

@@ -11,6 +11,8 @@
 
 using namespace hicma;
 
+
+// TODO This is not a test but actually a example?
 TEST(IDTest, Precision) {
   hicma::initialize();
   // Check whether the Dense(Hierarchical) constructor works correctly.
