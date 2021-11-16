@@ -103,3 +103,39 @@ TEST(DenseTest, Resize) {
   }
   timing::stopAndPrint("Check results");
 }
+
+TEST(DenseTest, Assign) {
+  hicma::initialize();
+  int64_t N = 24;
+  Dense D(N, N);
+  D = 8;
+  for (int64_t i=0; i<N; ++i) {
+    for (int64_t j=0; j<N; ++j) {
+      ASSERT_EQ(D(i, j), 8);
+    }
+  }
+}
+
+TEST(DenseTest, Copy) {
+  hicma::initialize();
+  int64_t N = 42;
+  Dense D(random_normal, std::vector<std::vector<double>>(), N, N);
+  Dense A(D);
+  Dense B(N, N);
+  A.copy_to(B);
+  for (int64_t i=0; i<N; ++i) {
+    for (int64_t j=0; j<N; ++j) {
+      ASSERT_EQ(D(i, j), A(i, j));
+      ASSERT_EQ(D(i, j), B(i, j));
+    }
+  }
+  Dense C(30, 30);
+  int offset = 12;
+  D.copy_to(C, offset, offset);
+  for (int64_t i=0; i<C.dim[0]; ++i) {
+    for (int64_t j=0; j<C.dim[1]; ++j) {
+      ASSERT_EQ(D(offset+i, offset+j), C(i, j));
+      ASSERT_EQ(D(offset+i, offset+j), C(i, j));
+    }
+  }
+}

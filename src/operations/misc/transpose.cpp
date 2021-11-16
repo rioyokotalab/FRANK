@@ -21,13 +21,17 @@ MatrixProxy transpose(const Matrix& A) { return transpose_omm(A); }
 
 define_method(MatrixProxy, transpose_omm, (const Dense& A)) {
   Dense transposed(A.dim[1], A.dim[0]);
-  add_transpose_task(A, transposed);
-  return std::move(transposed);
+  for (int64_t i=0; i<A.dim[0]; i++) {
+    for (int64_t j=0; j<A.dim[1]; j++) {
+      transposed(j,i) = A(i,j);
+    }
+  }
+  return transposed;
 }
 
 define_method(MatrixProxy, transpose_omm, (const LowRank& A)) {
   LowRank transposed(transpose(A.V), transpose(A.S), transpose(A.U));
-  return std::move(transposed);
+  return transposed;
 }
 
 define_method(MatrixProxy, transpose_omm, (const Hierarchical& A)) {
@@ -37,7 +41,7 @@ define_method(MatrixProxy, transpose_omm, (const Hierarchical& A)) {
       transposed(j, i) = transpose(A(i, j));
     }
   }
-  return std::move(transposed);
+  return transposed;
 }
 
 define_method(MatrixProxy, transpose_omm, (const Matrix& A)) {

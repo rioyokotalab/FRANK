@@ -158,73 +158,7 @@ void add_kernel_task(
   add_task(std::make_shared<Kernel_task>(kernel, A, x, row_start, col_start));
 }
 
-struct copy_args { int64_t row_start, col_start; };
 
-void copy_cpu_func(
-  const double* A, uint64_t A_stride,
-  double* B, uint64_t B_dim0, uint64_t B_dim1, uint64_t B_stride,
-  copy_args& args
-) {
-  if (args.row_start == 0 && args.col_start == 0) {
-    for (uint64_t i=0; i<B_dim0; i++) {
-      for (uint64_t j=0; j<B_dim1; j++) {
-        B[i*B_stride+j] = A[i*A_stride+j];
-      }
-    }
-  } else {
-    for (uint64_t i=0; i<B_dim0; i++) {
-      for (uint64_t j=0; j<B_dim1; j++) {
-        B[i*B_stride+j] = A[(args.row_start+i)*A_stride+args.col_start+j];
-      }
-    }
-  }
-}
-
-void copy_cpu_starpu_interface(void* buffers[], void* cl_args) {
-  const double* A = (double *)STARPU_MATRIX_GET_PTR(buffers[0]);
-  uint64_t A_stride = STARPU_MATRIX_GET_LD(buffers[0]);
-  double* B = (double *)STARPU_MATRIX_GET_PTR(buffers[1]);
-  uint64_t B_dim0 = STARPU_MATRIX_GET_NY(buffers[1]);
-  uint64_t B_dim1 = STARPU_MATRIX_GET_NX(buffers[1]);
-  uint64_t B_stride = STARPU_MATRIX_GET_LD(buffers[1]);
-  struct copy_args* args = (copy_args*)cl_args;
-  copy_cpu_func(A, A_stride, B, B_dim0, B_dim1, B_stride, *args);
-}
-
-struct starpu_codelet copy_cl;
-
-
-class Copy_task : public Task {
- public:
-  copy_args args;
-  Copy_task(const Dense& A, Dense& B, int64_t row_start=0, int64_t col_start=0)
-  : Task({A}, {B}), args{row_start, col_start} {
-    if (schedule_started) {
-      task = starpu_task_create();
-      task->cl = &copy_cl;
-      task->cl_arg = &args;
-      task->cl_arg_size = sizeof(args);
-      task->handles[0] = get_handle(A);
-      task->handles[1] = get_handle(B);
-    }
-  }
-
-  void submit() override {
-    const Dense& A = constant[0];
-    Dense& B = modified[0];
-    if (schedule_started) {
-      STARPU_CHECK_RETURN_VALUE(starpu_task_submit(task), "copy_task");
-    } else {
-      copy_cpu_func(&A, A.stride, &B, B.dim[0], B.dim[1], B.stride, args);
-    }
-  }
-};
-
-void add_copy_task(
-  const Dense& A, Dense& B, int64_t row_start, int64_t col_start
-) {
-  add_task(std::make_shared<Copy_task>(A, B, row_start, col_start));
-}
 
 void transpose_cpu_func(
   const double* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
@@ -272,9 +206,10 @@ class Transpose_task : public Task {
   }
 };
 
+/*
 void add_transpose_task(const Dense& A, Dense& B) {
   add_task(std::make_shared<Transpose_task>(A, B));
-}
+}*/
 
 struct assign_args { double value; };
 
@@ -324,9 +259,11 @@ class Assign_task : public Task {
   }
 };
 
+/*
 void add_assign_task(Dense& A, double value) {
   add_task(std::make_shared<Assign_task>(A, value));
 }
+*/
 
 void addition_cpu_func(
   double* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
@@ -374,12 +311,13 @@ class Addition_task : public Task {
   }
 };
 
+/*
 void add_addition_task(Dense& A, const Dense& B) {
   if (!matrix_is_tracked("addition_task", A, B) || !is_tracking) {
     add_task(std::make_shared<Addition_task>(A, B));
     register_matrix("addition_task", A, B);
   }
-}
+}*/
 
 void subtraction_cpu_func(
   double* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
@@ -427,9 +365,11 @@ class Subtraction_task : public Task {
   }
 };
 
+/*
 void add_subtraction_task(Dense& A, const Dense& B) {
   add_task(std::make_shared<Subtraction_task>(A, B));
 }
+*/
 
 struct multiplication_args { double factor; };
 
@@ -479,12 +419,13 @@ class Multiplication_task : public Task {
   }
 };
 
+/*
 void add_multiplication_task(Dense& A, double factor) {
   // Don't do anything if factor == 1
   if (factor != 1) {
     add_task(std::make_shared<Multiplication_task>(A, factor));
   }
-}
+}*/
 
 void getrf_cpu_func(
   double* AU, uint64_t AU_dim0, uint64_t AU_dim1, uint64_t AU_stride,
@@ -541,9 +482,11 @@ class GETRF_task : public Task {
   }
 };
 
+/*
 void add_getrf_task(Dense& AU, Dense& L) {
   add_task(std::make_shared<GETRF_task>(AU, L));
-}
+}*/
+
 
 void qr_cpu_func(
   double* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
@@ -627,10 +570,12 @@ class QR_task : public Task {
   }
 };
 
+/*
 void add_qr_task(Dense& A, Dense& Q, Dense& R) {
   // TODO Check for duplicate/shared tasks
   add_task(std::make_shared<QR_task>(A, Q, R));
 }
+*/
 
 void rq_cpu_func(
   double* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
@@ -710,11 +655,12 @@ class RQ_task : public Task {
     }
   }
 };
-
+/*
 void add_rq_task(Dense& A, Dense& R, Dense& Q) {
   // TODO Check for duplicate/shared tasks
   add_task(std::make_shared<RQ_task>(A, R, Q));
 }
+*/
 
 struct trsm_args { int uplo; int lr; };
 
@@ -776,12 +722,14 @@ class TRSM_task : public Task {
   }
 };
 
+/*
 void add_trsm_task(const Dense& A, Dense& B, int uplo, int lr) {
   if (!matrix_is_tracked("trsm_task", A, B) || !is_tracking) {
     add_task(std::make_shared<TRSM_task>(A, B, uplo, lr));
     register_matrix("trsm_task", A, B);
   }
 }
+*/
 
 struct gemm_args { double alpha, beta; bool TransA, TransB;  };
 
@@ -883,6 +831,7 @@ BasisTracker<
   uint64_t, BasisTracker<uint64_t, std::shared_ptr<GEMM_task>>
 > gemm_tracker;
 
+/*
 void add_gemm_task(
   const Dense& A, const Dense& B, Dense& C,
   double alpha, double beta, bool TransA, bool TransB
@@ -912,6 +861,7 @@ void add_gemm_task(
   }
   add_task(task);
 }
+*/
 
 void svd_cpu_func(
   double* A, uint64_t A_dim0, uint64_t A_dim1, uint64_t A_stride,
@@ -995,9 +945,11 @@ class SVD_task : public Task {
   }
 };
 
+/*
 void add_svd_task(Dense& A, Dense& U, Dense& S, Dense& V) {
   add_task(std::make_shared<SVD_task>(A, U, S, V));
 }
+*/
 
 void start_schedule() {
   assert(!schedule_started);

@@ -16,6 +16,13 @@
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
 
+#ifdef USE_MKL
+#include <mkl.h>
+#else
+#include <cblas.h>
+#include <lapacke.h>
+#endif
+
 #include <algorithm>
 #include <cstdint>
 #include <cstdlib>
@@ -61,7 +68,21 @@ define_method(MatrixPair, getrf_omm, (Hierarchical& A)) {
 define_method(MatrixPair, getrf_omm, (Dense& A)) {
   timing::start("DGETRF");
   Dense L(A.dim[0], A.dim[1]);
-  add_getrf_task(A, L);
+  //add_getrf_task(A, L);
+  std::vector<int> ipiv(std::min(A.dim[0], A.dim[1]));
+  LAPACKE_dgetrf(
+    LAPACK_ROW_MAJOR,
+    A.dim[0], A.dim[1],
+    &A, A.stride,
+    &ipiv[0]
+  );
+  for (int64_t i=0; i<A.dim[0]; i++) {
+    for (int64_t j=0; j<i; j++) {
+      L(i,j) = A (i, j);
+      A(i,j) = 0;
+    }
+    L(i, i) = 1;
+  }
   timing::stop("DGETRF");
   return {std::move(L), std::move(A)};
 }
