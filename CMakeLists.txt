@@ -70,8 +70,8 @@ if(OpenMP_FOUND)
 endif()
 
 # StarPU
-find_or_download(starpu PKG_CONFIG VERSION 1.3 INSTALL_WITH_HiCMA)
-link_directories(${starpu_LIBRARY_DIRS})
+# find_or_download(starpu PKG_CONFIG VERSION 1.3 INSTALL_WITH_HiCMA)
+# link_directories(${starpu_LIBRARY_DIRS})
 
 # Boost
 find_or_download(nlohmann_json)
