@@ -135,7 +135,10 @@ Dense::Dense(
   int64_t n_rows, int64_t n_cols,
   int64_t row_start, int64_t col_start
 ) : Dense(n_rows, n_cols) {
-  add_kernel_task(kernel, *this, params, row_start, col_start);
+  //add_kernel_task(kernel, *this, params, row_start, col_start);
+    kernel(
+      &(*this), dim[0], dim[1], stride, params, row_start, col_start
+    );
 }
 
 void Dense::copy_to(Dense &A, int64_t row_start, int64_t col_start) const {
