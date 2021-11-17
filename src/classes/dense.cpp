@@ -17,7 +17,6 @@
 
 #include "hicma_private/starpu_data_handler.h"
 
-#include "starpu.h"
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
 

@@ -2,8 +2,6 @@
 
 #include "hicma/classes/initialization_helpers/index_range.h"
 
-#include "starpu.h"
-
 #include <memory>
 #include <vector>
 
@@ -12,7 +10,7 @@ namespace hicma
 {
 
 DataHandler::~DataHandler() {
-  if (starpu_is_initialized()) {
+  /*if (starpu_is_initialized()) {
     if (splits.size() > 0) {
       for (std::vector<starpu_data_handle_t> child_handles : splits) {
         starpu_data_partition_clean(
@@ -23,25 +21,25 @@ DataHandler::~DataHandler() {
     if (!is_child()) {
       starpu_data_unregister_submit(handle);
     }
-  }
+  }*/
 }
 
 DataHandler::DataHandler(int64_t n_rows, int64_t n_cols, double val)
 : data(std::make_shared<std::vector<double>>(n_rows*n_cols, val))
 {
-  if (starpu_is_initialized()) {
+  /*if (starpu_is_initialized()) {
     starpu_matrix_data_register(
       &handle, STARPU_MAIN_RAM,
       (uintptr_t)&(*data)[0], n_cols, n_cols, n_rows, sizeof((*data)[0])
     );
-  }
+  }*/
 }
 
 DataHandler::DataHandler(
   std::shared_ptr<DataHandler> parent,
-  std::shared_ptr<std::vector<double>> data,
-  starpu_data_handle_t handle
-) : data(data), parent(parent), handle(handle) {}
+  std::shared_ptr<std::vector<double>> data
+  //starpu_data_handle_t handle
+) : data(data), parent(parent) {}
 
 double& DataHandler::operator[](int64_t i) { return (*data)[i]; }
 
@@ -51,7 +49,7 @@ uint64_t DataHandler::size() const { return data->size(); }
 
 struct partition_args { std::vector<IndexRange> row_ranges, col_ranges; };
 
-void partition_filter(
+/*void partition_filter(
   void* father_interface, void* child_interface,
   starpu_data_filter* filter, unsigned id, unsigned
 ) {
@@ -77,7 +75,7 @@ void partition_filter(
 		child->dev_handle = father->dev_handle;
 		child->offset = father->offset + offset;
 	}
-}
+}*/
 
 std::vector<std::shared_ptr<DataHandler>> DataHandler::split(
   std::shared_ptr<DataHandler> parent,
@@ -86,8 +84,8 @@ std::vector<std::shared_ptr<DataHandler>> DataHandler::split(
 ) {
   size_t n_children = row_ranges.size()*col_ranges.size();
   std::vector<std::shared_ptr<DataHandler>> out(n_children);
-  std::vector<starpu_data_handle_t> child_handles(n_children);
-  if (starpu_is_initialized()) {
+  //std::vector<starpu_data_handle_t> child_handles(n_children);
+  /*if (starpu_is_initialized()) {
     partition_args args{row_ranges, col_ranges};
     starpu_data_filter filter;
     filter.nchildren = row_ranges.size() * col_ranges.size();
@@ -98,21 +96,22 @@ std::vector<std::shared_ptr<DataHandler>> DataHandler::split(
     starpu_data_partition_plan(
       handle, &filter, &child_handles[0]
     );
-  }
+  }*/
   for (uint64_t i=0; i<row_ranges.size(); ++i) {
     for (uint64_t j=0; j<col_ranges.size(); ++j) {
       out[i*col_ranges.size()+j] = std::make_shared<DataHandler>(
-        parent, data, child_handles[i*col_ranges.size()+j]
+        parent, data//, child_handles[i*col_ranges.size()+j]
       );
     }
   }
-  splits.push_back(child_handles);
+  //splits.push_back(child_handles);
   return out;
 }
 
-starpu_data_handle_t DataHandler::get_handle() const {
+//This function should not be called outside the pre_scheduler and is not needed anymore
+/*starpu_data_handle_t DataHandler::get_handle() const {
   return handle;
-}
+}*/
 
 bool DataHandler::is_child() const { return parent.get() != nullptr; }
 
