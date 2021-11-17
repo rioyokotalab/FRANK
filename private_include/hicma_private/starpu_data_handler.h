@@ -1,8 +1,6 @@
 #ifndef hicma_starpu_data_handler_h
 #define hicma_starpu_data_handler_h
 
-#include "starpu.h"
-
 #include <memory>
 #include <vector>
 
@@ -16,8 +14,8 @@ class DataHandler {
  private:
   std::shared_ptr<std::vector<double>> data;
   std::shared_ptr<DataHandler> parent;
-  std::vector<std::vector<starpu_data_handle_t>> splits;
-  starpu_data_handle_t handle;
+  //std::vector<std::vector<starpu_data_handle_t>> splits;
+  //starpu_data_handle_t handle;
  public:
   // Special member functions
   DataHandler() = default;
@@ -36,8 +34,8 @@ class DataHandler {
 
   DataHandler(
     std::shared_ptr<DataHandler> parent,
-    std::shared_ptr<std::vector<double>> data,
-    starpu_data_handle_t handle
+    std::shared_ptr<std::vector<double>> data
+    //starpu_data_handle_t handle
   );
 
   double& operator[](int64_t i);
@@ -52,7 +50,7 @@ class DataHandler {
     const std::vector<IndexRange>& col_ranges
   );
 
-  starpu_data_handle_t get_handle() const;
+  //starpu_data_handle_t get_handle() const;
 
   bool is_child() const;
 };
