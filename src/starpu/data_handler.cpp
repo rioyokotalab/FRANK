@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 
+//introduced in commit 9c641d29569cfd5fc9be8a185a7144f6d95f0160
 
 namespace hicma
 {
