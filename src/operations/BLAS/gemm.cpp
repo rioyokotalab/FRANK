@@ -117,7 +117,6 @@ define_method(
 ) {
   // D D D
   timing::start("DGEMM");
-  //TODO is it data or data_ptr?
     if (B.dim[1] == 1) {
     cblas_dgemv(
       CblasRowMajor,
