@@ -10,7 +10,6 @@
 
 #include "hicma_private/starpu_data_handler.h"
 
-//#include "starpu.h"
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
 
@@ -40,7 +39,6 @@ class Task {
   // TODO Remove these and let tasks have individual arguments!
   std::vector<Dense> constant;
   std::vector<Dense> modified;
-  //starpu_task* task;
 
   // Special member functions
   Task() = default;
@@ -70,11 +68,6 @@ class Task {
       modified.push_back(modified_[i].get().shallow_copy());
     }
   }
-  /*
-  starpu_data_handle_t get_handle(const Dense& A) {
-    return A.data->get_handle();
-  }
-  */
 
   DataHandler& get_handler(const Dense& A) { return *A.data;}
 };
@@ -89,23 +82,6 @@ void add_task(std::shared_ptr<Task> task) {
   } else {
     task->submit();
   }
-}
-
-
-void initialize_starpu() {
-  //STARPU_CHECK_RETURN_VALUE(starpu_init(NULL), "init");
-  //make_copy_codelet();
-  //make_transpose_codelet();
-  //make_assign_codelet();
-  //make_addition_codelet();
-  //make_subtraction_codelet();
-  //make_multiplication_codelet();
-  //make_getrf_codelet();
-  //make_qr_codelet();
-  //make_rq_codelet();
-  //make_trsm_codelet();
-  //make_gemm_codelet();
-  //make_svd_codelet();
 }
 
 void start_tracking() {
