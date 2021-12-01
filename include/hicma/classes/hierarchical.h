@@ -159,7 +159,7 @@ class Hierarchical : public Matrix {
       const std::vector<std::vector<double>>& params,
       int64_t row_start, int64_t col_start
     ),
-    const std::vector<std::vector<double>>& params,
+    std::vector<std::vector<double>> params,
     int64_t n_rows, int64_t n_cols,
     int64_t rank,
     int64_t nleaf,
@@ -206,7 +206,7 @@ class Hierarchical : public Matrix {
 
   Hierarchical(
     std::string filename, MatrixLayout ordering,
-    const std::vector<std::vector<double>>& params,
+    std::vector<std::vector<double>> params,
     int64_t n_rows, int64_t n_cols,
     int64_t rank,
     int64_t nleaf,

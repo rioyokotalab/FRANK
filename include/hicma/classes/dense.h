@@ -7,6 +7,7 @@
 #ifndef hicma_classes_dense_h
 #define hicma_classes_dense_h
 
+#include "hicma/definitions.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
 
@@ -187,6 +188,12 @@ class Dense : public Matrix {
     ),
     const std::vector<std::vector<double>>& params,
     int64_t n_rows, int64_t n_cols=1,
+    int64_t row_start=0, int64_t col_start=0
+  );
+
+  Dense(
+    std::string filename, MatrixLayout ordering,
+    int64_t n_rows, int64_t n_cols,
     int64_t row_start=0, int64_t col_start=0
   );
 

@@ -135,6 +135,19 @@ Dense::Dense(
     );
 }
 
+Dense::Dense(
+  std::string filename, MatrixLayout ordering,
+  int64_t n_rows, int64_t n_cols,
+  int64_t row_start, int64_t col_start
+) : Dense(n_rows, n_cols) {
+  MatrixInitializerFile initializer(filename, ordering, 0, 0,
+				    std::vector<std::vector<double>>(),
+				    POSITION_BASED_ADMIS);
+  initializer.fill_dense_representation(*this,
+					{row_start, n_rows},
+					{col_start, n_cols});
+}
+
 void Dense::copy_to(Dense &A, int64_t row_start, int64_t col_start) const {
   assert(dim[0]-row_start >= A.dim[0]);
   assert(dim[1]-col_start >= A.dim[1]);
