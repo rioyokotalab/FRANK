@@ -20,9 +20,7 @@ int main() {
 
   print("LR Add Default");
   timing::start("LR Add Default");
-  start_schedule();
   AWork += B;
-  execute_schedule();
   timing::stopAndPrint("LR Add Default", 2);
   print("Rel. L2 Error", l2_error(D+D, AWork), false);
 
@@ -32,9 +30,7 @@ int main() {
   print("LR Add Naive");
   setGlobalValue("HICMA_LRA", "naive");
   timing::start("LR Add Naive");
-  start_schedule();
   AWork += B;
-  execute_schedule();
   timing::stopAndPrint("LR Add Naive", 2);
   print("Rel. L2 Error", l2_error(D+D, AWork), false);
 
@@ -44,9 +40,7 @@ int main() {
   print("LR Add Orthogonal");
   setGlobalValue("HICMA_LRA", "rounded_orth");
   timing::start("LR Add Orthogonal");
-  start_schedule();
   AWork += B;
-  execute_schedule();
   timing::stopAndPrint("LR Add Orthogonal", 2);
   print("Rel. L2 Error", l2_error(D+D, AWork), false);
 

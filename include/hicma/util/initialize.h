@@ -8,7 +8,8 @@
 namespace hicma
 {
 
-void initialize(bool init_starpu=true);
+//TODO REMOVE parameter
+void initialize(bool init_starpu=false);
 
 } // namespace hicma
 

@@ -35,19 +35,15 @@ int main(int, char** argv) {
 
   print("Being compression");
   timing::start("Hierarchical compression");
-  start_schedule();
   Hierarchical A(starsh::exp_kernel_fill, randx, N, N, rank, nleaf, admis,
                nblocks, nblocks);
-  execute_schedule();
   double comp_time = timing::stop("Hierarchical compression");
 
   gemm(A, x, b, 1, 1);
 
   timing::start("LU decomposition");
   Hierarchical L, U;
-  start_schedule();
   std::tie(L, U) = getrf(A);
-  execute_schedule();
   double fact_time = timing::stop("LU decomposition");
 
   timing::start("Solution");

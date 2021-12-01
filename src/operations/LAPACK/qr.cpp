@@ -10,10 +10,16 @@
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
-#include "hicma/util/pre_scheduler.h"
 #include "hicma/util/timer.h"
 
 #include "yorel/yomm2/cute.hpp"
+
+#ifdef USE_MKL
+#include <mkl.h>
+#else
+#include <cblas.h>
+#include <lapacke.h>
+#endif
 
 #include <algorithm>
 #include <cassert>
@@ -71,7 +77,30 @@ define_method(void, qr_omm, (Dense& A, Dense& Q, Dense& R)) {
   assert(R.dim[0] == A.dim[1]);
   assert(R.dim[1] == A.dim[1]);
   timing::start("QR");
-  add_qr_task(A, Q, R);
+  int64_t k = std::min(A.dim[0], A.dim[1]);
+  std::vector<double> tau(k);
+  for (int64_t i=0; i<std::min(Q.dim[0], Q.dim[1]); i++) Q(i, i) = 1.0;
+  LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, A.dim[0], A.dim[1], &A, A.stride, &tau[0]);
+  // TODO Consider using A for the dorgqr and moving to Q afterwards! That
+  // also simplify this loop.
+  for(int64_t i=0; i<Q.dim[0]; i++) {
+    for(int64_t j=i; j<Q.dim[1]; j++) {
+      R(i, j) = A(i, j);
+    }
+  }
+  for(int64_t i=0; i<Q.dim[0]; i++) {
+    for(int64_t j=0; j<std::min(i, Q.dim[1]); j++) {
+      Q(i, j) = A(i, j);
+    }
+  }
+  // TODO Consider making special function for this. Performance heavy
+  // and not always needed. If Q should be applied to something, use directly!
+  // Alternatively, create Dense derivative that remains in elementary
+  // reflector form, uses dormqr instead of gemm and can be transformed to
+  // Dense via dorgqr!
+  LAPACKE_dorgqr(
+    LAPACK_ROW_MAJOR, Q.dim[0], Q.dim[1], k, &Q, Q.stride, &tau[0]
+  );
   timing::stop("QR");
 }
 
@@ -353,7 +382,7 @@ define_method(
   for(int64_t i=0; i<HQb.dim[0]; i++) {
     int64_t dim_Bi[2]{get_n_rows(B(i, 0)), get_n_cols(B(i, 0))};
     Dense Qbi(dim_Bi[0], dim_Bi[1]);
-    add_copy_task(Qb, Qbi, rowOffset, 0);
+    Qb.copy_to(Qbi, rowOffset);
     HQb(i, 0) = std::move(Qbi);
     rowOffset += dim_Bi[0];
   }
@@ -419,7 +448,7 @@ void triangularize_block_col(int64_t j, Hierarchical& A, Hierarchical& T) {
     assert(DRj.dim[1] == get_n_cols(Rj(i, 0)));
     int64_t dim_Rij[2]{get_n_rows(Rj(i, 0)), get_n_cols(Rj(i, 0))};
     Dense Rij(dim_Rij[0], dim_Rij[1]);
-    add_copy_task(DRj, Rij, rowOffset, 0);
+    DRj.copy_to(Rij, rowOffset);
     Rj(i, 0) = std::move(Rij);
     rowOffset += dim_Rij[0];
   }
@@ -467,7 +496,27 @@ define_method(void, rq_omm, (Dense& A, Dense& R, Dense& Q)) {
   assert(Q.dim[0] == A.dim[0]);
   assert(Q.dim[1] == A.dim[1]);
   timing::start("DGERQF");
-  add_rq_task(A, R, Q);
+  int64_t k = std::min(A.dim[0], A.dim[1]);
+  std::vector<double> tau(k);
+  LAPACKE_dgerqf(LAPACK_ROW_MAJOR, A.dim[0], A.dim[1], &A, A.stride, &tau[0]);
+  // TODO Consider making special function for this. Performance heavy and not
+  // always needed. If Q should be applied to something, use directly!
+  // Alternatively, create Dense derivative that remains in elementary reflector
+  // form, uses dormqr instead of gemm and can be transformed to Dense via
+  // dorgqr!
+  for (int64_t i=0; i<R.dim[0]; i++) {
+    for (int64_t j=i; j<R.dim[1]; j++) {
+      R(i, j) = A(i, A.dim[1]-R.dim[1]+j);
+    }
+  }
+  for(int64_t i=0; i<Q.dim[0]; i++) {
+    for(int64_t j=0; j<std::min(A.dim[1]-R.dim[1]+i, Q.dim[1]); j++) {
+      Q(i, j)= A(i, j);
+    }
+  }
+  LAPACKE_dorgrq(
+    LAPACK_ROW_MAJOR, Q.dim[0], Q.dim[1], k, &Q, Q.stride, &tau[0]
+  );
   timing::stop("DGERQF");
 }
 

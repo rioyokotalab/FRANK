@@ -38,11 +38,9 @@ TEST(DenseTest, Split1DTest) {
   int64_t N = 128;
   int64_t nblocks = 2;
   int64_t nleaf = N / nblocks;
-  start_schedule();
   Dense D(random_uniform, std::vector<std::vector<double>>(), N, N);
   Hierarchical DH = split(D, nblocks, nblocks);
   Hierarchical DH_copy = split(D, nblocks, nblocks, true);
-  execute_schedule();
   for (int64_t ib=0; ib<nblocks; ++ib) {
     for (int64_t jb=0; jb<nblocks; ++jb) {
       Dense D_compare = DH(ib, jb) - DH_copy(ib, jb);
@@ -54,14 +52,12 @@ TEST(DenseTest, Split1DTest) {
     }
   }
 
-  start_schedule();
   Hierarchical H = split(D, nblocks, nblocks);
   Dense HD(H);
   Dense Q(HD.dim[0], HD.dim[1]);
   Dense R(HD.dim[1], HD.dim[1]);
   qr(HD, Q, R);
   Dense QR = gemm(Q, R);
-  execute_schedule();
   for (int64_t i=0; i<N; ++i) {
     for (int64_t j=0; j<N; ++j) {
       ASSERT_FLOAT_EQ(D(i, j), QR(i, j));
@@ -76,17 +72,13 @@ TEST(DenseTest, SplitTest) {
   int64_t nleaf = N / nblocks;
   Dense col(random_normal, std::vector<std::vector<double>>(), N, nleaf);
   Dense row(random_normal, std::vector<std::vector<double>>(), nleaf, N);
-  // start_schedule();
   Dense test1 = gemm(row, col);
   test1 *= 2;
-  // execute_schedule();
 
-  start_schedule();
   Hierarchical colH = split(col, nblocks, 1);
   Hierarchical rowH = split(row, 1, nblocks);
   Dense test2 = gemm(rowH, colH);
   test2 *= 2;
-  execute_schedule();
   for (int64_t i=0; i<nleaf; ++i) {
     for (int64_t j=0; j<nleaf; ++j) {
       ASSERT_FLOAT_EQ(test1(i, j), test2(i, j));
@@ -110,4 +102,40 @@ TEST(DenseTest, Resize) {
     }
   }
   timing::stopAndPrint("Check results");
+}
+
+TEST(DenseTest, Assign) {
+  hicma::initialize();
+  int64_t N = 24;
+  Dense D(N, N);
+  D = 8;
+  for (int64_t i=0; i<N; ++i) {
+    for (int64_t j=0; j<N; ++j) {
+      ASSERT_EQ(D(i, j), 8);
+    }
+  }
+}
+
+TEST(DenseTest, Copy) {
+  hicma::initialize();
+  int64_t N = 42;
+  Dense D(random_normal, std::vector<std::vector<double>>(), N, N);
+  Dense A(D);
+  Dense B(N, N);
+  A.copy_to(B);
+  for (int64_t i=0; i<N; ++i) {
+    for (int64_t j=0; j<N; ++j) {
+      ASSERT_EQ(D(i, j), A(i, j));
+      ASSERT_EQ(D(i, j), B(i, j));
+    }
+  }
+  Dense C(30, 30);
+  int offset = 12;
+  D.copy_to(C, offset, offset);
+  for (int64_t i=0; i<C.dim[0]; ++i) {
+    for (int64_t j=0; j<C.dim[1]; ++j) {
+      ASSERT_EQ(D(offset+i, offset+j), C(i, j));
+      ASSERT_EQ(D(offset+i, offset+j), C(i, j));
+    }
+  }
 }

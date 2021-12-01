@@ -191,6 +191,18 @@ class Dense : public Matrix {
   );
 
   /**
+   * @brief Creates a copy of this `Dense` matrix in the matrix to the \p A
+   *
+   * @param A
+   * `Dense` matrix where the values should be copied to.
+   * @param row_start
+   * Row offset for the values to be copied
+   * @param column_start
+   * Column offset for the values to be copied
+   */
+  void copy_to(Dense &A, int64_t row_start=0, int64_t col_start=0) const;
+
+  /**
    * @brief Assign the constant value \p a to all elements of the `Dense` matrix
    *
    * @param a

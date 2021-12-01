@@ -5,7 +5,6 @@
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
 #include "hicma/util/omm_error_handler.h"
-#include "hicma/util/pre_scheduler.h"
 
 #include "yorel/yomm2/cute.hpp"
 
@@ -26,8 +25,8 @@ define_method(
   assert(n_rows <= A.dim[0]);
   assert(n_cols <= A.dim[1]);
   Dense resized(n_rows, n_cols);
-  add_copy_task(A, resized);
-  return std::move(resized);
+  A.copy_to(resized);
+  return resized;
 }
 
 define_method(MatrixProxy, resize_omm, (const Matrix& A, int64_t, int64_t)) {

@@ -3,7 +3,6 @@
 #include "hicma/classes/dense.h"
 #include "hicma/classes/initialization_helpers/cluster_tree.h"
 #include "hicma/classes/initialization_helpers/matrix_initializer.h"
-#include "hicma/util/pre_scheduler.h"
 
 #include <cstdint>
 
@@ -25,7 +24,8 @@ MatrixInitializerKernel::MatrixInitializerKernel(
 void MatrixInitializerKernel::fill_dense_representation(
   Dense& A, const IndexRange& row_range, const IndexRange& col_range
 ) const {
-  add_kernel_task(kernel, A, params, row_range.start, col_range.start);
+  kernel(&A, A.dim[0], A.dim[1], A.stride,
+	 params, row_range.start, col_range.start);
 }
 
 } // namespace hicma

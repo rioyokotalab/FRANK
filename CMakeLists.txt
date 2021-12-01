@@ -69,11 +69,7 @@ if(OpenMP_FOUND)
   set(OpenMP_LIB_NAMES ${OpenMP_CXX_LIB_NAMES})
 endif()
 
-# StarPU
-find_or_download(starpu PKG_CONFIG VERSION 1.3 INSTALL_WITH_HiCMA)
-link_directories(${starpu_LIBRARY_DIRS})
-
-# Boost
+# JSON writer
 find_or_download(nlohmann_json)
 list(APPEND HICMA_DEPENDENCIES nlohmann_json::nlohmann_json)
 
@@ -117,7 +113,6 @@ if(${BUILD_DOCS})
   add_subdirectory(docs)
 endif()
 
-
 ## Testing code
 option(BUILD_TESTS "Build unit and other tests" ON)
 if(${BUILD_TESTS})
@@ -125,6 +120,12 @@ if(${BUILD_TESTS})
   # Enable test for googletest
   enable_testing()
   add_subdirectory(test)
+endif()
+
+## Example Files
+option(BUILD_EXAMPLES "Build example files" ON)
+if(${BUILD_EXAMPLES})
+  add_subdirectory(examples)
 endif()
 
 ## Install instruction

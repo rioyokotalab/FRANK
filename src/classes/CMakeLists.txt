@@ -1,4 +1,5 @@
 target_sources(hicma PRIVATE
+  ${CMAKE_CURRENT_LIST_DIR}/data_handler.cpp
   ${CMAKE_CURRENT_LIST_DIR}/dense.cpp
   ${CMAKE_CURRENT_LIST_DIR}/hierarchical.cpp
   ${CMAKE_CURRENT_LIST_DIR}/low_rank.cpp

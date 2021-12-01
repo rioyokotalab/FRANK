@@ -6,7 +6,6 @@
 #include "hicma/classes/matrix_proxy.h"
 #include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
-#include "hicma/util/pre_scheduler.h"
 
 #include <cassert>
 #include <cstdint>
@@ -24,8 +23,12 @@ MatrixProxy operator-(const Matrix& A, const Matrix& B) {
 
 define_method(MatrixProxy, subtraction_omm, (const Dense& A, const Dense& B)) {
   Dense out(A);
-  add_subtraction_task(out, B);
-  return std::move(out);
+  for (int64_t i=0; i<A.dim[0]; i++) {
+    for (int64_t j=0; j<A.dim[1]; j++) {
+      out(i, j) = A(i, j) - B(i, j);
+    }
+  }
+  return out;
 }
 
 define_method(

@@ -2,6 +2,7 @@
 #include "hicma/extension_headers/classes.h"
 
 #include "hicma/classes/empty.h"
+#include "hicma/classes/data_handler.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
@@ -11,13 +12,9 @@
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
-#include "hicma/util/pre_scheduler.h"
 #include "hicma/util/print.h"
 #include "hicma/util/timer.h"
 
-#include "hicma_private/starpu_data_handler.h"
-
-#include "starpu.h"
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
 
@@ -86,13 +83,13 @@ define_method(void, fill_dense_from, (const LowRank& A, Dense& B)) {
 define_method(void, fill_dense_from, (const Dense& A, Dense& B)) {
   assert(A.dim[0] == B.dim[0]);
   assert(A.dim[1] == B.dim[1]);
-  add_copy_task(A, B);
+  A.copy_to(B);
 }
 
 define_method(void, fill_dense_from, (const Empty& A, Dense& B)) {
   assert(A.dim[0] == B.dim[0]);
   assert(A.dim[1] == B.dim[1]);
-  add_assign_task(B, 0.0);
+  B = 0.0;
 }
 
 define_method(void, fill_dense_from, (const Matrix& A, Matrix& B)) {
@@ -133,11 +130,27 @@ Dense::Dense(
   int64_t n_rows, int64_t n_cols,
   int64_t row_start, int64_t col_start
 ) : Dense(n_rows, n_cols) {
-  add_kernel_task(kernel, *this, params, row_start, col_start);
+    kernel(
+      &(*this), dim[0], dim[1], stride, params, row_start, col_start
+    );
+}
+
+void Dense::copy_to(Dense &A, int64_t row_start, int64_t col_start) const {
+  assert(dim[0]-row_start >= A.dim[0]);
+  assert(dim[1]-col_start >= A.dim[1]);
+  for (int64_t i=0; i<A.dim[0]; i++) {
+    for (int64_t j=0; j<A.dim[1]; j++) {
+      A(i, j) = (*this)(row_start+i, col_start+j);
+    }
+  }
 }
 
 Dense& Dense::operator=(const double a) {
-  add_assign_task(*this, a);
+  for (int64_t i=0; i<dim[0]; i++) {
+    for (int64_t j=0; j<dim[1]; j++) {
+      (*this)(i, j) = a;
+    }
+  }
   return *this;
 }
 
@@ -209,7 +222,7 @@ std::vector<Dense> Dense::split(
     for (uint64_t i=0; i<row_ranges.size(); ++i) {
       for (uint64_t j=0; j<col_ranges.size(); ++j) {
         Dense child(row_ranges[i].n, col_ranges[j].n);
-        add_copy_task(*this, child, row_ranges[i].start, col_ranges[j].start);
+        (*this).copy_to(child, row_ranges[i].start, col_ranges[j].start);
         out[i*col_ranges.size()+j] = std::move(child);
       }
     }
