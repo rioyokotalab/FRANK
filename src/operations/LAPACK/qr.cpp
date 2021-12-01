@@ -199,7 +199,7 @@ define_method(
     storage(currentRow, i) = splitted(0, i);
   }
   currentRow++;
-  return std::move(Qu);
+  return Qu;
 }
 
 define_method(
@@ -239,7 +239,7 @@ define_method(
   assert(A.dim[0] == concatenatedRow.dim[0]);
   assert(A.dim[1] == concatenatedRow.dim[1]);
   currentRow++;
-  return std::move(concatenatedRow);
+  return concatenatedRow;
 }
 
 define_method(
@@ -262,7 +262,7 @@ define_method(
   assert(concatenatedRow.dim[1] == A.dim[1]);
   LowRank _A(Dense(Q), Dense(identity, {}, A.rank, A.rank), concatenatedRow);
   currentRow++;
-  return std::move(_A);
+  return _A;
 }
 
 define_method(
@@ -281,7 +281,7 @@ define_method(
     }
     currentRow++;
   }
-  return std::move(concatenatedRow);
+  return concatenatedRow;
 }
 
 define_method(
@@ -410,7 +410,7 @@ define_method(Dense, get_right_factor_omm, (const Dense& A)) {
 
 define_method(Dense, get_right_factor_omm, (const LowRank& A)) {
   Dense SV = gemm(A.S, A.V);
-  return std::move(SV);
+  return SV;
 }
 
 define_method(

@@ -181,7 +181,7 @@ define_method(MatrixProxy, shallow_copy_omm, (const Hierarchical& A)) {
       new_shallow_copy(i, j) = shallow_copy(A(i, j));
     }
   }
-  return std::move(new_shallow_copy);
+  return new_shallow_copy;
 }
 
 define_method(MatrixProxy, shallow_copy_omm, (const Matrix& A)) {
