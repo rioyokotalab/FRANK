@@ -33,5 +33,5 @@ jobs:
         run: mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=RELEASE ..
       - name: Build using make
         run: cd build && make -j
-      - name: Hierarchical LU execution test
-        run: ./bin/h_lu 256 32 8 2 1
+      - name: Run tests
+        run: cd build && make test
