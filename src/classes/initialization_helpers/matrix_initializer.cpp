@@ -21,7 +21,7 @@ namespace hicma
 
 MatrixInitializer::MatrixInitializer(
   double admis, int64_t rank,
-  const std::vector<std::vector<double>>& params, int admis_type
+  std::vector<std::vector<double>> params, int admis_type
 ) : admis(admis), rank(rank),
     params(params), admis_type(admis_type) {}
 
@@ -81,7 +81,7 @@ bool MatrixInitializer::is_admissible(const ClusterTree& node) const {
       dist += d * d;
     }
     double diam = std::max(max_length_row, max_length_col);
-    admissible &= ((admis * admis * diam * diam) <= dist);
+    admissible &= ((admis * admis * diam * diam) < dist);
   }
   return admissible;
 }

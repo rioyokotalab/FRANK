@@ -51,7 +51,7 @@ class MatrixInitializer {
   int64_t rank;
   int admis_type;
  protected:
-  const std::vector<std::vector<double>>& params;
+  std::vector<std::vector<double>> params;
 
   void find_admissible_blocks(const ClusterTree& node);
 
@@ -84,7 +84,7 @@ class MatrixInitializer {
    */
   MatrixInitializer(
     double admis, int64_t rank,
-    const std::vector<std::vector<double>>& params=std::vector<std::vector<double>>(),
+    std::vector<std::vector<double>> params=std::vector<std::vector<double>>(),
     int admis_type=POSITION_BASED_ADMIS
   );
 

@@ -10,6 +10,7 @@
 #include "hicma/classes/initialization_helpers/matrix_initializer_block.h"
 #include "hicma/classes/initialization_helpers/matrix_initializer_kernel.h"
 #include "hicma/classes/initialization_helpers/matrix_initializer_file.h"
+#include "hicma/classes/initialization_helpers/matrix_initializer_starsh_exponential.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/LAPACK.h"
 #include "hicma/operations/misc.h"
@@ -117,6 +118,23 @@ Hierarchical::Hierarchical(
   ClusterTree cluster_tree(
     {row_start, n_rows}, {col_start, n_cols},
     n_row_blocks, n_col_blocks, nleaf
+  );
+  *this = Hierarchical(cluster_tree, initializer);
+}
+
+Hierarchical::Hierarchical(
+  int64_t N, int64_t nleaf, int64_t nblocks,
+  double beta, double nu, double noise, double sigma, int ndim,
+  double admis, int64_t rank, int admis_type,
+  int64_t row_start, int64_t col_start
+) {
+  MatrixInitializerStarshExponential initializer(
+    N, beta, nu, noise, sigma, ndim,
+    admis, rank, admis_type
+  );
+  ClusterTree cluster_tree(
+    {row_start, N}, {col_start, N},
+    nblocks, nblocks, nleaf
   );
   *this = Hierarchical(cluster_tree, initializer);
 }

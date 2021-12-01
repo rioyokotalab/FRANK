@@ -216,6 +216,13 @@ class Hierarchical : public Matrix {
     int64_t row_start=0, int64_t col_start=0
   );
 
+  Hierarchical(
+    int64_t N, int64_t nleaf, int64_t nblocks,
+    double beta, double nu, double noise, double sigma, int ndim,
+    double admis, int64_t rank, int admis_type=POSITION_BASED_ADMIS,
+    int64_t row_start=0, int64_t col_start=0
+  );
+
   /**
    * @brief Access elements of `Hierarchical` with a pair of indices
    *

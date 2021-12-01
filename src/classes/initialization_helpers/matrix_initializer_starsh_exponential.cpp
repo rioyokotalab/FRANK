@@ -8,14 +8,14 @@
 #include <cstdint>
 #include <cmath>
 #include <utility>
-#include <iostream>
+#include <vector>
 
 namespace hicma
 {
   MatrixInitializerStarshExponential::MatrixInitializerStarshExponential(
     int64_t N, double beta, double nu, double noise, double sigma, int ndim,
     double admis, int64_t rank, int admis_type
-  ) : MatrixInitializer(admis, rank, admis_type),
+  ) : MatrixInitializer(admis, rank, std::vector<std::vector<double>>(), admis_type),
     N(N), beta(beta), nu(nu), noise(noise), sigma(sigma), ndim(ndim) {
     enum STARSH_PARTICLES_PLACEMENT place = STARSH_PARTICLES_UNIFORM;
     if (ndim == 2) {
@@ -29,13 +29,29 @@ namespace hicma
     for (int j = 0; j < N; ++j) {
       starsh_index[j] = j;
     }
+    
+    //Convert StarsH geometry to 2D vector
+    STARSH_ssdata *data = (STARSH_ssdata*)starsh_data;
+    double *range_data;
+    double *points_range_ptr[ndim];
+    range_data = data->particles.point;
+    // store co-ordinates offsets for 0th dimension.
+    points_range_ptr[0] = range_data;
+    // store co-ordinates offsets for the rest of the dimensions.
+    for (int i = 1; i < ndim; ++i) {
+      // offset along the row data that corresponds to the points
+      // in the ith dimension.
+      points_range_ptr[i] = range_data + i * N;
+    }
+    //Convert pointer to vector
+    for(int d=0; d<ndim; d++) {
+      params.push_back(std::vector<double>(points_range_ptr[d], points_range_ptr[d] + N));
+    }
   }
 
-  void MatrixInitializerStarshExponential::fill_dense_representation(
-    Dense& A,
-    const ClusterTree& node
-  ) const {
-    fill_dense_representation(A, node.rows, node.cols);
+  MatrixInitializerStarshExponential::~MatrixInitializerStarshExponential()  {
+    starsh_ssdata_free((STARSH_ssdata*) starsh_data);
+    free(starsh_index);
   }
 
   void MatrixInitializerStarshExponential::fill_dense_representation(
@@ -44,41 +60,6 @@ namespace hicma
     s_kernel(A.dim[0], A.dim[1], starsh_index + row_range.start,
            starsh_index + col_range.start, starsh_data,
            starsh_data, &A, A.stride);
-  }
-
-  Dense MatrixInitializerStarshExponential::get_dense_representation(
-    const ClusterTree& node
-  ) const {
-    Dense representation(node.rows.n, node.cols.n);
-    fill_dense_representation(representation, node.rows, node.cols);
-    return representation;
-  }
-
-  std::vector<std::vector<double>> MatrixInitializerStarshExponential::get_coords_range(const IndexRange& range) const {
-    STARSH_ssdata *data = (STARSH_ssdata*)starsh_data;
-    double *range_data;
-    double *coords_range_ptr[ndim];
-
-    range_data = data->particles.point + range.start;
-    // store co-ordinates offsets for 0th dimension.
-    coords_range_ptr[0] = range_data;
-    // store co-ordinates offsets for the rest of the dimensions.
-    for (int i = 1; i < ndim; ++i) {
-      // offset along the row data that corresponds to the points
-      // in the ith dimension.
-      coords_range_ptr[i] = range_data + i * N;
-    }
-    //Convert pointer to vector
-    std::vector<std::vector<double>> coords_range;
-    for(int d=0; d<ndim; d++) {
-      coords_range.push_back(std::vector<double>(coords_range_ptr[d], coords_range_ptr[d]+range.n));
-    }
-    return coords_range;
-  }
-
-  MatrixInitializerStarshExponential::~MatrixInitializerStarshExponential()  {
-    starsh_ssdata_free((STARSH_ssdata*) starsh_data);
-    free(starsh_index);
   }
 
 }

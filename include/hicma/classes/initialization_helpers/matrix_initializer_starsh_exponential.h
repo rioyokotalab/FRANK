@@ -1,5 +1,5 @@
-#ifndef MATRIX_INITIALIZER_STARSH_EXPONENTIAL_H
-#define MATRIX_INITIALIZER_STARSH_EXPONENTIAL_H
+#ifndef hicma_classes_initialization_helpers_matrix_initializer_starsh_exponential_h
+#define hicma_classes_initialization_helpers_matrix_initializer_starsh_exponential_h
 
 #include "hicma/definitions.h"
 #include "hicma/classes/dense.h"
@@ -16,9 +16,11 @@ namespace hicma
 {
 
 class ClusterTree;
+class Dense;
 class IndexRange;
 
 class MatrixInitializerStarshExponential : public MatrixInitializer {
+ private:
   int64_t N;
   double beta, nu, noise, sigma;
   int ndim;
@@ -26,29 +28,32 @@ class MatrixInitializerStarshExponential : public MatrixInitializer {
   void *starsh_data;
   STARSH_int * starsh_index;
 
-  public:
-  MatrixInitializerStarshExponential() = delete;
+ public:
+  // Special member function
+  MatrixInitializerStarshExponential();
 
+  ~MatrixInitializerStarshExponential();
+
+  MatrixInitializerStarshExponential(const MatrixInitializerStarshExponential& A) = delete;
+
+  MatrixInitializerStarshExponential& operator=(const MatrixInitializerStarshExponential& A) = delete;
+
+  MatrixInitializerStarshExponential(MatrixInitializerStarshExponential&& A) = delete;
+
+  MatrixInitializerStarshExponential& operator=(MatrixInitializerStarshExponential&& A) = default;
+  
+  // Additional constructors
   MatrixInitializerStarshExponential(
     int64_t N, double beta, double nu, double noise, double sigma, int ndim,
     double admis, int64_t rank, int admis_type
   );
 
-  ~MatrixInitializerStarshExponential();
-
-  // Utility methods
-  void fill_dense_representation(
-    Dense& A, const ClusterTree& node
-  ) const override;
-
   void fill_dense_representation(
     Dense& A, const IndexRange& row_range, const IndexRange& col_range
   ) const override;
-
-  Dense get_dense_representation(const ClusterTree& node) const override;
-
-  std::vector<std::vector<double>> get_coords_range(const IndexRange& range) const override;
+  
 };
-}
 
-#endif /* MATRIX_INITIALIZER_STARSH_EXPONENTIAL_H */
+} // namespace hicma
+
+#endif //hicma_classes_initialization_helpers_matrix_initializer_starsh_exponential_h

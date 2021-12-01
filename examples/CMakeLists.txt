@@ -11,7 +11,7 @@ list(
   "h_lu"
   "rsvd"
   # "blr-lu-exp3d"
-  # "kernel-test"
+  "kernel-test"
 )
 foreach(EXECUTABLE ${EXECUTABLES})
   add_executable(${EXECUTABLE} ${EXECUTABLE}.cpp)
