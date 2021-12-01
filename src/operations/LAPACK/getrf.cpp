@@ -68,7 +68,6 @@ define_method(MatrixPair, getrf_omm, (Hierarchical& A)) {
 define_method(MatrixPair, getrf_omm, (Dense& A)) {
   timing::start("DGETRF");
   Dense L(A.dim[0], A.dim[1]);
-  //add_getrf_task(A, L);
   std::vector<int> ipiv(std::min(A.dim[0], A.dim[1]));
   LAPACKE_dgetrf(
     LAPACK_ROW_MAJOR,

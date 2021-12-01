@@ -383,7 +383,6 @@ define_method(
   for(int64_t i=0; i<HQb.dim[0]; i++) {
     int64_t dim_Bi[2]{get_n_rows(B(i, 0)), get_n_cols(B(i, 0))};
     Dense Qbi(dim_Bi[0], dim_Bi[1]);
-    //add_copy_task(Qb, Qbi, rowOffset, 0);
     Qb.copy_to(Qbi, rowOffset);
     HQb(i, 0) = std::move(Qbi);
     rowOffset += dim_Bi[0];
@@ -450,7 +449,6 @@ void triangularize_block_col(int64_t j, Hierarchical& A, Hierarchical& T) {
     assert(DRj.dim[1] == get_n_cols(Rj(i, 0)));
     int64_t dim_Rij[2]{get_n_rows(Rj(i, 0)), get_n_cols(Rj(i, 0))};
     Dense Rij(dim_Rij[0], dim_Rij[1]);
-    //add_copy_task(DRj, Rij, rowOffset, 0);
     DRj.copy_to(Rij, rowOffset);
     Rj(i, 0) = std::move(Rij);
     rowOffset += dim_Rij[0];

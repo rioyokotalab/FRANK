@@ -87,8 +87,7 @@ define_method(
 
 define_method(void, trsm_omm, (const Dense& A, Dense& B, int uplo, int lr)) {
   timing::start("DTRSM");
-  //add_trsm_task(A, B, uplo, lr);
-    cblas_dtrsm(
+  cblas_dtrsm(
     CblasRowMajor,
     lr==TRSM_LEFT?CblasLeft:CblasRight,
     uplo==TRSM_UPPER?CblasUpper:CblasLower,

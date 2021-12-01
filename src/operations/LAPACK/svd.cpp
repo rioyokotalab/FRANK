@@ -31,7 +31,7 @@ std::tuple<Dense, Dense, Dense> svd(Dense& A) {
   LAPACKE_dgesvd(
     LAPACK_ROW_MAJOR,
     'S', 'S',
-    A.dim[0], A.dim[0],
+    A.dim[0], A.dim[1],
     &A, A.stride,
     &Sdiag[0],
     &U, U.stride,
