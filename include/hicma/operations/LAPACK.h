@@ -20,7 +20,8 @@ class Hierarchical;
 std::tuple<Dense, std::vector<int64_t>> geqp3(Matrix& A);
 
 /**
- * @brief Compute full QR factorization of a general matrix using compact WY representation of \p Q
+ * @brief Compute full Householder QR factorization of a general matrix
+ * using compact WY representation for \p Q
  *
  * @param A
  * M-by-N `Matrix` to be factorized. Overwritten on finish.
@@ -44,6 +45,21 @@ std::tuple<Dense, std::vector<int64_t>> geqp3(Matrix& A);
 void geqrt(Matrix& A, Matrix& T);
 
 void geqrt2(Dense&, Dense&);
+
+/**
+ * @brief Compute reduced QR factorization of a general matrix
+ * using Modified Gram-Schmidt iteration
+ *
+ * @param A
+ * M-by-N `Matrix` to be factorized. Overwritten with \p Q on finish
+ * @param R
+ * N-by-N `Matrix` that is overwritten with upper triangular factor \p R on finish
+ *
+ * This function performs MGS QR factorization
+ * Prior to calling, it is assumed that \p A and \p R have been initialized with proper dimensions.
+ * Upon finish, \p A will be overwritten with the resulting orthogonal factor \p Q.
+ */
+void mgs_qr(Dense&, Dense&);
 
 /**
  * @brief Compute LU factorization of a general matrix

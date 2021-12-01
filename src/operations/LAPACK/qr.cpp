@@ -371,10 +371,9 @@ define_method(
   for(int64_t i=0; i<A.dim[0]; i++) {
     std::tie(Qu(i, 0), B(i, 0)) = make_left_orthogonal(A(i, j));
   }
-  Dense DB(B);
-  Dense Qb(DB.dim[0], DB.dim[1]);
-  Dense Rb(DB.dim[1], DB.dim[1]);
-  qr(DB, Qb, Rb);
+  Dense Qb(B);
+  Dense Rb(Qb.dim[1], Qb.dim[1]);
+  mgs_qr(Qb, Rb);
   R = std::move(Rb);
   //Slice Qb based on B
   Hierarchical HQb(B.dim[0], B.dim[1]);
@@ -518,6 +517,24 @@ define_method(void, rq_omm, (Dense& A, Dense& R, Dense& Q)) {
     LAPACK_ROW_MAJOR, Q.dim[0], Q.dim[1], k, &Q, Q.stride, &tau[0]
   );
   timing::stop("DGERQF");
+}
+
+
+void mgs_qr(Dense& A, Dense& R) {
+  assert(A.dim[1] == R.dim[0]);
+  assert(A.dim[1] == R.dim[1]);
+  for(int j = 0; j < A.dim[1]; j++) {
+    R(j, j) = LAPACKE_dlange(LAPACK_ROW_MAJOR, 'F',
+			     A.dim[0], 1, &A + j, A.dim[1]);
+    double alpha = 1./R(j, j);
+    cblas_dscal(A.dim[0], alpha, &A + j, A.dim[1]);
+    for(int k = j + 1; k < A.dim[1]; k++) {
+      R(j, k) = cblas_ddot(A.dim[0], &A + j, A.dim[1],
+			   &A + k, A.dim[1]);
+      cblas_daxpy(A.dim[0], -R(j, k),
+		  &A + j, A.dim[1], &A + k, A.dim[1]);
+    }
+  }
 }
 
 } // namespace hicma
