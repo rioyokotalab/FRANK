@@ -117,7 +117,6 @@ if(${BUILD_DOCS})
   add_subdirectory(docs)
 endif()
 
-
 ## Testing code
 option(BUILD_TESTS "Build unit and other tests" ON)
 if(${BUILD_TESTS})
@@ -125,6 +124,12 @@ if(${BUILD_TESTS})
   # Enable test for googletest
   enable_testing()
   add_subdirectory(test)
+endif()
+
+## Example Files
+option(BUILD_EXAMPLES "Build example files" ON)
+if(${BUILD_EXAMPLES})
+  add_subdirectory(examples)
 endif()
 
 ## Install instruction
