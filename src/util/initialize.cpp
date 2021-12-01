@@ -33,7 +33,7 @@ class Runtime {
 
 static Runtime runtime;
 
-void initialize(bool init_starpu) {
+void initialize() {
   runtime.start();
 }
 

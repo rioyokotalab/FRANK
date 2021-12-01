@@ -17,7 +17,7 @@ double get_time() {
 using namespace hicma;
 
 int main(int argc, char** argv) {
-  hicma::initialize(false);
+  hicma::initialize();
   int64_t N = argc > 1 ? atoi(argv[1]) : 256;
   int64_t Nb = argc > 2 ? atoi(argv[2]) : 32;
   int64_t rank = argc > 3 ? atoi(argv[3]) : 16;
