@@ -2,6 +2,7 @@
 #include "hicma/extension_headers/classes.h"
 
 #include "hicma/classes/empty.h"
+#include "hicma/classes/data_handler.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
@@ -13,8 +14,6 @@
 #include "hicma/util/omm_error_handler.h"
 #include "hicma/util/print.h"
 #include "hicma/util/timer.h"
-
-#include "hicma_private/starpu_data_handler.h"
 
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;

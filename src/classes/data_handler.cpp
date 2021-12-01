@@ -1,4 +1,4 @@
-#include "hicma_private/starpu_data_handler.h"
+#include "hicma/classes/data_handler.h"
 
 #include "hicma/classes/initialization_helpers/index_range.h"
 
