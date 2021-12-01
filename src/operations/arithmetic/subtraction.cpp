@@ -6,7 +6,6 @@
 #include "hicma/classes/matrix_proxy.h"
 #include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
-#include "hicma/util/pre_scheduler.h"
 
 #include <cassert>
 #include <cstdint>

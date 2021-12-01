@@ -5,7 +5,6 @@
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
 #include "hicma/util/omm_error_handler.h"
-#include "hicma/util/pre_scheduler.h"
 
 #include "yorel/yomm2/cute.hpp"
 

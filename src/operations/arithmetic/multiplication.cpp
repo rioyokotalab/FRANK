@@ -6,7 +6,6 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/util/omm_error_handler.h"
-#include "hicma/util/pre_scheduler.h"
 
 #include <cstdint>
 #include <cstdlib>

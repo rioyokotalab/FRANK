@@ -2,7 +2,6 @@
 
 #include "hicma/classes.h"
 #include "hicma/classes/initialization_helpers/basis_tracker.h"
-#include "hicma/util/pre_scheduler.h"
 
 #include "yorel/yomm2/cute.hpp"
 

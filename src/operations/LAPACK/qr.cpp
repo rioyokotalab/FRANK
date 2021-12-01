@@ -10,7 +10,6 @@
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
-#include "hicma/util/pre_scheduler.h"
 #include "hicma/util/timer.h"
 
 #include "yorel/yomm2/cute.hpp"

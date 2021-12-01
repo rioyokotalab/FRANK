@@ -1,7 +1,6 @@
 #include "hicma/operations/LAPACK.h"
 
 #include "hicma/classes/dense.h"
-#include "hicma/util/pre_scheduler.h"
 #include "hicma/util/timer.h"
 
 #ifdef USE_MKL

@@ -3,7 +3,6 @@
 #include "hicma/classes/dense.h"
 #include "hicma/classes/initialization_helpers/cluster_tree.h"
 #include "hicma/classes/initialization_helpers/matrix_initializer.h"
-#include "hicma/util/pre_scheduler.h"
 
 #include <cstdint>
 

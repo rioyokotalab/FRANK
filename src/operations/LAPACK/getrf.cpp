@@ -10,7 +10,6 @@
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
-#include "hicma/util/pre_scheduler.h"
 #include "hicma/util/timer.h"
 
 #include "yorel/yomm2/cute.hpp"
@@ -36,9 +35,7 @@ namespace hicma
 
 std::tuple<MatrixProxy, MatrixProxy> getrf(Matrix& A) {
   clear_trackers();
-  start_tracking();
   std::tuple<MatrixProxy, MatrixProxy> out = getrf_omm(A);
-  stop_tracking();
   clear_trackers();
   return out;
 }
@@ -77,8 +74,8 @@ define_method(MatrixPair, getrf_omm, (Dense& A)) {
   );
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<i; j++) {
-      L(i,j) = A (i, j);
-      A(i,j) = 0;
+      L(i, j) = A(i, j);
+      A(i, j) = 0;
     }
     L(i, i) = 1;
   }

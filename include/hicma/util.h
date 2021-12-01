@@ -8,7 +8,6 @@
 #include "hicma/util/initialize.h"
 #include "hicma/util/l2_error.h"
 #include "hicma/util/omm_error_handler.h"
-#include "hicma/util/pre_scheduler.h"
 #include "hicma/util/print.h"
 #include "hicma/util/timer.h"
 #include "hicma/util/geometry_file.h"
