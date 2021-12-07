@@ -35,29 +35,5 @@ int main(int argc, char** argv) {
   write_JSON(A1, std::string("cauchy2d-") + std::to_string(N) + std::string("-") + std::to_string(nleaf) + std::string("-") +
            std::to_string(rank) + std::string("-") + std::to_string(admis) + std::string(".json"));
 
-  print("Generate stars-h 3D exponential.");
-  double beta = 0.1;
-  double nu = 0.5;//in matern, nu=0.5 exp (half smooth), nu=inf sqexp (inifinetly smooth)
-  //nu is only used in matern kernel
-  //double noise = 1.e-2; // did not work for 10M in Lorapo
-  double noise = 1.e-1;
-  double sigma = 1.0;
-  starsh::exp_kernel_prepare(N, beta, nu, noise, sigma, 3);
-
-  Hierarchical A2(starsh::exp_kernel_fill, randx, N, N, rank, nleaf, admis,
-                 nblocks, nblocks);
-  write_JSON(A2, std::string("exp-3d-") + std::to_string(N) + std::string("-") + std::to_string(nleaf) + std::string("-") +
-           std::to_string(rank) + std::string("-") + std::to_string(admis) + std::string(".json"));
-  starsh::exp_kernel_cleanup();
-
-
-  starsh::exp_kernel_prepare(N, beta, nu, noise, sigma, 2);
-
-  Hierarchical A3(starsh::exp_kernel_fill, randx, N, N, rank, nleaf, admis,
-                  nblocks, nblocks);
-  write_JSON(A3, std::string("exp-2d-") + std::to_string(N) + std::string("-") + std::to_string(nleaf) + std::string("-") +
-           std::to_string(rank) + std::string("-") + std::to_string(admis) + std::string(".json"));
-  starsh::exp_kernel_cleanup();
-
   return 0;
 }

@@ -223,16 +223,6 @@ void helmholtznd(
   int64_t row_start, int64_t col_start
 );
 
-
-  namespace starsh {
-    void exp_kernel_prepare(int64_t N, double beta, double nu, double noise,
-                            double sigma, int ndim);
-    void exp_kernel_fill(double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-                         const std::vector<std::vector<double>>& x,
-                         int64_t row_start, int64_t col_start);
-    void exp_kernel_cleanup();
-  }
-
 } // namespace hicma
 
 #endif // hicma_functions_h
