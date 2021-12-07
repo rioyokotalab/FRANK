@@ -7,6 +7,7 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
+#include "hicma/classes/initialization_helpers/index_range.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/LAPACK.h"
 #include "hicma/operations/arithmetic.h"
@@ -24,7 +25,6 @@ using yorel::yomm2::virtual_;
 #include <cstdlib>
 #include <tuple>
 #include <utility>
-#include <iostream>
 
 
 namespace hicma
@@ -174,35 +174,32 @@ void naive_addition(LowRank& A, const LowRank& B) {
 void orthogonality_preserving_addition(LowRank& A, const LowRank& B) {
   //Bebendorf HMatrix Book p16
   //Rounded Addition
-  Dense U_combined(get_n_rows(A.U), A.S.dim[1]+B.S.dim[1]);
-  // TODO Assumes A.S.dim[1] == B.S.dim[1]!
-  Hierarchical U_combinedH = split(U_combined, 1, 2, false);
-  gemm(A.U, A.S, U_combinedH[0], 1, 0);
-  gemm(B.U, B.S, U_combinedH[1], 1, 0);
+  //Concat U bases
+  Dense Uc(get_n_rows(A.U), A.S.dim[0]+B.S.dim[0]);
+  IndexRange U_row_range(0, Uc.dim[0]);
+  IndexRange U_col_range(0, Uc.dim[1]);
+  auto Uc_splits = Uc.split({ U_row_range }, U_col_range.split_at(A.S.dim[0]), false);
+  gemm(A.U, A.S, Uc_splits[0], 1, 0);
+  gemm(B.U, B.S, Uc_splits[1], 1, 0);
+  Dense Qu(Uc.dim[0], std::min(Uc.dim[0], Uc.dim[1]));
+  Dense Ru(std::min(Uc.dim[0], Uc.dim[1]), Uc.dim[1]);
+  qr(Uc, Qu, Ru);
 
-  //This will fail if A.rank+B.rank > max(A.dim[0], A.dim[1])
-  //TODO Fix
-  Dense Qu(U_combined.dim[0], U_combined.dim[1]);
-  Dense Ru(U_combined.dim[1], U_combined.dim[1]);
-  qr(U_combined, Qu, Ru);
+  //Concat V bases
+  Dense Vc(A.S.dim[1]+B.S.dim[1], get_n_cols(A.V));
+  IndexRange V_row_range(0, Vc.dim[0]);
+  IndexRange V_col_range(0, Vc.dim[1]);
+  auto Vc_splits = Vc.split(V_row_range.split_at(A.S.dim[1]), { V_col_range }, false);
+  A.V.copy_to(Vc_splits[0]);
+  B.V.copy_to(Vc_splits[1]);
+  Dense Rv(Vc.dim[0], std::min(Vc.dim[0], Vc.dim[1]));
+  Dense Qv(std::min(Vc.dim[0], Vc.dim[1]), Vc.dim[1]);
+  rq(Vc, Rv, Qv);
 
-  // TODO Probably better to do RQ decomposition (maybe make hierarchical
-  // version and avoid copies?)
-  Hierarchical V_mergeH(2, 1);
-  V_mergeH[0] = std::move(A.V);
-  V_mergeH[1] = shallow_copy(B.V);
-  Dense V_merge(V_mergeH);
-  //This will fail if A.rank+B.rank > max(A.dim[0], A.dim[1])
-  //TODO Fix
-  Dense Rv(V_merge.dim[0], V_merge.dim[0]);
-  Dense Qv(V_merge.dim[0], V_merge.dim[1]);
-  rq(V_merge, Rv, Qv);
-
+  //SVD and truncate
   Dense RuRv = gemm(Ru, Rv);
-
   Dense RRU, RRS, RRV;
   std::tie(RRU, RRS, RRV) = svd(RuRv);
-
   A.S = resize(RRS, A.rank, A.rank);
   A.U = gemm(Qu, resize(RRU, RRU.dim[0], A.rank));
   A.V = gemm(resize(RRV, A.rank, RRV.dim[1]), Qv);
