@@ -31,27 +31,6 @@ int main(int argc, char** argv) {
     A = Hierarchical(laplacend, nodes, N, N, rank, Nb, admis, Nc, Nc, POSITION_BASED_ADMIS);
     outName <<"Laplace1D_"<<N;
   }
-  else if(inputName == "starsh") { // 3D Exponential kernel from Stars-H
-    /* Temporarily disabled
-    //Use starsh 3D exponential kernel
-    //Default parameters for statistics
-    double beta = 0.1;
-    double nu = 0.5;//in matern, nu=0.5 exp (half smooth), nu=inf sqexp (inifinetly smooth)
-    double noise = 1.e-1;
-    double sigma = 1.0;
-    int ndim = 3;
-    D = Hierarchical(N, Nb, Nc, beta, nu, noise, sigma, ndim, (double)Nc, Nb, NORMAL_BASIS, POSITION_BASED_ADMIS);
-    A = Hierarchical(N, Nb, Nc, beta, nu, noise, sigma, ndim, admis, rank, NORMAL_BASIS, GEOMETRY_BASED_ADMIS);
-
-    std::vector<std::vector<double>> randx{get_sorted_random_vector(N)};
-    starsh::exp_kernel_prepare(N, beta, nu, noise, sigma, ndim);
-    D = Hierarchical(starsh::exp_kernel_fill, randx, N, N, Nb, Nb, (double)Nc);
-    A = Hierarchical(starsh::exp_kernel_fill, randx, N, N, rank, Nb, admis);
-    outName <<"Stars-H_Exponential_3D_"<<N;
-    */
-    std::cout <<"Stars-H kernels are temporarily disabled" <<std::endl;
-    return 0;
-  }
   else { // Read matrix (.csv) and geometry information (.geom)
     nodes = read_geometry_file(inputName+".geom");
     D = Hierarchical(inputName+".csv", HICMA_ROW_MAJOR, nodes, N, N, 0, Nb, Nc, Nc, Nc);

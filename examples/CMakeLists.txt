@@ -10,7 +10,6 @@ list(
   "blocked_mgs_h_qr"
   "h_lu"
   "rsvd"
-  # "blr-lu-exp3d"
   "kernel-test"
 )
 foreach(EXECUTABLE ${EXECUTABLES})
