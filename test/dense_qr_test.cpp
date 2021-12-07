@@ -24,17 +24,17 @@ TEST_P(QRTests, DenseQr) {
   // Check accuracy
   for (int64_t i = 0; i < m; i++) {
     for (int64_t j = 0; j < n; j++) {
-      EXPECT_NEAR(A_copy(i, j), A_rebuilt(i, j), 10e-12);
+      EXPECT_NEAR(A_copy(i, j), A_rebuilt(i, j), 1e-12);
     }
   }
   // Check orthogonality
-  hicma:: Dense QTQ = gemm(Q, Q, 1, true, false);
-  for (int64_t i = 0; i < Q.dim[0]; i++) {
-    for (int64_t j = 0; j < Q.dim[1]; j++) {
+  hicma::Dense QtQ = gemm(Q, Q, 1, true, false);
+  for (int64_t i = 0; i < QtQ.dim[0]; i++) {
+    for (int64_t j = 0; j < QtQ.dim[1]; j++) {
       if (i == j)
-        EXPECT_NEAR(QTQ(i, j), 1.0, 10e-14);
+        EXPECT_NEAR(QtQ(i, j), 1.0, 1e-14);
       else
-        EXPECT_NEAR(QTQ(i, j), 0.0, 10e-14);
+        EXPECT_NEAR(QtQ(i, j), 0.0, 1e-14);
     }
   }
 }
@@ -45,33 +45,32 @@ TEST_P(QRTests, DenseRq) {
 
   hicma::initialize();
   std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m>n?m:n)};
-  hicma::Dense A(hicma::laplacend, randx_A, m, n);
+  hicma::Dense A(hicma::laplacend, randx_A, n, m);
   hicma::Dense A_copy(A);
-  hicma::Dense Q(k, n), R(m, k);
+  hicma::Dense R(n, k), Q(k, m);
   hicma::rq(A, R, Q);
   hicma::Dense A_rebuilt = hicma::gemm(R, Q);
 
   // Check accuracy
-  for (int64_t i = 0; i < m; i++) {
-    for (int64_t j = 0; j < n; j++) {
-      EXPECT_NEAR(A_copy(i, j), A_rebuilt(i, j), 10e-12);
+  for (int64_t i = 0; i < n; i++) {
+    for (int64_t j = 0; j < m; j++) {
+      EXPECT_NEAR(A_copy(i, j), A_rebuilt(i, j), 1e-12);
     }
   }
   // Check orthogonality
-  hicma:: Dense QTQ = gemm(Q, Q, 1, true, false);
-  for (int64_t i = 0; i < Q.dim[0]; i++) {
-    for (int64_t j = 0; j < Q.dim[1]; j++) {
+  hicma::Dense QQt = gemm(Q, Q, 1, false, true);
+  for (int64_t i = 0; i < QQt.dim[0]; i++) {
+    for (int64_t j = 0; j < QQt.dim[1]; j++) {
       if (i == j)
-        EXPECT_NEAR(QTQ(i, j), 1.0, 10e-14);
+        EXPECT_NEAR(QQt(i, j), 1.0, 1e-14);
       else
-        EXPECT_NEAR(QTQ(i, j), 0.0, 10e-14);
+        EXPECT_NEAR(QQt(i, j), 0.0, 1e-14);
     }
   }
 }
 
-//TODO ONLY works for square matrices
 INSTANTIATE_TEST_SUITE_P(LAPACK, QRTests,
-                         testing::Values(//std::make_tuple(16, 16, 16),
-                                         //std::make_tuple(16, 8, 16),
-                                         std::make_tuple(16, 16, 16),
-                                         std::make_tuple(8, 8, 8)));
+                         testing::Values(std::make_tuple(16, 16, 16),
+                                         std::make_tuple(16, 8, 16),
+                                         std::make_tuple(16, 8, 8),
+                                         std::make_tuple(8, 16, 8)));
