@@ -240,15 +240,12 @@ std::vector<Dense> Dense::split(
       }
     }
   } else {
-    //std::vector<std::shared_ptr<std::vector<double>>>  = data->split(
-    //  data, row_ranges, col_ranges
-    //);
     for (uint64_t i=0; i<row_ranges.size(); ++i) {
       for (uint64_t j=0; j<col_ranges.size(); ++j) {
         Dense child;
         child.dim = {row_ranges[i].n, col_ranges[j].n};
         child.stride = stride;
-        child.data = data;//child_handlers[i*col_ranges.size()+j];
+        child.data = data;
         child.rel_start[0] = rel_start[0] + row_ranges[i].start;
         child.rel_start[1] = rel_start[1] + col_ranges[j].start;
         child.data_ptr = &(*child.data)[
