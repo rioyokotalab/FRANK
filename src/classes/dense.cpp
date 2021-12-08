@@ -2,7 +2,6 @@
 #include "hicma/extension_headers/classes.h"
 
 #include "hicma/classes/empty.h"
-#include "hicma/classes/data_handler.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
@@ -35,7 +34,8 @@ Dense::Dense(const Dense& A)
   unique_id(next_unique_id++)
 {
   timing::start("Dense cctor");
-  data = std::make_shared<DataHandler>(dim[0], dim[1], 0);
+  //TODO create instead of resize?
+  (*data).resize(dim[0]*dim[1], 0);
   data_ptr = &(*data)[0];
   fill_dense_from(A, *this);
   timing::stop("Dense cctor");
@@ -46,7 +46,7 @@ Dense& Dense::operator=(const Dense& A) {
   Matrix::operator=(A);
   dim = A.dim;
   stride = A.stride;
-  data = std::make_shared<DataHandler>(dim[0], dim[1], 0);
+  (*data).resize(dim[0]*dim[1], 0);
   rel_start = {0, 0};
   data_ptr = &(*data)[0];
   fill_dense_from(A, *this);
@@ -57,7 +57,7 @@ Dense& Dense::operator=(const Dense& A) {
 
 Dense::Dense(const Matrix& A)
 : Matrix(A), dim{get_n_rows(A), get_n_cols(A)}, stride(dim[1]),
-  data(std::make_shared<DataHandler>(dim[0], dim[1], 0)),
+  data(std::make_shared<std::vector<double>>(dim[0]*dim[1], 0)),
   rel_start{0, 0}, data_ptr(&(*data)[0]), unique_id(next_unique_id++)
 {
   fill_dense_from(A, *this);
@@ -114,7 +114,7 @@ define_method(Dense&&, move_from_dense, (Matrix& A)) {
 Dense::Dense(int64_t n_rows, int64_t n_cols)
 : dim{n_rows, n_cols}, stride(dim[1]), unique_id(next_unique_id++) {
   timing::start("Dense alloc");
-  data = std::make_shared<DataHandler>(dim[0], dim[1], 0);
+  (*data).resize(dim[0]*dim[1], 0);
   rel_start = {0, 0};
   data_ptr = &(*data)[0];
   timing::stop("Dense alloc");
@@ -240,15 +240,15 @@ std::vector<Dense> Dense::split(
       }
     }
   } else {
-    std::vector<std::shared_ptr<DataHandler>> child_handlers = data->split(
-      data, row_ranges, col_ranges
-    );
+    //std::vector<std::shared_ptr<std::vector<double>>>  = data->split(
+    //  data, row_ranges, col_ranges
+    //);
     for (uint64_t i=0; i<row_ranges.size(); ++i) {
       for (uint64_t j=0; j<col_ranges.size(); ++j) {
         Dense child;
         child.dim = {row_ranges[i].n, col_ranges[j].n};
         child.stride = stride;
-        child.data = child_handlers[i*col_ranges.size()+j];
+        child.data = data;//child_handlers[i*col_ranges.size()+j];
         child.rel_start[0] = rel_start[0] + row_ranges[i].start;
         child.rel_start[1] = rel_start[1] + col_ranges[j].start;
         child.data_ptr = &(*child.data)[

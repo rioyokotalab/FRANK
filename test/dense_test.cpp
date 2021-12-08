@@ -41,6 +41,7 @@ TEST(DenseTest, Split1DTest) {
   Dense D(random_uniform, std::vector<std::vector<double>>(), N, N);
   Hierarchical DH = split(D, nblocks, nblocks);
   Hierarchical DH_copy = split(D, nblocks, nblocks, true);
+    
   for (int64_t ib=0; ib<nblocks; ++ib) {
     for (int64_t jb=0; jb<nblocks; ++jb) {
       Dense D_compare = DH(ib, jb) - DH_copy(ib, jb);

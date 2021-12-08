@@ -23,7 +23,6 @@
 namespace hicma
 {
 
-class DataHandler;
 class IndexRange;
 class Task;
 
@@ -53,7 +52,8 @@ class Dense : public Matrix {
   int64_t stride = 0;
  private:
   // Handler of the representation in memory
-  std::shared_ptr<DataHandler> data;
+  std::shared_ptr<std::vector<double>> data = 
+    std::make_shared<std::vector<double>>();
   // Relative position inside a possible larger array in memory.
   std::array<int64_t, 2> rel_start = {0, 0};
   // Pointer used to speed up the indexing into submatrices. Will point to the
