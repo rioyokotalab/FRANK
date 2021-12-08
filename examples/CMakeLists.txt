@@ -9,7 +9,6 @@ list(
   "tiled_householder_blr_qr"
   "blocked_mgs_h_qr"
   "h_lu"
-  "rsvd"
   "kernel-test"
 )
 foreach(EXECUTABLE ${EXECUTABLES})
