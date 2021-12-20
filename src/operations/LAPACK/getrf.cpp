@@ -6,7 +6,6 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
-#include "hicma/classes/initialization_helpers/basis_tracker.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
@@ -34,9 +33,7 @@ namespace hicma
 {
 
 std::tuple<MatrixProxy, MatrixProxy> getrf(Matrix& A) {
-  clear_trackers();
   std::tuple<MatrixProxy, MatrixProxy> out = getrf_omm(A);
-  clear_trackers();
   return out;
 }
 
