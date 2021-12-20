@@ -20,16 +20,8 @@ class IDTests : public testing::TestWithParam<std::tuple<int64_t, int64_t>> {
       std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(2*n)};
       A = hicma::Dense(hicma::laplacend, randx_A, n, n, 0, n);
       A_work = A;
-      //std::cout<<n<<" "<<A(0,0)<<std::endl;
-      //A = new MixFitS::DenseMatrix<double>("../test/testdata/A_IR.csv");
-      //b = new MixFitS::DenseMatrix<double>("../test/testdata/b_error.csv");
-    }
-    void TearDown() override {
-      //delete A;
-      //delete b;
     }
     hicma::Dense A, A_work, A_check;
-    //MixFitS::ErrorLogger<double, MixFitS::DenseMatrix> err;
 };
 
 TEST_P(IDTests, ID) {
