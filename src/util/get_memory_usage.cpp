@@ -22,7 +22,6 @@ namespace hicma
 
 unsigned long get_memory_usage(const Matrix& A, bool include_structure) {
   unsigned long memory_usage = get_memory_usage_omm(A, include_structure);
-  clear_tracker("memory_usage");
   return memory_usage;
 }
 
@@ -30,10 +29,6 @@ define_method(
   unsigned long, get_memory_usage_omm,
   (const Dense& A, bool include_structure)
 ) {
-  // If already tracked, return size 0
-  if (matrix_is_tracked("memory_usage", A)) return 0;
-  // Otherwise register with tracker and calculate size
-  register_matrix("memory_usage", A);
   unsigned long memory_usage = 0;
   memory_usage += A.dim[0]*A.dim[1]*sizeof(A[0]);
   if (include_structure) {

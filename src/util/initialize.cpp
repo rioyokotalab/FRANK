@@ -1,7 +1,5 @@
 #include "hicma/util/initialize.h"
-
 #include "hicma/classes.h"
-#include "hicma/classes/initialization_helpers/basis_tracker.h"
 
 #include "yorel/yomm2/cute.hpp"
 
@@ -20,9 +18,7 @@ class Runtime {
  public:
   Runtime() {}
 
-  ~Runtime() {
-    clear_trackers();
-  }
+  ~Runtime() {}
 
   void start() {
     // Update virtual tables for open multi methods
