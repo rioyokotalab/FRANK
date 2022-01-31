@@ -27,9 +27,13 @@ using yorel::yomm2::virtual_;
 namespace hicma
 {
 
+//only double matrix is available
+template class Dense<double>;
+
 uint64_t next_unique_id = 0;
 
-Dense::Dense(const Dense& A)
+template<typename T>
+Dense<T>::Dense(const Dense<T>& A)
 : Matrix(A), dim{A.dim[0], A.dim[1]}, stride(A.dim[1]), rel_start{0, 0},
   unique_id(next_unique_id++)
 {
@@ -41,7 +45,8 @@ Dense::Dense(const Dense& A)
   timing::stop("Dense cctor");
 }
 
-Dense& Dense::operator=(const Dense& A) {
+template<typename T>
+Dense<T>& Dense<T>::operator=(const Dense<T>& A) {
   timing::start("Dense copy assignment");
   Matrix::operator=(A);
   dim = A.dim;
@@ -55,7 +60,8 @@ Dense& Dense::operator=(const Dense& A) {
   return *this;
 }
 
-Dense::Dense(const Matrix& A)
+template<typename T>
+Dense<T>::Dense(const Matrix& A)
 : Matrix(A), dim{get_n_rows(A), get_n_cols(A)}, stride(dim[1]),
   data(std::make_shared<std::vector<double>>(dim[0]*dim[1], 0)),
   rel_start{0, 0}, data_ptr(&(*data)[0]), unique_id(next_unique_id++)
@@ -63,7 +69,7 @@ Dense::Dense(const Matrix& A)
   fill_dense_from(A, *this);
 }
 
-define_method(void, fill_dense_from, (const Hierarchical& A, Dense& B)) {
+define_method(void, fill_dense_from, (const Hierarchical& A, Dense<double>& B)) {
   timing::start("make_dense(H)");
   Hierarchical BH = split(B, A);
   for (int64_t i=0; i<A.dim[0]; i++) {
@@ -74,19 +80,19 @@ define_method(void, fill_dense_from, (const Hierarchical& A, Dense& B)) {
   timing::stop("make_dense(H)");
 }
 
-define_method(void, fill_dense_from, (const LowRank& A, Dense& B)) {
+define_method(void, fill_dense_from, (const LowRank& A, Dense<double>& B)) {
   timing::start("make_dense(LR)");
   gemm(gemm(A.U, A.S), A.V, B, 1, 0);
   timing::stop("make_dense(LR)");
 }
 
-define_method(void, fill_dense_from, (const Dense& A, Dense& B)) {
+define_method(void, fill_dense_from, (const Dense<double>& A, Dense<double>& B)) {
   assert(A.dim[0] == B.dim[0]);
   assert(A.dim[1] == B.dim[1]);
   A.copy_to(B);
 }
 
-define_method(void, fill_dense_from, (const Empty& A, Dense& B)) {
+define_method(void, fill_dense_from, (const Empty& A, Dense<double>& B)) {
   assert(A.dim[0] == B.dim[0]);
   assert(A.dim[1] == B.dim[1]);
   B = 0.0;
@@ -97,21 +103,23 @@ define_method(void, fill_dense_from, (const Matrix& A, Matrix& B)) {
   std::abort();
 }
 
-declare_method(Dense&&, move_from_dense, (virtual_<Matrix&>))
+declare_method(Dense<double>&&, move_from_dense, (virtual_<Matrix&>))
 
-Dense::Dense(MatrixProxy&& A)
+template<typename T>
+Dense<T>::Dense(MatrixProxy&& A)
 : Dense(move_from_dense(A)) {}
 
-define_method(Dense&&, move_from_dense, (Dense& A)) {
+define_method(Dense<double>&&, move_from_dense, (Dense<double>& A)) {
   return std::move(A);
 }
 
-define_method(Dense&&, move_from_dense, (Matrix& A)) {
+define_method(Dense<double>&&, move_from_dense, (Matrix& A)) {
   omm_error_handler("move_from_dense", {A}, __FILE__, __LINE__);
   std::abort();
 }
 
-Dense::Dense(int64_t n_rows, int64_t n_cols)
+template<typename T>
+Dense<T>::Dense(int64_t n_rows, int64_t n_cols)
 : dim{n_rows, n_cols}, stride(dim[1]), unique_id(next_unique_id++) {
   timing::start("Dense alloc");
   (*data).resize(dim[0]*dim[1], 0);
@@ -120,13 +128,14 @@ Dense::Dense(int64_t n_rows, int64_t n_cols)
   timing::stop("Dense alloc");
 }
 
-Dense::Dense(
+template<typename T>
+Dense<T>::Dense(
   void (*kernel)(
-    double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-    const std::vector<std::vector<double>>& params,
+    T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+    const std::vector<std::vector<T>>& params,
     int64_t row_start, int64_t col_start
   ),
-  const std::vector<std::vector<double>>& params,
+  const std::vector<std::vector<T>>& params,
   int64_t n_rows, int64_t n_cols,
   int64_t row_start, int64_t col_start
 ) : Dense(n_rows, n_cols) {
@@ -135,20 +144,22 @@ Dense::Dense(
     );
 }
 
-Dense::Dense(
+template<typename T>
+Dense<T>::Dense(
   std::string filename, MatrixLayout ordering,
   int64_t n_rows, int64_t n_cols,
   int64_t row_start, int64_t col_start
 ) : Dense(n_rows, n_cols) {
   MatrixInitializerFile initializer(filename, ordering, 0, 0,
-				    std::vector<std::vector<double>>(),
+				    std::vector<std::vector<T>>(),
 				    POSITION_BASED_ADMIS);
   initializer.fill_dense_representation(*this,
 					{row_start, n_rows},
 					{col_start, n_cols});
 }
 
-void Dense::copy_to(Dense &A, int64_t row_start, int64_t col_start) const {
+template<typename T>
+void Dense<T>::copy_to(Dense<T> &A, int64_t row_start, int64_t col_start) const {
   assert(dim[0]-row_start >= A.dim[0]);
   assert(dim[1]-col_start >= A.dim[1]);
   for (int64_t i=0; i<A.dim[0]; i++) {
@@ -158,7 +169,8 @@ void Dense::copy_to(Dense &A, int64_t row_start, int64_t col_start) const {
   }
 }
 
-Dense& Dense::operator=(const double a) {
+template<typename T>
+Dense<T>& Dense<T>::operator=(const T a) {
   for (int64_t i=0; i<dim[0]; i++) {
     for (int64_t j=0; j<dim[1]; j++) {
       (*this)(i, j) = a;
@@ -167,7 +179,8 @@ Dense& Dense::operator=(const double a) {
   return *this;
 }
 
-double& Dense::operator[](int64_t i) {
+template<typename T>
+T& Dense<T>::operator[](int64_t i) {
   assert(dim[0] == 1 || dim[1] == 1);
   if (dim[0] == 1) {
     assert(i < dim[1]);
@@ -178,7 +191,8 @@ double& Dense::operator[](int64_t i) {
   }
 }
 
-const double& Dense::operator[](int64_t i) const {
+template<typename T>
+const T& Dense<T>::operator[](int64_t i) const {
   assert(dim[0] == 1 || dim[1] == 1);
   if (dim[0] == 1) {
     assert(i < dim[1]);
@@ -189,23 +203,28 @@ const double& Dense::operator[](int64_t i) const {
   }
 }
 
-double& Dense::operator()(int64_t i, int64_t j) {
+template<typename T>
+T& Dense<T>::operator()(int64_t i, int64_t j) {
   assert(i < dim[0]);
   assert(j < dim[1]);
   return data_ptr[i*stride+j];
 }
 
-const double& Dense::operator()(int64_t i, int64_t j) const {
+template<typename T>
+const T& Dense<T>::operator()(int64_t i, int64_t j) const {
   assert(i < dim[0]);
   assert(j < dim[1]);
   return data_ptr[i*stride+j];
 }
 
-double* Dense::operator&() { return data_ptr; }
+template<typename T>
+T* Dense<T>::operator&() { return data_ptr; }
 
-const double* Dense::operator&() const { return data_ptr; }
+template<typename T>
+const T* Dense<T>::operator&() const { return data_ptr; }
 
-Dense Dense::shallow_copy() const {
+template<typename T>
+Dense<T> Dense<T>::shallow_copy() const {
   Dense out;
   out.dim = dim;
   out.stride = stride;
@@ -216,25 +235,28 @@ Dense Dense::shallow_copy() const {
   return out;
 }
 
-bool Dense::is_submatrix() const {
+template<typename T>
+bool Dense<T>::is_submatrix() const {
   bool out = (rel_start == std::array<int64_t, 2>{0, 0});
   // TODO Think about int64_t!
   out &= (data->size() == uint64_t(dim[0] * dim[1]));
   return !out;
 }
 
-uint64_t Dense::id() const { return unique_id; }
+template<typename T>
+uint64_t Dense<T>::id() const { return unique_id; }
 
-std::vector<Dense> Dense::split(
+template<typename T>
+std::vector<Dense<T>> Dense<T>::split(
   const std::vector<IndexRange>& row_ranges,
   const std::vector<IndexRange>& col_ranges,
   bool copy
 ) const {
-  std::vector<Dense> out(row_ranges.size()*col_ranges.size());
+  std::vector<Dense<T>> out(row_ranges.size()*col_ranges.size());
   if (copy) {
     for (uint64_t i=0; i<row_ranges.size(); ++i) {
       for (uint64_t j=0; j<col_ranges.size(); ++j) {
-        Dense child(row_ranges[i].n, col_ranges[j].n);
+        Dense<T> child(row_ranges[i].n, col_ranges[j].n);
         (*this).copy_to(child, row_ranges[i].start, col_ranges[j].start);
         out[i*col_ranges.size()+j] = std::move(child);
       }
@@ -242,7 +264,7 @@ std::vector<Dense> Dense::split(
   } else {
     for (uint64_t i=0; i<row_ranges.size(); ++i) {
       for (uint64_t j=0; j<col_ranges.size(); ++j) {
-        Dense child;
+        Dense<T> child;
         child.dim = {row_ranges[i].n, col_ranges[j].n};
         child.stride = stride;
         child.data = data;
@@ -259,7 +281,8 @@ std::vector<Dense> Dense::split(
   return out;
 }
 
-std::vector<Dense> Dense::split(
+template<typename T>
+std::vector<Dense<T>> Dense<T>::split(
   uint64_t n_row_splits, uint64_t n_col_splits, bool copy
 ) const {
   IndexRange row_index(0, dim[0]), col_index(0, dim[1]);

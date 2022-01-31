@@ -24,7 +24,6 @@ namespace hicma
 {
 
 class IndexRange;
-class Task;
 
 /**
  * @brief Class handling a regular dense matrix
@@ -32,10 +31,8 @@ class Task;
  * In HiCMA, only the `Dense` class handles actual matrix elements. All other
  * classes are composites of `Dense` matrices.
  */
+template<typename T = double>
 class Dense : public Matrix {
-  // TODO Find way to avoid using friend here! Best not to rely on it.
-  // Also don't wanna expose the DataHandler directly though...
-  friend Task;
  public:
   /**
    * @brief Dimension of the matrix {rows, columns}
@@ -52,15 +49,15 @@ class Dense : public Matrix {
   int64_t stride = 0;
  private:
   // Handler of the representation in memory
-  std::shared_ptr<std::vector<double>> data = 
-    std::make_shared<std::vector<double>>();
+  std::shared_ptr<std::vector<T>> data = 
+    std::make_shared<std::vector<T>>();
   // Relative position inside a possible larger array in memory.
   std::array<int64_t, 2> rel_start = {0, 0};
   // Pointer used to speed up the indexing into submatrices. Will point to the
   // beginning of the array in memory. Without this pointer, rel_start would
   // need to be used every time the indexing operator is called, leading to
   // measurable performance decrease.
-  double* data_ptr = nullptr;
+  T* data_ptr = nullptr;
   // Shared-unique ID. Shared with Dense matrices that this matrix shares its
   // data with, otherwise unique.
   // TODO Consider moving this to the DataHandler class.
@@ -182,11 +179,11 @@ class Dense : public Matrix {
    */
   Dense(
     void (*kernel)(
-      double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-      const std::vector<std::vector<double>>& params,
+      T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+      const std::vector<std::vector<T>>& params,
       int64_t row_start, int64_t col_start
     ),
-    const std::vector<std::vector<double>>& params,
+    const std::vector<std::vector<T>>& params,
     int64_t n_rows, int64_t n_cols=1,
     int64_t row_start=0, int64_t col_start=0
   );
@@ -217,7 +214,7 @@ class Dense : public Matrix {
    * @return const Dense&
    * Reference to the modified `Dense` matrix.
    */
-  Dense& operator=(const double a);
+  Dense& operator=(const T a);
 
   // TODO Consider removing one-dimensional indexing.
   /**
@@ -233,7 +230,7 @@ class Dense : public Matrix {
    * It works for both row and column vectors, and also if the vector is part of
    * a larger matrix in memory (stride is used).
    */
-  double& operator[](int64_t i);
+  T& operator[](int64_t i);
 
   /**
    * @brief Access elements of `Dense` matrix assuming it is a vector
@@ -245,7 +242,7 @@ class Dense : public Matrix {
    *
    * Same as `operator[](int64_t)`, but a constant reference is returned.
    */
-  const double& operator[](int64_t i) const;
+  const T& operator[](int64_t i) const;
 
   /**
    * @brief Access elements of `Dense` matrix
@@ -257,7 +254,7 @@ class Dense : public Matrix {
    * @return double&
    * Reference to the matrix element at (\p i, \p j)
    */
-  double& operator()(int64_t i, int64_t j);
+  T& operator()(int64_t i, int64_t j);
 
   /**
    * @brief Access elements of `Dense` matrix
@@ -269,7 +266,7 @@ class Dense : public Matrix {
    * @return double&
    * Constant reference to the matrix element at (\p i, \p j)
    */
-  const double& operator()(int64_t i, int64_t j) const;
+  const T& operator()(int64_t i, int64_t j) const;
 
   /**
    * @brief Get pointer to start of array in memory
@@ -281,7 +278,7 @@ class Dense : public Matrix {
    * continuous arrays in memory. This operator returns the pointer for a
    * `Dense` matrix.
    */
-  double* operator&();
+  T* operator&();
 
 
   /**
@@ -292,7 +289,7 @@ class Dense : public Matrix {
    *
    * Same as `::operator&()`, but returns a constant pointer.
    */
-  const double* operator&() const;
+  const T* operator&() const;
 
   // Utility methods
   /**
