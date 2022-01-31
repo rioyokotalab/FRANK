@@ -27,6 +27,7 @@ using yorel::yomm2::virtual_;
 namespace hicma
 {
 
+//explicit template initialization
 //only double matrix is available
 template class Dense<double>;
 
@@ -80,7 +81,7 @@ define_method(void, fill_dense_from, (const Hierarchical& A, Dense<double>& B)) 
   timing::stop("make_dense(H)");
 }
 
-define_method(void, fill_dense_from, (const LowRank& A, Dense<double>& B)) {
+define_method(void, fill_dense_from, (const LowRank<double>& A, Dense<double>& B)) {
   timing::start("make_dense(LR)");
   gemm(gemm(A.U, A.S), A.V, B, 1, 0);
   timing::stop("make_dense(LR)");
