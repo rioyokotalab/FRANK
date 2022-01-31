@@ -48,7 +48,7 @@ class LowRank : public Matrix {
    * If an SVD decomposition was used to construct the low-rank representation,
    * then #U is the column basis of the compressed matrix.
    */
-  Dense U;
+  Dense<double> U;
   /**
    * @brief Second factor of the decomposed matrix
    *
@@ -56,14 +56,14 @@ class LowRank : public Matrix {
    * then #S is a diagonal matrix containing the singular values on its
    * diagonal.
    */
-  Dense S;
+  Dense<double> S;
   /**
    * @brief Third factor of the decomposed matrix
    *
    * If an SVD decomposition was used to construct the low-rank representation,
    * then #V is the row basis of the compressed matrix.
    */
-  Dense V;
+  Dense<double> V;
 
   // Special member functions
   LowRank() = default;
@@ -107,7 +107,7 @@ class LowRank : public Matrix {
    * A randomized SVD is used to factorize \p A into three matrices #U, #S and
    * #V.
    */
-  LowRank(const Dense& A, int64_t rank);
+  LowRank(const Dense<double>& A, int64_t rank);
 
   /**
    * @brief Construct a new `LowRank` object from the three factors
@@ -124,7 +124,7 @@ class LowRank : public Matrix {
    * Note that shallow copies resulting in shared data will be made of \p U and
    * \p V, whereas this depends on \p copy_S for \p S.
    */
-  LowRank(const Matrix& U, const Dense& S, const Matrix& V, bool copy=true);
+  LowRank(const Matrix& U, const Dense<double>& S, const Matrix& V, bool copy=true);
 
 
   /**
@@ -140,7 +140,7 @@ class LowRank : public Matrix {
    * This constructor will move the `Dense` objects passed to it into the new
    * `LowRank`.
    */
-  LowRank(Dense&& U, Dense&& S, Dense&& V);
+  LowRank(Dense<double>&& U, Dense<double>&& S, Dense<double>&& V);
 };
 
 } // namespace hicma

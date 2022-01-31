@@ -33,7 +33,7 @@ void tpmqrt(
 
 define_method(
   void, tpmqrt_omm,
-  (const Dense& V, const Dense& T, Dense& A, Dense& B, bool trans)
+  (const Dense<double>& V, const Dense<double>& T, Dense<double>& A, Dense<double>& B, bool trans)
 ) {
   LAPACKE_dtprfb(
     LAPACK_ROW_MAJOR,
@@ -48,14 +48,14 @@ define_method(
 
 define_method(
   void, tpmqrt_omm,
-  (const LowRank& V, const Dense& T, Dense& A, Dense& B, bool trans)
+  (const LowRank& V, const Dense<double>& T, Dense<double>& A, Dense<double>& B, bool trans)
 ) {
-  Dense C(A);
+  Dense<double> C(A);
   LowRank Vt = transpose(V);
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(
-    Dense(identity, std::vector<std::vector<double>>(), C.dim[0], C.dim[0]),
+    Dense<double>(identity, std::vector<std::vector<double>>(), C.dim[0], C.dim[0]),
     C, A, -1, 1
   ); //A = A - I*C
   gemm(V, C, B, -1, 1); //B = B - Y*C
@@ -63,13 +63,13 @@ define_method(
 
 define_method(
   void, tpmqrt_omm,
-  (const Dense& V, const Dense& T, LowRank& A, Dense& B, bool trans)
+  (const Dense<double>& V, const Dense<double>& T, LowRank& A, Dense<double>& B, bool trans)
 ) {
-  Dense C(A);
+  Dense<double> C(A);
   gemm(V, B, C, 1, 1, true, false); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(
-    Dense(identity, std::vector<std::vector<double>>(), C.dim[0], C.dim[0]),
+    Dense<double>(identity, std::vector<std::vector<double>>(), C.dim[0], C.dim[0]),
     C, A, -1, 1
   ); //A = A - I*C //Recompression
   gemm(V, C, B, -1, 1); //B = B - Y*C
@@ -77,14 +77,14 @@ define_method(
 
 define_method(
   void, tpmqrt_omm,
-  (const LowRank& V, const Dense& T, LowRank& A, Dense& B, bool trans)
+  (const LowRank& V, const Dense<double>& T, LowRank& A, Dense<double>& B, bool trans)
 ) {
   LowRank C(A);
   LowRank Vt = transpose(V);
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(
-    Dense(identity, std::vector<std::vector<double>>(), C.dim[0], C.dim[0]),
+    Dense<double>(identity, std::vector<std::vector<double>>(), C.dim[0], C.dim[0]),
     C, A, -1, 1
   ); //A = A - I*C
   gemm(V, C, B, -1, 1); //B = B - Y*C
@@ -92,10 +92,10 @@ define_method(
 
 define_method(
   void, tpmqrt_omm,
-  (const Dense& V, const Dense& T, Hierarchical& A, Dense& B, bool trans)
+  (const Dense<double>& V, const Dense<double>& T, Hierarchical& A, Dense<double>& B, bool trans)
 ) {
-  Dense Vt = transpose(V);
-  Dense T_upper_tri(T);
+  Dense<double> Vt = transpose(V);
+  Dense<double> T_upper_tri(T);
   for(int64_t i=0; i<T_upper_tri.dim[0]; i++)
     for(int64_t j=0; j<i; j++)
       T_upper_tri(i, j) = 0.0;
@@ -103,32 +103,32 @@ define_method(
   gemm(Vt, B, AH, 1, 1); // AH = A + Vt*B
   if(trans) T_upper_tri = transpose(T_upper_tri);
   gemm(T_upper_tri, AH, A, -1, 1); // A = A - (T or Tt)*AH
-  Dense VTt = gemm(V, T_upper_tri);
+  Dense<double> VTt = gemm(V, T_upper_tri);
   gemm(VTt, AH, B, -1, 1); // B = B - V*(T or Tt)*AH
 }
 
 define_method(
   void, tpmqrt_omm,
   (
-    const Hierarchical& V, const Hierarchical& T, Hierarchical& A, Dense& B,
+    const Hierarchical& V, const Hierarchical& T, Hierarchical& A, Dense<double>& B,
     bool trans
   )
 ) {
   Hierarchical BH = split(B, A.dim[0], A.dim[1], true);
   tpmqrt(V, T, A, BH, trans);
-  B = Dense(BH);
+  B = Dense<double>(BH);
 }
 
 define_method(
   void, tpmqrt_omm,
-  (const Dense& V, const Dense& T, Dense& A, LowRank& B, bool trans)
+  (const Dense<double>& V, const Dense<double>& T, Dense<double>& A, LowRank& B, bool trans)
 ) {
-  Dense C(A);
-  Dense Vt = transpose(V);
+  Dense<double> C(A);
+  Dense<double> Vt = transpose(V);
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(
-    Dense(identity, std::vector<std::vector<double>>(), C.dim[0], C.dim[0]),
+    Dense<double>(identity, std::vector<std::vector<double>>(), C.dim[0], C.dim[0]),
     C, A, -1, 1
   ); //A = A - I*C
   gemm(V, C, B, -1, 1); //B = B - Y*C
@@ -136,14 +136,14 @@ define_method(
 
 define_method(
   void, tpmqrt_omm,
-  (const LowRank& V, const Dense& T, Dense& A, LowRank& B, bool trans)
+  (const LowRank& V, const Dense<double>& T, Dense<double>& A, LowRank& B, bool trans)
 ) {
-  Dense C(A);
+  Dense<double> C(A);
   LowRank Vt = transpose(V);
   gemm(Vt, B, C, 1, 1); //C = A + Y^t * B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(
-    Dense(identity, std::vector<std::vector<double>>(), C.dim[0], C.dim[0]),
+    Dense<double>(identity, std::vector<std::vector<double>>(), C.dim[0], C.dim[0]),
     C, A, -1, 1
   ); //A = A - I*C
   gemm(V, C, B, -1, 1); //B = B - Y*C
@@ -151,14 +151,14 @@ define_method(
 
 define_method(
   void, tpmqrt_omm,
-  (const Dense& V, const Dense& T, LowRank& A, LowRank& B, bool trans)
+  (const Dense<double>& V, const Dense<double>& T, LowRank& A, LowRank& B, bool trans)
 ) {
   LowRank C(A);
-  Dense Vt = transpose(V);
+  Dense<double> Vt = transpose(V);
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(
-    Dense(identity, std::vector<std::vector<double>>(), C.dim[0], C.dim[0]),
+    Dense<double>(identity, std::vector<std::vector<double>>(), C.dim[0], C.dim[0]),
     C, A, -1, 1
   ); //A = A - I*C
   gemm(V, C, B, -1, 1); //B = B - Y*C
@@ -166,14 +166,14 @@ define_method(
 
 define_method(
   void, tpmqrt_omm,
-  (const LowRank& V, const Dense& T, LowRank& A, LowRank& B, bool trans)
+  (const LowRank& V, const Dense<double>& T, LowRank& A, LowRank& B, bool trans)
 ) {
   LowRank C(A);
   LowRank Vt = transpose(V);
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(
-    Dense(identity, std::vector<std::vector<double>>(), C.dim[0], C.dim[0]),
+    Dense<double>(identity, std::vector<std::vector<double>>(), C.dim[0], C.dim[0]),
     C, A, -1, 1
   ); //A = A - I*C
   gemm(V, C, B, -1, 1); //B = B - Y*C
@@ -181,18 +181,18 @@ define_method(
 
 define_method(
   void, tpmqrt_omm,
-  (const Dense& V, const Dense& T, Dense& A, Hierarchical& B, bool trans)
+  (const Dense<double>& V, const Dense<double>& T, Dense<double>& A, Hierarchical& B, bool trans)
 ) {
-  Dense C(A);
-  Dense Vt = transpose(V);
-  Dense T_upper_tri(T);
+  Dense<double> C(A);
+  Dense<double> Vt = transpose(V);
+  Dense<double> T_upper_tri(T);
   for(int64_t i=0; i<T_upper_tri.dim[0]; i++)
     for(int64_t j=0; j<i; j++)
       T_upper_tri(i, j) = 0.0;
   gemm(Vt, B, C, 1, 1); // C = A + Y^t*B
   if(trans) T_upper_tri = transpose(T_upper_tri);
   gemm(T_upper_tri, C, A, -1, 1); // A = A - (T or Tt)*C
-  Dense VTt(V.dim[0], T_upper_tri.dim[1]);
+  Dense<double> VTt(V.dim[0], T_upper_tri.dim[1]);
   gemm(V, T_upper_tri, VTt, 1, 1);
   gemm(VTt, C, B, -1, 1); // B = B - V*(T or Tt)*C
 }
@@ -200,13 +200,13 @@ define_method(
 define_method(
   void, tpmqrt_omm,
   (
-    const Hierarchical& V, const Hierarchical& T, Dense& A, Hierarchical& B,
+    const Hierarchical& V, const Hierarchical& T, Dense<double>& A, Hierarchical& B,
     bool trans
   )
 ) {
   Hierarchical HA = split(A, B.dim[0], B.dim[1], true);
   tpmqrt(V, T, HA, B, trans);
-  A = Dense(HA);
+  A = Dense<double>(HA);
 }
 
 define_method(

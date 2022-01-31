@@ -36,7 +36,7 @@ define_method(LowRank&&, move_from_low_rank, (Matrix& A)) {
   std::abort();
 }
 
-LowRank::LowRank(const Dense& A, int64_t rank)
+LowRank::LowRank(const Dense<double>& A, int64_t rank)
 : Matrix(A), dim{A.dim[0], A.dim[1]}, rank(rank) {
   // Rank with oversampling limited by dimensions
   std::tie(U, S, V) = rsvd(A, std::min(std::min(rank+5, dim[0]), dim[1]));
@@ -46,13 +46,13 @@ LowRank::LowRank(const Dense& A, int64_t rank)
   S = resize(S, rank, rank);
 }
 
-LowRank::LowRank(const Matrix& U, const Dense& S, const Matrix& V, bool copy)
+LowRank::LowRank(const Matrix& U, const Dense<double>& S, const Matrix& V, bool copy)
 : dim{get_n_rows(U), get_n_cols(V)}, rank(S.dim[0]),
   U(copy ? MatrixProxy(U) : shallow_copy(U)),
   S(copy ? MatrixProxy(S) : shallow_copy(S)),
   V(copy ? MatrixProxy(V) : shallow_copy(V)) {}
 
-LowRank::LowRank(Dense&& U, Dense&& S, Dense&& V)
+LowRank::LowRank(Dense<double>&& U, Dense<double>&& S, Dense<double>&& V)
 : dim{U.dim[0], V.dim[1]}, rank(S.dim[0]),
   U(std::move(U)), S(std::move(S)), V(std::move(V)) {}
 

@@ -64,7 +64,7 @@ define_method(
   MatrixProxy C;
   if (A.dim[TransA ? 1 : 0] == 1 && B.dim[TransB ? 0 : 1] == 1) {
     // TODO Determine out type based on first pair? (A[0], A[1])
-    C = Dense(
+    C = Dense<double>(
       TransA ? get_n_cols(A) : get_n_rows(A),
       TransB ? get_n_rows(B) : get_n_cols(B)
     );
@@ -98,7 +98,7 @@ define_method(
     double alpha, bool TransA, bool TransB
   )
 ) {
-  Dense C(
+  Dense<double> C(
     TransA ? get_n_cols(A) : get_n_rows(A),
     TransB ? get_n_rows(B) : get_n_cols(B)
   );
@@ -109,7 +109,7 @@ define_method(
 define_method(
   void, gemm_omm,
   (
-    const Dense& A, const Dense& B, Dense& C,
+    const Dense<double>& A, const Dense<double>& B, Dense<double>& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
@@ -147,13 +147,13 @@ define_method(
 define_method(
   void, gemm_omm,
   (
-    const LowRank& A, const Dense& B, Dense& C,
+    const LowRank& A, const Dense<double>& B, Dense<double>& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
 ) {
   // LR D D
-  Dense AS_basis_B = gemm(
+  Dense<double> AS_basis_B = gemm(
     A.S, gemm(TransA ? A.U : A.V, B, alpha, TransA, TransB),
     1, TransA, false
   );
@@ -163,13 +163,13 @@ define_method(
 define_method(
   void, gemm_omm,
   (
-    const Dense& A, const LowRank& B, Dense& C,
+    const Dense<double>& A, const LowRank& B, Dense<double>& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
 ) {
   // D LR D
-  Dense A_basis_BS = gemm(
+  Dense<double> A_basis_BS = gemm(
     gemm(A, TransB ? B.V : B.U, alpha, TransA, TransB), B.S,
     1, false, TransB
   );
@@ -179,7 +179,7 @@ define_method(
 define_method(
   void, gemm_omm,
   (
-    const LowRank& A, const LowRank& B, Dense& C,
+    const LowRank& A, const LowRank& B, Dense<double>& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
@@ -187,7 +187,7 @@ define_method(
   // LR LR D
   // TODO Many optimizations possible
   // Even in non-shared case, UxS, SxV may be optimized across blocks!
-  Dense Abasis_inner_matrices = gemm(
+  Dense<double> Abasis_inner_matrices = gemm(
     TransA ? A.V : A.U, gemm(
       gemm(
         A.S, gemm(TransA ? A.U : A.V, TransB ? B.V : B.U, alpha, TransA, TransB),
@@ -201,7 +201,7 @@ define_method(
 define_method(
   void, gemm_omm,
   (
-    const Dense& A, const Dense& B, LowRank& C,
+    const Dense<double>& A, const Dense<double>& B, LowRank& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
@@ -214,7 +214,7 @@ define_method(
 define_method(
   void, gemm_omm,
   (
-    const LowRank& A, const Dense& B, LowRank& C,
+    const LowRank& A, const Dense<double>& B, LowRank& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
@@ -222,7 +222,7 @@ define_method(
   // LR D LR
   // TODO Not implemented
   if (TransA) std::abort();
-  Dense AVxB = gemm(A.V, B, alpha, false, TransB);
+  Dense<double> AVxB = gemm(A.V, B, alpha, false, TransB);
   C.S *= beta;
   LowRank AxB(A.U, A.S, AVxB, false);
   C += AxB;
@@ -231,7 +231,7 @@ define_method(
 define_method(
   void, gemm_omm,
   (
-    const Dense& A, const LowRank& B, LowRank& C,
+    const Dense<double>& A, const LowRank& B, LowRank& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
@@ -239,7 +239,7 @@ define_method(
   // D LR LR
   // TODO Not implemented
   if (TransB) std::abort();
-  Dense AxBU = gemm(A, B.U, alpha, TransA, false);
+  Dense<double> AxBU = gemm(A, B.U, alpha, TransA, false);
   C.S *= beta;
   LowRank AxB(AxBU, B.S, B.V, false);
   C += AxB;
@@ -257,8 +257,8 @@ define_method(
   // TODO Not implemented
   if (TransA || TransB) std::abort();
   assert(A.rank == B.rank);
-  Dense SxVxU = gemm(A.S, gemm(A.V, B.U, alpha));
-  Dense SxVxUxS = gemm(SxVxU, B.S);
+  Dense<double> SxVxU = gemm(A.S, gemm(A.V, B.U, alpha));
+  Dense<double> SxVxUxS = gemm(SxVxU, B.S);
   C.S *= beta;
   LowRank AxB(A.U, SxVxUxS, B.V, false);
   C += AxB;
@@ -309,7 +309,7 @@ define_method(
   // LR LR H
   // TODO Not implemented
   if (TransA || TransB) std::abort();
-  Dense SxVxUxS = gemm(gemm(A.S, gemm(A.V, B.U, alpha)), B.S);
+  Dense<double> SxVxUxS = gemm(gemm(A.S, gemm(A.V, B.U, alpha)), B.S);
   LowRank AxB(A.U, SxVxUxS, B.V, false);
   C *= beta;
   C += AxB;
@@ -331,7 +331,7 @@ define_method(
       gemm(A, B, CH, alpha, beta);
     C = LowRank(CH, rank);
   */
-  Dense CD(C);
+  Dense<double> CD(C);
   gemm(A, B, CD, alpha, beta, TransA, TransB);
   C = LowRank(CD, C.rank);
 }
@@ -363,7 +363,7 @@ define_method(
 define_method(
   void, gemm_omm,
   (
-    const Dense& A, const Dense& B, Hierarchical& C,
+    const Dense<double>& A, const Dense<double>& B, Hierarchical& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
@@ -441,7 +441,7 @@ define_method(
 define_method(
   void, gemm_omm,
   (
-    const Hierarchical& A, const Hierarchical& B, Dense& C,
+    const Hierarchical& A, const Hierarchical& B, Dense<double>& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
@@ -461,7 +461,7 @@ define_method(
 define_method(
   void, gemm_omm,
   (
-    const Matrix& A, const Hierarchical& B, Dense& C,
+    const Matrix& A, const Hierarchical& B, Dense<double>& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
@@ -494,7 +494,7 @@ define_method(
 define_method(
   void, gemm_omm,
   (
-    const Hierarchical& A, const Matrix& B, Dense& C,
+    const Hierarchical& A, const Matrix& B, Dense<double>& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )

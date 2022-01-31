@@ -25,7 +25,7 @@ namespace hicma
 
 void tpqrt(Matrix& A, Matrix& B, Matrix& T) { tpqrt_omm(A, B, T); }
 
-define_method(void, tpqrt_omm, (Dense& A, Dense& B, Dense& T)) {
+define_method(void, tpqrt_omm, (Dense<double>& A, Dense<double>& B, Dense<double>& T)) {
   LAPACKE_dtpqrt2(
     LAPACK_ROW_MAJOR,
     B.dim[0], B.dim[1], 0,
@@ -35,8 +35,8 @@ define_method(void, tpqrt_omm, (Dense& A, Dense& B, Dense& T)) {
   );
 }
 
-define_method(void, tpqrt_omm, (Dense& A, LowRank& B, Dense& T)) {
-  Dense BV_copy(B.V);
+define_method(void, tpqrt_omm, (Dense<double>& A, LowRank& B, Dense<double>& T)) {
+  Dense<double> BV_copy(B.V);
   B.V = gemm(B.S, BV_copy);
   B.S = 0.0;
   for(int64_t i = 0; i < std::min(B.S.dim[0], B.S.dim[1]); i++) {

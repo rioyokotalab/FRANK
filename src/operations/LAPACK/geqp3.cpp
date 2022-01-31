@@ -24,12 +24,12 @@
 namespace hicma
 {
 
-std::tuple<Dense, std::vector<int64_t>> geqp3(Matrix& A) {
+std::tuple<Dense<double>, std::vector<int64_t>> geqp3(Matrix& A) {
   return geqp3_omm(A);
 }
 
 // Fallback default, abort with error message
-define_method(DenseIndexSetPair, geqp3_omm, (Dense& A)) {
+define_method(DenseIndexSetPair, geqp3_omm, (Dense<double>& A)) {
   timing::start("DGEQP3");
   // TODO The 0 initial value is important! Otherwise axes are fixed and results
   // can be wrong. See netlib dgeqp3 reference.
@@ -46,7 +46,7 @@ define_method(DenseIndexSetPair, geqp3_omm, (Dense& A)) {
   std::vector<int64_t> column_order(jpvt.size());
   for (size_t i=0; i<jpvt.size(); ++i) column_order[i] = jpvt[i] - 1;
   timing::start("R construction");
-  Dense R(A.dim[1], A.dim[1]);
+  Dense<double> R(A.dim[1], A.dim[1]);
   for(int64_t i=0; i<std::min(A.dim[0], R.dim[0]); i++) {
     for(int64_t j=i; j<R.dim[1]; j++) {
       R(i, j) = A(i, j);

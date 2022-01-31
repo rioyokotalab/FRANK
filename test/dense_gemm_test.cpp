@@ -8,7 +8,7 @@
 #include "hicma/hicma.h"
 #include "gtest/gtest.h"
 
-void naive_gemm(const hicma::Dense &A, const hicma::Dense &B, hicma::Dense &C, bool transA, bool transB, double alpha, double beta) {
+void naive_gemm(const hicma::Dense<double> &A, const hicma::Dense<double> &B, hicma::Dense<double> &C, bool transA, bool transB, double alpha, double beta) {
   for (int64_t i = 0; i < C.dim[0]; ++i) {
     for (int64_t j = 0; j < C.dim[1]; ++j) {
       C(i, j) =

@@ -40,8 +40,8 @@ MatrixProxy::operator Matrix&() {
   return *ptr;
 }
 
-define_method(std::unique_ptr<Matrix>, clone, (const Dense& A)) {
-  return std::make_unique<Dense>(A);
+define_method(std::unique_ptr<Matrix>, clone, (const Dense<double>& A)) {
+  return std::make_unique<Dense<double>>(A);
 }
 
 define_method(std::unique_ptr<Matrix>, clone, (const Empty& A)) {
@@ -60,8 +60,8 @@ define_method(std::unique_ptr<Matrix>, clone, (const Matrix& A)) {
   std::abort();
 }
 
-define_method(std::unique_ptr<Matrix>, move_clone, (Dense&& A)) {
-  return std::make_unique<Dense>(std::move(A));
+define_method(std::unique_ptr<Matrix>, move_clone, (Dense<double>&& A)) {
+  return std::make_unique<Dense<double>>(std::move(A));
 }
 
 define_method(std::unique_ptr<Matrix>, move_clone, (Empty&& A)) {

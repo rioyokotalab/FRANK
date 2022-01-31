@@ -19,7 +19,7 @@ namespace hicma
 
 int64_t get_n_rows(const Matrix& A) { return get_n_rows_omm(A); }
 
-define_method(int64_t, get_n_rows_omm, (const Dense& A)) { return A.dim[0]; }
+define_method(int64_t, get_n_rows_omm, (const Dense<double>& A)) { return A.dim[0]; }
 
 define_method(int64_t, get_n_rows_omm, (const Empty& A)) { return A.dim[0]; }
 
@@ -41,7 +41,7 @@ define_method(int64_t, get_n_rows_omm, (const Matrix& A)) {
 
 int64_t get_n_cols(const Matrix& A) { return get_n_cols_omm(A); }
 
-define_method(int64_t, get_n_cols_omm, (const Dense& A)) { return A.dim[1]; }
+define_method(int64_t, get_n_cols_omm, (const Dense<double>& A)) { return A.dim[1]; }
 
 define_method(int64_t, get_n_cols_omm, (const Empty& A)) { return A.dim[1]; }
 

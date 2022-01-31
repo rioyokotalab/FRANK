@@ -29,7 +29,7 @@ void larfb(const Matrix& V, const Matrix& T, Matrix& C, bool trans) {
 
 define_method(
   void, larfb_omm,
-  (const Dense& V, const Dense& T, Dense& C, bool trans)
+  (const Dense<double>& V, const Dense<double>& T, Dense<double>& C, bool trans)
 ) {
   LAPACKE_dlarfb(
     LAPACK_ROW_MAJOR,
@@ -43,34 +43,34 @@ define_method(
 
 define_method(
   void, larfb_omm,
-  (const Hierarchical& V, const Hierarchical& T, Dense& C, bool trans)
+  (const Hierarchical& V, const Hierarchical& T, Dense<double>& C, bool trans)
 ) {
   Hierarchical CH = split(C, V.dim[0], V.dim[1], true);
   larfb(V, T, CH, trans);
-  C = Dense(CH);
+  C = Dense<double>(CH);
 }
 
 define_method(
   void, larfb_omm,
-  (const Dense& V, const Dense& T, LowRank& C, bool trans)
+  (const Dense<double>& V, const Dense<double>& T, LowRank& C, bool trans)
 ) {
   larfb(V, T, C.U, trans);
 }
 
 define_method(
   void, larfb_omm,
-  (const Dense& V, const Dense& T, Hierarchical& C, bool trans)
+  (const Dense<double>& V, const Dense<double>& T, Hierarchical& C, bool trans)
 ) {
-  Dense V_lower_tri(V);
+  Dense<double> V_lower_tri(V);
   for(int64_t i = 0; i < V_lower_tri.dim[0]; i++) {
     for(int64_t j = i; j < V_lower_tri.dim[1]; j++) {
       if(i == j) V_lower_tri(i, j) = 1.0;
       else V_lower_tri(i, j) = 0.0;
     }
   }
-  Dense VT(V_lower_tri);
+  Dense<double> VT(V_lower_tri);
   trmm(T, VT, 'r', 'u', trans ? 't' : 'n', 'n', 1);
-  Dense VTVt(VT.dim[0], V_lower_tri.dim[0]);
+  Dense<double> VTVt(VT.dim[0], V_lower_tri.dim[0]);
   gemm(VT, V_lower_tri, VTVt, 1, 0, false, true);
   Hierarchical C_copy(C);
   gemm(VTVt, C_copy, C, -1, 1);

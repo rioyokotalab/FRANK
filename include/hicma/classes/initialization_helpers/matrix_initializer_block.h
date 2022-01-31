@@ -29,7 +29,7 @@ class IndexRange;
  */
 class MatrixInitializerBlock : public MatrixInitializer {
  private:
-  Dense matrix;
+  Dense<double> matrix;
  public:
   // Special member functions
   MatrixInitializerBlock() = delete;
@@ -54,7 +54,7 @@ class MatrixInitializerBlock : public MatrixInitializer {
    * @param rank
    * Fixed rank to be used for approximating admissible submatrices.
    */
-  MatrixInitializerBlock(Dense&& A, double admis, int64_t rank);
+  MatrixInitializerBlock(Dense<double>&& A, double admis, int64_t rank);
 
   /**
    * @brief Specialization for assigning matrix elements
@@ -73,7 +73,7 @@ class MatrixInitializerBlock : public MatrixInitializer {
    * `Dense` matrix that was passed to the constructor of this class.
    */
   void fill_dense_representation(
-    Dense& A, const IndexRange& row_range, const IndexRange& col_range
+    Dense<double>& A, const IndexRange& row_range, const IndexRange& col_range
   ) const override;
 
 };

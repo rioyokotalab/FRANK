@@ -25,10 +25,10 @@
 namespace hicma
 {
 
-Dense interleave_id(const Dense& A, std::vector<int64_t>& P) {
+Dense<double> interleave_id(const Dense<double>& A, std::vector<int64_t>& P) {
   int64_t k = P.size() - A.dim[1];
   assert(k >= 0); // 0 case if for k=min(M, N), ie full rank
-  Dense Anew(A.dim[0], P.size());
+  Dense<double> Anew(A.dim[0], P.size());
   for (int64_t i=0; i<Anew.dim[0]; ++i) {
     for (int64_t j=0; j<Anew.dim[1]; ++j) {
       Anew(i, P[j]) = j < k ? (i == j ? 1 : 0) : A(i, j-k);
@@ -37,28 +37,28 @@ Dense interleave_id(const Dense& A, std::vector<int64_t>& P) {
   return Anew;
 }
 
-std::tuple<Dense, std::vector<int64_t>> one_sided_id(Matrix& A, int64_t k) {
+std::tuple<Dense<double>, std::vector<int64_t>> one_sided_id(Matrix& A, int64_t k) {
   return one_sided_id_omm(A, k);
 }
 
-define_method(DenseIndexSetPair, one_sided_id_omm, (Dense& A, int64_t k)) {
+define_method(DenseIndexSetPair, one_sided_id_omm, (Dense<double>& A, int64_t k)) {
   assert(k <= std::min(A.dim[0], A.dim[1]));
-  Dense R;
+  Dense<double> R;
   std::vector<int64_t> selected_cols;
   std::tie(R, selected_cols) = geqp3(A);
   // TODO Consider row index range issues
-  Dense col_basis;
+  Dense<double> col_basis;
   // First case applies also when A.dim[1] > A.dim[0] end k == A.dim[0]
   if (k < std::min(A.dim[0], A.dim[1]) || A.dim[1] > A.dim[0]) {
     // Get R11 (split[0]) and R22 (split[1])
-    std::vector<Dense> split = R.split(
+    std::vector<Dense<double>> split = R.split(
       IndexRange(0, R.dim[0]).split_at(k), IndexRange(0, R.dim[1]).split_at(k)
     );
     trsm(split[0], split[1], TRSM_UPPER);
     col_basis = interleave_id(split[1], selected_cols);
   } else {
     col_basis = interleave_id(
-      Dense(identity, std::vector<std::vector<double>>(), k, k), selected_cols);
+      Dense<double>(identity, std::vector<std::vector<double>>(), k, k), selected_cols);
   }
   selected_cols.resize(k);
   // Returns the selected columns of A
@@ -71,12 +71,12 @@ define_method(DenseIndexSetPair, one_sided_id_omm, (Matrix& A, int64_t)) {
   std::abort();
 }
 
-std::tuple<Dense, Dense, Dense> id(Matrix& A, int64_t k) {
+std::tuple<Dense<double>, Dense<double>, Dense<double>> id(Matrix& A, int64_t k) {
   return id_omm(A, k);
 }
 
-Dense get_cols(const Dense& A, std::vector<int64_t> Pr) {
-  Dense B(A.dim[0], Pr.size());
+Dense<double> get_cols(const Dense<double>& A, std::vector<int64_t> Pr) {
+  Dense<double> B(A.dim[0], Pr.size());
   for (int64_t i=0; i<A.dim[0]; ++i) {
     for (int64_t j=0; j<B.dim[1]; ++j) {
       B(i, j) = A(i, Pr[j]);
@@ -85,8 +85,8 @@ Dense get_cols(const Dense& A, std::vector<int64_t> Pr) {
   return B;
 }
 
-Dense get_rows(const Dense& A, std::vector<int64_t> Pr) {
-  Dense B(Pr.size(), A.dim[1]);
+Dense<double> get_rows(const Dense<double>& A, std::vector<int64_t> Pr) {
+  Dense<double> B(Pr.size(), A.dim[1]);
   for (int64_t i=0; i<B.dim[0]; ++i) {
     for (int64_t j=0; j<A.dim[1]; ++j) {
       B(i, j) = A(Pr[i], j);
@@ -95,14 +95,14 @@ Dense get_rows(const Dense& A, std::vector<int64_t> Pr) {
   return B;
 }
 
-define_method(DenseTriplet, id_omm, (Dense& A, int64_t k)) {
-  Dense V(k, A.dim[1]);
-  Dense Awork(A);
+define_method(DenseTriplet, id_omm, (Dense<double>& A, int64_t k)) {
+  Dense<double> V(k, A.dim[1]);
+  Dense<double> Awork(A);
   std::vector<int64_t> selected_cols;
   std::tie(V, selected_cols) = one_sided_id(Awork, k);
-  Dense AC = get_cols(A, selected_cols);
-  Dense ACwork = transpose(AC);
-  Dense Ut(k, A.dim[0]);
+  Dense<double> AC = get_cols(A, selected_cols);
+  Dense<double> ACwork = transpose(AC);
+  Dense<double> Ut(k, A.dim[0]);
   std::vector<int64_t> selected_rows;
   std::tie(Ut, selected_rows) = one_sided_id(ACwork, k);
   return {transpose(Ut), get_rows(AC, selected_rows), std::move(V)};

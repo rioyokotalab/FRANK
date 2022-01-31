@@ -30,7 +30,7 @@ static const int decimal = 7; //!< Decimal precision
 
 std::string type(const Matrix& A) { return type_omm(A); }
 
-define_method(std::string, type_omm, (const Dense&)) {
+define_method(std::string, type_omm, (const Dense<double>&)) {
   return "Dense";
 }
 
@@ -95,7 +95,7 @@ define_method(
 ) {
   json["abs_pos"] = {i_abs, j_abs};
   json["level"] = level;
-  Dense AD(A);
+  Dense<double> AD(A);
   json["svalues"] = get_singular_values(AD);
   json["rank"] = A.rank;
 }
@@ -103,13 +103,13 @@ define_method(
 define_method(
   void, to_json_omm,
   (
-    const Dense& A, nlohmann::json& json,
+    const Dense<double>& A, nlohmann::json& json,
     int64_t i_abs, int64_t j_abs, int64_t level
   )
 ) {
   json["abs_pos"] = {i_abs, j_abs};
   json["level"] = level;
-  Dense A_(A);
+  Dense<double> A_(A);
   json["svalues"] = get_singular_values(A_);
 }
 
@@ -140,7 +140,7 @@ define_method(void, print_omm, (const Matrix& A)) {
   omm_error_handler("print", {A}, __FILE__, __LINE__);
 }
 
-define_method(void, print_omm, (const Dense& A)) {
+define_method(void, print_omm, (const Dense<double>& A)) {
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {
       std::cout << std::setw(20) << std::setprecision(15) << A(i, j) << ' ';

@@ -1,6 +1,9 @@
 #ifndef hicma_operations_LAPACK_h
 #define hicma_operations_LAPACK_h
 
+//added instead of the definition below
+#include "hicma/classes/dense.h"
+
 #include <cstdint>
 #include <tuple>
 #include <vector>
@@ -14,10 +17,10 @@ namespace hicma
 
 class Matrix;
 class MatrixProxy;
-class Dense;
+//class Dense;
 class Hierarchical;
 
-std::tuple<Dense, std::vector<int64_t>> geqp3(Matrix& A);
+std::tuple<Dense<double>, std::vector<int64_t>> geqp3(Matrix& A);
 
 /**
  * @brief Compute full Householder QR factorization of a general matrix
@@ -44,7 +47,7 @@ std::tuple<Dense, std::vector<int64_t>> geqp3(Matrix& A);
  */
 void geqrt(Matrix& A, Matrix& T);
 
-void geqrt2(Dense&, Dense&);
+void geqrt2(Dense<double>&, Dense<double>&);
 
 /**
  * @brief Compute reduced QR factorization of a general matrix
@@ -59,7 +62,7 @@ void geqrt2(Dense&, Dense&);
  * Prior to calling, it is assumed that \p A and \p R have been initialized with proper dimensions.
  * Upon finish, \p A will be overwritten with the resulting orthogonal factor \p Q.
  */
-void mgs_qr(Dense&, Dense&);
+void mgs_qr(Dense<double>&, Dense<double>&);
 
 /**
  * @brief Compute LU factorization of a general matrix
@@ -96,10 +99,10 @@ std::tuple<MatrixProxy, MatrixProxy> getrf(Matrix& A);
  * TODO add more explanation
  * This method performs one-sided interpolative decomposition of a given matrix.
  */
-std::tuple<Dense, std::vector<int64_t>> one_sided_id(Matrix& A, int64_t k);
+std::tuple<Dense<double>, std::vector<int64_t>> one_sided_id(Matrix& A, int64_t k);
 
 // TODO Does this need to be in the header?
-Dense get_cols(const Dense& A, std::vector<int64_t> P);
+Dense<double> get_cols(const Dense<double>& A, std::vector<int64_t> P);
 
 /**
  * @brief Compute two-sided interpolative decomposition (ID) of a `Dense` matrix
@@ -114,7 +117,7 @@ Dense get_cols(const Dense& A, std::vector<int64_t> P);
  * TODO add more explanation
  * This method performs two-sided interpolative decomposition of a given matrix.
  */
-std::tuple<Dense, Dense, Dense> id(Matrix& A, int64_t k);
+std::tuple<Dense<double>, Dense<double>, Dense<double>> id(Matrix& A, int64_t k);
 
 /**
  * @brief Apply block householder reflector or its transpose to a general rectangular matrix
@@ -162,7 +165,7 @@ void latms(
   double dmax,
   int kl, int ku,
   const char& pack,
-  Dense& A
+  Dense<double>& A
 );
 
 /**
@@ -253,9 +256,9 @@ void rq(Matrix&, Matrix&, Matrix&);
  * This method internally calls <a target="_blank" href="http://www.netlib.org/lapack/explore-html/d1/d7e/group__double_g_esing_ga84fdf22a62b12ff364621e4713ce02f2.html#ga84fdf22a62b12ff364621e4713ce02f2"><tt>dgesvd</tt></a> subroutine provided by BLAS/LAPACK to perform the operation.
  * See the documentation page for more information.
  */
-std::tuple<Dense, Dense, Dense> svd(Dense& A);
+std::tuple<Dense<double>, Dense<double>, Dense<double>> svd(Dense<double>& A);
 
-std::tuple<Dense, Dense, Dense> sdd(Dense& A);
+std::tuple<Dense<double>, Dense<double>, Dense<double>> sdd(Dense<double>& A);
 
 // TODO Does this need to be in the header?
 /**
@@ -269,7 +272,7 @@ std::tuple<Dense, Dense, Dense> sdd(Dense& A);
  * This method uses Singular Value Decomposition to compute the singular values of \p A.
  * The singular values are sorted from the largest to the smallest.
  */
-std::vector<double> get_singular_values(Dense& A);
+std::vector<double> get_singular_values(Dense<double>& A);
 
 /**
  * @brief Apply a "lower trapezoidal" blocked reflector to a matrix composed of two blocks

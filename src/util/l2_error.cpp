@@ -34,7 +34,7 @@ double l2_error(const Matrix& A, const Matrix& B) {
 }
 
 define_method(
-  DoublePair, collect_diff_norm_omm, (const Dense& A, const Dense& B)
+  DoublePair, collect_diff_norm_omm, (const Dense<double>& A, const Dense<double>& B)
 ) {
   double diff = norm(A - B);
   double mat_norm = norm(A);
@@ -42,21 +42,21 @@ define_method(
 }
 
 define_method(
-  DoublePair, collect_diff_norm_omm, (const Dense& A, const LowRank& B)
+  DoublePair, collect_diff_norm_omm, (const Dense<double>& A, const LowRank& B)
 ) {
-  return collect_diff_norm_omm(A, Dense(B));
+  return collect_diff_norm_omm(A, Dense<double>(B));
 }
 
 define_method(
-  DoublePair, collect_diff_norm_omm, (const LowRank& A, const Dense& B)
+  DoublePair, collect_diff_norm_omm, (const LowRank& A, const Dense<double>& B)
 ) {
-  return collect_diff_norm_omm(Dense(A), B);
+  return collect_diff_norm_omm(Dense<double>(A), B);
 }
 
 define_method(
   DoublePair, collect_diff_norm_omm, (const LowRank& A, const LowRank& B)
 ) {
-  return collect_diff_norm_omm(Dense(A), Dense(B));
+  return collect_diff_norm_omm(Dense<double>(A), Dense<double>(B));
 }
 
 define_method(
@@ -89,7 +89,7 @@ define_method(
     }
     return {total_diff, total_norm};
   } else {
-    return collect_diff_norm_omm(Dense(A), Dense(B));
+    return collect_diff_norm_omm(Dense<double>(A), Dense<double>(B));
   }
 }
 

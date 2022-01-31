@@ -22,7 +22,7 @@
 namespace hicma
 {
 
-double cond(Dense A) {
+double cond(Dense<double> A) {
   int64_t k = std::min(A.dim[0], A.dim[1]);
   std::vector<double> S = get_singular_values(A);
   return (S[0] / S[k-1]);
@@ -62,14 +62,14 @@ Hierarchical split(const Matrix& A, const Hierarchical& like, bool copy) {
 define_method(
   Hierarchical, split_omm,
   (
-    const Dense& A,
+    const Dense<double>& A,
     const std::vector<IndexRange>& row_splits,
     const std::vector<IndexRange>& col_splits,
     bool copy
   )
 ) {
   Hierarchical out(row_splits.size(), col_splits.size());
-  std::vector<Dense> result = A.split(row_splits, col_splits, copy);
+  std::vector<Dense<double>> result = A.split(row_splits, col_splits, copy);
   for (int64_t i=0; i<out.dim[0]; ++i) {
     for (int64_t j=0; j<out.dim[1]; ++j) {
       out(i, j) = std::move(result[i*out.dim[1]+j]);
@@ -96,7 +96,7 @@ define_method(
   } else {
     U_splits = Hierarchical(1, 1);
     if (copy) {
-      U_splits(0, 0) = Dense(A.U);
+      U_splits(0, 0) = Dense<double>(A.U);
     } else {
       U_splits(0, 0) = shallow_copy(A.U);
     }
@@ -109,7 +109,7 @@ define_method(
   } else {
     V_splits = Hierarchical(1, 1);
     if (copy) {
-      V_splits(0, 0) = Dense(A.V);
+      V_splits(0, 0) = Dense<double>(A.V);
     } else {
       V_splits(0, 0) = shallow_copy(A.V);
     }
@@ -169,7 +169,7 @@ MatrixProxy shallow_copy(const Matrix& A) {
   return shallow_copy_omm(A);
 }
 
-define_method(MatrixProxy, shallow_copy_omm, (const Dense& A)) {
+define_method(MatrixProxy, shallow_copy_omm, (const Dense<double>& A)) {
   // TODO Having this work for Dense might not be desirable
   return A.shallow_copy();
 }

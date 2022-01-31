@@ -106,7 +106,7 @@ class MatrixInitializer {
    * as a StarPU task so that task parallelism can be used.
    */
   virtual void fill_dense_representation(
-    Dense& A, const IndexRange& row_range, const IndexRange& col_range
+    Dense<double>& A, const IndexRange& row_range, const IndexRange& col_range
   ) const = 0;
 
   /**
@@ -121,7 +121,7 @@ class MatrixInitializer {
    * Internally, this method uses `fill_dense_representation()` to assign the
    * elements of the newly created `Dense` matrix.
    */
-  Dense get_dense_representation(const ClusterTree& node) const;
+  Dense<double> get_dense_representation(const ClusterTree& node) const;
 
   /**
    * @brief Get a compressed representation of an admissible `ClusterTree` node

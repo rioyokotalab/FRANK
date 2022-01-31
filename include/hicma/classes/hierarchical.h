@@ -8,6 +8,8 @@
 #define hicma_classes_hierarchical_h
 
 #include "hicma/definitions.h"
+//added this line instead of declaring Dense below
+#include "hicma/classes/dense.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
 
@@ -23,7 +25,7 @@
 namespace hicma
 {
 
-class Dense;
+//class Dense<double>;
 class ClusterTree;
 class MatrixInitializer;
 
@@ -196,7 +198,7 @@ class Hierarchical : public Matrix {
    * constructor to create the hierarchical compression.
    */
   Hierarchical(
-    Dense&& A,
+    Dense<double>&& A,
     int64_t rank,
     int64_t nleaf,
     double admis=0,

@@ -19,7 +19,7 @@ Matrix& operator*=(Matrix& A, double b) {
 }
 
 define_method(
-  Matrix&, multiplication_omm, (Dense& A, double b)
+  Matrix&, multiplication_omm, (Dense<double>& A, double b)
 ) {
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {

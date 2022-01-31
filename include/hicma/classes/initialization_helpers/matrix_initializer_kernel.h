@@ -22,7 +22,7 @@ namespace hicma
 {
 
 class ClusterTree;
-class Dense;
+//class Dense;
 class IndexRange;
 
 /**
@@ -92,7 +92,7 @@ class MatrixInitializerKernel : public MatrixInitializer {
    * parameters passed to the constructor of this class.
    */
   void fill_dense_representation(
-    Dense& A, const IndexRange& row_range, const IndexRange& col_range
+    Dense<double>& A, const IndexRange& row_range, const IndexRange& col_range
   ) const override;
 };
 

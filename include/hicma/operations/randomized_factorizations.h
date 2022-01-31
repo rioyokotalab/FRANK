@@ -1,6 +1,9 @@
 #ifndef hicma_oprations_randomized_factorizations_h
 #define hicma_oprations_randomized_factorizations_h
 
+//added instead of the definition below
+#include "hicma/classes/dense.h"
+
 #include <cstdint>
 #include <tuple>
 #include <vector>
@@ -12,7 +15,7 @@
 namespace hicma
 {
 
-class Dense;
+//class Dense;
 
 /**
  * @brief Compute randomized one-sided interpolatory decomposition (ID) of a `Dense` matrix
@@ -39,8 +42,8 @@ class Dense;
  * Depending on the value of \p column, either \p X or \p Z is returned in \p M and
  * \a k contains the corresponding index set (i.e. \f$I_S\f$ or \f$J_S\f$).
  */
-std::tuple<Dense, std::vector<int64_t>> one_sided_rid(
-  const Dense& A, int64_t sample_size, int64_t rank, bool column=false);
+std::tuple<Dense<double>, std::vector<int64_t>> one_sided_rid(
+  const Dense<double>& A, int64_t sample_size, int64_t rank, bool column=false);
 
 /**
  * @brief Compute randomized one-sided interpolatory decomposition (ID) of a `Dense` matrix (slow version)
@@ -67,8 +70,8 @@ std::tuple<Dense, std::vector<int64_t>> one_sided_rid(
  * Due to the matrix approximation used, this function is considerably slower than `one_sided_rid()`.
  * The row-ID takes about twice as long while the column-ID is roughly four times slower.
  */
-std::tuple<Dense, std::vector<int64_t>> old_one_sided_rid(
-  const Dense& A, int64_t sample_size, int64_t rank, bool transA=false);
+std::tuple<Dense<double>, std::vector<int64_t>> old_one_sided_rid(
+  const Dense<double>& A, int64_t sample_size, int64_t rank, bool transA=false);
 
 /**
  * @brief Compute a randomized ID (Interpolatory Decomposition) of a a `Dense` matrix.
@@ -89,8 +92,8 @@ std::tuple<Dense, std::vector<int64_t>> old_one_sided_rid(
  * This function slightly deviates from the description in [Randomized methods for matrix computations](https://arxiv.org/abs/1607.01649v3) by Per-Gunnar Martinsson (2019), since the ID is built
  * from an matrix \p A* which approximates the row and column space of \p A by random sampling.
  */
-std::tuple<Dense, Dense, Dense> rid(
-  const Dense& A, int64_t sample_size, int64_t rank);
+std::tuple<Dense<double>, Dense<double>, Dense<double>> rid(
+  const Dense<double>& A, int64_t sample_size, int64_t rank);
 
 /**
  * @brief Calculates a randomized singular value decomposition (SVD) of a `Dense` matrix.
@@ -107,7 +110,7 @@ std::tuple<Dense, Dense, Dense> rid(
  * The SVD is calculated from the approximation \f$A \approx QQ^TA\f$, where Q is a matrix with orthonormal columns, approximating the column space of \p A.
  * The SVD is the given by \f$A [M x N] \approx U [M x sample_size] D [sample_size x sample_size] V^T [sample_size x N]\f$.
  */
-std::tuple<Dense, Dense, Dense> rsvd(const Dense& A, int64_t sample_size);
+std::tuple<Dense<double>, Dense<double>, Dense<double>> rsvd(const Dense<double>& A, int64_t sample_size);
 
 /**
  * @brief Calculates a randomized singular value decomposition (SVD) of a `Dense` matrix.
@@ -127,7 +130,7 @@ std::tuple<Dense, Dense, Dense> rsvd(const Dense& A, int64_t sample_size);
  * This version uses a manual optimization by calculating a QR of the approximation matrix before taking the SVD. However, it seems this optimization technique is already implemented
  * in the corresponding call to BLAS, as no differences in runtime can be observed.
  */
-std::tuple<Dense, Dense, Dense> old_rsvd(const Dense& A, int64_t sample_size);
+std::tuple<Dense<double>, Dense<double>, Dense<double>> old_rsvd(const Dense<double>& A, int64_t sample_size);
 
 } // namespace hicma
 

@@ -84,7 +84,7 @@ define_method(
   }
 }
 
-define_method(void, trsm_omm, (const Dense& A, Dense& B, int uplo, int lr)) {
+define_method(void, trsm_omm, (const Dense<double>& A, Dense<double>& B, int uplo, int lr)) {
   timing::start("DTRSM");
   cblas_dtrsm(
     CblasRowMajor,
@@ -113,7 +113,7 @@ define_method(void, trsm_omm, (const Matrix& A, LowRank& B, int uplo, int lr)) {
 
 define_method(
   void, trsm_omm,
-  (const Hierarchical& A, Dense& B, int uplo, int lr)
+  (const Hierarchical& A, Dense<double>& B, int uplo, int lr)
 ) {
   Hierarchical BH = split(
     B, lr==TRSM_LEFT?A.dim[0]:1, lr==TRSM_LEFT?1:A.dim[1]

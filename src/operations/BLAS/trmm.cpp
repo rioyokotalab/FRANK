@@ -43,7 +43,7 @@ void trmm(
 define_method(
   void, trmm_omm,
   (
-    const Dense& A, Dense& B,
+    const Dense<double>& A, Dense<double>& B,
     const char& side, const char& uplo, const char& trans, const char& diag,
     double alpha
   )
@@ -63,7 +63,7 @@ define_method(
 define_method(
   void, trmm_omm,
   (
-    const Dense& A, LowRank& B,
+    const Dense<double>& A, LowRank& B,
     const char& side, const char& uplo,  const char& trans, const char& diag,
     double alpha
   )

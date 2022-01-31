@@ -21,7 +21,8 @@ class IDTests : public testing::TestWithParam<std::tuple<int64_t, int64_t>> {
       A = hicma::Dense(hicma::laplacend, randx_A, n, n, 0, n);
       A_work = A;
     }
-    hicma::Dense A, A_work, A_check;
+    //TODO check if template needs to be specified?
+    hicma::Dense<> A, A_work, A_check;
 };
 
 TEST_P(IDTests, ID) {

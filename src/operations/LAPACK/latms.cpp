@@ -24,7 +24,7 @@ namespace hicma
     double dmax,
     int kl, int ku,
     const char& pack,
-    Dense& A
+    Dense<double>& A
   ) {
     LAPACKE_dlatms(
       LAPACK_ROW_MAJOR, A.dim[0], A.dim[1],

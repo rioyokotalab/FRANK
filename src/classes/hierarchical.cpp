@@ -87,7 +87,7 @@ Hierarchical::Hierarchical(
 }
 
 Hierarchical::Hierarchical(
-  Dense&& A,
+  Dense<double>&& A,
   int64_t rank,
   int64_t nleaf,
   double admis,

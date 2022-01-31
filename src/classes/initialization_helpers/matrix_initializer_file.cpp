@@ -23,7 +23,7 @@ MatrixInitializerFile::MatrixInitializerFile(
     filename(filename), ordering(ordering) {}
 
 void MatrixInitializerFile::fill_dense_representation(
-  Dense& A, const IndexRange& row_range, const IndexRange& col_range
+  Dense<double>& A, const IndexRange& row_range, const IndexRange& col_range
 ) const {
   std::ifstream file;
   file.open(filename);

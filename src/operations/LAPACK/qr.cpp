@@ -38,7 +38,7 @@ void qr(Matrix& A, Matrix& Q, Matrix& R) {
   qr_omm(A, Q, R);
 }
 
-std::tuple<Dense, Dense> make_left_orthogonal(const Matrix& A) {
+std::tuple<Dense<double>, Dense<double>> make_left_orthogonal(const Matrix& A) {
   return make_left_orthogonal_omm(A);
 }
 
@@ -62,7 +62,7 @@ void orthogonalize_block_col(int64_t j, const Matrix& A, Matrix& Q, Matrix& R) {
   orthogonalize_block_col_omm(j, A, Q, R);
 }
 
-Dense get_right_factor(const Matrix& A) {
+Dense<double> get_right_factor(const Matrix& A) {
   return get_right_factor_omm(A);
 }
 
@@ -71,7 +71,7 @@ void update_right_factor(Matrix& A, Matrix& R) {
 }
 
 
-define_method(void, qr_omm, (Dense& A, Dense& Q, Dense& R)) {
+define_method(void, qr_omm, (Dense<double>& A, Dense<double>& Q, Dense<double>& R)) {
   assert(Q.dim[0] == A.dim[0]);
   assert(Q.dim[1] == R.dim[0]);
   assert(R.dim[1] == A.dim[1]);
@@ -130,19 +130,19 @@ define_method(void, qr_omm, (Matrix& A, Matrix& Q, Matrix& R)) {
 }
 
 
-define_method(DensePair, make_left_orthogonal_omm, (const Dense& A)) {
-  Dense Id(identity, std::vector<std::vector<double>>(), A.dim[0], A.dim[0]);
+define_method(DensePair, make_left_orthogonal_omm, (const Dense<double>& A)) {
+  Dense<double> Id(identity, std::vector<std::vector<double>>(), A.dim[0], A.dim[0]);
   return {std::move(Id), A};
 }
 
 define_method(DensePair, make_left_orthogonal_omm, (const LowRank& A)) {
-  Dense Au(A.U);
-  Dense Qu(get_n_rows(A.U), get_n_cols(A.U));
-  Dense Ru(get_n_cols(A.U), get_n_cols(A.U));
+  Dense<double> Au(A.U);
+  Dense<double> Qu(get_n_rows(A.U), get_n_cols(A.U));
+  Dense<double> Ru(get_n_cols(A.U), get_n_cols(A.U));
   qr(Au, Qu, Ru);
-  Dense RS(Ru.dim[0], A.S.dim[1]);
+  Dense<double> RS(Ru.dim[0], A.S.dim[1]);
   gemm(Ru, A.S, RS, 1, 1);
-  Dense RSV(RS.dim[0], get_n_cols(A.V));
+  Dense<double> RSV(RS.dim[0], get_n_cols(A.V));
   gemm(RS, A.V, RSV, 1, 1);
   return {std::move(Qu), std::move(RSV)};
 }
@@ -170,13 +170,13 @@ define_method(
 
 define_method(
   MatrixProxy, split_by_column_omm,
-  (const Dense& A, Hierarchical& storage, int64_t& currentRow)
+  (const Dense<double>& A, Hierarchical& storage, int64_t& currentRow)
 ) {
   Hierarchical splitted = split(A, 1, storage.dim[1], true);
   for(int64_t i=0; i<storage.dim[1]; i++)
     storage(currentRow, i) = splitted(0, i);
   currentRow++;
-  return Dense(0, 0);
+  return Dense<double>(0, 0);
 }
 
 define_method(
@@ -184,11 +184,11 @@ define_method(
   (const LowRank& A, Hierarchical& storage, int64_t& currentRow)
 ) {
   LowRank _A(A);
-  Dense Qu(get_n_rows(_A.U), get_n_cols(_A.U));
-  Dense Ru(get_n_cols(_A.U), get_n_cols(_A.U));
+  Dense<double> Qu(get_n_rows(_A.U), get_n_cols(_A.U));
+  Dense<double> Ru(get_n_cols(_A.U), get_n_cols(_A.U));
   qr(_A.U, Qu, Ru);
-  Dense RS = gemm(Ru, _A.S);
-  Dense RSV = gemm(RS, _A.V);
+  Dense<double> RS = gemm(Ru, _A.S);
+  Dense<double> RSV = gemm(RS, _A.V);
   //Split R*S*V
   Hierarchical splitted = split(RSV, 1, storage.dim[1], true);
   for(int64_t i=0; i<storage.dim[1]; i++) {
@@ -208,7 +208,7 @@ define_method(
     }
     currentRow++;
   }
-  return Dense(0, 0);
+  return Dense<double>(0, 0);
 }
 
 define_method(
@@ -222,7 +222,7 @@ define_method(
 define_method(
   MatrixProxy, concat_columns_omm,
   (
-    const Dense& A, const Hierarchical& splitted, const Dense&,
+    const Dense<double>& A, const Hierarchical& splitted, const Dense<double>&,
     int64_t& currentRow
   )
 ) {
@@ -231,7 +231,7 @@ define_method(
   for(int64_t i=0; i<splitted.dim[1]; i++) {
     SpCurRow(0, i) = splitted(currentRow, i);
   }
-  Dense concatenatedRow(SpCurRow);
+  Dense<double> concatenatedRow(SpCurRow);
   assert(A.dim[0] == concatenatedRow.dim[0]);
   assert(A.dim[1] == concatenatedRow.dim[1]);
   currentRow++;
@@ -241,7 +241,7 @@ define_method(
 define_method(
   MatrixProxy, concat_columns_omm,
   (
-    const LowRank& A, const Hierarchical& splitted, const Dense& Q,
+    const LowRank& A, const Hierarchical& splitted, const Dense<double>& Q,
     int64_t& currentRow
   )
 ) {
@@ -251,12 +251,12 @@ define_method(
   for(int64_t i=0; i<splitted.dim[1]; i++) {
     SpCurRow(0, i) = splitted(currentRow, i);
   }
-  Dense concatenatedRow(SpCurRow);
+  Dense<double> concatenatedRow(SpCurRow);
   assert(Q.dim[0] == A.dim[0]);
   assert(Q.dim[1] == A.rank);
   assert(concatenatedRow.dim[0] == A.rank);
   assert(concatenatedRow.dim[1] == A.dim[1]);
-  LowRank _A(Dense(Q), Dense(identity, {}, A.rank, A.rank), concatenatedRow);
+  LowRank _A(Dense<double>(Q), Dense<double>(identity, {}, A.rank, A.rank), concatenatedRow);
   currentRow++;
   return _A;
 }
@@ -264,7 +264,7 @@ define_method(
 define_method(
   MatrixProxy, concat_columns_omm,
   (
-    const Hierarchical& A, const Hierarchical& splitted, const Dense&,
+    const Hierarchical& A, const Hierarchical& splitted, const Dense<double>&,
     int64_t& currentRow
   )
   ) {
@@ -296,7 +296,7 @@ void zero_whole(Matrix& A) {
   zero_whole_omm(A);
 }
 
-define_method(void, zero_lowtri_omm, (Dense& A)) {
+define_method(void, zero_lowtri_omm, (Dense<double>& A)) {
   for(int64_t i=0; i<A.dim[0]; i++)
     for(int64_t j=0; j<i; j++)
       A(i,j) = 0.0;
@@ -307,17 +307,17 @@ define_method(void, zero_lowtri_omm, (Matrix& A)) {
   std::abort();
 }
 
-define_method(void, zero_whole_omm, (Dense& A)) {
+define_method(void, zero_whole_omm, (Dense<double>& A)) {
   A = 0.0;
 }
 
 define_method(void, zero_whole_omm, (LowRank& A)) {
-  A.U = Dense(
+  A.U = Dense<double>(
     identity, std::vector<std::vector<double>>(),
     get_n_rows(A.U), get_n_cols(A.U)
   );
   A.S = 0.0;
-  A.V = Dense(
+  A.V = Dense<double>(
     identity, std::vector<std::vector<double>>(),
     get_n_rows(A.V), get_n_cols(A.V)
   );
@@ -360,15 +360,15 @@ void restore_block_col(
 
 define_method(
   void, orthogonalize_block_col_omm,
-  (int64_t j, const Hierarchical& A, Hierarchical& Q, Dense& R)
+  (int64_t j, const Hierarchical& A, Hierarchical& Q, Dense<double>& R)
 ) {
   Hierarchical Qu(A.dim[0], 1);
   Hierarchical B(A.dim[0], 1);
   for(int64_t i=0; i<A.dim[0]; i++) {
     std::tie(Qu(i, 0), B(i, 0)) = make_left_orthogonal(A(i, j));
   }
-  Dense Qb(B);
-  Dense Rb(Qb.dim[1], Qb.dim[1]);
+  Dense<double> Qb(B);
+  Dense<double> Rb(Qb.dim[1], Qb.dim[1]);
   mgs_qr(Qb, Rb);
   R = std::move(Rb);
   //Slice Qb based on B
@@ -376,7 +376,7 @@ define_method(
   int64_t rowOffset = 0;
   for(int64_t i=0; i<HQb.dim[0]; i++) {
     int64_t dim_Bi[2]{get_n_rows(B(i, 0)), get_n_cols(B(i, 0))};
-    Dense Qbi(dim_Bi[0], dim_Bi[1]);
+    Dense<double> Qbi(dim_Bi[0], dim_Bi[1]);
     Qb.copy_to(Qbi, rowOffset);
     HQb(i, 0) = std::move(Qbi);
     rowOffset += dim_Bi[0];
@@ -399,25 +399,25 @@ define_method(
 }
 
 
-define_method(Dense, get_right_factor_omm, (const Dense& A)) {
-  return Dense(A);
+define_method(Dense<double>, get_right_factor_omm, (const Dense<double>& A)) {
+  return Dense<double>(A);
 }
 
-define_method(Dense, get_right_factor_omm, (const LowRank& A)) {
-  Dense SV = gemm(A.S, A.V);
+define_method(Dense<double>, get_right_factor_omm, (const LowRank& A)) {
+  Dense<double> SV = gemm(A.S, A.V);
   return SV;
 }
 
 define_method(
   void, update_right_factor_omm,
-  (Dense& A, Dense& R)
+  (Dense<double>& A, Dense<double>& R)
 ) {
   A = std::move(R);
 }
 
 define_method(
   void, update_right_factor_omm,
-  (LowRank& A, Dense& R)
+  (LowRank& A, Dense<double>& R)
 ) {
   A.S = 0.0;
   for(int64_t i=0; i<std::min(A.S.dim[0], A.S.dim[1]); i++) {
@@ -433,8 +433,8 @@ void triangularize_block_col(int64_t j, Hierarchical& A, Hierarchical& T) {
     Rj(i, 0) = get_right_factor(A(j+i, j));
   }
   //QR on concatenated right factors
-  Dense DRj(Rj);
-  Dense Tj(DRj.dim[1], DRj.dim[1]);
+  Dense<double> DRj(Rj);
+  Dense<double> Tj(DRj.dim[1], DRj.dim[1]);
   geqrt(DRj, Tj);
   T(j, 0) = std::move(Tj);
   //Slice DRj based on Rj
@@ -442,7 +442,7 @@ void triangularize_block_col(int64_t j, Hierarchical& A, Hierarchical& T) {
   for(int64_t i=0; i<Rj.dim[0]; i++) {
     assert(DRj.dim[1] == get_n_cols(Rj(i, 0)));
     int64_t dim_Rij[2]{get_n_rows(Rj(i, 0)), get_n_cols(Rj(i, 0))};
-    Dense Rij(dim_Rij[0], dim_Rij[1]);
+    Dense<double> Rij(dim_Rij[0], dim_Rij[1]);
     DRj.copy_to(Rij, rowOffset);
     Rj(i, 0) = std::move(Rij);
     rowOffset += dim_Rij[0];
@@ -472,7 +472,7 @@ void apply_block_col_householder(const Hierarchical& Y, const Hierarchical& T, i
       Hierarchical _C(C);
       trmm(Y(k, k), _C(0, 0), 'l', 'l', 'n', 'u', 1);
       gemm(
-        Dense(identity, std::vector<std::vector<double>>(), get_n_rows(_C(0, 0)), get_n_rows(_C(0, 0))),
+        Dense<double>(identity, std::vector<std::vector<double>>(), get_n_rows(_C(0, 0)), get_n_rows(_C(0, 0))),
         _C(0, 0), A(k, j), -1, 1
       );
     }
@@ -485,7 +485,7 @@ void apply_block_col_householder(const Hierarchical& Y, const Hierarchical& T, i
 
 void rq(Matrix& A, Matrix& R, Matrix& Q) { rq_omm(A, R, Q); }
 
-define_method(void, rq_omm, (Dense& A, Dense& R, Dense& Q)) {
+define_method(void, rq_omm, (Dense<double>& A, Dense<double>& R, Dense<double>& Q)) {
   assert(R.dim[0] == A.dim[0]);
   assert(R.dim[1] == Q.dim[0]);
   assert(Q.dim[1] == A.dim[1]);
@@ -517,7 +517,7 @@ define_method(void, rq_omm, (Dense& A, Dense& R, Dense& Q)) {
 }
 
 
-void mgs_qr(Dense& A, Dense& R) {
+void mgs_qr(Dense<double>& A, Dense<double>& R) {
   assert(A.dim[1] == R.dim[0]);
   assert(A.dim[1] == R.dim[1]);
   for(int j = 0; j < A.dim[1]; j++) {

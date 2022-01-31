@@ -14,38 +14,38 @@
 namespace hicma
 {
 
-std::tuple<Dense, Dense, Dense> rsvd(const Dense& A, int64_t sample_size) {
-  Dense RN(
+std::tuple<Dense<double>, Dense<double>, Dense<double>> rsvd(const Dense<double>& A, int64_t sample_size) {
+  Dense<double> RN(
     random_uniform, std::vector<std::vector<double>>(), A.dim[1], sample_size);
-  Dense Y = gemm(A, RN);
-  Dense Q(Y.dim[0], Y.dim[1]);
-  Dense R(Y.dim[1], Y.dim[1]);
+  Dense<double> Y = gemm(A, RN);
+  Dense<double> Q(Y.dim[0], Y.dim[1]);
+  Dense<double> R(Y.dim[1], Y.dim[1]);
   qr(Y, Q, R);
-  Dense QtA = gemm(Q, A, 1, true, false);
-  Dense Ub, S, V;
+  Dense<double> QtA = gemm(Q, A, 1, true, false);
+  Dense<double> Ub, S, V;
   std::tie(Ub, S, V) = svd(QtA);
   // TODO Resizing Ub (and thus U) before this operation might save some time!
-  Dense U = gemm(Q, Ub);
+  Dense<double> U = gemm(Q, Ub);
   return {std::move(U), std::move(S), std::move(V)};
 }
 
-std::tuple<Dense, Dense, Dense> old_rsvd(const Dense& A, int64_t sample_size) {
-  Dense RN(
+std::tuple<Dense<double>, Dense<double>, Dense<double>> old_rsvd(const Dense<double>& A, int64_t sample_size) {
+  Dense<double> RN(
     random_uniform, std::vector<std::vector<double>>(), A.dim[1], sample_size);
-  Dense Y = gemm(A, RN);
-  Dense Q(Y.dim[0], Y.dim[1]);
-  Dense R(Y.dim[1], Y.dim[1]);
+  Dense<double> Y = gemm(A, RN);
+  Dense<double> Q(Y.dim[0], Y.dim[1]);
+  Dense<double> R(Y.dim[1], Y.dim[1]);
   qr(Y, Q, R);
-  Dense Bt = gemm(A, Q, 1, true, false);
-  Dense Qb(A.dim[1], sample_size);
-  Dense Rb(sample_size, sample_size);
+  Dense<double> Bt = gemm(A, Q, 1, true, false);
+  Dense<double> Qb(A.dim[1], sample_size);
+  Dense<double> Rb(sample_size, sample_size);
   qr(Bt, Qb, Rb);
-  Dense Ur, S, Vr;
+  Dense<double> Ur, S, Vr;
   std::tie(Ur, S, Vr) = svd(Rb);
   // TODO Resizing Ur (and thus U) before this operation might save some time!
-  Dense U = gemm(Q, Ur, 1, false, true);
+  Dense<double> U = gemm(Q, Ur, 1, false, true);
   // TODO Resizing Vr (and thus V) before this operation might save some time!
-  Dense V = gemm(Vr, Qb, 1, true, true);
+  Dense<double> V = gemm(Vr, Qb, 1, true, true);
   return {std::move(U), std::move(S), std::move(V)};
 }
 

@@ -22,7 +22,7 @@ MatrixInitializerKernel::MatrixInitializerKernel(
     kernel(kernel) {}
 
 void MatrixInitializerKernel::fill_dense_representation(
-  Dense& A, const IndexRange& row_range, const IndexRange& col_range
+  Dense<double>& A, const IndexRange& row_range, const IndexRange& col_range
 ) const {
   kernel(&A, A.dim[0], A.dim[1], A.stride,
 	 params, row_range.start, col_range.start);

@@ -19,12 +19,12 @@
 namespace hicma
 {
 
-std::tuple<Dense, Dense, Dense> svd(Dense& A) {
+std::tuple<Dense<double>, Dense<double>, Dense<double>> svd(Dense<double>& A) {
   timing::start("DGESVD");
   int64_t dim_min = std::min(A.dim[0], A.dim[1]);
-  Dense U(A.dim[0], dim_min);
-  Dense S(dim_min, dim_min);
-  Dense V(dim_min, A.dim[1]);
+  Dense<double> U(A.dim[0], dim_min);
+  Dense<double> S(dim_min, dim_min);
+  Dense<double> V(dim_min, A.dim[1]);
   std::vector<double> Sdiag(S.dim[0], 0);
   std::vector<double> work(S.dim[0]-1, 0);
   LAPACKE_dgesvd(
@@ -44,13 +44,13 @@ std::tuple<Dense, Dense, Dense> svd(Dense& A) {
   return {std::move(U), std::move(S), std::move(V)};
 }
 
-std::tuple<Dense, Dense, Dense> sdd(Dense& A) {
+std::tuple<Dense<double>, Dense<double>, Dense<double>> sdd(Dense<double>& A) {
   timing::start("DGESDD");
   int64_t dim_min = std::min(A.dim[0], A.dim[1]);
-  Dense Sdiag(dim_min, 1);
-  Dense work(dim_min-1, 1);
-  Dense U(A.dim[0], dim_min);
-  Dense V(dim_min, A.dim[1]);
+  Dense<double> Sdiag(dim_min, 1);
+  Dense<double> work(dim_min-1, 1);
+  Dense<double> U(A.dim[0], dim_min);
+  Dense<double> V(dim_min, A.dim[1]);
   // dgesdd is faster, but makes little/no difference in randomized SVD
   LAPACKE_dgesdd(
     LAPACK_ROW_MAJOR,
@@ -61,7 +61,7 @@ std::tuple<Dense, Dense, Dense> sdd(Dense& A) {
     &U, U.stride,
     &V, V.stride
   );
-  Dense S(dim_min, dim_min);
+  Dense<double> S(dim_min, dim_min);
   for(int64_t i=0; i<dim_min; i++){
     S(i, i) = Sdiag[i];
   }
@@ -69,9 +69,9 @@ std::tuple<Dense, Dense, Dense> sdd(Dense& A) {
   return {std::move(U), std::move(S), std::move(V)};
 }
 
-std::vector<double> get_singular_values(Dense& A) {
+std::vector<double> get_singular_values(Dense<double>& A) {
   std::vector<double> Sdiag(std::min(A.dim[0], A.dim[1]), 1);
-  Dense work(A.dim[1]-1,1);
+  Dense<double> work(A.dim[1]-1,1);
   // Since we use 'N' we can avoid allocating memory for U and V
   LAPACKE_dgesvd(
     LAPACK_ROW_MAJOR,

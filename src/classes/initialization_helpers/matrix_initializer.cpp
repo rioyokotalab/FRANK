@@ -25,10 +25,10 @@ MatrixInitializer::MatrixInitializer(
 ) : admis(admis), rank(rank),
     params(params), admis_type(admis_type) {}
 
-Dense MatrixInitializer::get_dense_representation(
+Dense<double> MatrixInitializer::get_dense_representation(
   const ClusterTree& node
 ) const {
-  Dense representation(node.rows.n, node.cols.n);
+  Dense<double> representation(node.rows.n, node.cols.n);
   fill_dense_representation(representation, node.rows, node.cols);
   return representation;
 }

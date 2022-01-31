@@ -24,7 +24,7 @@ namespace hicma
 
 void geqrt(Matrix& A, Matrix& T) { geqrt_omm(A, T); }
 
-define_method(void, geqrt_omm, (Dense& A, Dense& T)) {
+define_method(void, geqrt_omm, (Dense<double>& A, Dense<double>& T)) {
   assert(T.dim[0] == A.dim[1]);
   assert(T.dim[1] == A.dim[1]);
   LAPACKE_dgeqrt3(
@@ -57,7 +57,7 @@ define_method(void, geqrt_omm, (Matrix& A, Matrix& T)) {
   std::abort();
 }
 
-void geqrt2(Dense& A, Dense& T) {
+void geqrt2(Dense<double>& A, Dense<double>& T) {
   assert(T.dim[0] == A.dim[1]);
   assert(T.dim[1] == A.dim[1]);
   LAPACKE_dgeqrt2(

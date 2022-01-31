@@ -68,7 +68,7 @@ int64_t get_n_cols(const Matrix&);
  * @return double
  * Condition number of \p A
  */
-double cond(Dense A);
+double cond(Dense<double> A);
 
 void sortByMortonIndex(std::vector<std::vector<double>> &x, int64_t level, std::vector<int64_t>& perm);
 

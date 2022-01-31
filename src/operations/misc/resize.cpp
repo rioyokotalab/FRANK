@@ -20,11 +20,11 @@ MatrixProxy resize(const Matrix& A, int64_t n_rows, int64_t n_cols) {
 }
 
 define_method(
-  MatrixProxy, resize_omm, (const Dense& A, int64_t n_rows, int64_t n_cols)
+  MatrixProxy, resize_omm, (const Dense<double>& A, int64_t n_rows, int64_t n_cols)
 ) {
   assert(n_rows <= A.dim[0]);
   assert(n_cols <= A.dim[1]);
-  Dense resized(n_rows, n_cols);
+  Dense<double> resized(n_rows, n_cols);
   A.copy_to(resized);
   return resized;
 }

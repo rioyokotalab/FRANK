@@ -26,12 +26,12 @@ unsigned long get_memory_usage(const Matrix& A, bool include_structure) {
 
 define_method(
   unsigned long, get_memory_usage_omm,
-  (const Dense& A, bool include_structure)
+  (const Dense<double>& A, bool include_structure)
 ) {
   unsigned long memory_usage = 0;
   memory_usage += A.dim[0]*A.dim[1]*sizeof(A[0]);
   if (include_structure) {
-    memory_usage += sizeof(Dense);
+    memory_usage += sizeof(Dense<double>);
   }
   return memory_usage;
 }
@@ -45,7 +45,7 @@ define_method(
   memory_usage += get_memory_usage_omm(A.S, include_structure);
   memory_usage += get_memory_usage_omm(A.V, include_structure);
   if (include_structure) {
-    memory_usage += sizeof(LowRank) - sizeof(Dense);
+    memory_usage += sizeof(LowRank) - sizeof(Dense<double>);
   }
   return memory_usage;
 }
