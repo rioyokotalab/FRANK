@@ -52,7 +52,7 @@ define_method(
 
 define_method(
   void, larfb_omm,
-  (const Dense<double>& V, const Dense<double>& T, LowRank& C, bool trans)
+  (const Dense<double>& V, const Dense<double>& T, LowRank<double>& C, bool trans)
 ) {
   larfb(V, T, C.U, trans);
 }

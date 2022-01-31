@@ -38,14 +38,14 @@ define_method(
 
 define_method(
   unsigned long, get_memory_usage_omm,
-  (const LowRank& A, bool include_structure)
+  (const LowRank<double>& A, bool include_structure)
 ) {
   unsigned long memory_usage = 0;
   memory_usage += get_memory_usage_omm(A.U, include_structure);
   memory_usage += get_memory_usage_omm(A.S, include_structure);
   memory_usage += get_memory_usage_omm(A.V, include_structure);
   if (include_structure) {
-    memory_usage += sizeof(LowRank) - sizeof(Dense<double>);
+    memory_usage += sizeof(LowRank<double>) - sizeof(Dense<double>);
   }
   return memory_usage;
 }

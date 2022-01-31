@@ -131,7 +131,7 @@ class MatrixInitializer {
    * @return LowRank
    * `LowRank` approximation representing \p node.
    */
-  LowRank get_compressed_representation(const ClusterTree& node);
+  LowRank<double> get_compressed_representation(const ClusterTree& node);
 
   /**
    * @brief Check if a `ClusterTree` node is admissible

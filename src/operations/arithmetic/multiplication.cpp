@@ -30,7 +30,7 @@ define_method(
 }
 
 define_method(
-  Matrix&, multiplication_omm, (LowRank& A, double b)
+  Matrix&, multiplication_omm, (LowRank<double>& A, double b)
 ) {
   A.S *= b;
   return A;

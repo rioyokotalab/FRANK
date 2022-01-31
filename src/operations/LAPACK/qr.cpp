@@ -135,7 +135,7 @@ define_method(DensePair, make_left_orthogonal_omm, (const Dense<double>& A)) {
   return {std::move(Id), A};
 }
 
-define_method(DensePair, make_left_orthogonal_omm, (const LowRank& A)) {
+define_method(DensePair, make_left_orthogonal_omm, (const LowRank<double>& A)) {
   Dense<double> Au(A.U);
   Dense<double> Qu(get_n_rows(A.U), get_n_cols(A.U));
   Dense<double> Ru(get_n_cols(A.U), get_n_cols(A.U));
@@ -181,9 +181,9 @@ define_method(
 
 define_method(
   MatrixProxy, split_by_column_omm,
-  (const LowRank& A, Hierarchical& storage, int64_t& currentRow)
+  (const LowRank<double>& A, Hierarchical& storage, int64_t& currentRow)
 ) {
-  LowRank _A(A);
+  LowRank<double> _A(A);
   Dense<double> Qu(get_n_rows(_A.U), get_n_cols(_A.U));
   Dense<double> Ru(get_n_cols(_A.U), get_n_cols(_A.U));
   qr(_A.U, Qu, Ru);
@@ -241,7 +241,7 @@ define_method(
 define_method(
   MatrixProxy, concat_columns_omm,
   (
-    const LowRank& A, const Hierarchical& splitted, const Dense<double>& Q,
+    const LowRank<double>& A, const Hierarchical& splitted, const Dense<double>& Q,
     int64_t& currentRow
   )
 ) {
@@ -256,7 +256,7 @@ define_method(
   assert(Q.dim[1] == A.rank);
   assert(concatenatedRow.dim[0] == A.rank);
   assert(concatenatedRow.dim[1] == A.dim[1]);
-  LowRank _A(Dense<double>(Q), Dense<double>(identity, {}, A.rank, A.rank), concatenatedRow);
+  LowRank<double> _A(Dense<double>(Q), Dense<double>(identity, {}, A.rank, A.rank), concatenatedRow);
   currentRow++;
   return _A;
 }
@@ -311,7 +311,7 @@ define_method(void, zero_whole_omm, (Dense<double>& A)) {
   A = 0.0;
 }
 
-define_method(void, zero_whole_omm, (LowRank& A)) {
+define_method(void, zero_whole_omm, (LowRank<double>& A)) {
   A.U = Dense<double>(
     identity, std::vector<std::vector<double>>(),
     get_n_rows(A.U), get_n_cols(A.U)
@@ -403,7 +403,7 @@ define_method(Dense<double>, get_right_factor_omm, (const Dense<double>& A)) {
   return Dense<double>(A);
 }
 
-define_method(Dense<double>, get_right_factor_omm, (const LowRank& A)) {
+define_method(Dense<double>, get_right_factor_omm, (const LowRank<double>& A)) {
   Dense<double> SV = gemm(A.S, A.V);
   return SV;
 }
@@ -417,7 +417,7 @@ define_method(
 
 define_method(
   void, update_right_factor_omm,
-  (LowRank& A, Dense<double>& R)
+  (LowRank<double>& A, Dense<double>& R)
 ) {
   A.S = 0.0;
   for(int64_t i=0; i<std::min(A.S.dim[0], A.S.dim[1]); i++) {

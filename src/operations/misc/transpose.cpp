@@ -28,8 +28,8 @@ define_method(MatrixProxy, transpose_omm, (const Dense<double>& A)) {
   return transposed;
 }
 
-define_method(MatrixProxy, transpose_omm, (const LowRank& A)) {
-  LowRank transposed(transpose(A.V), transpose(A.S), transpose(A.U));
+define_method(MatrixProxy, transpose_omm, (const LowRank<double>& A)) {
+  LowRank<double> transposed(transpose(A.V), transpose(A.S), transpose(A.U));
   return transposed;
 }
 

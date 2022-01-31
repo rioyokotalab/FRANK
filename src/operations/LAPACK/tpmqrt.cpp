@@ -48,10 +48,10 @@ define_method(
 
 define_method(
   void, tpmqrt_omm,
-  (const LowRank& V, const Dense<double>& T, Dense<double>& A, Dense<double>& B, bool trans)
+  (const LowRank<double>& V, const Dense<double>& T, Dense<double>& A, Dense<double>& B, bool trans)
 ) {
   Dense<double> C(A);
-  LowRank Vt = transpose(V);
+  LowRank<double> Vt = transpose(V);
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(
@@ -63,7 +63,7 @@ define_method(
 
 define_method(
   void, tpmqrt_omm,
-  (const Dense<double>& V, const Dense<double>& T, LowRank& A, Dense<double>& B, bool trans)
+  (const Dense<double>& V, const Dense<double>& T, LowRank<double>& A, Dense<double>& B, bool trans)
 ) {
   Dense<double> C(A);
   gemm(V, B, C, 1, 1, true, false); //C = A + Y^t*B
@@ -77,10 +77,10 @@ define_method(
 
 define_method(
   void, tpmqrt_omm,
-  (const LowRank& V, const Dense<double>& T, LowRank& A, Dense<double>& B, bool trans)
+  (const LowRank<double>& V, const Dense<double>& T, LowRank<double>& A, Dense<double>& B, bool trans)
 ) {
-  LowRank C(A);
-  LowRank Vt = transpose(V);
+  LowRank<double> C(A);
+  LowRank<double> Vt = transpose(V);
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(
@@ -121,7 +121,7 @@ define_method(
 
 define_method(
   void, tpmqrt_omm,
-  (const Dense<double>& V, const Dense<double>& T, Dense<double>& A, LowRank& B, bool trans)
+  (const Dense<double>& V, const Dense<double>& T, Dense<double>& A, LowRank<double>& B, bool trans)
 ) {
   Dense<double> C(A);
   Dense<double> Vt = transpose(V);
@@ -136,10 +136,10 @@ define_method(
 
 define_method(
   void, tpmqrt_omm,
-  (const LowRank& V, const Dense<double>& T, Dense<double>& A, LowRank& B, bool trans)
+  (const LowRank<double>& V, const Dense<double>& T, Dense<double>& A, LowRank<double>& B, bool trans)
 ) {
   Dense<double> C(A);
-  LowRank Vt = transpose(V);
+  LowRank<double> Vt = transpose(V);
   gemm(Vt, B, C, 1, 1); //C = A + Y^t * B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(
@@ -151,9 +151,9 @@ define_method(
 
 define_method(
   void, tpmqrt_omm,
-  (const Dense<double>& V, const Dense<double>& T, LowRank& A, LowRank& B, bool trans)
+  (const Dense<double>& V, const Dense<double>& T, LowRank<double>& A, LowRank<double>& B, bool trans)
 ) {
-  LowRank C(A);
+  LowRank<double> C(A);
   Dense<double> Vt = transpose(V);
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
@@ -166,10 +166,10 @@ define_method(
 
 define_method(
   void, tpmqrt_omm,
-  (const LowRank& V, const Dense<double>& T, LowRank& A, LowRank& B, bool trans)
+  (const LowRank<double>& V, const Dense<double>& T, LowRank<double>& A, LowRank<double>& B, bool trans)
 ) {
-  LowRank C(A);
-  LowRank Vt = transpose(V);
+  LowRank<double> C(A);
+  LowRank<double> Vt = transpose(V);
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
   trmm(T, C, 'l', 'u', trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(

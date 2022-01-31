@@ -33,11 +33,11 @@ Dense<double> MatrixInitializer::get_dense_representation(
   return representation;
 }
 
-LowRank MatrixInitializer::get_compressed_representation(
+LowRank<double> MatrixInitializer::get_compressed_representation(
   const ClusterTree& node
 ) {
   // TODO This function still relies on ClusterTree to be symmetric!
-  return LowRank(get_dense_representation(node), rank);
+  return LowRank<double>(get_dense_representation(node), rank);
 }
 
 std::vector<std::vector<double>> MatrixInitializer::get_coords_range(const IndexRange& range) const {

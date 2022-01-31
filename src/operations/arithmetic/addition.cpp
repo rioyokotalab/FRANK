@@ -41,7 +41,7 @@ define_method(Matrix&, addition_omm, (Dense<double>& A, const Dense<double>& B))
   return A;
 }
 
-define_method(Matrix&, addition_omm, (Dense<double>& A, const LowRank& B)) {
+define_method(Matrix&, addition_omm, (Dense<double>& A, const LowRank<double>& B)) {
   gemm(gemm(B.U, B.S), B.V, A, 1, 1);
   return A;
 }
@@ -55,7 +55,7 @@ define_method(Matrix&, addition_omm, (Hierarchical& A, const Hierarchical& B)) {
   return A;
 }
 
-define_method(Matrix&, addition_omm, (Hierarchical& A, const LowRank& B)) {
+define_method(Matrix&, addition_omm, (Hierarchical& A, const LowRank<double>& B)) {
   Hierarchical BH = split(B, A.dim[0], A.dim[1]);
   A += BH;
   return A;
@@ -148,10 +148,10 @@ std::tuple<Dense<double>, Dense<double>, Dense<double>> merge_S(
   };
 }
 
-void naive_addition(LowRank& A, const LowRank& B) {
+void naive_addition(LowRank<double>& A, const LowRank<double>& B) {
   //Truncate and Recompress if rank > min(nrow, ncol)
   if (A.rank+B.rank >= std::min(A.dim[0], A.dim[1])) {
-    A = LowRank(Dense<double>(A) + Dense<double>(B), A.rank);
+    A = LowRank<double>(Dense<double>(A) + Dense<double>(B), A.rank);
   } else {
     Hierarchical U_merge(1, 2);
     U_merge[0] = std::move(A.U);
@@ -171,7 +171,7 @@ void naive_addition(LowRank& A, const LowRank& B) {
   }
 }
 
-void orthogonality_preserving_addition(LowRank& A, const LowRank& B) {
+void orthogonality_preserving_addition(LowRank<double>& A, const LowRank<double>& B) {
   //Bebendorf HMatrix Book p16
   //Rounded Addition
   //Concat U bases
@@ -205,7 +205,7 @@ void orthogonality_preserving_addition(LowRank& A, const LowRank& B) {
   A.V = gemm(resize(RRV, A.rank, RRV.dim[1]), Qv);
 }
 
-void formatted_addition(LowRank& A, const LowRank& B) {
+void formatted_addition(LowRank<double>& A, const LowRank<double>& B) {
   //Bebendorf HMatrix Book p17
   //Rounded addition by exploiting orthogonality
   timing::start("LR += LR");
@@ -239,7 +239,7 @@ void formatted_addition(LowRank& A, const LowRank& B) {
   timing::stop("LR += LR");
 }
 
-define_method(Matrix&, addition_omm, (LowRank& A, const LowRank& B)) {
+define_method(Matrix&, addition_omm, (LowRank<double>& A, const LowRank<double>& B)) {
   assert(A.dim[0] == B.dim[0]);
   assert(A.dim[1] == B.dim[1]);
   assert(A.rank == B.rank);

@@ -35,7 +35,7 @@ define_method(void, tpqrt_omm, (Dense<double>& A, Dense<double>& B, Dense<double
   );
 }
 
-define_method(void, tpqrt_omm, (Dense<double>& A, LowRank& B, Dense<double>& T)) {
+define_method(void, tpqrt_omm, (Dense<double>& A, LowRank<double>& B, Dense<double>& T)) {
   Dense<double> BV_copy(B.V);
   B.V = gemm(B.S, BV_copy);
   B.S = 0.0;

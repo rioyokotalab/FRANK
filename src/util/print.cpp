@@ -38,7 +38,7 @@ define_method(std::string, type_omm, (const Empty&)) {
   return "Empty";
 }
 
-define_method(std::string, type_omm, (const LowRank&)) {
+define_method(std::string, type_omm, (const LowRank<double>&)) {
   return "LowRank";
 }
 
@@ -89,7 +89,7 @@ define_method(
 define_method(
   void, to_json_omm,
   (
-    const LowRank& A, nlohmann::json& json,
+    const LowRank<double>& A, nlohmann::json& json,
     int64_t i_abs, int64_t j_abs, int64_t level
   )
 ) {
@@ -150,7 +150,7 @@ define_method(void, print_omm, (const Dense<double>& A)) {
   print_separation_line();
 }
 
-define_method(void, print_omm, (const LowRank& A)) {
+define_method(void, print_omm, (const LowRank<double>& A)) {
   std::cout << "U : --------------------------------------" << std::endl;
   print(A.U);
   std::cout << "S : --------------------------------------" << std::endl;

@@ -48,8 +48,8 @@ define_method(std::unique_ptr<Matrix>, clone, (const Empty& A)) {
   return std::make_unique<Empty>(A);
 }
 
-define_method(std::unique_ptr<Matrix>, clone, (const LowRank& A)) {
-  return std::make_unique<LowRank>(A);
+define_method(std::unique_ptr<Matrix>, clone, (const LowRank<double>& A)) {
+  return std::make_unique<LowRank<double>>(A);
 }
 define_method(std::unique_ptr<Matrix>, clone, (const Hierarchical& A)) {
   return std::make_unique<Hierarchical>(A);
@@ -68,8 +68,8 @@ define_method(std::unique_ptr<Matrix>, move_clone, (Empty&& A)) {
   return std::make_unique<Empty>(std::move(A));
 }
 
-define_method(std::unique_ptr<Matrix>, move_clone, (LowRank&& A)) {
-  return std::make_unique<LowRank>(std::move(A));
+define_method(std::unique_ptr<Matrix>, move_clone, (LowRank<double>&& A)) {
+  return std::make_unique<LowRank<double>>(std::move(A));
 }
 
 define_method(std::unique_ptr<Matrix>, move_clone, (Hierarchical&& A)) {

@@ -100,7 +100,7 @@ define_method(void, trsm_omm, (const Dense<double>& A, Dense<double>& B, int upl
   timing::stop("DTRSM");
 }
 
-define_method(void, trsm_omm, (const Matrix& A, LowRank& B, int uplo, int lr)) {
+define_method(void, trsm_omm, (const Matrix& A, LowRank<double>& B, int uplo, int lr)) {
   switch (lr) {
   case TRSM_LEFT:
     trsm(A, B.U, uplo, lr);

@@ -81,7 +81,7 @@ define_method(
 define_method(
   Hierarchical, split_omm,
   (
-    const LowRank& A,
+    const LowRank<double>& A,
     const std::vector<IndexRange>& row_splits,
     const std::vector<IndexRange>& col_splits,
     bool copy
@@ -116,7 +116,7 @@ define_method(
   }
   for (uint64_t i=0; i<row_splits.size(); ++i) {
     for (uint64_t j=0; j<col_splits.size(); ++j) {
-      out(i, j) = LowRank(U_splits[i], A.S, V_splits[j], copy);
+      out(i, j) = LowRank<double>(U_splits[i], A.S, V_splits[j], copy);
     }
   }
   return out;

@@ -42,19 +42,19 @@ define_method(
 }
 
 define_method(
-  DoublePair, collect_diff_norm_omm, (const Dense<double>& A, const LowRank& B)
+  DoublePair, collect_diff_norm_omm, (const Dense<double>& A, const LowRank<double>& B)
 ) {
   return collect_diff_norm_omm(A, Dense<double>(B));
 }
 
 define_method(
-  DoublePair, collect_diff_norm_omm, (const LowRank& A, const Dense<double>& B)
+  DoublePair, collect_diff_norm_omm, (const LowRank<double>& A, const Dense<double>& B)
 ) {
   return collect_diff_norm_omm(Dense<double>(A), B);
 }
 
 define_method(
-  DoublePair, collect_diff_norm_omm, (const LowRank& A, const LowRank& B)
+  DoublePair, collect_diff_norm_omm, (const LowRank<double>& A, const LowRank<double>& B)
 ) {
   return collect_diff_norm_omm(Dense<double>(A), Dense<double>(B));
 }

@@ -147,7 +147,7 @@ define_method(
 define_method(
   void, gemm_omm,
   (
-    const LowRank& A, const Dense<double>& B, Dense<double>& C,
+    const LowRank<double>& A, const Dense<double>& B, Dense<double>& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
@@ -163,7 +163,7 @@ define_method(
 define_method(
   void, gemm_omm,
   (
-    const Dense<double>& A, const LowRank& B, Dense<double>& C,
+    const Dense<double>& A, const LowRank<double>& B, Dense<double>& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
@@ -179,7 +179,7 @@ define_method(
 define_method(
   void, gemm_omm,
   (
-    const LowRank& A, const LowRank& B, Dense<double>& C,
+    const LowRank<double>& A, const LowRank<double>& B, Dense<double>& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
@@ -201,20 +201,20 @@ define_method(
 define_method(
   void, gemm_omm,
   (
-    const Dense<double>& A, const Dense<double>& B, LowRank& C,
+    const Dense<double>& A, const Dense<double>& B, LowRank<double>& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
 ) {
   // D D LR
   C.S *= beta;
-  C += LowRank(gemm(A, B, alpha, TransA, TransB), C.rank);
+  C += LowRank<double>(gemm(A, B, alpha, TransA, TransB), C.rank);
 }
 
 define_method(
   void, gemm_omm,
   (
-    const LowRank& A, const Dense<double>& B, LowRank& C,
+    const LowRank<double>& A, const Dense<double>& B, LowRank<double>& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
@@ -224,14 +224,14 @@ define_method(
   if (TransA) std::abort();
   Dense<double> AVxB = gemm(A.V, B, alpha, false, TransB);
   C.S *= beta;
-  LowRank AxB(A.U, A.S, AVxB, false);
+  LowRank<double> AxB(A.U, A.S, AVxB, false);
   C += AxB;
 }
 
 define_method(
   void, gemm_omm,
   (
-    const Dense<double>& A, const LowRank& B, LowRank& C,
+    const Dense<double>& A, const LowRank<double>& B, LowRank<double>& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
@@ -241,14 +241,14 @@ define_method(
   if (TransB) std::abort();
   Dense<double> AxBU = gemm(A, B.U, alpha, TransA, false);
   C.S *= beta;
-  LowRank AxB(AxBU, B.S, B.V, false);
+  LowRank<double> AxB(AxBU, B.S, B.V, false);
   C += AxB;
 }
 
 define_method(
   void, gemm_omm,
   (
-    const LowRank& A, const LowRank& B, LowRank& C,
+    const LowRank<double>& A, const LowRank<double>& B, LowRank<double>& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
@@ -260,14 +260,14 @@ define_method(
   Dense<double> SxVxU = gemm(A.S, gemm(A.V, B.U, alpha));
   Dense<double> SxVxUxS = gemm(SxVxU, B.S);
   C.S *= beta;
-  LowRank AxB(A.U, SxVxUxS, B.V, false);
+  LowRank<double> AxB(A.U, SxVxUxS, B.V, false);
   C += AxB;
 }
 
 define_method(
   void, gemm_omm,
   (
-    const Hierarchical& A, const LowRank& B, LowRank& C,
+    const Hierarchical& A, const LowRank<double>& B, LowRank<double>& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
@@ -276,7 +276,7 @@ define_method(
   // TODO Not implemented
   if (TransA || TransB) std::abort();
   MatrixProxy AxBU = gemm(A, B.U, alpha, TransA, false);
-  LowRank AxB(AxBU, B.S, B.V, false);
+  LowRank<double> AxB(AxBU, B.S, B.V, false);
   C.S *= beta;
   C += AxB;
 }
@@ -284,7 +284,7 @@ define_method(
 define_method(
   void, gemm_omm,
   (
-    const LowRank& A, const Hierarchical& B, LowRank& C,
+    const LowRank<double>& A, const Hierarchical& B, LowRank<double>& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
@@ -293,7 +293,7 @@ define_method(
   // TODO Not implemented
   if (TransA || TransB) std::abort();
   MatrixProxy AVxB = gemm(A.V, B, alpha, false, TransB);
-  LowRank AxB(A.U, A.S, AVxB, false);
+  LowRank<double> AxB(A.U, A.S, AVxB, false);
   C.S *= beta;
   C += AxB;
 }
@@ -301,7 +301,7 @@ define_method(
 define_method(
   void, gemm_omm,
   (
-    const LowRank& A, const LowRank& B, Hierarchical& C,
+    const LowRank<double>& A, const LowRank<double>& B, Hierarchical& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
@@ -310,7 +310,7 @@ define_method(
   // TODO Not implemented
   if (TransA || TransB) std::abort();
   Dense<double> SxVxUxS = gemm(gemm(A.S, gemm(A.V, B.U, alpha)), B.S);
-  LowRank AxB(A.U, SxVxUxS, B.V, false);
+  LowRank<double> AxB(A.U, SxVxUxS, B.V, false);
   C *= beta;
   C += AxB;
 }
@@ -318,7 +318,7 @@ define_method(
 define_method(
   void, gemm_omm,
   (
-    const Hierarchical& A, const Hierarchical& B, LowRank& C,
+    const Hierarchical& A, const Hierarchical& B, LowRank<double>& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
@@ -333,7 +333,7 @@ define_method(
   */
   Dense<double> CD(C);
   gemm(A, B, CD, alpha, beta, TransA, TransB);
-  C = LowRank(CD, C.rank);
+  C = LowRank<double>(CD, C.rank);
 }
 
 define_method(
