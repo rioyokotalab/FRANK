@@ -31,8 +31,9 @@ namespace hicma
  *
  * This function is used as kernel to generate matrix with `MatrixInitializerKernel`.
  */
+template<typename T = double>
 void zeros(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
   const std::vector<std::vector<double>>& x,
   int64_t row_start, int64_t col_start
 );
@@ -57,8 +58,9 @@ void zeros(
  *
  * This function is used as kernel to generate matrix with `MatrixInitializerKernel`.
  */
+template<typename T = double>
 void identity(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
   const std::vector<std::vector<double>>& x,
   int64_t row_start, int64_t col_start
 );
@@ -84,8 +86,9 @@ void identity(
  * Entries of the matrix are random numbers generated using normal distribution.
  * This function is used as kernel to generate matrix with `MatrixInitializerKernel`.
  */
+template<typename T = double>
 void random_normal(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
   const std::vector<std::vector<double>>& x,
   int64_t row_start, int64_t col_start
 );
@@ -111,8 +114,9 @@ void random_normal(
  * Entries of the matrix are random numbers generated using uniform distribution from the range [0,1).
  * This function is used as kernel to generate matrix with `MatrixInitializerKernel`.
  */
+template<typename T = double>
 void random_uniform(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
   const std::vector<std::vector<double>>& x,
   int64_t row_start, int64_t col_start
 );
@@ -139,8 +143,9 @@ void random_uniform(
  * <tt>i*A_cols + j</tt>
  * This function is used as kernel to generate matrix with `MatrixInitializerKernel`.
  */
+template<typename T = double>
 void arange(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
   const std::vector<std::vector<double>>& x,
   int64_t row_start, int64_t col_start
 );
@@ -165,8 +170,9 @@ void arange(
  *
  * This function is used as kernel to generate matrix with `MatrixInitializerKernel`.
  */
+template<typename T = double>
 void cauchy2d(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
   const std::vector<std::vector<double>>& x,
   int64_t row_start, int64_t col_start
 );
@@ -191,8 +197,9 @@ void cauchy2d(
  *
  * This function is used as kernel to generate matrix with `MatrixInitializerKernel`.
  */
+template<typename T = double>
 void laplacend(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
   const std::vector<std::vector<double>>& x,
   int64_t row_start, int64_t col_start
 );
@@ -217,8 +224,9 @@ void laplacend(
  *
  * This function is used as kernel to generate matrix with `MatrixInitializerKernel`.
  */
+template<typename T = double>
 void helmholtznd(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
   const std::vector<std::vector<double>>& x,
   int64_t row_start, int64_t col_start
 );

@@ -11,8 +11,91 @@
 namespace hicma
 {
 
-void zeros(
+// explicit template instantiation (this is a pain TODO make better (abstract class?))
+template void zeros(
   double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
+template void zeros(
+  float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
+template void identity(
+  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
+template void identity(
+  float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
+template void random_normal(
+  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
+template void random_normal(
+  float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
+template void random_uniform(
+  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
+template void random_uniform(
+  float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
+template void arange(
+  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
+template void arange(
+  float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
+template void cauchy2d(
+  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
+template void cauchy2d(
+  float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
+template void laplacend(
+  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
+template void laplacend(
+  float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
+template void helmholtznd(
+  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
+template void helmholtznd(
+  float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
+
+template<typename T>
+void zeros(
+  T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
   const std::vector<std::vector<double>>&, int64_t, int64_t
 ) {
   for (uint64_t i=0; i<A_rows; i++) {
@@ -22,8 +105,9 @@ void zeros(
   }
 }
 
+template<typename T>
 void identity(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
   const std::vector<std::vector<double>>&, int64_t row_start, int64_t col_start
 ) {
   for (uint64_t i=0; i<A_rows; i++) {
@@ -33,8 +117,9 @@ void identity(
   }
 }
 
+template<typename T>
 void random_normal(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
   const std::vector<std::vector<double>>&, int64_t, int64_t
 ) {
   std::random_device rd;
@@ -49,8 +134,9 @@ void random_normal(
   }
 }
 
+template<typename T>
 void random_uniform(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
   const std::vector<std::vector<double>>&, int64_t, int64_t
 ) {
   std::random_device rd;
@@ -65,8 +151,9 @@ void random_uniform(
   }
 }
 
+template<typename T>
 void arange(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
   const std::vector<std::vector<double>>&, int64_t, int64_t
 ) {
   for (uint64_t i=0; i<A_rows; i++) {
@@ -76,8 +163,9 @@ void arange(
   }
 }
 
+template<typename T>
 void cauchy2d(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
   const std::vector<std::vector<double>>& x,
   int64_t row_start, int64_t col_start
 ) {
@@ -90,8 +178,9 @@ void cauchy2d(
   }
 }
 
+template<typename T>
 void laplacend(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
   const std::vector<std::vector<double>>& x,
   int64_t row_start, int64_t col_start
 ) {
@@ -109,8 +198,9 @@ void laplacend(
   }
 }
 
+template<typename T>
 void helmholtznd(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
   const std::vector<std::vector<double>>& x,
   int64_t row_start, int64_t col_start
 ) {
