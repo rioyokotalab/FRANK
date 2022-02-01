@@ -33,8 +33,8 @@ define_method(MatrixProxy, transpose_omm, (const LowRank<double>& A)) {
   return transposed;
 }
 
-define_method(MatrixProxy, transpose_omm, (const Hierarchical& A)) {
-  Hierarchical transposed(A.dim[1], A.dim[0]);
+define_method(MatrixProxy, transpose_omm, (const Hierarchical<double>& A)) {
+  Hierarchical<double> transposed(A.dim[1], A.dim[0]);
   for(int64_t i=0; i<A.dim[0]; i++) {
     for(int64_t j=0; j<A.dim[1]; j++) {
       transposed(j, i) = transpose(A(i, j));

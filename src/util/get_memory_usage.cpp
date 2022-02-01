@@ -52,7 +52,7 @@ define_method(
 
 define_method(
   unsigned long, get_memory_usage_omm,
-  (const Hierarchical& A, bool include_structure)
+  (const Hierarchical<double>& A, bool include_structure)
 ) {
   unsigned long memory_usage = 0;
   for (int64_t i=0; i<A.dim[0]; ++i) {
@@ -62,7 +62,7 @@ define_method(
   }
   if (include_structure) {
     memory_usage += A.dim[0] * A.dim[1] * sizeof(MatrixProxy);
-    memory_usage += sizeof(Hierarchical);
+    memory_usage += sizeof(Hierarchical<double>);
   }
   return memory_usage;
 }

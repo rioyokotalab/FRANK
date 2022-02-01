@@ -79,7 +79,7 @@ define_method(
 define_method(
   void, trmm_omm,
   (
-    const Hierarchical& A, Hierarchical& B,
+    const Hierarchical<double>& A, Hierarchical<double>& B,
     const char& side, const char& uplo, const char& trans, const char& diag,
     double alpha
   )
@@ -87,7 +87,7 @@ define_method(
   assert(A.dim[0] == A.dim[1]);
   assert(A.dim[0] == (side == 'l' ? B.dim[0] : B.dim[1]));
   assert(uplo == 'u'); //TODO implement for lower triangular
-  Hierarchical B_copy(B);
+  Hierarchical<double> B_copy(B);
   if(uplo == 'u') {
     if(side == 'l') {
       for(int64_t i=0; i<A.dim[0]; i++) {

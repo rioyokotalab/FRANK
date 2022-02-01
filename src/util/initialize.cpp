@@ -12,7 +12,7 @@ register_class(Matrix)
 register_class(Dense<double>, Matrix)
 register_class(Empty, Matrix)
 register_class(LowRank<double>, Matrix)
-register_class(Hierarchical, Matrix)
+register_class(Hierarchical<double>, Matrix)
 
 class Runtime {
  public:

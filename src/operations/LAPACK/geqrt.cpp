@@ -35,7 +35,7 @@ define_method(void, geqrt_omm, (Dense<double>& A, Dense<double>& T)) {
   );
 }
 
-define_method(void, geqrt_omm, (Hierarchical& A, Hierarchical& T)) {
+define_method(void, geqrt_omm, (Hierarchical<double>& A, Hierarchical<double>& T)) {
   std::cerr << "Possibly not fully implemented yet. Read code!!!" << std::endl;
   for(int64_t k = 0; k < A.dim[1]; k++) {
     geqrt(A(k, k), T(k, k));

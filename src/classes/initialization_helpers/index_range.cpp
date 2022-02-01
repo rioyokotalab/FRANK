@@ -28,7 +28,7 @@ std::vector<IndexRange> IndexRange::split_at(int64_t index) const {
 }
 
 std::vector<IndexRange> IndexRange::split_like(
-  const Hierarchical& like, int along
+  const Hierarchical<double>& like, int along
 ) const {
   std::vector<IndexRange> children(like.dim[along == ALONG_ROW ? 1 : 0]);
   int64_t child_start = 0;

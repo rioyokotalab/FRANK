@@ -47,7 +47,7 @@ define_method(void, tpqrt_omm, (Dense<double>& A, LowRank<double>& B, Dense<doub
 
 define_method(
   void, tpqrt_omm,
-  (Hierarchical& A, Hierarchical& B, Hierarchical& T)
+  (Hierarchical<double>& A, Hierarchical<double>& B, Hierarchical<double>& T)
 ) {
   for(int64_t i = 0; i < B.dim[0]; i++) {
     for(int64_t j = 0; j < B.dim[1]; j++) {

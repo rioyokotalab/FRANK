@@ -33,7 +33,7 @@ define_method(double, norm_omm, (const Dense<double>& A)) {
 
 define_method(double, norm_omm, (const LowRank<double>& A)) { return norm(Dense<double>(A)); }
 
-define_method(double, norm_omm, (const Hierarchical& A)) {
+define_method(double, norm_omm, (const Hierarchical<double>& A)) {
   double l2 = 0;
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {

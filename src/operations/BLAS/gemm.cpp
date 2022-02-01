@@ -56,7 +56,7 @@ MatrixProxy gemm(
 define_method(
   MatrixProxy, gemm_omm,
   (
-    const Hierarchical& A, const Hierarchical& B,
+    const Hierarchical<double>& A, const Hierarchical<double>& B,
     double alpha, bool TransA, bool TransB
   )
 ) {
@@ -70,7 +70,7 @@ define_method(
     );
     gemm(A, B, C, alpha, 0, TransA, TransB);
   } else {
-    Hierarchical out(A.dim[TransA ? 1 : 0], B.dim[TransB ? 0 : 1]);
+    Hierarchical<double> out(A.dim[TransA ? 1 : 0], B.dim[TransB ? 0 : 1]);
     // Note that first pair decides output type!
     for (int64_t i=0; i<out.dim[0]; ++i) {
       for (int64_t j=0; j<out.dim[1]; ++j) {
@@ -267,7 +267,7 @@ define_method(
 define_method(
   void, gemm_omm,
   (
-    const Hierarchical& A, const LowRank<double>& B, LowRank<double>& C,
+    const Hierarchical<double>& A, const LowRank<double>& B, LowRank<double>& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
@@ -284,7 +284,7 @@ define_method(
 define_method(
   void, gemm_omm,
   (
-    const LowRank<double>& A, const Hierarchical& B, LowRank<double>& C,
+    const LowRank<double>& A, const Hierarchical<double>& B, LowRank<double>& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
@@ -301,7 +301,7 @@ define_method(
 define_method(
   void, gemm_omm,
   (
-    const LowRank<double>& A, const LowRank<double>& B, Hierarchical& C,
+    const LowRank<double>& A, const LowRank<double>& B, Hierarchical<double>& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
@@ -318,7 +318,7 @@ define_method(
 define_method(
   void, gemm_omm,
   (
-    const Hierarchical& A, const Hierarchical& B, LowRank<double>& C,
+    const Hierarchical<double>& A, const Hierarchical<double>& B, LowRank<double>& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
@@ -339,7 +339,7 @@ define_method(
 define_method(
   void, gemm_omm,
   (
-    const Hierarchical& A, const Hierarchical& B, Hierarchical& C,
+    const Hierarchical<double>& A, const Hierarchical<double>& B, Hierarchical<double>& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
@@ -363,7 +363,7 @@ define_method(
 define_method(
   void, gemm_omm,
   (
-    const Dense<double>& A, const Dense<double>& B, Hierarchical& C,
+    const Dense<double>& A, const Dense<double>& B, Hierarchical<double>& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
@@ -372,14 +372,14 @@ define_method(
   // TODO Not implemented
   if (C.dim[0] == 1 && C.dim[1] == 1) std::abort();
   if (C.dim[1] == 1) {
-    Hierarchical AH = split(A, TransA ? 1 : C.dim[0], TransA ? C.dim[0] : 1);
+    Hierarchical<double> AH = split(A, TransA ? 1 : C.dim[0], TransA ? C.dim[0] : 1);
     gemm(AH, B, C, alpha, beta, TransA, TransB);
   } else if (C.dim[0] == 1) {
-    Hierarchical BH = split(B, TransB ? C.dim[1] : 1, TransB ? 1 : C.dim[1]);
+    Hierarchical<double> BH = split(B, TransB ? C.dim[1] : 1, TransB ? 1 : C.dim[1]);
     gemm(A, BH, C, alpha, beta, TransA, TransB);
   } else {
-    Hierarchical AH = split(A, TransA ? 1 : C.dim[0], TransA ? C.dim[0] : 1);
-    Hierarchical BH = split(B, TransB ? C.dim[1] : 1, TransB ? 1 : C.dim[1]);
+    Hierarchical<double> AH = split(A, TransA ? 1 : C.dim[0], TransA ? C.dim[0] : 1);
+    Hierarchical<double> BH = split(B, TransB ? C.dim[1] : 1, TransB ? 1 : C.dim[1]);
     gemm(AH, BH, C, alpha, beta, TransA, TransB);
   }
 }
@@ -387,7 +387,7 @@ define_method(
 define_method(
   void, gemm_omm,
   (
-    const Matrix& A, const Hierarchical& B, Hierarchical& C,
+    const Matrix& A, const Hierarchical<double>& B, Hierarchical<double>& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
@@ -402,7 +402,7 @@ define_method(
       gemm(A, B[j], C[j], alpha, beta, TransA, TransB);
     }
   } else {
-    Hierarchical AH = split(
+    Hierarchical<double> AH = split(
       A,
       TransA ? B.dim[TransB ? 1 : 0] : C.dim[0],
       TransA ? C.dim[0] : B.dim[TransB ? 1 : 0]
@@ -414,7 +414,7 @@ define_method(
 define_method(
   void, gemm_omm,
   (
-    const Hierarchical& A, const Matrix& B, Hierarchical& C,
+    const Hierarchical<double>& A, const Matrix& B, Hierarchical<double>& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
@@ -429,7 +429,7 @@ define_method(
       gemm(A[i], B, C[i], alpha, beta, TransA, TransB);
     }
   } else {
-    Hierarchical BH = split(
+    Hierarchical<double> BH = split(
       B,
       TransB ? C.dim[1] : A.dim[TransA ? 0 : 1],
       TransB ? A.dim[TransA ? 0 : 1] : C.dim[1]
@@ -441,7 +441,7 @@ define_method(
 define_method(
   void, gemm_omm,
   (
-    const Hierarchical& A, const Hierarchical& B, Dense<double>& C,
+    const Hierarchical<double>& A, const Hierarchical<double>& B, Dense<double>& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
@@ -453,7 +453,7 @@ define_method(
       gemm(A[k], B[k], C, alpha, k==0 ? beta : 1, TransA, TransB);
     }
   } else {
-    Hierarchical CH = split(C, A.dim[TransA ? 1 : 0], B.dim[TransB ? 0 : 1]);
+    Hierarchical<double> CH = split(C, A.dim[TransA ? 1 : 0], B.dim[TransB ? 0 : 1]);
     gemm(A, B, CH, alpha, beta, TransA, TransB);
   }
 }
@@ -461,7 +461,7 @@ define_method(
 define_method(
   void, gemm_omm,
   (
-    const Matrix& A, const Hierarchical& B, Dense<double>& C,
+    const Matrix& A, const Hierarchical<double>& B, Dense<double>& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
@@ -471,22 +471,22 @@ define_method(
   // TODO Not implemented
   if (B.dim[0] == 1 && B.dim[1] == 1) std::abort();
   if (B.dim[TransB ? 1 : 0] == 1) {
-    Hierarchical CH = split(C, 1, B.dim[TransB ? 0 : 1]);
+    Hierarchical<double> CH = split(C, 1, B.dim[TransB ? 0 : 1]);
     gemm(A, B, CH, alpha, beta, TransA, TransB);
   } else if (B.dim[TransB ? 0 : 1] == 1) {
-    Hierarchical AH = split(
+    Hierarchical<double> AH = split(
       A,
       TransA ? B.dim[TransB ? 1 : 0] : 1,
       TransA ? 1 : B.dim[TransB ? 1 : 0]
     );
     gemm(AH, B, C, alpha, beta, TransA, TransB);
   } else {
-    Hierarchical AH = split(
+    Hierarchical<double> AH = split(
       A,
       TransA ? B.dim[TransB ? 1 : 0] : 1,
       TransA ? 1 : B.dim[TransB ? 1 : 0]
     );
-    Hierarchical CH = split(C, 1, B.dim[TransB ? 0 : 1]);
+    Hierarchical<double> CH = split(C, 1, B.dim[TransB ? 0 : 1]);
     gemm(AH, B, CH, alpha, beta, TransA, TransB);
   }
 }
@@ -494,7 +494,7 @@ define_method(
 define_method(
   void, gemm_omm,
   (
-    const Hierarchical& A, const Matrix& B, Dense<double>& C,
+    const Hierarchical<double>& A, const Matrix& B, Dense<double>& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
@@ -504,22 +504,22 @@ define_method(
   // TODO Not implemented
   if (A.dim[0] == 1 && A.dim[1] == 1) std::abort();
   if (A.dim[TransA ? 0 : 1] == 1) {
-    Hierarchical CH = split(C, A.dim[TransA ? 1 : 0], 1);
+    Hierarchical<double> CH = split(C, A.dim[TransA ? 1 : 0], 1);
     gemm(A, B, CH, alpha, beta, TransA, TransB);
   } else if (A.dim[TransA ? 1 : 0] == 1) {
-    Hierarchical BH = split(
+    Hierarchical<double> BH = split(
       B,
       TransB ? 1 : A.dim[TransA ? 0 : 1],
       TransB ? A.dim[TransA ? 0 : 1] : 1
     );
     gemm(A, BH, C, alpha, beta, TransA, TransB);
   } else {
-    Hierarchical BH = split(
+    Hierarchical<double> BH = split(
       B,
       TransB ? 1 : A.dim[TransA ? 0 : 1],
       TransB ? A.dim[TransA ? 0 : 1] : 1
     );
-    Hierarchical CH = split(C, A.dim[TransA ? 1 : 0], 1);
+    Hierarchical<double> CH = split(C, A.dim[TransA ? 1 : 0], 1);
     gemm(A, BH, CH, alpha, beta, TransA, TransB);
   }
 }

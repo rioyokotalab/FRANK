@@ -25,7 +25,7 @@ define_method(int64_t, get_n_rows_omm, (const Empty& A)) { return A.dim[0]; }
 
 define_method(int64_t, get_n_rows_omm, (const LowRank<double>& A)) { return A.dim[0]; }
 
-define_method(int64_t, get_n_rows_omm, (const Hierarchical& A)) {
+define_method(int64_t, get_n_rows_omm, (const Hierarchical<double>& A)) {
   int64_t n_rows = 0;
   for (int64_t i=0; i<A.dim[0]; i++) {
     n_rows += get_n_rows(A(i, 0));
@@ -47,7 +47,7 @@ define_method(int64_t, get_n_cols_omm, (const Empty& A)) { return A.dim[1]; }
 
 define_method(int64_t, get_n_cols_omm, (const LowRank<double>& A)) { return A.dim[1]; }
 
-define_method(int64_t, get_n_cols_omm, (const Hierarchical& A)) {
+define_method(int64_t, get_n_cols_omm, (const Hierarchical<double>& A)) {
   int64_t n_cols = 0;
   for (int64_t j=0; j<A.dim[1]; j++) {
     n_cols += get_n_cols(A(0, j));

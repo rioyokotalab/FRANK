@@ -42,7 +42,7 @@ define_method(std::string, type_omm, (const LowRank<double>&)) {
   return "LowRank";
 }
 
-define_method(std::string, type_omm, (const Hierarchical&)) {
+define_method(std::string, type_omm, (const Hierarchical<double>&)) {
   return "Hierarchical";
 }
 
@@ -67,7 +67,7 @@ void to_json(
 define_method(
   void, to_json_omm,
   (
-    const Hierarchical& A, nlohmann::json& json,
+    const Hierarchical<double>& A, nlohmann::json& json,
     int64_t i_abs, int64_t j_abs, int64_t level
   )
 ) {
@@ -160,7 +160,7 @@ define_method(void, print_omm, (const LowRank<double>& A)) {
   print_separation_line();
 }
 
-define_method(void, print_omm, (const Hierarchical& A)) {
+define_method(void, print_omm, (const Hierarchical<double>& A)) {
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {
       std::cout << type(A(i, j)) << " (" << i << "," << j << ")" << std::endl;

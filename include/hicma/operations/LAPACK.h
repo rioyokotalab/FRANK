@@ -3,6 +3,7 @@
 
 //added instead of the definition below
 #include "hicma/classes/dense.h"
+#include "hicma/classes/hierarchical.h"
 
 #include <cstdint>
 #include <tuple>
@@ -18,7 +19,7 @@ namespace hicma
 class Matrix;
 class MatrixProxy;
 //class Dense;
-class Hierarchical;
+//class Hierarchical;
 
 std::tuple<Dense<double>, std::vector<int64_t>> geqp3(Matrix& A);
 
@@ -220,9 +221,9 @@ void zero_lowtri(Matrix& A);
  */
 void zero_whole(Matrix& A);
 
-void triangularize_block_col(int64_t, Hierarchical&, Hierarchical&);
+void triangularize_block_col(int64_t, Hierarchical<double>&, Hierarchical<double>&);
 
-void apply_block_col_householder(const Hierarchical&, const Hierarchical&, int64_t, bool, Hierarchical&, int64_t);
+void apply_block_col_householder(const Hierarchical<double>&, const Hierarchical<double>&, int64_t, bool, Hierarchical<double>&, int64_t);
 
 /**
  * @brief Perform RQ factorization of a `Dense` matrix

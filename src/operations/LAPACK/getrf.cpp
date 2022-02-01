@@ -37,8 +37,8 @@ std::tuple<MatrixProxy, MatrixProxy> getrf(Matrix& A) {
   return out;
 }
 
-define_method(MatrixPair, getrf_omm, (Hierarchical& A)) {
-  Hierarchical L(A.dim[0], A.dim[1]);
+define_method(MatrixPair, getrf_omm, (Hierarchical<double>& A)) {
+  Hierarchical<double> L(A.dim[0], A.dim[1]);
   for (int64_t i=0; i<A.dim[0]; i++) {
     std::tie(L(i, i), A(i, i)) = getrf_omm(A(i, i));
     for (int64_t i_c=i+1; i_c<L.dim[0]; i_c++) {

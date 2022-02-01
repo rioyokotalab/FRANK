@@ -112,7 +112,7 @@ std::vector<double> equallySpacedVector(
  * The multi-dispatcher then will select the correct implementation based on the types of parameters given at runtime.
  * Read \ext_hicma for more information.
  */
-Hierarchical split(
+Hierarchical<double> split(
   const Matrix& A, int64_t n_row_blocks, int64_t n_col_blocks, bool copy=false
 );
 
@@ -139,7 +139,7 @@ Hierarchical split(
  * The multi-dispatcher then will select the correct implementation based on the types of parameters given at runtime.
  * Read \ext_hicma for more information.
  */
-Hierarchical split(const Matrix& A, const Hierarchical& like, bool copy=false);
+Hierarchical<double> split(const Matrix& A, const Hierarchical<double>& like, bool copy=false);
 
 MatrixProxy shallow_copy(const Matrix& A);
 

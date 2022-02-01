@@ -46,7 +46,7 @@ define_method(Matrix&, addition_omm, (Dense<double>& A, const LowRank<double>& B
   return A;
 }
 
-define_method(Matrix&, addition_omm, (Hierarchical& A, const Hierarchical& B)) {
+define_method(Matrix&, addition_omm, (Hierarchical<double>& A, const Hierarchical<double>& B)) {
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {
       A(i, j) += B(i, j);
@@ -55,8 +55,8 @@ define_method(Matrix&, addition_omm, (Hierarchical& A, const Hierarchical& B)) {
   return A;
 }
 
-define_method(Matrix&, addition_omm, (Hierarchical& A, const LowRank<double>& B)) {
-  Hierarchical BH = split(B, A.dim[0], A.dim[1]);
+define_method(Matrix&, addition_omm, (Hierarchical<double>& A, const LowRank<double>& B)) {
+  Hierarchical<double> BH = split(B, A.dim[0], A.dim[1]);
   A += BH;
   return A;
 }
@@ -73,7 +73,7 @@ define_method(DensePair, merge_col_basis, (const Dense<double>& Au, const Dense<
   assert(Arank == Brank);
 
   Dense<double> InnerU(Arank+Brank, Brank);
-  Hierarchical InnerH = split(InnerU, 2, 1);
+  Hierarchical<double> InnerH = split(InnerU, 2, 1);
   gemm(Au, Bu, InnerH[0], 1, 0, true, false);
 
   Dense<double> Bu_AuAutBu(Bu);
@@ -107,7 +107,7 @@ define_method(
   assert(Arank == Brank);
 
   Dense<double> InnerV(Brank, Arank+Brank);
-  Hierarchical InnerH = split(InnerV, 1, 2);
+  Hierarchical<double> InnerH = split(InnerV, 1, 2);
   gemm(Bv, Av, InnerH[0], 1, 0, false, true);
 
   Dense<double> Bv_BvAvtAv(Bv);
@@ -136,7 +136,7 @@ std::tuple<Dense<double>, Dense<double>, Dense<double>> merge_S(
   Dense<double> InnerUBs = gemm(InnerU, Bs);
 
   Dense<double> M = gemm(InnerUBs, InnerV);
-  Hierarchical MH = split(M, 2, 2);
+  Hierarchical<double> MH = split(M, 2, 2);
   MH(0, 0) += As;
 
   Dense<double> Uhat, Shat, Vhat;
@@ -153,13 +153,13 @@ void naive_addition(LowRank<double>& A, const LowRank<double>& B) {
   if (A.rank+B.rank >= std::min(A.dim[0], A.dim[1])) {
     A = LowRank<double>(Dense<double>(A) + Dense<double>(B), A.rank);
   } else {
-    Hierarchical U_merge(1, 2);
+    Hierarchical<double> U_merge(1, 2);
     U_merge[0] = std::move(A.U);
     U_merge[1] = shallow_copy(B.U);
-    Hierarchical V_merge(2, 1);
+    Hierarchical<double> V_merge(2, 1);
     V_merge[0] = std::move(A.V);
     V_merge[1] = shallow_copy(B.V);
-    Hierarchical S_merge(2, 2);
+    Hierarchical<double> S_merge(2, 2);
     S_merge(0, 0) = std::move(A.S);
     S_merge(0, 1) = Dense<double>(A.rank, B.rank);
     S_merge(1, 0) = Dense<double>(B.rank, A.rank);
@@ -211,14 +211,14 @@ void formatted_addition(LowRank<double>& A, const LowRank<double>& B) {
   timing::start("LR += LR");
 
   timing::start("Merge col basis");
-  Hierarchical OuterU(1, 2);
+  Hierarchical<double> OuterU(1, 2);
   Dense<double> InnerU;
   std::tie(OuterU[1], InnerU) = merge_col_basis(A.U, B.U);
   OuterU[0] = std::move(A.U);
   timing::stop("Merge col basis");
 
   timing::start("Merge row basis");
-  Hierarchical OuterV(2, 1);
+  Hierarchical<double> OuterV(2, 1);
   Dense<double> InnerVt;
   std::tie(OuterV[1], InnerVt) = merge_row_basis(A.V, B.V);
   OuterV[0] = std::move(A.V);

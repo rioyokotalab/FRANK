@@ -101,7 +101,7 @@ define_method(void, qr_omm, (Dense<double>& A, Dense<double>& Q, Dense<double>& 
 }
 
 define_method(
-  void, qr_omm, (Hierarchical& A, Hierarchical& Q, Hierarchical& R)
+  void, qr_omm, (Hierarchical<double>& A, Hierarchical<double>& Q, Hierarchical<double>& R)
 ) {
   assert(Q.dim[0] == A.dim[0]);
   assert(Q.dim[1] == A.dim[1]);
@@ -109,7 +109,7 @@ define_method(
   assert(R.dim[1] == A.dim[1]);
   for (int64_t j=0; j<A.dim[1]; j++) {
     orthogonalize_block_col(j, A, Q, R(j, j));
-    Hierarchical QjT(1, Q.dim[0]);
+    Hierarchical<double> QjT(1, Q.dim[0]);
     for (int64_t i=0; i<Q.dim[0]; i++) {
       QjT(0, i) = transpose(Q(i, j));
     }
@@ -155,7 +155,7 @@ define_method(DensePair, make_left_orthogonal_omm, (const Matrix& A)) {
 
 define_method(
   void, update_splitted_size_omm,
-  (const Hierarchical& A, int64_t& rows, int64_t& cols)
+  (const Hierarchical<double>& A, int64_t& rows, int64_t& cols)
 ) {
   rows += A.dim[0];
   cols = A.dim[1];
@@ -170,9 +170,9 @@ define_method(
 
 define_method(
   MatrixProxy, split_by_column_omm,
-  (const Dense<double>& A, Hierarchical& storage, int64_t& currentRow)
+  (const Dense<double>& A, Hierarchical<double>& storage, int64_t& currentRow)
 ) {
-  Hierarchical splitted = split(A, 1, storage.dim[1], true);
+  Hierarchical<double> splitted = split(A, 1, storage.dim[1], true);
   for(int64_t i=0; i<storage.dim[1]; i++)
     storage(currentRow, i) = splitted(0, i);
   currentRow++;
@@ -181,7 +181,7 @@ define_method(
 
 define_method(
   MatrixProxy, split_by_column_omm,
-  (const LowRank<double>& A, Hierarchical& storage, int64_t& currentRow)
+  (const LowRank<double>& A, Hierarchical<double>& storage, int64_t& currentRow)
 ) {
   LowRank<double> _A(A);
   Dense<double> Qu(get_n_rows(_A.U), get_n_cols(_A.U));
@@ -190,7 +190,7 @@ define_method(
   Dense<double> RS = gemm(Ru, _A.S);
   Dense<double> RSV = gemm(RS, _A.V);
   //Split R*S*V
-  Hierarchical splitted = split(RSV, 1, storage.dim[1], true);
+  Hierarchical<double> splitted = split(RSV, 1, storage.dim[1], true);
   for(int64_t i=0; i<storage.dim[1]; i++) {
     storage(currentRow, i) = splitted(0, i);
   }
@@ -200,7 +200,7 @@ define_method(
 
 define_method(
   MatrixProxy, split_by_column_omm,
-  (const Hierarchical& A, Hierarchical& storage, int64_t& currentRow)
+  (const Hierarchical<double>& A, Hierarchical<double>& storage, int64_t& currentRow)
 ) {
   for(int64_t i=0; i<A.dim[0]; i++) {
     for(int64_t j=0; j<A.dim[1]; j++) {
@@ -222,12 +222,12 @@ define_method(
 define_method(
   MatrixProxy, concat_columns_omm,
   (
-    const Dense<double>& A, const Hierarchical& splitted, const Dense<double>&,
+    const Dense<double>& A, const Hierarchical<double>& splitted, const Dense<double>&,
     int64_t& currentRow
   )
 ) {
   // In case of dense, combine the split dense matrices into one dense matrix
-  Hierarchical SpCurRow(1, splitted.dim[1]);
+  Hierarchical<double> SpCurRow(1, splitted.dim[1]);
   for(int64_t i=0; i<splitted.dim[1]; i++) {
     SpCurRow(0, i) = splitted(currentRow, i);
   }
@@ -241,13 +241,13 @@ define_method(
 define_method(
   MatrixProxy, concat_columns_omm,
   (
-    const LowRank<double>& A, const Hierarchical& splitted, const Dense<double>& Q,
+    const LowRank<double>& A, const Hierarchical<double>& splitted, const Dense<double>& Q,
     int64_t& currentRow
   )
 ) {
   // In case of lowrank, combine split dense matrices into single dense matrix
   // Then form a lowrank matrix with the stored Q
-  Hierarchical SpCurRow(1, splitted.dim[1]);
+  Hierarchical<double> SpCurRow(1, splitted.dim[1]);
   for(int64_t i=0; i<splitted.dim[1]; i++) {
     SpCurRow(0, i) = splitted(currentRow, i);
   }
@@ -264,13 +264,13 @@ define_method(
 define_method(
   MatrixProxy, concat_columns_omm,
   (
-    const Hierarchical& A, const Hierarchical& splitted, const Dense<double>&,
+    const Hierarchical<double>& A, const Hierarchical<double>& splitted, const Dense<double>&,
     int64_t& currentRow
   )
   ) {
   //In case of hierarchical, just put element in respective cells
   assert(splitted.dim[1] == A.dim[1]);
-  Hierarchical concatenatedRow(A.dim[0], A.dim[1]);
+  Hierarchical<double> concatenatedRow(A.dim[0], A.dim[1]);
   for(int64_t i=0; i<A.dim[0]; i++) {
     for(int64_t j=0; j<A.dim[1]; j++) {
       concatenatedRow(i, j) = splitted(currentRow, j);
@@ -329,16 +329,16 @@ define_method(void, zero_whole_omm, (Matrix& A)) {
 }
 
 
-std::tuple<Hierarchical, Hierarchical> split_block_col(
-  int64_t j, const Hierarchical& A
+std::tuple<Hierarchical<double>, Hierarchical<double>> split_block_col(
+  int64_t j, const Hierarchical<double>& A
 ) {
   int64_t splitRowSize = 0;
   int64_t splitColSize = 1;
   for(int64_t i=0; i<A.dim[0]; i++) {
     update_splitted_size(A(i, j), splitRowSize, splitColSize);
   }
-  Hierarchical splitA(splitRowSize, splitColSize);
-  Hierarchical QL(A.dim[0], 1);
+  Hierarchical<double> splitA(splitRowSize, splitColSize);
+  Hierarchical<double> QL(A.dim[0], 1);
   int64_t curRow = 0;
   for(int64_t i=0; i<A.dim[0]; i++) {
     QL(i, 0) = split_by_column(A(i, j), splitA, curRow);
@@ -348,7 +348,7 @@ std::tuple<Hierarchical, Hierarchical> split_block_col(
 
 void restore_block_col(
   int64_t j,
-  const Hierarchical& Q_splitA, const Hierarchical& QL, Hierarchical& Q
+  const Hierarchical<double>& Q_splitA, const Hierarchical<double>& QL, Hierarchical<double>& Q
 ) {
   assert(QL.dim[0] == Q.dim[0]);
   int64_t curRow = 0;
@@ -360,10 +360,10 @@ void restore_block_col(
 
 define_method(
   void, orthogonalize_block_col_omm,
-  (int64_t j, const Hierarchical& A, Hierarchical& Q, Dense<double>& R)
+  (int64_t j, const Hierarchical<double>& A, Hierarchical<double>& Q, Dense<double>& R)
 ) {
-  Hierarchical Qu(A.dim[0], 1);
-  Hierarchical B(A.dim[0], 1);
+  Hierarchical<double> Qu(A.dim[0], 1);
+  Hierarchical<double> B(A.dim[0], 1);
   for(int64_t i=0; i<A.dim[0]; i++) {
     std::tie(Qu(i, 0), B(i, 0)) = make_left_orthogonal(A(i, j));
   }
@@ -372,7 +372,7 @@ define_method(
   mgs_qr(Qb, Rb);
   R = std::move(Rb);
   //Slice Qb based on B
-  Hierarchical HQb(B.dim[0], B.dim[1]);
+  Hierarchical<double> HQb(B.dim[0], B.dim[1]);
   int64_t rowOffset = 0;
   for(int64_t i=0; i<HQb.dim[0]; i++) {
     int64_t dim_Bi[2]{get_n_rows(B(i, 0)), get_n_cols(B(i, 0))};
@@ -388,12 +388,12 @@ define_method(
 
 define_method(
   void, orthogonalize_block_col_omm,
-  (int64_t j, const Hierarchical& A, Hierarchical& Q, Hierarchical& R)
+  (int64_t j, const Hierarchical<double>& A, Hierarchical<double>& Q, Hierarchical<double>& R)
 ) {
-  Hierarchical splitA;
-  Hierarchical QL;
+  Hierarchical<double> splitA;
+  Hierarchical<double> QL;
   std::tie(splitA, QL) = split_block_col(j, A);
-  Hierarchical Q_splitA(splitA);
+  Hierarchical<double> Q_splitA(splitA);
   qr(splitA, Q_splitA, R);
   restore_block_col(j, Q_splitA, QL, Q);
 }
@@ -426,9 +426,9 @@ define_method(
   A.V = std::move(R);
 }
 
-void triangularize_block_col(int64_t j, Hierarchical& A, Hierarchical& T) {
+void triangularize_block_col(int64_t j, Hierarchical<double>& A, Hierarchical<double>& T) {
   //Put right factors of Aj into Rj
-  Hierarchical Rj(A.dim[0]-j, 1);
+  Hierarchical<double> Rj(A.dim[0]-j, 1);
   for(int64_t i=0; i<Rj.dim[0]; i++) {
     Rj(i, 0) = get_right_factor(A(j+i, j));
   }
@@ -453,13 +453,13 @@ void triangularize_block_col(int64_t j, Hierarchical& A, Hierarchical& T) {
   }
 }
 
-void apply_block_col_householder(const Hierarchical& Y, const Hierarchical& T, int64_t k, bool trans, Hierarchical& A, int64_t j) {
+void apply_block_col_householder(const Hierarchical<double>& Y, const Hierarchical<double>& T, int64_t k, bool trans, Hierarchical<double>& A, int64_t j) {
   assert(A.dim[0] == Y.dim[0]);
-  Hierarchical YkT(1, Y.dim[0]-k);
+  Hierarchical<double> YkT(1, Y.dim[0]-k);
   for(int64_t i=0; i<YkT.dim[1]; i++)
     YkT(0, i) = transpose(Y(i+k,k));
 
-  Hierarchical C(1, 1);
+  Hierarchical<double> C(1, 1);
   C(0, 0) = A(k, j); //C = Akj
   trmm(Y(k, k), C(0, 0), 'l', 'l', 't', 'u', 1); //C = Ykk^T x Akj
   for(int64_t i=k+1; i<A.dim[0]; i++) {
@@ -469,7 +469,7 @@ void apply_block_col_householder(const Hierarchical& Y, const Hierarchical& T, i
   for(int64_t i=k; i<A.dim[0]; i++) {
     //Aij = Aij - Yik x C
     if(i == k) { //Use trmm since Ykk is unit lower triangular
-      Hierarchical _C(C);
+      Hierarchical<double> _C(C);
       trmm(Y(k, k), _C(0, 0), 'l', 'l', 'n', 'u', 1);
       gemm(
         Dense<double>(identity, std::vector<std::vector<double>>(), get_n_rows(_C(0, 0)), get_n_rows(_C(0, 0))),

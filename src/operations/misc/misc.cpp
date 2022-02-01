@@ -37,7 +37,7 @@ std::vector<double> equallySpacedVector(int64_t N, double minVal, double maxVal)
   return res;
 }
 
-Hierarchical split(
+Hierarchical<double> split(
   const Matrix& A, int64_t n_row_blocks, int64_t n_col_blocks, bool copy
 ) {
   return split_omm(
@@ -48,7 +48,7 @@ Hierarchical split(
   );
 }
 
-Hierarchical split(const Matrix& A, const Hierarchical& like, bool copy) {
+Hierarchical<double> split(const Matrix& A, const Hierarchical<double>& like, bool copy) {
   assert(get_n_rows(A) == get_n_rows(like));
   assert(get_n_cols(A) == get_n_cols(like));
   return split_omm(
@@ -60,7 +60,7 @@ Hierarchical split(const Matrix& A, const Hierarchical& like, bool copy) {
 }
 
 define_method(
-  Hierarchical, split_omm,
+  Hierarchical<double>, split_omm,
   (
     const Dense<double>& A,
     const std::vector<IndexRange>& row_splits,
@@ -68,7 +68,7 @@ define_method(
     bool copy
   )
 ) {
-  Hierarchical out(row_splits.size(), col_splits.size());
+  Hierarchical<double> out(row_splits.size(), col_splits.size());
   std::vector<Dense<double>> result = A.split(row_splits, col_splits, copy);
   for (int64_t i=0; i<out.dim[0]; ++i) {
     for (int64_t j=0; j<out.dim[1]; ++j) {
@@ -79,7 +79,7 @@ define_method(
 }
 
 define_method(
-  Hierarchical, split_omm,
+  Hierarchical<double>, split_omm,
   (
     const LowRank<double>& A,
     const std::vector<IndexRange>& row_splits,
@@ -87,27 +87,27 @@ define_method(
     bool copy
   )
 ) {
-  Hierarchical out(row_splits.size(), col_splits.size());
-  Hierarchical U_splits;
+  Hierarchical<double> out(row_splits.size(), col_splits.size());
+  Hierarchical<double> U_splits;
   if (row_splits.size() > 1) {
     U_splits = split_omm(
       A.U, row_splits, {IndexRange(0, get_n_cols(A.U))}, copy
     );
   } else {
-    U_splits = Hierarchical(1, 1);
+    U_splits = Hierarchical<double>(1, 1);
     if (copy) {
       U_splits(0, 0) = Dense<double>(A.U);
     } else {
       U_splits(0, 0) = shallow_copy(A.U);
     }
   }
-  Hierarchical V_splits;
+  Hierarchical<double> V_splits;
   if (col_splits.size() > 1) {
     V_splits = split_omm(
       A.V, {IndexRange(0, get_n_rows(A.V))}, col_splits, copy
     );
   } else {
-    V_splits = Hierarchical(1, 1);
+    V_splits = Hierarchical<double>(1, 1);
     if (copy) {
       V_splits(0, 0) = Dense<double>(A.V);
     } else {
@@ -123,9 +123,9 @@ define_method(
 }
 
 define_method(
-  Hierarchical, split_omm,
+  Hierarchical<double>, split_omm,
   (
-    const Hierarchical& A,
+    const Hierarchical<double>& A,
     const std::vector<IndexRange>& row_splits,
     const std::vector<IndexRange>& col_splits,
     bool copy
@@ -137,7 +137,7 @@ define_method(
   ) {
     std::abort();
   }
-  Hierarchical out(row_splits.size(), col_splits.size());
+  Hierarchical<double> out(row_splits.size(), col_splits.size());
   for (uint64_t i=0; i<row_splits.size(); ++i) {
     for (uint64_t j=0; j<col_splits.size(); ++j) {
       if (
@@ -155,7 +155,7 @@ define_method(
 }
 
 define_method(
-  Hierarchical, split_omm,
+  Hierarchical<double>, split_omm,
   (
     const Matrix& A,
     const std::vector<IndexRange>&, const std::vector<IndexRange>&, bool
@@ -174,8 +174,8 @@ define_method(MatrixProxy, shallow_copy_omm, (const Dense<double>& A)) {
   return A.shallow_copy();
 }
 
-define_method(MatrixProxy, shallow_copy_omm, (const Hierarchical& A)) {
-  Hierarchical new_shallow_copy(A.dim[0], A.dim[1]);
+define_method(MatrixProxy, shallow_copy_omm, (const Hierarchical<double>& A)) {
+  Hierarchical<double> new_shallow_copy(A.dim[0], A.dim[1]);
   for (int64_t i=0; i<A.dim[0]; ++i) {
     for (int64_t j=0; j<A.dim[1]; ++j) {
       new_shallow_copy(i, j) = shallow_copy(A(i, j));

@@ -92,14 +92,14 @@ define_method(
 
 define_method(
   void, tpmqrt_omm,
-  (const Dense<double>& V, const Dense<double>& T, Hierarchical& A, Dense<double>& B, bool trans)
+  (const Dense<double>& V, const Dense<double>& T, Hierarchical<double>& A, Dense<double>& B, bool trans)
 ) {
   Dense<double> Vt = transpose(V);
   Dense<double> T_upper_tri(T);
   for(int64_t i=0; i<T_upper_tri.dim[0]; i++)
     for(int64_t j=0; j<i; j++)
       T_upper_tri(i, j) = 0.0;
-  Hierarchical AH(A);
+  Hierarchical<double> AH(A);
   gemm(Vt, B, AH, 1, 1); // AH = A + Vt*B
   if(trans) T_upper_tri = transpose(T_upper_tri);
   gemm(T_upper_tri, AH, A, -1, 1); // A = A - (T or Tt)*AH
@@ -110,11 +110,11 @@ define_method(
 define_method(
   void, tpmqrt_omm,
   (
-    const Hierarchical& V, const Hierarchical& T, Hierarchical& A, Dense<double>& B,
+    const Hierarchical<double>& V, const Hierarchical<double>& T, Hierarchical<double>& A, Dense<double>& B,
     bool trans
   )
 ) {
-  Hierarchical BH = split(B, A.dim[0], A.dim[1], true);
+  Hierarchical<double> BH = split(B, A.dim[0], A.dim[1], true);
   tpmqrt(V, T, A, BH, trans);
   B = Dense<double>(BH);
 }
@@ -181,7 +181,7 @@ define_method(
 
 define_method(
   void, tpmqrt_omm,
-  (const Dense<double>& V, const Dense<double>& T, Dense<double>& A, Hierarchical& B, bool trans)
+  (const Dense<double>& V, const Dense<double>& T, Dense<double>& A, Hierarchical<double>& B, bool trans)
 ) {
   Dense<double> C(A);
   Dense<double> Vt = transpose(V);
@@ -200,11 +200,11 @@ define_method(
 define_method(
   void, tpmqrt_omm,
   (
-    const Hierarchical& V, const Hierarchical& T, Dense<double>& A, Hierarchical& B,
+    const Hierarchical<double>& V, const Hierarchical<double>& T, Dense<double>& A, Hierarchical<double>& B,
     bool trans
   )
 ) {
-  Hierarchical HA = split(A, B.dim[0], B.dim[1], true);
+  Hierarchical<double> HA = split(A, B.dim[0], B.dim[1], true);
   tpmqrt(V, T, HA, B, trans);
   A = Dense<double>(HA);
 }
@@ -212,8 +212,8 @@ define_method(
 define_method(
   void, tpmqrt_omm,
   (
-    const Hierarchical& V, const Hierarchical& T,
-    Hierarchical& A, Hierarchical& B,
+    const Hierarchical<double>& V, const Hierarchical<double>& T,
+    Hierarchical<double>& A, Hierarchical<double>& B,
     bool trans
   )
 ) {

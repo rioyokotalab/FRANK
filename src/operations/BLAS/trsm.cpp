@@ -34,7 +34,7 @@ void trsm(const Matrix& A, Matrix& B, int uplo, int lr) {
 
 define_method(
   void, trsm_omm,
-  (const Hierarchical& A, Hierarchical& B, int uplo, int lr)
+  (const Hierarchical<double>& A, Hierarchical<double>& B, int uplo, int lr)
 ) {
   switch (uplo) {
   case TRSM_UPPER:
@@ -113,9 +113,9 @@ define_method(void, trsm_omm, (const Matrix& A, LowRank<double>& B, int uplo, in
 
 define_method(
   void, trsm_omm,
-  (const Hierarchical& A, Dense<double>& B, int uplo, int lr)
+  (const Hierarchical<double>& A, Dense<double>& B, int uplo, int lr)
 ) {
-  Hierarchical BH = split(
+  Hierarchical<double> BH = split(
     B, lr==TRSM_LEFT?A.dim[0]:1, lr==TRSM_LEFT?1:A.dim[1]
   );
   trsm(A, BH, uplo, lr);

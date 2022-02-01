@@ -24,7 +24,7 @@ declare_method(std::unique_ptr<Matrix>, move_clone, (virtual_<Matrix&&>))
 declare_method(MatrixProxy, shallow_copy_omm, (virtual_<const Matrix&>))
 
 declare_method(
-  Hierarchical, split_omm,
+  Hierarchical<double>, split_omm,
   (
     virtual_<const Matrix&>,
     const std::vector<IndexRange>&, const std::vector<IndexRange>&,

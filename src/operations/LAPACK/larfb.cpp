@@ -43,9 +43,9 @@ define_method(
 
 define_method(
   void, larfb_omm,
-  (const Hierarchical& V, const Hierarchical& T, Dense<double>& C, bool trans)
+  (const Hierarchical<double>& V, const Hierarchical<double>& T, Dense<double>& C, bool trans)
 ) {
-  Hierarchical CH = split(C, V.dim[0], V.dim[1], true);
+  Hierarchical<double> CH = split(C, V.dim[0], V.dim[1], true);
   larfb(V, T, CH, trans);
   C = Dense<double>(CH);
 }
@@ -59,7 +59,7 @@ define_method(
 
 define_method(
   void, larfb_omm,
-  (const Dense<double>& V, const Dense<double>& T, Hierarchical& C, bool trans)
+  (const Dense<double>& V, const Dense<double>& T, Hierarchical<double>& C, bool trans)
 ) {
   Dense<double> V_lower_tri(V);
   for(int64_t i = 0; i < V_lower_tri.dim[0]; i++) {
@@ -72,13 +72,13 @@ define_method(
   trmm(T, VT, 'r', 'u', trans ? 't' : 'n', 'n', 1);
   Dense<double> VTVt(VT.dim[0], V_lower_tri.dim[0]);
   gemm(VT, V_lower_tri, VTVt, 1, 0, false, true);
-  Hierarchical C_copy(C);
+  Hierarchical<double> C_copy(C);
   gemm(VTVt, C_copy, C, -1, 1);
 }
 
 define_method(
   void, larfb_omm,
-  (const Hierarchical& V, const Hierarchical& T, Hierarchical& C, bool trans)
+  (const Hierarchical<double>& V, const Hierarchical<double>& T, Hierarchical<double>& C, bool trans)
 ) {
   if(trans) {
     for(int64_t k = 0; k < C.dim[1]; k++) {

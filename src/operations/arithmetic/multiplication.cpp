@@ -37,7 +37,7 @@ define_method(
 }
 
 define_method(
-  Matrix&, multiplication_omm, (Hierarchical& A, double b)
+  Matrix&, multiplication_omm, (Hierarchical<double>& A, double b)
 ) {
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {
