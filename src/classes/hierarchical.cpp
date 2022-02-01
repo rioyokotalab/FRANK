@@ -30,24 +30,31 @@ using yorel::yomm2::virtual_;
 namespace hicma
 {
 
-declare_method(Hierarchical&&, move_from_hierarchical, (virtual_<Matrix&>))
+//explicit template initialization
+//only double matrix is available
+template class Hierarchical<double>;
 
-Hierarchical::Hierarchical(MatrixProxy&& A)
+declare_method(Hierarchical<double>&&, move_from_hierarchical, (virtual_<Matrix&>))
+
+template<typename T>
+Hierarchical<T>::Hierarchical(MatrixProxy&& A)
 : Hierarchical(move_from_hierarchical(A)) {}
 
-define_method(Hierarchical&&, move_from_hierarchical, (Hierarchical& A)) {
+define_method(Hierarchical<double>&&, move_from_hierarchical, (Hierarchical<double>& A)) {
   return std::move(A);
 }
 
-define_method(Hierarchical&&, move_from_hierarchical, (Matrix& A)) {
+define_method(Hierarchical<double>&&, move_from_hierarchical, (Matrix& A)) {
   omm_error_handler("move_from_hierarchical", {A}, __FILE__, __LINE__);
   std::abort();
 }
 
-Hierarchical::Hierarchical(int64_t n_row_blocks, int64_t n_col_blocks)
+template<typename T>
+Hierarchical<T>::Hierarchical(int64_t n_row_blocks, int64_t n_col_blocks)
 : dim{n_row_blocks, n_col_blocks}, data(dim[0]*dim[1]) {}
 
-Hierarchical::Hierarchical(
+template<typename T>
+Hierarchical<T>::Hierarchical(
   const ClusterTree& node,
   MatrixInitializer& initializer
 ) : dim(node.block_dim), data(dim[0]*dim[1]) {
@@ -58,19 +65,20 @@ Hierarchical::Hierarchical(
       if (child.is_leaf()) {
         (*this)[child.rel_pos] = initializer.get_dense_representation(child);
       } else {
-        (*this)[child.rel_pos] = Hierarchical(child, initializer);
+        (*this)[child.rel_pos] = Hierarchical<T>(child, initializer);
       }
     }
   }
 }
 
-Hierarchical::Hierarchical(
+template<typename T>
+Hierarchical<T>::Hierarchical(
   void (*kernel)(
-    double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-    const std::vector<std::vector<double>>& params,
+    T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+    const std::vector<std::vector<T>>& params,
     int64_t row_start, int64_t col_start
   ),
-  std::vector<std::vector<double>> params,
+  std::vector<std::vector<T>> params,
   int64_t n_rows, int64_t n_cols,
   int64_t rank,
   int64_t nleaf,
@@ -83,11 +91,12 @@ Hierarchical::Hierarchical(
   ClusterTree cluster_tree(
     {row_start, n_rows}, {col_start, n_cols}, n_row_blocks, n_col_blocks, nleaf
   );
-  *this = Hierarchical(cluster_tree, initializer);
+  *this = Hierarchical<T>(cluster_tree, initializer);
 }
 
-Hierarchical::Hierarchical(
-  Dense<double>&& A,
+template<typename T>
+Hierarchical<T>::Hierarchical(
+  Dense<T>&& A,
   int64_t rank,
   int64_t nleaf,
   double admis,
@@ -99,12 +108,13 @@ Hierarchical::Hierarchical(
     n_row_blocks, n_col_blocks, nleaf
   );
   MatrixInitializerBlock initializer(std::move(A), admis, rank);
-  *this = Hierarchical(cluster_tree, initializer);
+  *this = Hierarchical<T>(cluster_tree, initializer);
 }
 
-Hierarchical::Hierarchical(
+template<typename T>
+Hierarchical<T>::Hierarchical(
   std::string filename, MatrixLayout ordering,
-  std::vector<std::vector<double>> params,
+  std::vector<std::vector<T>> params,
   int64_t n_rows, int64_t n_cols,
   int64_t rank,
   int64_t nleaf,
@@ -118,38 +128,44 @@ Hierarchical::Hierarchical(
     {row_start, n_rows}, {col_start, n_cols},
     n_row_blocks, n_col_blocks, nleaf
   );
-  *this = Hierarchical(cluster_tree, initializer);
+  *this = Hierarchical<T>(cluster_tree, initializer);
 }
 
-const MatrixProxy& Hierarchical::operator[](
+template<typename T>
+const MatrixProxy& Hierarchical<T>::operator[](
   const std::array<int64_t, 2>& pos
 ) const {
   return (*this)(pos[0], pos[1]);
 }
 
-MatrixProxy& Hierarchical::operator[](const std::array<int64_t, 2>& pos) {
+template<typename T>
+MatrixProxy& Hierarchical<T>::operator[](const std::array<int64_t, 2>& pos) {
   return (*this)(pos[0], pos[1]);
 }
 
-const MatrixProxy& Hierarchical::operator[](int64_t i) const {
+template<typename T>
+const MatrixProxy& Hierarchical<T>::operator[](int64_t i) const {
   assert(dim[0] == 1 || dim[1] == 1);
   assert(i < (dim[0] != 1 ? dim[0] : dim[1]));
   return data[i];
 }
 
-MatrixProxy& Hierarchical::operator[](int64_t i) {
+template<typename T>
+MatrixProxy& Hierarchical<T>::operator[](int64_t i) {
   assert(dim[0] == 1 || dim[1] == 1);
   assert(i < (dim[0] != 1 ? dim[0] : dim[1]));
   return data[i];
 }
 
-const MatrixProxy& Hierarchical::operator()(int64_t i, int64_t j) const {
+template<typename T>
+const MatrixProxy& Hierarchical<T>::operator()(int64_t i, int64_t j) const {
   assert(i < dim[0]);
   assert(j < dim[1]);
   return data[i*dim[1]+j];
 }
 
-MatrixProxy& Hierarchical::operator()(int64_t i, int64_t j) {
+template<typename T>
+MatrixProxy& Hierarchical<T>::operator()(int64_t i, int64_t j) {
   assert(i < dim[0]);
   assert(j < dim[1]);
   return data[i*dim[1]+j];

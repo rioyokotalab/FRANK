@@ -42,6 +42,7 @@ class MatrixInitializer;
  * the central piece of HiCMA - operations on this class are the main purpose of
  * the library.
  */
+template<typename T = double>
 class Hierarchical : public Matrix {
  public:
   /**
@@ -157,14 +158,15 @@ class Hierarchical : public Matrix {
    */
   Hierarchical(
     void (*kernel)(
-      double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-      const std::vector<std::vector<double>>& params,
+      T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+      const std::vector<std::vector<T>>& params,
       int64_t row_start, int64_t col_start
     ),
-    std::vector<std::vector<double>> params,
+    std::vector<std::vector<T>> params,
     int64_t n_rows, int64_t n_cols,
     int64_t rank,
     int64_t nleaf,
+    //TODO Why is this double?
     double admis=0,
     int64_t n_row_blocks=2, int64_t n_col_blocks=2,
     int admis_type=POSITION_BASED_ADMIS,
@@ -198,7 +200,7 @@ class Hierarchical : public Matrix {
    * constructor to create the hierarchical compression.
    */
   Hierarchical(
-    Dense<double>&& A,
+    Dense<T>&& A,
     int64_t rank,
     int64_t nleaf,
     double admis=0,
@@ -208,7 +210,7 @@ class Hierarchical : public Matrix {
 
   Hierarchical(
     std::string filename, MatrixLayout ordering,
-    std::vector<std::vector<double>> params,
+    std::vector<std::vector<T>> params,
     int64_t n_rows, int64_t n_cols,
     int64_t rank,
     int64_t nleaf,
