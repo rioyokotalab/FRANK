@@ -29,10 +29,11 @@ class IndexRange;
  * @brief `MatrixInitializer` specialization initializing matrix elements from a
  * kernel and parameters
  */
-class MatrixInitializerKernel : public MatrixInitializer {
+template<typename T = double>
+class MatrixInitializerKernel : public MatrixInitializer<T> {
  private:
   void (*kernel)(
-    double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+    T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
     const std::vector<std::vector<double>>& params,
     int64_t row_start, int64_t col_start
   ) = nullptr;
@@ -67,7 +68,7 @@ class MatrixInitializerKernel : public MatrixInitializer {
    */
   MatrixInitializerKernel(
     void (*kernel)(
-      double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+      T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
       const std::vector<std::vector<double>>& params,
       int64_t row_start, int64_t col_start
     ),
@@ -92,7 +93,7 @@ class MatrixInitializerKernel : public MatrixInitializer {
    * parameters passed to the constructor of this class.
    */
   void fill_dense_representation(
-    Dense<double>& A, const IndexRange& row_range, const IndexRange& col_range
+    Dense<T>& A, const IndexRange& row_range, const IndexRange& col_range
   ) const override;
 };
 

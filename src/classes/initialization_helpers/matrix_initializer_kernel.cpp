@@ -10,22 +10,28 @@
 namespace hicma
 {
 
-MatrixInitializerKernel::MatrixInitializerKernel(
+// explicit template initialization (these are the only available types)
+template class MatrixInitializerKernel<double>;
+template class MatrixInitializerKernel<float>;
+
+template<typename T>
+MatrixInitializerKernel<T>::MatrixInitializerKernel(
   void (*kernel)(
-    double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+    T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
     const std::vector<std::vector<double>>& params,
     int64_t row_start, int64_t col_start
   ),
   std::vector<std::vector<double>> params,
   double admis, int64_t rank, int admis_type
-) : MatrixInitializer(admis, rank, params, admis_type),
+) : MatrixInitializer<T>(admis, rank, params, admis_type),
     kernel(kernel) {}
 
-void MatrixInitializerKernel::fill_dense_representation(
-  Dense<double>& A, const IndexRange& row_range, const IndexRange& col_range
+template<typename T>
+void MatrixInitializerKernel<T>::fill_dense_representation(
+  Dense<T>& A, const IndexRange& row_range, const IndexRange& col_range
 ) const {
   kernel(&A, A.dim[0], A.dim[1], A.stride,
-	 params, row_range.start, col_range.start);
+	 this->params, row_range.start, col_range.start);
 }
 
 } // namespace hicma

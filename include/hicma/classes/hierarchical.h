@@ -27,6 +27,7 @@ namespace hicma
 
 //class Dense<double>;
 class ClusterTree;
+template<typename T>
 class MatrixInitializer;
 
 /**
@@ -113,7 +114,7 @@ class Hierarchical : public Matrix {
    */
   Hierarchical(
     const ClusterTree& node,
-    MatrixInitializer& initializer
+    MatrixInitializer<T>& initializer
   );
 
   /**
@@ -159,14 +160,13 @@ class Hierarchical : public Matrix {
   Hierarchical(
     void (*kernel)(
       T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-      const std::vector<std::vector<T>>& params,
+      const std::vector<std::vector<double>>& params,
       int64_t row_start, int64_t col_start
     ),
-    std::vector<std::vector<T>> params,
+    std::vector<std::vector<double>> params,
     int64_t n_rows, int64_t n_cols,
     int64_t rank,
     int64_t nleaf,
-    //TODO Why is this double?
     double admis=0,
     int64_t n_row_blocks=2, int64_t n_col_blocks=2,
     int admis_type=POSITION_BASED_ADMIS,
@@ -210,7 +210,7 @@ class Hierarchical : public Matrix {
 
   Hierarchical(
     std::string filename, MatrixLayout ordering,
-    std::vector<std::vector<T>> params,
+    std::vector<std::vector<double>> params,
     int64_t n_rows, int64_t n_cols,
     int64_t rank,
     int64_t nleaf,

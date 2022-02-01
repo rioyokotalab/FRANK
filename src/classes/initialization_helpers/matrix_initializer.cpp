@@ -19,35 +19,53 @@
 namespace hicma
 {
 
-MatrixInitializer::MatrixInitializer(
+// explicit template initialization (these are the only available types)
+template class MatrixInitializer<double>;
+template class MatrixInitializer<float>;
+
+template<typename T>
+MatrixInitializer<T>::MatrixInitializer(
   double admis, int64_t rank,
   std::vector<std::vector<double>> params, int admis_type
 ) : admis(admis), rank(rank),
     params(params), admis_type(admis_type) {}
 
-Dense<double> MatrixInitializer::get_dense_representation(
+template<typename T>
+Dense<T> MatrixInitializer<T>::get_dense_representation(
   const ClusterTree& node
 ) const {
-  Dense<double> representation(node.rows.n, node.cols.n);
+  Dense<T> representation(node.rows.n, node.cols.n);
   fill_dense_representation(representation, node.rows, node.cols);
   return representation;
 }
 
-LowRank<double> MatrixInitializer::get_compressed_representation(
+template<typename T>
+LowRank<T> MatrixInitializer<T>::get_compressed_representation(
   const ClusterTree& node
 ) {
   // TODO This function still relies on ClusterTree to be symmetric!
-  return LowRank<double>(get_dense_representation(node), rank);
+  return LowRank<T>(get_dense_representation(node), rank);
 }
 
-std::vector<std::vector<double>> MatrixInitializer::get_coords_range(const IndexRange& range) const {
+//TODO not implemented
+template<>
+LowRank<float> MatrixInitializer<float>::get_compressed_representation(
+  const ClusterTree& node
+) {
+  assert(false);
+  return LowRank<float>();
+}
+
+template<typename T>
+std::vector<std::vector<double>> MatrixInitializer<T>::get_coords_range(const IndexRange& range) const {
   std::vector<std::vector<double>> coords_range;
   for(size_t d=0; d<params.size(); d++)
     coords_range.push_back(std::vector<double>(params[d].begin()+range.start, params[d].begin()+range.start+range.n));
   return coords_range;
 }
 
-bool MatrixInitializer::is_admissible(const ClusterTree& node) const {
+template<typename T>
+bool MatrixInitializer<T>::is_admissible(const ClusterTree& node) const {
   bool admissible = true;
   // Vectors are never admissible
   admissible &= (node.rows.n > 1 && node.cols.n > 1);

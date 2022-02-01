@@ -15,15 +15,21 @@
 namespace hicma
 {
 
+// explicit template initialization (these are the only available types)
+template class MatrixInitializerFile<double>;
+template class MatrixInitializerFile<float>;
+
 // Additional constructors
-MatrixInitializerFile::MatrixInitializerFile(
+template<typename T>
+MatrixInitializerFile<T>::MatrixInitializerFile(
   std::string filename, MatrixLayout ordering, double admis, int64_t rank,
   std::vector<std::vector<double>> params, int admis_type
-) : MatrixInitializer(admis, rank, params, admis_type),
+) : MatrixInitializer<T>(admis, rank, params, admis_type),
     filename(filename), ordering(ordering) {}
 
-void MatrixInitializerFile::fill_dense_representation(
-  Dense<double>& A, const IndexRange& row_range, const IndexRange& col_range
+template<typename T>
+void MatrixInitializerFile<T>::fill_dense_representation(
+  Dense<T>& A, const IndexRange& row_range, const IndexRange& col_range
 ) const {
   std::ifstream file;
   file.open(filename);

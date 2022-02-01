@@ -10,6 +10,7 @@ namespace hicma
 // Register all classes for the open multi methods
 register_class(Matrix)
 register_class(Dense<double>, Matrix)
+register_class(Dense<float>, Matrix)
 register_class(Empty, Matrix)
 register_class(LowRank<double>, Matrix)
 register_class(Hierarchical<double>, Matrix)

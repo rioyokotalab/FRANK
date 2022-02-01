@@ -27,9 +27,9 @@ using yorel::yomm2::virtual_;
 namespace hicma
 {
 
-//explicit template initialization
-//only double matrix is available
+// explicit template initialization (these are the only available types)
 template class Dense<double>;
+template class Dense<float>;
 
 uint64_t next_unique_id = 0;
 
@@ -64,7 +64,7 @@ Dense<T>& Dense<T>::operator=(const Dense<T>& A) {
 template<typename T>
 Dense<T>::Dense(const Matrix& A)
 : Matrix(A), dim{get_n_rows(A), get_n_cols(A)}, stride(dim[1]),
-  data(std::make_shared<std::vector<double>>(dim[0]*dim[1], 0)),
+  data(std::make_shared<std::vector<T>>(dim[0]*dim[1], 0)),
   rel_start{0, 0}, data_ptr(&(*data)[0]), unique_id(next_unique_id++)
 {
   fill_dense_from(A, *this);
@@ -133,10 +133,10 @@ template<typename T>
 Dense<T>::Dense(
   void (*kernel)(
     T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-    const std::vector<std::vector<T>>& params,
+    const std::vector<std::vector<double>>& params,
     int64_t row_start, int64_t col_start
   ),
-  const std::vector<std::vector<T>>& params,
+  const std::vector<std::vector<double>>& params,
   int64_t n_rows, int64_t n_cols,
   int64_t row_start, int64_t col_start
 ) : Dense(n_rows, n_cols) {
@@ -151,8 +151,8 @@ Dense<T>::Dense(
   int64_t n_rows, int64_t n_cols,
   int64_t row_start, int64_t col_start
 ) : Dense(n_rows, n_cols) {
-  MatrixInitializerFile initializer(filename, ordering, 0, 0,
-				    std::vector<std::vector<T>>(),
+  MatrixInitializerFile<T> initializer(filename, ordering, 0, 0,
+				    std::vector<std::vector<double>>(),
 				    POSITION_BASED_ADMIS);
   initializer.fill_dense_representation(*this,
 					{row_start, n_rows},

@@ -14,7 +14,8 @@ namespace hicma
 class ClusterTree;
 class IndexRange;
 
-class MatrixInitializerFile : public MatrixInitializer {
+template<typename T = double>
+class MatrixInitializerFile : public MatrixInitializer<T> {
  private:
   std::string filename;
   MatrixLayout ordering;
@@ -39,7 +40,7 @@ class MatrixInitializerFile : public MatrixInitializer {
   );
 
   void fill_dense_representation(
-    Dense<double>& A, const IndexRange& row_range, const IndexRange& col_range
+    Dense<T>& A, const IndexRange& row_range, const IndexRange& col_range
   ) const override;
 
 };

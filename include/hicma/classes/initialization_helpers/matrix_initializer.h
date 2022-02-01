@@ -45,6 +45,7 @@ class ClusterTree;
  * `fill_dense_representation()`, so implementing this single function is
  * sufficient to fully implement the initializer.
  */
+template<typename T = double>
 class MatrixInitializer {
  private:
   double admis;
@@ -106,7 +107,7 @@ class MatrixInitializer {
    * as a StarPU task so that task parallelism can be used.
    */
   virtual void fill_dense_representation(
-    Dense<double>& A, const IndexRange& row_range, const IndexRange& col_range
+    Dense<T>& A, const IndexRange& row_range, const IndexRange& col_range
   ) const = 0;
 
   /**
@@ -121,7 +122,7 @@ class MatrixInitializer {
    * Internally, this method uses `fill_dense_representation()` to assign the
    * elements of the newly created `Dense` matrix.
    */
-  Dense<double> get_dense_representation(const ClusterTree& node) const;
+  Dense<T> get_dense_representation(const ClusterTree& node) const;
 
   /**
    * @brief Get a compressed representation of an admissible `ClusterTree` node
@@ -131,7 +132,7 @@ class MatrixInitializer {
    * @return LowRank
    * `LowRank` approximation representing \p node.
    */
-  LowRank<double> get_compressed_representation(const ClusterTree& node);
+  LowRank<T> get_compressed_representation(const ClusterTree& node);
 
   /**
    * @brief Check if a `ClusterTree` node is admissible

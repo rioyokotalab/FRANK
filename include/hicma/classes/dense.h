@@ -180,10 +180,10 @@ class Dense : public Matrix {
   Dense(
     void (*kernel)(
       T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-      const std::vector<std::vector<T>>& params,
+      const std::vector<std::vector<double>>& params,
       int64_t row_start, int64_t col_start
     ),
-    const std::vector<std::vector<T>>& params,
+    const std::vector<std::vector<double>>& params,
     int64_t n_rows, int64_t n_cols=1,
     int64_t row_start=0, int64_t col_start=0
   );

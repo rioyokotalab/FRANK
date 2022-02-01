@@ -11,14 +11,20 @@
 namespace hicma
 {
 
+// explicit template initialization (these are the only available types)
+template class MatrixInitializerBlock<double>;
+template class MatrixInitializerBlock<float>;
+
 // Additional constructors
-MatrixInitializerBlock::MatrixInitializerBlock(
-  Dense<double>&& A, double admis, int64_t rank
-) : MatrixInitializer(admis, rank), matrix(std::move(A)) {}
+template<typename T>
+MatrixInitializerBlock<T>::MatrixInitializerBlock(
+  Dense<T>&& A, double admis, int64_t rank
+) : MatrixInitializer<T>(admis, rank), matrix(std::move(A)) {}
 
 // Utility methods
-void MatrixInitializerBlock::fill_dense_representation(
-  Dense<double>& A, const IndexRange& row_range, const IndexRange& col_range
+template<typename T>
+void MatrixInitializerBlock<T>::fill_dense_representation(
+  Dense<T>& A, const IndexRange& row_range, const IndexRange& col_range
 ) const {
   for (int64_t i=0; i<A.dim[0]; ++i) {
     for (int64_t j=0; j<A.dim[1]; ++j) {
