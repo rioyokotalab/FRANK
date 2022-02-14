@@ -1,10 +1,8 @@
 #include "hicma/classes/initialization_helpers/cluster_tree.h"
 
-#include "hicma/classes/hierarchical.h"
-#include "hicma/operations/misc.h"
-
 #include <cmath>
 #include <cstdint>
+#include <vector>
 #include <functional>
 
 
