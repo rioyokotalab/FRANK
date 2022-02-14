@@ -1,9 +1,6 @@
 #include "hicma/classes/initialization_helpers/cluster_tree.h"
 
 #include <cmath>
-#include <cstdint>
-#include <vector>
-#include <functional>
 
 
 namespace hicma
