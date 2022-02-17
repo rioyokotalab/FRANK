@@ -20,9 +20,9 @@ int main(int argc, char** argv) {
   std::vector<std::vector<double>> randx{get_sorted_random_vector(N)};
   Dense x(random_uniform, std::vector<std::vector<double>>(), N);
   Dense b(N);
-  Dense D(laplacend, randx, N, N);
+  Dense<double> D(LaplacendKernel<double>(randx), N, N);
   timing::start("Hierarchical compression");
-  Hierarchical A(laplacend, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
+  Hierarchical<double> A(LaplacendKernel<double>(randx), N, N, rank, nleaf, admis, nblocks, nblocks);
   timing::stop("Hierarchical compression");
   // write_JSON(A);
   gemm(A, x, b, 1, 1);

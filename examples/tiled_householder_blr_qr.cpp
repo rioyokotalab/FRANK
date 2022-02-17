@@ -20,13 +20,13 @@ int main(int argc, char** argv) {
   std::vector<std::vector<double>> randpts;
   randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
   randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
-  Hierarchical D(laplacend, randpts, N, N, Nb, Nb, Nc, Nc, Nc);
-  Hierarchical A(laplacend, randpts, N, N, rank, Nb, admis, Nc, Nc);
+  Hierarchical<double> D(LaplacendKernel<double>(randpts), N, N, Nb, Nb, Nc, Nc, Nc);
+  Hierarchical<double> A(LaplacendKernel<double>(randpts), N, N, rank, Nb, admis, Nc, Nc);
   Hierarchical A_copy(A);
   print("BLR Compression Accuracy");
   print("Rel. L2 Error", l2_error(D, A), false);
 
-  Hierarchical Q(identity, std::vector<std::vector<double>>(), N, N, rank, Nb, admis, Nc, Nc);
+  Hierarchical<double> Q(IdentityKernel<double>(), N, N, rank, Nb, admis, Nc, Nc);
   Hierarchical T(Nc, Nc);
   for(int64_t j = 0; j < Nc; j++) {
     for(int64_t i = j; i < Nc; i++) {
@@ -72,13 +72,13 @@ int main(int argc, char** argv) {
 
   print("BLR-QR Accuracy");
   //Residual
-  Hierarchical QR(zeros, std::vector<std::vector<double>>(), N, N, rank, Nb, admis, Nc, Nc);
+  Hierarchical<double> QR(ZeroKernel<double>(), N, N, rank, Nb, admis, Nc, Nc);
   gemm(Q, A, QR, 1, 0);
   print("Residual", l2_error(A_copy, QR), false);  
   //Orthogonality
-  Hierarchical QtQ(zeros, std::vector<std::vector<double>>(), N, N, rank, Nb, admis, Nc, Nc);
+  Hierarchical<double> QtQ(ZeroKernel<double>(), N, N, rank, Nb, admis, Nc, Nc);
   Hierarchical Qt = transpose(Q);
   gemm(Qt, Q, QtQ, 1, 0);
-  print("Orthogonality", l2_error(Dense(identity, std::vector<std::vector<double>>(), N, N), QtQ), false);
+  print("Orthogonality", l2_error(Dense<double>(IdentityKernel<double>(), N, N), QtQ), false);
   return 0;
 }

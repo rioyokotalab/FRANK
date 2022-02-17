@@ -11,8 +11,11 @@
 namespace hicma
 {
 
-std::vector<double> get_sorted_random_vector(int64_t N);
-std::vector<double> get_non_negative_vector(int64_t N);
+template<typename U = double>
+std::vector<U> get_sorted_random_vector(int64_t N);
+
+template<typename U = double>
+std::vector<U> get_non_negative_vector(int64_t N);
  
 } // namespace hicma
 

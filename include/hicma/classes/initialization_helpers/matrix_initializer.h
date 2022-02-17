@@ -12,13 +12,8 @@
 #define hicma_classes_initialization_helpers_matrix_initializer_h
 
 #include "hicma/definitions.h"
-#include "hicma/classes/dense.h"
-#include "hicma/classes/low_rank.h"
-#include "hicma/classes/initialization_helpers/index_range.h"
 
 #include <cstdint>
-#include <tuple>
-#include <vector>
 
 
 /**
@@ -28,6 +23,12 @@ namespace hicma
 {
 
 class ClusterTree;
+class IndexRange;
+class Matrix;
+template<typename T>
+class Dense;
+template<typename T>
+class LowRank;
 
 /**
  * @brief Abstract base class used for initializing submatrices during
@@ -45,16 +46,11 @@ class ClusterTree;
  * `fill_dense_representation()`, so implementing this single function is
  * sufficient to fully implement the initializer.
  */
-template<typename T = double>
 class MatrixInitializer {
- private:
+ protected:
   double admis;
   int64_t rank;
   int admis_type;
- protected:
-  std::vector<std::vector<double>> params;
-
-  void find_admissible_blocks(const ClusterTree& node);
 
  public:
   // Special member functions
@@ -77,16 +73,11 @@ class MatrixInitializer {
    * Distance-to-diagonal or standard admissibility condition constant.
    * @param rank
    * Fixed rank to be used for approximating admissible submatrices.
-   * @param params
-   * Vector containing parameters used as input to the kernel
-   * and as coordinate of particles
    * @param admis_type
    * Either POSITION_BASED_ADMIS (Default) or GEOMETRY_BASED_ADMIS
    */
   MatrixInitializer(
-    double admis, int64_t rank,
-    std::vector<std::vector<double>> params=std::vector<std::vector<double>>(),
-    int admis_type=POSITION_BASED_ADMIS
+    double admis, int64_t rank, int admis_type=POSITION_BASED_ADMIS
   );
 
   /**
@@ -107,7 +98,7 @@ class MatrixInitializer {
    * as a StarPU task so that task parallelism can be used.
    */
   virtual void fill_dense_representation(
-    Dense<T>& A, const IndexRange& row_range, const IndexRange& col_range
+    Matrix& A, const IndexRange& row_range, const IndexRange& col_range
   ) const = 0;
 
   /**
@@ -122,6 +113,7 @@ class MatrixInitializer {
    * Internally, this method uses `fill_dense_representation()` to assign the
    * elements of the newly created `Dense` matrix.
    */
+  template<typename T>
   Dense<T> get_dense_representation(const ClusterTree& node) const;
 
   /**
@@ -132,7 +124,8 @@ class MatrixInitializer {
    * @return LowRank
    * `LowRank` approximation representing \p node.
    */
-  LowRank<T> get_compressed_representation(const ClusterTree& node);
+  template<typename T>
+  LowRank<T> get_compressed_representation(const ClusterTree& node) const;
 
   /**
    * @brief Check if a `ClusterTree` node is admissible
@@ -144,10 +137,7 @@ class MatrixInitializer {
    * @return false
    * If the node is not admissible.
    */
-  bool is_admissible(const ClusterTree& node) const;
-
-  virtual std::vector<std::vector<double>> get_coords_range(const IndexRange& range) const;
-
+  virtual bool is_admissible(const ClusterTree& node) const;
 };
 
 } // namespace hicma

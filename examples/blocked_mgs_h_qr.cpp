@@ -49,15 +49,15 @@ int main(int argc, char** argv) {
     admis = 1; // Strong admissibility
   }
   timing::start("CPU compression");
-  Hierarchical A(laplacend, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
+  Hierarchical<double> A(LaplacendKernel<double>(randx), N, N, rank, nleaf, admis, nblocks, nblocks);
   timing::stop("CPU compression");
   Hierarchical A_copy(A);
-  Hierarchical Q(zeros, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
-  Hierarchical R(zeros, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
+  Hierarchical<double> Q(ZeroKernel<double>(), N, N, rank, nleaf, admis, nblocks, nblocks);
+  Hierarchical<double> R(ZeroKernel<double>(), N, N, rank, nleaf, admis, nblocks, nblocks);
   timing::stopAndPrint("Init matrix");
   admis = N / nleaf; // Full rank
   timing::start("Dense tree");
-  Hierarchical D(laplacend, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
+  Hierarchical<double> D(LaplacendKernel<double>(randx), N, N, rank, nleaf, admis, nblocks, nblocks);
   timing::stopAndPrint("Dense tree");
   print("Compression Accuracy");
   print("Rel. L2 Error", l2_error(D, A), false);
@@ -67,12 +67,12 @@ int main(int argc, char** argv) {
   qr(A, Q, R);
   timing::stopAndPrint("H-QR", 1);
   print("H-QR Accuracy");
-  Hierarchical QR(zeros, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
+  Hierarchical<double> QR(ZeroKernel<double>(), N, N, rank, nleaf, admis, nblocks, nblocks);
   gemm(Q, R, QR, 1, 1);
   print("Residual", l2_error(A_copy, QR), false);
-  Hierarchical QtQ(zeros, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
+  Hierarchical<double> QtQ(ZeroKernel<double>(), N, N, rank, nleaf, admis, nblocks, nblocks);
   Hierarchical Qt = transpose(Q);
   gemm(Qt, Q, QtQ, 1, 1);
-  print("Orthogonality", l2_error(Dense(identity, randx, N, N), QtQ), false);
+  print("Orthogonality", l2_error(Dense<double>(IdentityKernel<double>(), N, N), QtQ), false);
   return 0;
 }
