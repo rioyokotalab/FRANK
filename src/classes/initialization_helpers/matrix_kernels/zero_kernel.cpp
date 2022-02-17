@@ -6,6 +6,8 @@
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
 
+#include <utility>
+
 
 namespace hicma
 {
@@ -17,6 +19,11 @@ template class ZeroKernel<double>;
 template<typename U>
 std::unique_ptr<MatrixKernel<U>> ZeroKernel<U>::clone() const {
   return std::make_unique<ZeroKernel<U>>(*this);
+}
+
+template<typename U>
+std::unique_ptr<MatrixKernel<U>> ZeroKernel<U>::move_clone() {
+  return std::make_unique<ZeroKernel<U>>(std::move(*this));
 }
 
 declare_method(void, apply_zero_kernel, (virtual_<Matrix&>))

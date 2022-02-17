@@ -25,6 +25,8 @@ class RandomUniformKernel : public MatrixKernel<U> {
 
     std::unique_ptr<MatrixKernel<U>> clone() const override;
 
+    std::unique_ptr<MatrixKernel<U>> move_clone() override;
+
     void apply(Matrix& A, int64_t row_start=0, int64_t col_start=0) const override;
 
     void apply(Matrix& A, bool deterministic_seed, int64_t row_start=0, int64_t col_start=0) const;

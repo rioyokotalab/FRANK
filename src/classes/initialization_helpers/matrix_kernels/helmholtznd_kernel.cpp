@@ -30,6 +30,11 @@ std::unique_ptr<MatrixKernel<U>> HelmholtzndKernel<U>::clone() const {
   return std::make_unique<HelmholtzndKernel<U>>(*this);
 }
 
+template<typename U>
+std::unique_ptr<MatrixKernel<U>> HelmholtzndKernel<U>::move_clone() {
+  return std::make_unique<HelmholtzndKernel<U>>(std::move(*this));
+}
+
 declare_method(void, apply_helmholtznd_kernel, (virtual_<Matrix&>, const vec2d<double>&, int64_t, int64_t))
 
 declare_method(void, apply_helmholtznd_kernel, (virtual_<Matrix&>, const vec2d<float>&, int64_t, int64_t))

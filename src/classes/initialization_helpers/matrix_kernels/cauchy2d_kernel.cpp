@@ -30,6 +30,11 @@ std::unique_ptr<MatrixKernel<U>> Cauchy2dKernel<U>::clone() const {
   return std::make_unique<Cauchy2dKernel<U>>(*this);
 }
 
+template<typename U>
+std::unique_ptr<MatrixKernel<U>> Cauchy2dKernel<U>::move_clone() {
+  return std::make_unique<Cauchy2dKernel<U>>(std::move(*this));
+}
+
 declare_method(void, apply_cauchy2d_kernel, (virtual_<Matrix&>, const vec2d<double>&, int64_t, int64_t))
 
 declare_method(void, apply_cauchy2d_kernel, (virtual_<Matrix&>, const vec2d<float>&, int64_t, int64_t))

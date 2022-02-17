@@ -6,6 +6,8 @@
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
 
+#include <utility>
+
 
 namespace hicma
 {
@@ -17,6 +19,11 @@ template class ArangeKernel<double>;
 template<typename U>
 std::unique_ptr<MatrixKernel<U>> ArangeKernel<U>::clone() const {
   return std::make_unique<ArangeKernel<U>>(*this);
+}
+
+template<typename U>
+std::unique_ptr<MatrixKernel<U>> ArangeKernel<U>::move_clone() {
+  return std::make_unique<ArangeKernel<U>>(std::move(*this));
 }
 
 declare_method(void, apply_arange_kernel, (virtual_<Matrix&>, int64_t, int64_t))

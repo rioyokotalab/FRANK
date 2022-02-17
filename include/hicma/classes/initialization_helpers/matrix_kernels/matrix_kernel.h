@@ -23,6 +23,8 @@ class MatrixKernel {
 
   virtual std::unique_ptr<MatrixKernel<U>> clone() const = 0;
 
+  virtual std::unique_ptr<MatrixKernel<U>> move_clone() = 0;
+
   virtual void apply(Matrix& A, int64_t row_start=0, int64_t col_start=0) const = 0;
 
   virtual vec2d<U> get_coords_range(const IndexRange& range) const;

@@ -30,6 +30,11 @@ std::unique_ptr<MatrixKernel<U>> LaplacendKernel<U>::clone() const {
   return std::make_unique<LaplacendKernel<U>>(*this);
 }
 
+template<typename U>
+std::unique_ptr<MatrixKernel<U>> LaplacendKernel<U>::move_clone() {
+  return std::make_unique<LaplacendKernel<U>>(std::move(*this));
+}
+
 declare_method(void, apply_laplacend_kernel, (virtual_<Matrix&>, const vec2d<double>&, int64_t, int64_t))
 
 declare_method(void, apply_laplacend_kernel, (virtual_<Matrix&>, const vec2d<float>&, int64_t, int64_t))

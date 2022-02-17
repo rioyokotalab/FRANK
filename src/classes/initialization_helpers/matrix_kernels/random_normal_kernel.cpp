@@ -6,6 +6,8 @@
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
 
+#include <utility>
+
 
 namespace hicma
 {
@@ -13,11 +15,6 @@ namespace hicma
 // explicit template initialization (these are the only available types)
 template class RandomNormalKernel<float>;
 template class RandomNormalKernel<double>;
-
-template<typename U>
-std::unique_ptr<MatrixKernel<U>> RandomNormalKernel<U>::clone() const {
-  return std::make_unique<RandomNormalKernel<U>>(*this);
-}
 
 /* initialize static members */
 template<typename U>
@@ -32,6 +29,16 @@ std::random_device RandomNormalKernel<U>::rd = std::random_device();
 /* member functions */
 template<typename U>
 RandomNormalKernel<U>::RandomNormalKernel(uint32_t seed) : seed(seed) {}
+
+template<typename U>
+std::unique_ptr<MatrixKernel<U>> RandomNormalKernel<U>::clone() const {
+  return std::make_unique<RandomNormalKernel<U>>(*this);
+}
+
+template<typename U>
+std::unique_ptr<MatrixKernel<U>> RandomNormalKernel<U>::move_clone() {
+  return std::make_unique<RandomNormalKernel<U>>(std::move(*this));
+}
 
 declare_method(void, apply_random_normal_kernel, (virtual_<Matrix&>, std::mt19937&, std::normal_distribution<float>&))
 
