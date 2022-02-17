@@ -3,12 +3,13 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/operations/misc.h"
 
-#include <cstdint>
-#include <vector>
-
 
 namespace hicma
 {
+
+// explicit template initialization (these are the only available types)
+template std::vector<IndexRange> IndexRange::split_like(const Hierarchical<float>& A, int along) const;
+template std::vector<IndexRange> IndexRange::split_like(const Hierarchical<double>& A, int along) const;
 
 IndexRange::IndexRange(int64_t start, int64_t n) : start(start), n(n) {}
 
@@ -27,8 +28,9 @@ std::vector<IndexRange> IndexRange::split_at(int64_t index) const {
   return {{start, index}, {start+index, n-index}};
 }
 
+template<typename T>
 std::vector<IndexRange> IndexRange::split_like(
-  const Hierarchical<double>& like, int along
+  const Hierarchical<T>& like, int along
 ) const {
   std::vector<IndexRange> children(like.dim[along == ALONG_ROW ? 1 : 0]);
   int64_t child_start = 0;

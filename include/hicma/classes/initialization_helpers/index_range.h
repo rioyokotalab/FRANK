@@ -7,9 +7,6 @@
 #ifndef hicma_classes_initialization_helpers_index_range_h
 #define hicma_classes_initialization_helpers_index_range_h
 
-//added this line instead of declaring Hierarchical below
-#include "hicma/classes/hierarchical.h"
-
 #include <cstdint>
 #include <vector>
 
@@ -20,7 +17,9 @@
 namespace hicma
 {
 
-//class Hierarchical;
+template<typename T>
+class Hierarchical;
+
 /**
  * @brief Choice along which axis to perform some operations on `IndexTree`
  */
@@ -115,7 +114,8 @@ class IndexRange {
    * Note that this function is not recursive. Only the first level of \p A is
    * mimicked in the resulting `IndexRange`s.
    */
-  std::vector<IndexRange> split_like(const Hierarchical<double>& A, int along) const;
+  template<typename T>
+  std::vector<IndexRange> split_like(const Hierarchical<T>& A, int along) const;
 };
 
 } // namespace hicma
