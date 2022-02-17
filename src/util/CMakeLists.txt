@@ -8,4 +8,5 @@ target_sources(hicma PRIVATE
   ${CMAKE_CURRENT_LIST_DIR}/print.cpp
   ${CMAKE_CURRENT_LIST_DIR}/timer.cpp
   ${CMAKE_CURRENT_LIST_DIR}/geometry_file.cpp
+  ${CMAKE_CURRENT_LIST_DIR}/get_template_type.cpp
 )

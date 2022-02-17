@@ -26,6 +26,8 @@ declare_method(void, print_omm, (virtual_<const Matrix&>))
 
 declare_method(std::string, type_omm, (virtual_<const Matrix&>))
 
+declare_method(bool, is_double, (virtual_<const Matrix&>))
+
 } // namespace hicma
 
 #endif // hicma_extension_headers_util_h
