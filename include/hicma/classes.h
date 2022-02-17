@@ -8,5 +8,6 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix_proxy.h"
 #include "hicma/classes/matrix.h"
+#include "hicma/classes/initialization_helpers/matrix_kernels/classes.h"
 
 #endif // hicma_classes_h
