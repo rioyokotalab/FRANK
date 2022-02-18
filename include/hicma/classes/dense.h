@@ -9,7 +9,6 @@
 
 #include "hicma/definitions.h"
 #include "hicma/classes/matrix.h"
-#include "hicma/classes/matrix_proxy.h"
 
 #include <array>
 #include <cstdint>
@@ -23,7 +22,10 @@
 namespace hicma
 {
 
+class MatrixProxy;
 class IndexRange;
+template<typename T>
+class MatrixKernel;
 
 /**
  * @brief Class handling a regular dense matrix
@@ -177,6 +179,7 @@ class Dense : public Matrix {
    * for example be used to generate the `Dense` blocks of a `Hierarchical`
    * matrix.
    */
+  // TODO Legacy code, remove?
   Dense(
     void (*kernel)(
       T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
@@ -187,6 +190,9 @@ class Dense : public Matrix {
     int64_t n_rows, int64_t n_cols=1,
     int64_t row_start=0, int64_t col_start=0
   );
+
+  template<typename U>
+  Dense(const MatrixKernel<U>& kernel, int64_t n_rows, int64_t n_cols=1, int64_t row_start=0, int64_t col_start=0);
 
   Dense(
     std::string filename, MatrixLayout ordering,
@@ -204,7 +210,8 @@ class Dense : public Matrix {
    * @param column_start
    * Column offset for the values to be copied
    */
-  void copy_to(Dense &A, int64_t row_start=0, int64_t col_start=0) const;
+  template<typename U>
+  void copy_to(Dense<U> &A, int64_t row_start=0, int64_t col_start=0) const;
 
   /**
    * @brief Assign the constant value \p a to all elements of the `Dense` matrix
@@ -382,6 +389,16 @@ class Dense : public Matrix {
     uint64_t n_row_splits, uint64_t n_col_splits, bool copy=false
   ) const;
 };
+
+//TODO remove
+/* YOMM EXAMPLES */
+/*
+template<typename T>
+Dense<T> add_one(const Matrix& A);
+
+template<typename T>
+Dense<T>& add_one2(Matrix& A);
+*/
 
 } // namespace hicma
 

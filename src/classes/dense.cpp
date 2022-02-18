@@ -4,48 +4,53 @@
 #include "hicma/classes/empty.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
-#include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
 #include "hicma/classes/initialization_helpers/index_range.h"
+#include "hicma/classes/initialization_helpers/matrix_kernels/matrix_kernel.h"
 #include "hicma/classes/initialization_helpers/matrix_initializer_file.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
-#include "hicma/util/print.h"
 #include "hicma/util/timer.h"
 
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
 
 #include <cassert>
-#include <cstdint>
-#include <cstdlib>
 #include <utility>
-#include <vector>
 
 
 namespace hicma
 {
 
 // explicit template initialization (these are the only available types)
-template class Dense<double>;
 template class Dense<float>;
+template class Dense<double>;
+template Dense<float>::Dense(const MatrixKernel<float>&, int64_t, int64_t, int64_t, int64_t);
+template Dense<float>::Dense(const MatrixKernel<double>&, int64_t, int64_t, int64_t, int64_t);
+template Dense<double>::Dense(const MatrixKernel<float>&, int64_t, int64_t, int64_t, int64_t);
+template Dense<double>::Dense(const MatrixKernel<double>&, int64_t, int64_t, int64_t, int64_t);
+template void Dense<float>::copy_to(Dense<float>&, int64_t, int64_t) const;
+template void Dense<float>::copy_to(Dense<double>&, int64_t, int64_t) const;
+template void Dense<double>::copy_to(Dense<float>&, int64_t, int64_t) const;
+template void Dense<double>::copy_to(Dense<double>&, int64_t, int64_t) const;
 
 uint64_t next_unique_id = 0;
 
+//TODO does this enable implicit type conversion?
 template<typename T>
 Dense<T>::Dense(const Dense<T>& A)
 : Matrix(A), dim{A.dim[0], A.dim[1]}, stride(A.dim[1]), rel_start{0, 0},
   unique_id(next_unique_id++)
 {
   timing::start("Dense cctor");
-  //TODO create instead of resize?
   (*data).resize(dim[0]*dim[1], 0);
   data_ptr = &(*data)[0];
   fill_dense_from(A, *this);
   timing::stop("Dense cctor");
 }
 
+// TODO extend for type conversion?
 template<typename T>
 Dense<T>& Dense<T>::operator=(const Dense<T>& A) {
   timing::start("Dense copy assignment");
@@ -70,33 +75,71 @@ Dense<T>::Dense(const Matrix& A)
   fill_dense_from(A, *this);
 }
 
-define_method(void, fill_dense_from, (const Hierarchical<double>& A, Dense<double>& B)) {
+template<typename T>
+void fill_dense_from_hierarchical(const Hierarchical<T>& A, Dense<T>& B) {
   timing::start("make_dense(H)");
-  Hierarchical<double> BH = split(B, A);
+  Hierarchical<T> BH = split(B, A);
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {
       fill_dense_from(A(i, j), BH(i, j));
     }
   }
-  timing::stop("make_dense(H)");
+  timing::stop("make_dense(H)"); 
 }
 
-define_method(void, fill_dense_from, (const LowRank<double>& A, Dense<double>& B)) {
+define_method(void, fill_dense_from, (const Hierarchical<double>& A, Dense<double>& B)) {
+  fill_dense_from_hierarchical(A, B);
+}
+define_method(void, fill_dense_from, (const Hierarchical<float>& A, Dense<float>& B)) {
+  fill_dense_from_hierarchical(A, B);
+}
+
+template<typename T>
+void fill_dense_from_low_rank(const LowRank<T>& A, Dense<T>& B) {
   timing::start("make_dense(LR)");
   gemm(gemm(A.U, A.S), A.V, B, 1, 0);
   timing::stop("make_dense(LR)");
 }
 
-define_method(void, fill_dense_from, (const Dense<double>& A, Dense<double>& B)) {
+define_method(void, fill_dense_from, (const LowRank<double>& A, Dense<double>& B)) {
+  fill_dense_from_low_rank(A, B);
+}
+define_method(void, fill_dense_from, (const LowRank<float>& A, Dense<float>& B)) {
+  fill_dense_from_low_rank(A, B);
+}
+
+template<typename T, typename U>
+void fill_dense_from_dense(const Dense<T>& A, Dense<U>& B) {
   assert(A.dim[0] == B.dim[0]);
   assert(A.dim[1] == B.dim[1]);
   A.copy_to(B);
 }
 
-define_method(void, fill_dense_from, (const Empty& A, Dense<double>& B)) {
+define_method(void, fill_dense_from, (const Dense<double>& A, Dense<double>& B)) {
+  fill_dense_from_dense(A, B);
+}
+define_method(void, fill_dense_from, (const Dense<float>& A, Dense<float>& B)) {
+  fill_dense_from_dense(A, B);
+}
+define_method(void, fill_dense_from, (const Dense<double>& A, Dense<float>& B)) {
+  fill_dense_from_dense(A, B);
+}
+define_method(void, fill_dense_from, (const Dense<float>& A, Dense<double>& B)) {
+  fill_dense_from_dense(A, B);
+}
+
+template<typename T>
+void fill_dense_from_empty(const Empty&, Dense<T>& B) {
   assert(A.dim[0] == B.dim[0]);
   assert(A.dim[1] == B.dim[1]);
   B = 0.0;
+}
+
+define_method(void, fill_dense_from, (const Empty& A, Dense<double>& B)) {
+  fill_dense_from_empty(A, B);
+}
+define_method(void, fill_dense_from, (const Empty& A, Dense<float>& B)) {
+  fill_dense_from_empty(A, B);
 }
 
 define_method(void, fill_dense_from, (const Matrix& A, Matrix& B)) {
@@ -104,17 +147,23 @@ define_method(void, fill_dense_from, (const Matrix& A, Matrix& B)) {
   std::abort();
 }
 
-declare_method(Dense<double>&&, move_from_dense, (virtual_<Matrix&>))
+declare_method(Matrix&&, move_from_dense, (virtual_<Matrix&>))
 
+// static_cast is not safe because we don't know the template of MatrixProxy
+// TODO add some type of error handling
 template<typename T>
 Dense<T>::Dense(MatrixProxy&& A)
-: Dense(move_from_dense(A)) {}
+: Dense<T>(dynamic_cast<Dense<T>&&>(move_from_dense(A))) {}
 
-define_method(Dense<double>&&, move_from_dense, (Dense<double>& A)) {
+define_method(Matrix&&, move_from_dense, (Dense<double>& A)) {
   return std::move(A);
 }
 
-define_method(Dense<double>&&, move_from_dense, (Matrix& A)) {
+define_method(Matrix&&, move_from_dense, (Dense<float>& A)) {
+  return std::move(A);
+}
+
+define_method(Matrix&&, move_from_dense, (Matrix& A)) {
   omm_error_handler("move_from_dense", {A}, __FILE__, __LINE__);
   std::abort();
 }
@@ -129,6 +178,7 @@ Dense<T>::Dense(int64_t n_rows, int64_t n_cols)
   timing::stop("Dense alloc");
 }
 
+// TODO Legacy code, remove?
 template<typename T>
 Dense<T>::Dense(
   void (*kernel)(
@@ -145,31 +195,37 @@ Dense<T>::Dense(
     );
 }
 
+template<typename T> template<typename U>
+Dense<T>::Dense(const MatrixKernel<U>& kernel, int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start) : Dense(n_rows, n_cols) {
+  kernel.apply(*this, row_start, col_start);
+}
+
+//TODO this can not set the datatype of the file?
 template<typename T>
 Dense<T>::Dense(
   std::string filename, MatrixLayout ordering,
   int64_t n_rows, int64_t n_cols,
   int64_t row_start, int64_t col_start
 ) : Dense(n_rows, n_cols) {
-  MatrixInitializerFile<T> initializer(filename, ordering, 0, 0,
-				    std::vector<std::vector<double>>(),
-				    POSITION_BASED_ADMIS);
+  MatrixInitializerFile<T> initializer(filename, ordering, 0, 0);
   initializer.fill_dense_representation(*this,
 					{row_start, n_rows},
 					{col_start, n_cols});
 }
 
-template<typename T>
-void Dense<T>::copy_to(Dense<T> &A, int64_t row_start, int64_t col_start) const {
+template<typename T> template<typename U>
+void Dense<T>::copy_to(Dense<U> &A, int64_t row_start, int64_t col_start) const {
   assert(dim[0]-row_start >= A.dim[0]);
   assert(dim[1]-col_start >= A.dim[1]);
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {
+      // relies on implicit conversion
       A(i, j) = (*this)(row_start+i, col_start+j);
     }
   }
 }
 
+// relies on automatic type conversion
 template<typename T>
 Dense<T>& Dense<T>::operator=(const T a) {
   for (int64_t i=0; i<dim[0]; i++) {
@@ -244,6 +300,7 @@ bool Dense<T>::is_submatrix() const {
   return !out;
 }
 
+// TODO does not make sense, remove or write test
 template<typename T>
 uint64_t Dense<T>::id() const { return unique_id; }
 
@@ -291,5 +348,88 @@ std::vector<Dense<T>> Dense<T>::split(
     row_index.split(n_row_splits), col_index.split(n_col_splits), copy
   );
 }
+
+//TODO remove
+/* YOMM EXAMPLES */
+/*
+template Dense<double> add_one(const Matrix &A);
+template Dense<double>& add_one2(Matrix &A);
+template Dense<float> add_one(const Matrix &A);
+template Dense<float>& add_one2(Matrix &A);
+
+declare_method(
+  MatrixProxy, add_one_omm,
+  (virtual_<const Matrix&>)
+)
+
+template<typename T>
+Dense<T> add_one(const Matrix &A){
+  return add_one_omm(A);
+}
+
+template<typename T>
+MatrixProxy add1 (const Dense<T>& A){
+  Dense<T> result(A);
+  for (int64_t i=0; i<A.dim[0]; ++i)
+    for (int64_t j=0; j<A.dim[0]; ++j)
+      result(i,j) += 1;
+  return result;
+}
+
+define_method(MatrixProxy, add_one_omm, (const Dense<double>& A)) {
+  return add1(A);
+}
+define_method(MatrixProxy, add_one_omm, (const Dense<float>& A)) {
+  return add1(A);
+}
+define_method(MatrixProxy, add_one_omm, (const LowRank<double>& A)) {
+  return add1(Dense<double>(A));
+}
+define_method(MatrixProxy, add_one_omm, (const Matrix& A)) {
+  std::abort();
+}
+
+declare_method(
+  Matrix&, add_one_omm2,
+  (virtual_<Matrix&>)
+)
+
+template<typename T>
+Dense<T>& add_one2(Matrix& A){
+  return dynamic_cast<Dense<T>&>(add_one_omm2(A));
+}
+
+template<typename T>
+Matrix& add2 (Dense<T>& A){
+  for (int64_t i=0; i<A.dim[0]; ++i)
+    for (int64_t j=0; j<A.dim[0]; ++j)
+      A(i,j) += 1;
+  return A;
+}
+
+define_method(Matrix&, add_one_omm2, (Dense<double>& A)) {
+  return add2(A);
+}
+define_method(Matrix&, add_one_omm2, (Dense<float>& A)) {
+  return add2(A);
+}
+define_method(Matrix&, add_one_omm2, (Matrix& A)) {
+  std::abort();
+}*/
+
+/*
+auto deduce_type (Matrix& A) ->decltype(dynamic_cast<Dense<double>*>(&A)?dynamic_cast<Dense<double>*>(&A):(dynamic_cast<Dense<float>*>(&A)))
+) {
+  if (auto d_type = dynamic_cast<Dense<double>*>(&A))
+    return d_type;
+  else if (auto d_type = dynamic_cast<Dense<float>*>(&A))
+    return d_type;
+  else if (auto d_type = dynamic_cast<LowRank<double>*>(&A))
+    return d_type;
+  else if (auto d_type = dynamic_cast<Hierarchical<double>*>(&A))
+    return d_type;
+  else
+    std::abort();
+}*/
 
 } // namespace hicma
