@@ -40,7 +40,7 @@ class MatrixInitializerFile : public MatrixInitializer {
     
     template<typename T>
     void fill_dense_representation(
-      Dense<T>& A, const IndexRange& row_range, const IndexRange& col_range
+      Dense<T>& A, int64_t row_start, int64_t col_start
     ) const;
 };
 

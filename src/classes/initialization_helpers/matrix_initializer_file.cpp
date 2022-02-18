@@ -30,10 +30,10 @@ void MatrixInitializerFile<U>::fill_dense_representation(
 ) const {
   try {
     if (is_double(A)) {
-      fill_dense_representation(dynamic_cast<Dense<double>&>(A), row_range, col_range);
+      fill_dense_representation(dynamic_cast<Dense<double>&>(A), row_range.start, col_range.start);
     }
     else {
-      fill_dense_representation(dynamic_cast<Dense<float>&>(A), row_range, col_range);
+      fill_dense_representation(dynamic_cast<Dense<float>&>(A), row_range.start, col_range.start);
     }
   }
   catch(std::bad_cast& e) {
@@ -45,7 +45,7 @@ void MatrixInitializerFile<U>::fill_dense_representation(
 
 template<typename U> template<typename T>
 void MatrixInitializerFile<U>::fill_dense_representation(
-  Dense<T>& A, const IndexRange& row_range, const IndexRange& col_range
+  Dense<T>& A, int64_t row_start, int64_t col_start
 ) const {
   std::ifstream file;
   file.open(filename);
@@ -57,16 +57,16 @@ void MatrixInitializerFile<U>::fill_dense_representation(
   U a;
   file >>dim[0] >>dim[1];
   file.ignore(1, '\n'); //Ignore newline after dim
-  assert(row_range.start+A.dim[0] <= dim[0]);
-  assert(col_range.start+A.dim[1] <= dim[1]);
+  assert(row_start+A.dim[0] <= dim[0]);
+  assert(col_start+A.dim[1] <= dim[1]);
   if(ordering == HICMA_ROW_MAJOR) {
     //Skip rows before row_start
-    for(int64_t i=0; i<row_range.start; i++) {
+    for(int64_t i=0; i<row_start; i++) {
       file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
     for(int64_t i=0; i<A.dim[0]; i++) {
       //Skip columns before col_start
-      for(int64_t j=0; j<col_range.start; j++) {
+      for(int64_t j=0; j<col_start; j++) {
 	      file.ignore(std::numeric_limits<std::streamsize>::max(), ' ');
       }
       for(int64_t j=0; j<A.dim[1]; j++) {
@@ -74,18 +74,18 @@ void MatrixInitializerFile<U>::fill_dense_representation(
         // relies on implicit type conversion
 	      A(i, j) = a;
       }
-      if(col_range.start+A.dim[1] < dim[1])
+      if(col_start+A.dim[1] < dim[1])
 	      file.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); //Ignore rest of the columns (if any)
     }
   }
   else { //Assume entries in file are stored in column major
     //Skip cols before col_start
-    for(int64_t j=0; j<col_range.start; j++) {
+    for(int64_t j=0; j<col_start; j++) {
       file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
     for(int64_t j=0; j<A.dim[1]; j++) {
       //Skip rows before row_start
-      for(int64_t i=0; i<row_range.start; i++) {
+      for(int64_t i=0; i<row_start; i++) {
 	      file.ignore(std::numeric_limits<std::streamsize>::max(), ' ');
       }
       for(int64_t i=0; i<A.dim[0]; i++) {
@@ -93,7 +93,7 @@ void MatrixInitializerFile<U>::fill_dense_representation(
         // relies on implicit type conversion
 	      A(i, j) = a;
       }
-      if(row_range.start+A.dim[0] < dim[0])
+      if(row_start+A.dim[0] < dim[0])
 	      file.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); //Ignore rest of the rows (if any)
     }
   }
