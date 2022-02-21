@@ -57,15 +57,4 @@ define_method(void, geqrt_omm, (Matrix& A, Matrix& T)) {
   std::abort();
 }
 
-void geqrt2(Dense& A, Dense& T) {
-  assert(T.dim[0] == A.dim[1]);
-  assert(T.dim[1] == A.dim[1]);
-  LAPACKE_dgeqrt2(
-    LAPACK_ROW_MAJOR,
-    A.dim[0], A.dim[1],
-    &A, A.stride,
-    &T, T.stride
-  );
-}
-
 } // namespace hicma
