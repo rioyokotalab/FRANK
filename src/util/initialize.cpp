@@ -4,33 +4,16 @@
 #include "yorel/yomm2/cute.hpp"
 
 
-namespace hicma
-{
+namespace hicma {
+  // Register all classes for the open multi methods
+  register_class(Matrix)
+  register_class(Dense, Matrix)
+  register_class(Empty, Matrix)
+  register_class(LowRank, Matrix)
+  register_class(Hierarchical, Matrix)
 
-// Register all classes for the open multi methods
-register_class(Matrix)
-register_class(Dense, Matrix)
-register_class(Empty, Matrix)
-register_class(LowRank, Matrix)
-register_class(Hierarchical, Matrix)
-
-class Runtime {
- public:
-  Runtime() {}
-
-  ~Runtime() {}
-
-  void start() {
-    // Update virtual tables for open multi methods
+  void initialize() {
     yorel::yomm2::update_methods();
   }
-
-};
-
-static Runtime runtime;
-
-void initialize() {
-  runtime.start();
-}
 
 } // namespace hicma
