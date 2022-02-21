@@ -44,8 +44,6 @@ std::tuple<Dense, std::vector<int64_t>> geqp3(Matrix& A);
  */
 void geqrt(Matrix& A, Matrix& T);
 
-void geqrt2(Dense&, Dense&);
-
 /**
  * @brief Compute reduced QR factorization of a general matrix
  * using Modified Gram-Schmidt iteration
