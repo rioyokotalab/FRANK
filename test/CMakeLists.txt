@@ -1,4 +1,4 @@
-list(APPEND GTEST_TESTS "dense" "dense_arithmetic" "dense_gemm" "dense_getrf" "dense_trsm" "dense_svd" "dense_id" "dense_qr" "h_lu" "rsvd")
+list(APPEND GTEST_TESTS "dense" "dense_arithmetic" "dense_gemm" "dense_getrf" "dense_trsm" "dense_svd" "dense_id" "dense_qr" "lowrank" "h_lu" "rsvd")
 foreach(TEST ${GTEST_TESTS})
   add_executable(${TEST}_test ${TEST}_test.cpp)
   target_link_libraries(${TEST}_test hicma GTest::gtest_main stdc++ m dl)
