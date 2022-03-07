@@ -36,6 +36,11 @@ class LowRank : public Matrix {
    */
   std::array<int64_t, 2> dim = {0, 0};
   /**
+   * @brief Relative error threshold of the low-rank representation
+   *
+   */
+  double eps = 0;
+  /**
    * @brief Rank of the low-rank representation
    *
    * Currently, the same rank is used for both the row and column basis. The
@@ -108,6 +113,20 @@ class LowRank : public Matrix {
    * #V.
    */
   LowRank(const Dense& A, int64_t rank);
+
+  /**
+   * @brief Construct a new `LowRank` object by compressing a `Dense` matrix
+   * using a specified error threshold
+   *
+   * @param A
+   * `Dense` matrix to be compressed
+   * @param eps
+   * Relative error threhsold to be used in approximating \p A
+   *
+   * Truncated RRQR is used to factorize \p A into two matrices #U and #V.
+   * #S is initialized as order \p rank identity matrix.
+   */
+  LowRank(const Dense& A, double eps);
 
   /**
    * @brief Construct a new `LowRank` object from the three factors
