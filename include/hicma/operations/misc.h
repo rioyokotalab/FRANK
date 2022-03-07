@@ -70,6 +70,13 @@ int64_t get_n_cols(const Matrix&);
  */
 double cond(Dense A);
 
+/**
+ * @brief Find truncation rank r from a diagonal matrix containing singular values
+ * such that r is the smallest value that satisfies |A-A_r|_F < eps*|A|_F.
+ * |A|_F denotes the Frobenius norm of A.
+ */
+int64_t find_svd_truncation_rank(const Dense& S, double eps);
+
 void sortByMortonIndex(std::vector<std::vector<double>> &x, int64_t level, std::vector<int64_t>& perm);
 
 /**

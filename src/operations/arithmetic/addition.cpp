@@ -200,6 +200,10 @@ void orthogonality_preserving_addition(LowRank& A, const LowRank& B) {
   Dense RuRv = gemm(Ru, Rv);
   Dense RRU, RRS, RRV;
   std::tie(RRU, RRS, RRV) = svd(RuRv);
+  // Find truncation rank if needed
+  bool use_eps = (A.eps != 0);
+  if(use_eps) A.rank = find_svd_truncation_rank(RRS, A.eps);
+  // Truncate
   A.S = resize(RRS, A.rank, A.rank);
   A.U = gemm(Qu, resize(RRU, RRU.dim[0], A.rank));
   A.V = gemm(resize(RRV, A.rank, RRV.dim[1]), Qv);

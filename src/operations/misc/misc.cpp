@@ -37,6 +37,21 @@ std::vector<double> equallySpacedVector(int64_t N, double minVal, double maxVal)
   return res;
 }
 
+int64_t find_svd_truncation_rank(const Dense& S, double eps) {
+  double threshold = eps * std::sqrt(norm(S));
+  int64_t min_dim = std::min(S.dim[0], S.dim[1]);
+  int64_t rank = 0;
+  double err = 0;
+  do {
+    rank++;
+    err = 0.0;
+    for(int64_t j=rank; j<min_dim; j++) {
+      err += S(rank, rank)*S(rank, rank);
+    }
+  } while(rank < min_dim && std::sqrt(err) > threshold);
+  return rank;
+}
+
 Hierarchical split(
   const Matrix& A, int64_t n_row_blocks, int64_t n_col_blocks, bool copy
 ) {
