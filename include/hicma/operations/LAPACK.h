@@ -17,48 +17,6 @@ class MatrixProxy;
 class Dense;
 class Hierarchical;
 
-std::tuple<Dense, std::vector<int64_t>> geqp3(Matrix& A);
-
-/**
- * @brief Compute full Householder QR factorization of a general matrix
- * using compact WY representation for \p Q
- *
- * @param A
- * M-by-N `Matrix` to be factorized. Overwritten on finish.
- * @param T
- * N-by-N `Matrix` that stores "T" matrix for the compact WY representation
- *
- * This function performs Householder QR factorization, using compact WY representation to implicitly store the resulting orthogonal factor \p Q.
- * Prior to calling, it is assumed that \p A and \p T have been initialized with proper dimensions.
- * Upon finish, \p A will be overwritten with lower trapezoidal matrix \p V and upper triangular matrix \p R.
- * <b>Currently only support \p A and \p T of type `Dense`</b>.
- *
- * Definitions may differ depending on the types of the parameters.
- * Definition for each combination of types (subclasses of `Matrix`) is implemented as a specialization of \OMM.
- * The multi-dispatcher then will select the correct implementation based on the types of parameters given at runtime.
- * Read \ext_hicma for more information.
- *
- * <b>Note</b> that for any type of \p A, at the lowest level it will end up with operations involving only `Dense` matrices.
- * Thus at the core, this method relies on <a target="_blank" href="http://www.netlib.org/lapack/explore-html/dd/d9a/group__double_g_ecomputational_ga3ad112f2b0890b3815e696628906f30c.html#ga3ad112f2b0890b3815e696628906f30c"><tt>dgeqrt3</tt></a> subroutine provided by BLAS/LAPACK.
- * See the documentation for more information.
- */
-void geqrt(Matrix& A, Matrix& T);
-
-/**
- * @brief Compute reduced QR factorization of a general matrix
- * using Modified Gram-Schmidt iteration
- *
- * @param A
- * M-by-N `Matrix` to be factorized. Overwritten with \p Q on finish
- * @param R
- * N-by-N `Matrix` that is overwritten with upper triangular factor \p R on finish
- *
- * This function performs MGS QR factorization
- * Prior to calling, it is assumed that \p A and \p R have been initialized with proper dimensions.
- * Upon finish, \p A will be overwritten with the resulting orthogonal factor \p Q.
- */
-void mgs_qr(Dense&, Dense&);
-
 /**
  * @brief Compute LU factorization of a general matrix
  *
@@ -113,6 +71,60 @@ Dense get_cols(const Dense& A, std::vector<int64_t> P);
  * This method performs two-sided interpolative decomposition of a given matrix.
  */
 std::tuple<Dense, Dense, Dense> id(Matrix& A, int64_t k);
+
+std::tuple<Dense, std::vector<int64_t>> geqp3(Matrix& A);
+
+/**
+ * @brief Compute a truncated householder QR with column pivoting
+ * with stopping criterion based on relative error threshold.
+ * This is typically used for low-rank approximation
+ *
+ * @param A
+ * M-by-N `Dense` instance to be factorized
+ * @param eps
+ * Error threshold
+ */
+std::tuple<Dense, Dense> truncated_geqp3(const Dense& A, double eps);
+
+/**
+ * @brief Compute full Householder QR factorization of a general matrix
+ * using compact WY representation for \p Q
+ *
+ * @param A
+ * M-by-N `Matrix` to be factorized. Overwritten on finish.
+ * @param T
+ * N-by-N `Matrix` that stores "T" matrix for the compact WY representation
+ *
+ * This function performs Householder QR factorization, using compact WY representation to implicitly store the resulting orthogonal factor \p Q.
+ * Prior to calling, it is assumed that \p A and \p T have been initialized with proper dimensions.
+ * Upon finish, \p A will be overwritten with lower trapezoidal matrix \p V and upper triangular matrix \p R.
+ * <b>Currently only support \p A and \p T of type `Dense`</b>.
+ *
+ * Definitions may differ depending on the types of the parameters.
+ * Definition for each combination of types (subclasses of `Matrix`) is implemented as a specialization of \OMM.
+ * The multi-dispatcher then will select the correct implementation based on the types of parameters given at runtime.
+ * Read \ext_hicma for more information.
+ *
+ * <b>Note</b> that for any type of \p A, at the lowest level it will end up with operations involving only `Dense` matrices.
+ * Thus at the core, this method relies on <a target="_blank" href="http://www.netlib.org/lapack/explore-html/dd/d9a/group__double_g_ecomputational_ga3ad112f2b0890b3815e696628906f30c.html#ga3ad112f2b0890b3815e696628906f30c"><tt>dgeqrt3</tt></a> subroutine provided by BLAS/LAPACK.
+ * See the documentation for more information.
+ */
+void geqrt(Matrix& A, Matrix& T);
+
+/**
+ * @brief Compute reduced QR factorization of a general matrix
+ * using Modified Gram-Schmidt iteration
+ *
+ * @param A
+ * M-by-N `Matrix` to be factorized. Overwritten with \p Q on finish
+ * @param R
+ * N-by-N `Matrix` that is overwritten with upper triangular factor \p R on finish
+ *
+ * This function performs MGS QR factorization
+ * Prior to calling, it is assumed that \p A and \p R have been initialized with proper dimensions.
+ * Upon finish, \p A will be overwritten with the resulting orthogonal factor \p Q.
+ */
+void mgs_qr(Dense&, Dense&);
 
 /**
  * @brief Apply block householder reflector or its transpose to a general rectangular matrix
