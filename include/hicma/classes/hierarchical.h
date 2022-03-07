@@ -110,11 +110,13 @@ class Hierarchical : public Matrix {
    */
   Hierarchical(
     const ClusterTree& node,
-    MatrixInitializer& initializer
+    MatrixInitializer& initializer,
+    bool fixed_rank=true
   );
 
   /**
    * @brief Construct a new `Hierarchical` matrix from a kernel and parameters
+   * using a fixed rank for the `LowRank` block approximation.
    *
    * @param kernel
    * Kernel used to compute matrix entries from together with \p params.
@@ -132,12 +134,12 @@ class Hierarchical : public Matrix {
    * Admissibility in terms of distance from the diagonal of the matrix on the
    * current recursion level (for `POSITION_BASED_ADMIS`) or admissibility constant
    * (for `GEOMETRY_BASED_ADMIS`)
-   * @param admis_type
-   * Either `POSITION_BASED_ADMIS` or `GEOMETRY_BASED_ADMIS`
    * @param n_row_blocks
    * Number of blocks rows of the new `Hierarchical` matrix.
    * @param n_col_blocks
    * Number of blocks columns of the new `Hierarchical` matrix.
+   * @param admis_type
+   * Either `POSITION_BASED_ADMIS` or `GEOMETRY_BASED_ADMIS`
    * @param row_start
    * Starting index into the vector \p params of the rows of the new matrix.
    * @param col_start
@@ -170,7 +172,65 @@ class Hierarchical : public Matrix {
   );
 
   /**
+   * @brief Construct a new `Hierarchical` matrix from a kernel and parameters
+   * using a relative error threshold for the `LowRank` block approximation.
+   *
+   * @param kernel
+   * Kernel used to compute matrix entries from together with \p params.
+   * @param params
+   * Vector with parameters used as input to the kernel.
+   * @param n_rows
+   * Number of rows of the new matrix.
+   * @param n_cols
+   * Number of columns of the new matrix.
+   * @param nleaf
+   * Maximum size for leaf level submatrices.
+   * @param eps
+   * Fixed error threshold used for any `LowRank` approximations.
+   * @param admis
+   * Admissibility in terms of distance from the diagonal of the matrix on the
+   * current recursion level (for `POSITION_BASED_ADMIS`) or admissibility constant
+   * (for `GEOMETRY_BASED_ADMIS`)
+   * @param n_row_blocks
+   * Number of blocks rows of the new `Hierarchical` matrix.
+   * @param n_col_blocks
+   * Number of blocks columns of the new `Hierarchical` matrix.
+   * @param admis_type
+   * Either `POSITION_BASED_ADMIS` or `GEOMETRY_BASED_ADMIS`
+   * @param row_start
+   * Starting index into the vector \p params of the rows of the new matrix.
+   * @param col_start
+   * Starting index into the vector \p params of the columns of the new matrix.
+   *
+   * The elements of the submatrices of the `Hierarchical` matrix will be
+   * calculated according to the kernel function as well as the vector of values
+   * passed to this function. In an application, the parameters could for
+   * example be coordinates of particles, and the kernel could describe the
+   * interaction of particles. The result would be an interaction matrix between
+   * two groups of particles. Using \p row_start, \p col_start as well as \p
+   * n_rows and \p n_cols, one can create this matrix for the interaction
+   * between arbitrary sub-groups of the particles for which the parameters are
+   * available in \p params.
+   */
+  Hierarchical(
+    void (*kernel)(
+      double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+      const std::vector<std::vector<double>>& params,
+      int64_t row_start, int64_t col_start
+    ),
+    std::vector<std::vector<double>> params,
+    int64_t n_rows, int64_t n_cols,
+    int64_t nleaf,
+    double eps,
+    double admis=0,
+    int64_t n_row_blocks=2, int64_t n_col_blocks=2,
+    int admis_type=POSITION_BASED_ADMIS,
+    int64_t row_start=0, int64_t col_start=0
+  );
+
+  /**
    * @brief Construct a new `Hierarchical` matrix from a `Dense` matrix
+   * using a fixed rank for the `LowRank` block approximation.
    *
    * @param A
    * `Dense` matrix to be hierarchically compressed.
@@ -180,7 +240,8 @@ class Hierarchical : public Matrix {
    * Maximum size for leaf level submatrices.
    * @param admis
    * Admissibility in terms of distance from the diagonal of the matrix on the
-   * current recursion level.
+   * current recursion level (for `POSITION_BASED_ADMIS`) or admissibility constant
+   * (for `GEOMETRY_BASED_ADMIS`)
    * @param n_row_blocks
    * Number of blocks rows of the new `Hierarchical` matrix.
    * @param n_col_blocks
@@ -191,6 +252,10 @@ class Hierarchical : public Matrix {
    * Starting index into the rows of \p A.
    * @param col_start
    * Starting index into the columns of \p A.
+   * @param params
+   * Vector containing the underlying geometry information of the input `Dense` matrix
+   * @param admis_type
+   * Either `POSITION_BASED_ADMIS` or `GEOMETRY_BASED_ADMIS`
    *
    * If the input data is already available as a `Dense` matrix, use this
    * constructor to create the hierarchical compression.
@@ -201,15 +266,74 @@ class Hierarchical : public Matrix {
     int64_t nleaf,
     double admis=0,
     int64_t n_row_blocks=2, int64_t n_col_blocks=2,
-    int64_t row_start=0, int64_t col_start=0
+    int64_t row_start=0, int64_t col_start=0,
+    std::vector<std::vector<double>> params = std::vector<std::vector<double>>(),
+    int admis_type=POSITION_BASED_ADMIS
   );
 
+  /**
+   * @brief Construct a new `Hierarchical` matrix from a `Dense` matrix
+   * using a relative error threshold for the `LowRank` block approximation.
+   *
+   * @param A
+   * `Dense` matrix to be hierarchically compressed.
+   * @param nleaf
+   * Maximum size for leaf level submatrices.
+   * @param eps
+   * Fixed error threshold used for any `LowRank` approximations.
+   * @param admis
+   * Admissibility in terms of distance from the diagonal of the matrix on the
+   * current recursion level (for `POSITION_BASED_ADMIS`) or admissibility constant
+   * (for `GEOMETRY_BASED_ADMIS`)
+   * @param n_row_blocks
+   * Number of blocks rows of the new `Hierarchical` matrix.
+   * @param n_col_blocks
+   * Number of blocks columns of the new `Hierarchical` matrix.
+   * @param basis_type
+   * Type of basis according to #BasisType.
+   * @param row_start
+   * Starting index into the rows of \p A.
+   * @param col_start
+   * Starting index into the columns of \p A.
+   * @param params
+   * Vector containing the underlying geometry information of the input `Dense` matrix
+   * @param admis_type
+   * Either `POSITION_BASED_ADMIS` or `GEOMETRY_BASED_ADMIS`
+   *
+   * If the input data is already available as a `Dense` matrix, use this
+   * constructor to create the hierarchical compression.
+   */
+  Hierarchical(
+    Dense&& A,
+    int64_t nleaf,
+    double eps,
+    double admis=0,
+    int64_t n_row_blocks=2, int64_t n_col_blocks=2,
+    int64_t row_start=0, int64_t col_start=0,
+    std::vector<std::vector<double>> params = std::vector<std::vector<double>>(),
+    int admis_type=POSITION_BASED_ADMIS
+  );
+
+  // TODO write documentation
   Hierarchical(
     std::string filename, MatrixLayout ordering,
     std::vector<std::vector<double>> params,
     int64_t n_rows, int64_t n_cols,
     int64_t rank,
     int64_t nleaf,
+    double admis=0,
+    int64_t n_row_blocks=2, int64_t n_col_blocks=2,
+    int admis_type=POSITION_BASED_ADMIS,
+    int64_t row_start=0, int64_t col_start=0
+  );
+
+  //TODO write documentation
+  Hierarchical(
+    std::string filename, MatrixLayout ordering,
+    std::vector<std::vector<double>> params,
+    int64_t n_rows, int64_t n_cols,
+    int64_t nleaf,
+    double eps,
     double admis=0,
     int64_t n_row_blocks=2, int64_t n_col_blocks=2,
     int admis_type=POSITION_BASED_ADMIS,

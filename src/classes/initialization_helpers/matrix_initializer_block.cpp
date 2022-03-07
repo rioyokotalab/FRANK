@@ -13,8 +13,10 @@ namespace hicma
 
 // Additional constructors
 MatrixInitializerBlock::MatrixInitializerBlock(
-  Dense&& A, double admis, int64_t rank
-) : MatrixInitializer(admis, rank), matrix(std::move(A)) {}
+  Dense&& A, double admis, double eps, int64_t rank,
+  std::vector<std::vector<double>> params, int admis_type
+) : MatrixInitializer(admis, eps, rank, params, admis_type),
+    matrix(std::move(A)) {}
 
 // Utility methods
 void MatrixInitializerBlock::fill_dense_representation(

@@ -60,6 +60,8 @@ class MatrixInitializerKernel : public MatrixInitializer {
    * Vector with parameters used as input to the kernel.
    * @param admis
    * Distance-to-diagonal or standard admissibility condition constant.
+   * @param eps
+   * Fixed error threshold used for approximating admissible submatrices.
    * @param rank
    * Fixed rank to be used for approximating admissible submatrices.
    * @param admis_type
@@ -72,7 +74,7 @@ class MatrixInitializerKernel : public MatrixInitializer {
       int64_t row_start, int64_t col_start
     ),
     std::vector<std::vector<double>> params,
-    double admis, int64_t rank, int admis_type
+    double admis, double eps, int64_t rank, int admis_type
   );
 
   /**

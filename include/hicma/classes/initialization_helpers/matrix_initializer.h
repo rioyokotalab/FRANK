@@ -46,12 +46,12 @@ class ClusterTree;
  * sufficient to fully implement the initializer.
  */
 class MatrixInitializer {
- private:
-  double admis;
-  int64_t rank;
-  int admis_type;
  protected:
+  double admis;
+  double eps;
+  int64_t rank;
   std::vector<std::vector<double>> params;
+  int admis_type;
 
   void find_admissible_blocks(const ClusterTree& node);
 
@@ -74,6 +74,8 @@ class MatrixInitializer {
    *
    * @param admis
    * Distance-to-diagonal or standard admissibility condition constant.
+   * @param eps
+   * Fixed error threshold used for approximating admissible submatrices.
    * @param rank
    * Fixed rank to be used for approximating admissible submatrices.
    * @param params
@@ -83,7 +85,7 @@ class MatrixInitializer {
    * Either POSITION_BASED_ADMIS (Default) or GEOMETRY_BASED_ADMIS
    */
   MatrixInitializer(
-    double admis, int64_t rank,
+    double admis, double eps, int64_t rank,
     std::vector<std::vector<double>> params=std::vector<std::vector<double>>(),
     int admis_type=POSITION_BASED_ADMIS
   );
@@ -128,10 +130,12 @@ class MatrixInitializer {
    *
    * @param node
    * `ClusterTree` node to be represented by a `LowRank` approximation.
+   * @param fixed_rank
+   * Whether to use fixed rank for the compression (`true`) or use fixed accuracy/threshold (`false`).
    * @return LowRank
    * `LowRank` approximation representing \p node.
    */
-  LowRank get_compressed_representation(const ClusterTree& node);
+  LowRank get_compressed_representation(const ClusterTree& node, bool fixed_rank);
 
   /**
    * @brief Check if a `ClusterTree` node is admissible
