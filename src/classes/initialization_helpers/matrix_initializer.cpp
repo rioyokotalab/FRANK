@@ -20,9 +20,9 @@ namespace hicma
 {
 
 MatrixInitializer::MatrixInitializer(
-  double admis, int64_t rank,
+  double admis, double eps, int64_t rank,
   std::vector<std::vector<double>> params, int admis_type
-) : admis(admis), rank(rank),
+) : admis(admis), eps(eps), rank(rank),
     params(params), admis_type(admis_type) {}
 
 Dense MatrixInitializer::get_dense_representation(
@@ -34,10 +34,11 @@ Dense MatrixInitializer::get_dense_representation(
 }
 
 LowRank MatrixInitializer::get_compressed_representation(
-  const ClusterTree& node
+  const ClusterTree& node, bool fixed_rank
 ) {
   // TODO This function still relies on ClusterTree to be symmetric!
-  return LowRank(get_dense_representation(node), rank);
+  if(fixed_rank) return LowRank(get_dense_representation(node), rank);
+  else return LowRank(get_dense_representation(node), eps);
 }
 
 std::vector<std::vector<double>> MatrixInitializer::get_coords_range(const IndexRange& range) const {

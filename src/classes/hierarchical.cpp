@@ -49,16 +49,17 @@ Hierarchical::Hierarchical(int64_t n_row_blocks, int64_t n_col_blocks)
 
 Hierarchical::Hierarchical(
   const ClusterTree& node,
-  MatrixInitializer& initializer
+  MatrixInitializer& initializer,
+  bool fixed_rank
 ) : dim(node.block_dim), data(dim[0]*dim[1]) {
   for (const ClusterTree& child : node) {
     if (initializer.is_admissible(child)) {
-      (*this)[child.rel_pos] = initializer.get_compressed_representation(child);
+      (*this)[child.rel_pos] = initializer.get_compressed_representation(child, fixed_rank);
     } else {
       if (child.is_leaf()) {
         (*this)[child.rel_pos] = initializer.get_dense_representation(child);
       } else {
-        (*this)[child.rel_pos] = Hierarchical(child, initializer);
+        (*this)[child.rel_pos] = Hierarchical(child, initializer, fixed_rank);
       }
     }
   }
@@ -79,12 +80,35 @@ Hierarchical::Hierarchical(
   int admis_type,
   int64_t row_start, int64_t col_start
 ) {
-  MatrixInitializerKernel initializer(kernel, params, admis, rank, admis_type);
+  MatrixInitializerKernel initializer(kernel, params, admis, 0, rank, admis_type);
   ClusterTree cluster_tree(
     {row_start, n_rows}, {col_start, n_cols}, n_row_blocks, n_col_blocks, nleaf
   );
-  *this = Hierarchical(cluster_tree, initializer);
+  *this = Hierarchical(cluster_tree, initializer, true);
 }
+
+Hierarchical::Hierarchical(
+  void (*kernel)(
+    double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+    const std::vector<std::vector<double>>& params,
+    int64_t row_start, int64_t col_start
+  ),
+  std::vector<std::vector<double>> params,
+  int64_t n_rows, int64_t n_cols,
+  int64_t nleaf,
+  double eps,
+  double admis,
+  int64_t n_row_blocks, int64_t n_col_blocks,
+  int admis_type,
+  int64_t row_start, int64_t col_start
+) {
+  MatrixInitializerKernel initializer(kernel, params, admis, eps, 0, admis_type);
+  ClusterTree cluster_tree(
+    {row_start, n_rows}, {col_start, n_cols}, n_row_blocks, n_col_blocks, nleaf
+  );
+  *this = Hierarchical(cluster_tree, initializer, false);
+}
+
 
 Hierarchical::Hierarchical(
   Dense&& A,
@@ -92,15 +116,36 @@ Hierarchical::Hierarchical(
   int64_t nleaf,
   double admis,
   int64_t n_row_blocks, int64_t n_col_blocks,
-  int64_t row_start, int64_t col_start
+  int64_t row_start, int64_t col_start,
+  std::vector<std::vector<double>> params,
+  int admis_type
 ) {
+  MatrixInitializerBlock initializer(std::move(A), admis, 0, rank, params, admis_type);
   ClusterTree cluster_tree(
     {row_start, A.dim[0]}, {col_start, A.dim[1]},
     n_row_blocks, n_col_blocks, nleaf
   );
-  MatrixInitializerBlock initializer(std::move(A), admis, rank);
-  *this = Hierarchical(cluster_tree, initializer);
+  *this = Hierarchical(cluster_tree, initializer, true);
 }
+
+Hierarchical::Hierarchical(
+  Dense&& A,
+  int64_t nleaf,
+  double eps,
+  double admis,
+  int64_t n_row_blocks, int64_t n_col_blocks,
+  int64_t row_start, int64_t col_start,
+  std::vector<std::vector<double>> params,
+  int admis_type
+) {
+  MatrixInitializerBlock initializer(std::move(A), admis, eps, 0, params, admis_type);
+  ClusterTree cluster_tree(
+    {row_start, A.dim[0]}, {col_start, A.dim[1]},
+    n_row_blocks, n_col_blocks, nleaf
+  );
+  *this = Hierarchical(cluster_tree, initializer, false);
+}
+
 
 Hierarchical::Hierarchical(
   std::string filename, MatrixLayout ordering,
@@ -113,12 +158,31 @@ Hierarchical::Hierarchical(
   int admis_type,
   int64_t row_start, int64_t col_start
 ) {
-  MatrixInitializerFile initializer(filename, ordering, admis, rank, params, admis_type);
+  MatrixInitializerFile initializer(filename, ordering, admis, 0, rank, params, admis_type);
   ClusterTree cluster_tree(
     {row_start, n_rows}, {col_start, n_cols},
     n_row_blocks, n_col_blocks, nleaf
   );
-  *this = Hierarchical(cluster_tree, initializer);
+  *this = Hierarchical(cluster_tree, initializer, true);
+}
+
+Hierarchical::Hierarchical(
+  std::string filename, MatrixLayout ordering,
+  std::vector<std::vector<double>> params,
+  int64_t n_rows, int64_t n_cols,
+  int64_t nleaf,
+  double eps,
+  double admis,
+  int64_t n_row_blocks, int64_t n_col_blocks,
+  int admis_type,
+  int64_t row_start, int64_t col_start
+) {
+  MatrixInitializerFile initializer(filename, ordering, admis, eps, 0, params, admis_type);
+  ClusterTree cluster_tree(
+    {row_start, n_rows}, {col_start, n_cols},
+    n_row_blocks, n_col_blocks, nleaf
+  );
+  *this = Hierarchical(cluster_tree, initializer, false);
 }
 
 const MatrixProxy& Hierarchical::operator[](
