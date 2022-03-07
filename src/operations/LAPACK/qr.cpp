@@ -136,15 +136,11 @@ define_method(DensePair, make_left_orthogonal_omm, (const Dense& A)) {
 }
 
 define_method(DensePair, make_left_orthogonal_omm, (const LowRank& A)) {
-  Dense Au(A.U);
-  Dense Qu(get_n_rows(A.U), get_n_cols(A.U));
-  Dense Ru(get_n_cols(A.U), get_n_cols(A.U));
-  qr(Au, Qu, Ru);
-  Dense RS(Ru.dim[0], A.S.dim[1]);
-  gemm(Ru, A.S, RS, 1, 1);
-  Dense RSV(RS.dim[0], get_n_cols(A.V));
-  gemm(RS, A.V, RSV, 1, 1);
-  return {std::move(Qu), std::move(RSV)};
+  // U is assumed to be orthogonal here
+  // Orthogonalize with QR factorization if needed
+  Dense Qu(A.U);
+  Dense SV = gemm(A.S, A.V);
+  return {std::move(Qu), std::move(SV)};
 }
 
 define_method(DensePair, make_left_orthogonal_omm, (const Matrix& A)) {
@@ -183,19 +179,15 @@ define_method(
   MatrixProxy, split_by_column_omm,
   (const LowRank& A, Hierarchical& storage, int64_t& currentRow)
 ) {
-  LowRank _A(A);
-  Dense Qu(get_n_rows(_A.U), get_n_cols(_A.U));
-  Dense Ru(get_n_cols(_A.U), get_n_cols(_A.U));
-  qr(_A.U, Qu, Ru);
-  Dense RS = gemm(Ru, _A.S);
-  Dense RSV = gemm(RS, _A.V);
-  //Split R*S*V
-  Hierarchical splitted = split(RSV, 1, storage.dim[1], true);
+  Dense U, SV;
+  std::tie(U, SV) = make_left_orthogonal(A);
+  //Split SV
+  Hierarchical splitted = split(SV, 1, storage.dim[1], true);
   for(int64_t i=0; i<storage.dim[1]; i++) {
     storage(currentRow, i) = splitted(0, i);
   }
   currentRow++;
-  return Qu;
+  return U;
 }
 
 define_method(
@@ -447,7 +439,7 @@ void triangularize_block_col(int64_t j, Hierarchical& A, Hierarchical& T) {
     Rj(i, 0) = std::move(Rij);
     rowOffset += dim_Rij[0];
   }
-  //Multiple block householder vectors with respective left factors
+  //Multiply block householder vectors with respective left factors
   for(int64_t i=0; i<Rj.dim[0]; i++) {
     update_right_factor(A(j+i, j), Rj(i, 0));
   }

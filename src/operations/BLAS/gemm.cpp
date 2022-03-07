@@ -208,7 +208,11 @@ define_method(
 ) {
   // D D LR
   C.S *= beta;
-  C += LowRank(gemm(A, B, alpha, TransA, TransB), C.rank);
+  bool use_eps = (C.eps != 0.0);
+  if(use_eps)
+    C += LowRank(gemm(A, B, alpha, TransA, TransB), C.eps);
+  else
+    C += LowRank(gemm(A, B, alpha, TransA, TransB), C.rank);
 }
 
 define_method(
@@ -256,7 +260,6 @@ define_method(
   // LR LR LR
   // TODO Not implemented
   if (TransA || TransB) std::abort();
-  assert(A.rank == B.rank);
   Dense SxVxU = gemm(A.S, gemm(A.V, B.U, alpha));
   Dense SxVxUxS = gemm(SxVxU, B.S);
   C.S *= beta;
@@ -333,7 +336,11 @@ define_method(
   */
   Dense CD(C);
   gemm(A, B, CD, alpha, beta, TransA, TransB);
-  C = LowRank(CD, C.rank);
+  bool use_eps = (C.eps != 0.0);
+  if(use_eps)
+    C = LowRank(CD, C.eps);
+  else
+    C = LowRank(CD, C.rank);
 }
 
 define_method(
