@@ -99,27 +99,27 @@ void rounded_addition(LowRank& A, const LowRank& B) {
   qr(Uc, Qu, Ru);
 
   //Concat V bases
-  Dense Vc(A.S.dim[1]+B.S.dim[1], get_n_cols(A.V));
-  IndexRange V_row_range(0, Vc.dim[0]);
-  IndexRange V_col_range(0, Vc.dim[1]);
-  auto Vc_splits = Vc.split(V_row_range.split_at(A.S.dim[1]), { V_col_range }, false);
-  A.V.copy_to(Vc_splits[0]);
-  B.V.copy_to(Vc_splits[1]);
-  Dense Rv(Vc.dim[0], std::min(Vc.dim[0], Vc.dim[1]));
-  Dense Qv(std::min(Vc.dim[0], Vc.dim[1]), Vc.dim[1]);
-  rq(Vc, Rv, Qv);
+  Dense VcT(A.S.dim[1]+B.S.dim[1], get_n_cols(A.V));
+  IndexRange V_row_range(0, VcT.dim[0]);
+  IndexRange V_col_range(0, VcT.dim[1]);
+  auto VcT_splits = VcT.split(V_row_range.split_at(A.S.dim[1]), { V_col_range }, false);
+  A.V.copy_to(VcT_splits[0]);
+  B.V.copy_to(VcT_splits[1]);
+  Dense RvT(VcT.dim[0], std::min(VcT.dim[0], VcT.dim[1]));
+  Dense QvT(std::min(VcT.dim[0], VcT.dim[1]), VcT.dim[1]);
+  rq(VcT, RvT, QvT);
 
   //SVD and truncate
-  Dense RuRv = gemm(Ru, Rv);
+  Dense RuRvT = gemm(Ru, RvT);
   Dense RRU, RRS, RRV;
-  std::tie(RRU, RRS, RRV) = svd(RuRv);
+  std::tie(RRU, RRS, RRV) = svd(RuRvT);
   // Find truncation rank if needed
   bool use_eps = (A.eps != 0);
   if(use_eps) A.rank = find_svd_truncation_rank(RRS, A.eps);
   // Truncate
   A.S = resize(RRS, A.rank, A.rank);
   A.U = gemm(Qu, resize(RRU, RRU.dim[0], A.rank));
-  A.V = gemm(resize(RRV, A.rank, RRV.dim[1]), Qv);
+  A.V = gemm(resize(RRV, A.rank, RRV.dim[1]), QvT);
 }
 
 // Fast rounded addition that exploits existing orthogonality in U and V matrices
