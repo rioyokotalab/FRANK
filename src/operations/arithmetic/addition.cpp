@@ -84,10 +84,9 @@ void naive_addition(LowRank& A, const LowRank& B) {
   }
 }
 
-void orthogonality_preserving_addition(LowRank& A, const LowRank& B) {
-  //Bebendorf HMatrix Book p16
-  //Rounded Addition
-
+// Rounded Addition with SVD
+// See Bebendorf HMatrix Book p16 for reference
+void rounded_addition(LowRank& A, const LowRank& B) {
   //Concat U bases
   Dense Uc(get_n_rows(A.U), A.S.dim[0]+B.S.dim[0]);
   IndexRange U_row_range(0, Uc.dim[0]);
@@ -123,10 +122,9 @@ void orthogonality_preserving_addition(LowRank& A, const LowRank& B) {
   A.V = gemm(resize(RRV, A.rank, RRV.dim[1]), Qv);
 }
 
-void formatted_addition(LowRank& A, const LowRank& B) {
-  //Bebendorf HMatrix Book p17
-  //Rounded addition by exploiting orthogonality
-
+// Fast rounded addition that exploits existing orthogonality in U and V matrices
+// See Bebendorf HMatrix Book p17 for reference
+void fast_rounded_addition(LowRank& A, const LowRank& B) {
   // Form U bases
   Dense Zu = gemm(A.U, B.U, 1, true, false);
   Dense Yu(B.U);
@@ -183,10 +181,10 @@ define_method(Matrix&, addition_omm, (LowRank& A, const LowRank& B)) {
   assert(A.rank == B.rank);
   if (getGlobalValue("HICMA_LRA") == "naive") {
     naive_addition(A, B);
-  } else if (getGlobalValue("HICMA_LRA") == "rounded_orth") {
-    orthogonality_preserving_addition(A, B);
+  } else if (getGlobalValue("HICMA_LRA") == "rounded_addition") {
+    rounded_addition(A, B);
   } else {
-    formatted_addition(A, B);
+    fast_rounded_addition(A, B);
   }
   return A;
 }

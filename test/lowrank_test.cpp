@@ -102,14 +102,14 @@ TEST_P(LowRankTest_FixedAccuracy, Addition) {
 }
 
 INSTANTIATE_TEST_SUITE_P(LowRank, LowRankTest_FixedRank,
-			 testing::Combine(testing::Values("rounded_orth", "formatted_addition"),
+			 testing::Combine(testing::Values("rounded_addition", "fast_rounded_addition"),
 					  testing::Values(64, 32),
 					  testing::Values(64, 21),
 					  testing::Values(1, 2, 4, 8)
 					  ));
 
 INSTANTIATE_TEST_SUITE_P(LowRank, LowRankTest_FixedAccuracy,
-			 testing::Combine(testing::Values("rounded_orth"),
+			 testing::Combine(testing::Values("rounded_addition"),
 					  testing::Values(64, 32),
 					  testing::Values(64, 32),
 					  testing::Values(1e-6, 1e-8, 1e-10, 1e-12)

@@ -16,7 +16,7 @@ int main(int argc, char** argv) {
   int64_t rank = argc > 3 ? atoi(argv[3]) : 16;
   double admis = argc > 4 ? atof(argv[4]) : 0;
   int64_t Nc = N / Nb;
-  setGlobalValue("HICMA_LRA", "rounded_orth");
+  setGlobalValue("HICMA_LRA", "rounded_addition");
 
   std::vector<std::vector<double>> randpts;
   randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
