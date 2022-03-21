@@ -124,7 +124,16 @@ void rounded_addition(LowRank& A, const LowRank& B) {
 
 // Fast rounded addition that exploits existing orthogonality in U and V matrices
 // See Bebendorf HMatrix Book p17 for reference
+// Note that this method only works when both A.U and A.V have orthonormal columns
+// Which is not always the case in general
 void fast_rounded_addition(LowRank& A, const LowRank& B) {
+  // Fallback to rounded addition if fixed accuracy compression is used
+  // Since A.V does not have orthonormal columns
+  if(A.eps != 0.) {
+    // TODO consider orthogonalize A.V? Impact to overall cost?
+    rounded_addition(A, B);
+    return;
+  }
   // Form U bases
   Dense Zu = gemm(A.U, B.U, 1, true, false);
   Dense Yu(B.U);
