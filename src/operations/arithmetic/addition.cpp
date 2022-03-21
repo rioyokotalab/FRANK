@@ -193,6 +193,7 @@ define_method(Matrix&, addition_omm, (LowRank& A, const LowRank& B)) {
   } else if (getGlobalValue("HICMA_LRA") == "rounded_addition") {
     rounded_addition(A, B);
   } else {
+    // TODO consider changing default to rounded_addition?
     fast_rounded_addition(A, B);
   }
   return A;
