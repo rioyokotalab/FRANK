@@ -19,10 +19,8 @@ else()
 endif()
 
 # Set warnings and optimization level
-list(APPEND HICMA_OPTIONS -Wall -Wextra -pedantic)
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
-  list(APPEND HICMA_OPTIONS -O3)
-elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
+list(APPEND HICMA_OPTIONS -O3 -Wall -Wextra -pedantic)
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   list(APPEND HICMA_OPTIONS -g)
 endif()
 
