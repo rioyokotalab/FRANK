@@ -12,6 +12,7 @@ class HierarchicalFixedAccuracyTest
  protected:
   void SetUp() override {
     hicma::initialize();
+    hicma::setGlobalValue("HICMA_LRA", "rounded_orth");
     std::tie(n_rows, nleaf, eps, admis, admis_type) = GetParam();
     n_cols = n_rows; // Assume square matrix
     nb_row = 2;
@@ -46,11 +47,30 @@ TEST_P(HierarchicalFixedAccuracyTest, ConstructionByDenseMatrix) {
   EXPECT_LE(error, eps);
 }
 
+TEST_P(HierarchicalFixedAccuracyTest, LUFactorization) {
+  hicma::Dense D(hicma::laplacend, randx_A, n_rows, n_cols);
+  hicma::Hierarchical A(hicma::laplacend, randx_A, n_rows, n_cols,
+                        nleaf, eps, admis, nb_row, nb_col, admis_type);
+
+  hicma::Dense x(hicma::random_uniform, std::vector<std::vector<double>>(), n_cols, 1);
+  hicma::Dense b(n_rows);
+  hicma::gemm(A, x, b, 1, 1);
+
+  hicma::Hierarchical L, U;
+  std::tie(L, U) = hicma::getrf(A);
+  hicma::trsm(L, b, hicma::TRSM_LOWER);
+  hicma::trsm(U, b, hicma::TRSM_UPPER);
+  double solve_error = hicma::l2_error(x, b);
+
+  // Check result
+  EXPECT_LE(solve_error, eps);
+}
+
 INSTANTIATE_TEST_SUITE_P(HierarchicalTest, HierarchicalFixedAccuracyTest,
                          testing::Combine(testing::Values(128, 256),
                                           testing::Values(16, 32),
                                           testing::Values(1e-6, 1e-8, 1e-10),
-                                          testing::Values(0.0, 0.5, 1.0, 2.0),
+                                          testing::Values(0.0, 1.0, 2.0),
                                           testing::Values(POSITION_BASED_ADMIS, GEOMETRY_BASED_ADMIS)
                                           ));
 
