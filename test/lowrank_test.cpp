@@ -47,10 +47,16 @@ TEST_P(LowRankTest_FixedRank, Addition) {
   A += B;
   EXPECT_EQ(A.rank, rank);
 
-  // Add with full-rank random block
-  hicma::Dense DC(hicma::random_normal, randx_A, m, n);
-  hicma::LowRank C(DC, rank);
+  // Add with low-rank block with different rank
+  hicma::Dense DC(DA);
+  hicma::LowRank C(DC, std::min(rank + 4, std::min(m, n)));
   A += C;
+  EXPECT_EQ(A.rank, rank);
+
+  // Add with full-rank random block
+  hicma::Dense DD(hicma::random_normal, randx_A, m, n);
+  hicma::LowRank D(DD, rank);
+  A += D;
   EXPECT_EQ(A.rank, rank);
 }
 
@@ -92,12 +98,19 @@ TEST_P(LowRankTest_FixedAccuracy, Addition) {
   A += B;
   error = hicma::l2_error((DA+DB), A);
   EXPECT_NEAR(error, eps, 10*eps);
-  
-  // Add with full-rank random block
-  hicma::Dense DC(hicma::random_normal, randx_A, m, n);
-  hicma::LowRank C(DC, eps);
+
+  // Add with low-rank block with different rank
+  hicma::Dense DC(DA);
+  hicma::LowRank C(DC, eps*1e-2);
   A += C;
   error = hicma::l2_error((DA+DB+DC), A);
+  EXPECT_NEAR(error, eps, 10*eps);
+
+  // Add with full-rank random block
+  hicma::Dense DD(hicma::random_normal, randx_A, m, n);
+  hicma::LowRank D(DD, eps);
+  A += D;
+  error = hicma::l2_error((DA+DB+DC+DD), A);
   EXPECT_NEAR(error, eps, 10*eps);
 }
 
