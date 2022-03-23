@@ -14,7 +14,6 @@ list(
   "blr_fixed_acc"
   "hierarchical_fixed_rank"
   "hierarchical_fixed_acc"
-  "h_lu"
 )
 foreach(TEST ${GTEST_TESTS})
   add_executable(${TEST}_test ${TEST}_test.cpp)
