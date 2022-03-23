@@ -116,31 +116,17 @@ define_method(
 ) {
   // D D D
   timing::start("DGEMM");
-    if (B.dim[1] == 1) {
-    cblas_dgemv(
-      CblasRowMajor,
-      CblasNoTrans,
-      A.dim[0], A.dim[1],
-      alpha,
-      &A, A.stride,
-      &B, B.stride,
-      beta,
-      &C, C.stride
-    );
-  }
-  else {
-    int64_t k = TransA ? A.dim[0] : A.dim[1];
-    cblas_dgemm(
-      CblasRowMajor,
-      TransA?CblasTrans:CblasNoTrans, TransB?CblasTrans:CblasNoTrans,
-      C.dim[0], C.dim[1], k,
-      alpha,
-      &A, A.stride,
-      &B, B.stride,
-      beta,
-      &C, C.stride
-    );
-  }
+  int64_t k = TransA ? A.dim[0] : A.dim[1];
+  cblas_dgemm(
+    CblasRowMajor,
+    TransA?CblasTrans:CblasNoTrans, TransB?CblasTrans:CblasNoTrans,
+    C.dim[0], C.dim[1], k,
+    alpha,
+    &A, A.stride,
+    &B, B.stride,
+    beta,
+    &C, C.stride
+  );
   timing::stop("DGEMM");
 }
 

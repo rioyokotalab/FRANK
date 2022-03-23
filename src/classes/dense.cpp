@@ -34,9 +34,8 @@ Dense::Dense(const Dense& A)
   unique_id(next_unique_id++)
 {
   timing::start("Dense cctor");
-  //TODO create instead of resize?
-  (*data).resize(dim[0]*dim[1], 0);
-  data_ptr = &(*data)[0];
+  data = std::make_shared<std::vector<double>>(dim[0]*dim[1], 0);
+  data_ptr = (*data).data();
   fill_dense_from(A, *this);
   timing::stop("Dense cctor");
 }
@@ -46,9 +45,9 @@ Dense& Dense::operator=(const Dense& A) {
   Matrix::operator=(A);
   dim = A.dim;
   stride = A.stride;
-  (*data).resize(dim[0]*dim[1], 0);
+  data = std::make_shared<std::vector<double>>(dim[0]*dim[1], 0);
   rel_start = {0, 0};
-  data_ptr = &(*data)[0];
+  data_ptr = (*data).data();
   fill_dense_from(A, *this);
   unique_id = next_unique_id++;
   timing::stop("Dense copy assignment");
@@ -114,9 +113,9 @@ define_method(Dense&&, move_from_dense, (Matrix& A)) {
 Dense::Dense(int64_t n_rows, int64_t n_cols)
 : dim{n_rows, n_cols}, stride(dim[1]), unique_id(next_unique_id++) {
   timing::start("Dense alloc");
-  (*data).resize(dim[0]*dim[1], 0);
+  data = std::make_shared<std::vector<double>>(dim[0]*dim[1], 0);
   rel_start = {0, 0};
-  data_ptr = &(*data)[0];
+  data_ptr = (*data).data();
   timing::stop("Dense alloc");
 }
 
@@ -248,9 +247,8 @@ std::vector<Dense> Dense::split(
         child.data = data;
         child.rel_start[0] = rel_start[0] + row_ranges[i].start;
         child.rel_start[1] = rel_start[1] + col_ranges[j].start;
-        child.data_ptr = &(*child.data)[
-          child.rel_start[0]*child.stride + child.rel_start[1]
-        ];
+        child.data_ptr = (*child.data).data() +
+          child.rel_start[0]*child.stride + child.rel_start[1];
         child.unique_id = next_unique_id++;
         out[i*col_ranges.size()+j] = std::move(child);
       }

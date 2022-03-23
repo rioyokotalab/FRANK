@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
   AWork = A;
   timing::stop("Init matrix");
   print("LR Add Orthogonal");
-  setGlobalValue("HICMA_LRA", "rounded_orth");
+  setGlobalValue("HICMA_LRA", "rounded_addition");
   timing::start("LR Add Orthogonal");
   AWork += B;
   timing::stopAndPrint("LR Add Orthogonal", 2);

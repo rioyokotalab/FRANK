@@ -61,93 +61,6 @@ define_method(Matrix&, addition_omm, (Hierarchical& A, const LowRank& B)) {
   return A;
 }
 
-declare_method(
-  DensePair, merge_col_basis,
-  (virtual_<const Matrix&>, virtual_<const Matrix&>)
-)
-
-define_method(DensePair, merge_col_basis, (const Dense& Au, const Dense& Bu)) {
-  assert(Au.dim[0] == Bu.dim[0]);
-  int64_t Arank = Au.dim[1];
-  int64_t Brank = Bu.dim[1];
-  assert(Arank == Brank);
-
-  Dense InnerU(Arank+Brank, Brank);
-  Hierarchical InnerH = split(InnerU, 2, 1);
-  gemm(Au, Bu, InnerH[0], 1, 0, true, false);
-
-  Dense Bu_AuAutBu(Bu);
-  gemm(Au, InnerH[0], Bu_AuAutBu, -1, 1);
-
-  Dense Q(Au.dim[0], Brank);
-  qr(Bu_AuAutBu, Q, InnerH[1]);
-
-  return {std::move(Q), std::move(InnerU)};
-}
-
-define_method(
-  DensePair, merge_col_basis, (const Matrix& Au, const Matrix& Bu)
-) {
-  omm_error_handler("merge_col_basis", {Au, Bu}, __FILE__, __LINE__);
-  std::abort();
-}
-
-declare_method(
-  DensePair, merge_row_basis,
-  (virtual_<const Matrix&>, virtual_<const Matrix&>)
-)
-
-define_method(
-  DensePair, merge_row_basis,
-  (const Dense& Av, const Dense& Bv)
-) {
-  assert(Av.dim[1] == Bv.dim[1]);
-  int64_t Arank = Av.dim[0];
-  int64_t Brank = Bv.dim[0];
-  assert(Arank == Brank);
-
-  Dense InnerV(Brank, Arank+Brank);
-  Hierarchical InnerH = split(InnerV, 1, 2);
-  gemm(Bv, Av, InnerH[0], 1, 0, false, true);
-
-  Dense Bv_BvAvtAv(Bv);
-  gemm(InnerH[0], Av, Bv_BvAvtAv, -1, 1);
-
-  Dense Q(Brank, Av.dim[1]);
-  rq(Bv_BvAvtAv, InnerH[1], Q);
-
-  return {std::move(Q), std::move(InnerV)};
-}
-
-define_method(
-  DensePair, merge_row_basis, (const Matrix& Av, const Matrix& Bv)
-) {
-  omm_error_handler("merge_row_basis", {Av, Bv}, __FILE__, __LINE__);
-  std::abort();
-}
-
-std::tuple<Dense, Dense, Dense> merge_S(
-  const Dense& As, const Dense& Bs,
-  const Dense& InnerU, const Dense& InnerV
-) {
-  assert(As.dim[0] == As.dim[1]);
-  int64_t rank = As.dim[0];
-
-  Dense InnerUBs = gemm(InnerU, Bs);
-
-  Dense M = gemm(InnerUBs, InnerV);
-  Hierarchical MH = split(M, 2, 2);
-  MH(0, 0) += As;
-
-  Dense Uhat, Shat, Vhat;
-  std::tie(Uhat, Shat, Vhat) = svd(M);
-  return {
-    resize(Uhat, Uhat.dim[0], rank),
-    resize(Shat, rank, rank),
-    resize(Vhat, rank, Vhat.dim[1])
-  };
-}
-
 void naive_addition(LowRank& A, const LowRank& B) {
   //Truncate and Recompress if rank > min(nrow, ncol)
   if (A.rank+B.rank >= std::min(A.dim[0], A.dim[1])) {
@@ -171,14 +84,14 @@ void naive_addition(LowRank& A, const LowRank& B) {
   }
 }
 
-void orthogonality_preserving_addition(LowRank& A, const LowRank& B) {
-  //Bebendorf HMatrix Book p16
-  //Rounded Addition
+// Rounded Addition with SVD
+// See Bebendorf HMatrix Book p16 for reference
+void rounded_addition(LowRank& A, const LowRank& B) {
   //Concat U bases
-  Dense Uc(get_n_rows(A.U), A.S.dim[0]+B.S.dim[0]);
+  Dense Uc(get_n_rows(A.U), A.S.dim[1]+B.S.dim[1]);
   IndexRange U_row_range(0, Uc.dim[0]);
   IndexRange U_col_range(0, Uc.dim[1]);
-  auto Uc_splits = Uc.split({ U_row_range }, U_col_range.split_at(A.S.dim[0]), false);
+  auto Uc_splits = Uc.split({ U_row_range }, U_col_range.split_at(A.S.dim[1]), false);
   gemm(A.U, A.S, Uc_splits[0], 1, 0);
   gemm(B.U, B.S, Uc_splits[1], 1, 0);
   Dense Qu(Uc.dim[0], std::min(Uc.dim[0], Uc.dim[1]));
@@ -186,73 +99,101 @@ void orthogonality_preserving_addition(LowRank& A, const LowRank& B) {
   qr(Uc, Qu, Ru);
 
   //Concat V bases
-  Dense Vc(A.S.dim[1]+B.S.dim[1], get_n_cols(A.V));
-  IndexRange V_row_range(0, Vc.dim[0]);
-  IndexRange V_col_range(0, Vc.dim[1]);
-  auto Vc_splits = Vc.split(V_row_range.split_at(A.S.dim[1]), { V_col_range }, false);
-  A.V.copy_to(Vc_splits[0]);
-  B.V.copy_to(Vc_splits[1]);
-  Dense Rv(Vc.dim[0], std::min(Vc.dim[0], Vc.dim[1]));
-  Dense Qv(std::min(Vc.dim[0], Vc.dim[1]), Vc.dim[1]);
-  rq(Vc, Rv, Qv);
+  Dense VcT(A.V.dim[0]+B.V.dim[0], get_n_cols(A.V));
+  IndexRange V_row_range(0, VcT.dim[0]);
+  IndexRange V_col_range(0, VcT.dim[1]);
+  auto VcT_splits = VcT.split(V_row_range.split_at(A.V.dim[0]), { V_col_range }, false);
+  A.V.copy_to(VcT_splits[0]);
+  B.V.copy_to(VcT_splits[1]);
+  Dense RvT(VcT.dim[0], std::min(VcT.dim[0], VcT.dim[1]));
+  Dense QvT(std::min(VcT.dim[0], VcT.dim[1]), VcT.dim[1]);
+  rq(VcT, RvT, QvT);
 
   //SVD and truncate
-  Dense RuRv = gemm(Ru, Rv);
+  Dense RuRvT = gemm(Ru, RvT);
   Dense RRU, RRS, RRV;
-  std::tie(RRU, RRS, RRV) = svd(RuRv);
+  std::tie(RRU, RRS, RRV) = svd(RuRvT);
   // Find truncation rank if needed
   bool use_eps = (A.eps != 0);
   if(use_eps) A.rank = find_svd_truncation_rank(RRS, A.eps);
   // Truncate
   A.S = resize(RRS, A.rank, A.rank);
   A.U = gemm(Qu, resize(RRU, RRU.dim[0], A.rank));
-  A.V = gemm(resize(RRV, A.rank, RRV.dim[1]), Qv);
+  A.V = gemm(resize(RRV, A.rank, RRV.dim[1]), QvT);
 }
 
-void formatted_addition(LowRank& A, const LowRank& B) {
-  //Bebendorf HMatrix Book p17
-  //Rounded addition by exploiting orthogonality
-  timing::start("LR += LR");
+// Fast rounded addition that exploits existing orthogonality in U and V matrices
+// See Bebendorf HMatrix Book p17 for reference
+// Note that this method only works when both A.U and A.V have orthonormal columns
+// Which is not always the case in general
+void fast_rounded_addition(LowRank& A, const LowRank& B) {
+  // Fallback to rounded addition if fixed accuracy compression is used
+  // Since A.V does not have orthonormal columns
+  if(A.eps != 0.) {
+    // TODO consider orthogonalize A.V? Impact to overall cost?
+    rounded_addition(A, B);
+    return;
+  }
+  // Form U bases
+  Dense Zu = gemm(A.U, B.U, 1, true, false);
+  Dense Yu(B.U);
+  gemm(A.U, Zu, Yu, -1, 1);
+  Dense Qu(Yu.dim[0], std::min(Yu.dim[0], Yu.dim[1]));
+  Dense Ru(std::min(Yu.dim[0], Yu.dim[1]), Yu.dim[1]);
+  qr(Yu, Qu, Ru);
+  // Uc = [A.U  Qu]
+  Dense Uc(A.U.dim[0], A.U.dim[1]+Qu.dim[1]);
+  IndexRange U_row_range(0, Uc.dim[0]);
+  IndexRange U_col_range(0, Uc.dim[1]);
+  auto Uc_splits = Uc.split({ U_row_range }, U_col_range.split_at(A.U.dim[1]), false);
+  A.U.copy_to(Uc_splits[0]);
+  Qu.copy_to(Uc_splits[1]);
 
-  timing::start("Merge col basis");
-  Hierarchical OuterU(1, 2);
-  Dense InnerU;
-  std::tie(OuterU[1], InnerU) = merge_col_basis(A.U, B.U);
-  OuterU[0] = std::move(A.U);
-  timing::stop("Merge col basis");
+  // Form V bases
+  Dense ZvT = gemm(B.V, A.V, 1, false, true);
+  Dense YvT(B.V);
+  gemm(ZvT, A.V, YvT, -1, 1);
+  Dense RvT(YvT.dim[0], std::min(YvT.dim[0], YvT.dim[1]));
+  Dense QvT(std::min(YvT.dim[0], YvT.dim[1]), YvT.dim[1]);
+  rq(YvT, RvT, QvT);
+  // Vc^T = [A.V  Qv]^T
+  Dense VcT(A.V.dim[0]+QvT.dim[0], A.V.dim[1]);
+  IndexRange V_row_range(0, VcT.dim[0]);
+  IndexRange V_col_range(0, VcT.dim[1]);
+  auto VcT_splits = VcT.split(V_row_range.split_at(A.V.dim[0]), { V_col_range }, false);
+  A.V.copy_to(VcT_splits[0]);
+  QvT.copy_to(VcT_splits[1]);
 
-  timing::start("Merge row basis");
-  Hierarchical OuterV(2, 1);
-  Dense InnerVt;
-  std::tie(OuterV[1], InnerVt) = merge_row_basis(A.V, B.V);
-  OuterV[0] = std::move(A.V);
-  timing::stop("Merge row basis");
+  Dense M(A.S.dim[0]+B.S.dim[0], A.S.dim[1]+B.S.dim[1]);
+  IndexRange M_row_range(0, M.dim[0]);
+  IndexRange M_col_range(0, M.dim[1]);
+  auto M_splits = M.split(M_row_range.split_at(A.S.dim[0]), M_col_range.split_at(A.S.dim[1]), false);
+  Dense ZuSb = gemm(Zu, B.S);
+  Dense RuSb = gemm(Ru, B.S);
+  A.S.copy_to(M_splits[0]);
+  gemm(ZuSb, ZvT, M_splits[0], 1, 1); // M(0, 0) = A.S + Zu*B.S*ZvT
+  gemm(ZuSb, RvT, M_splits[1], 1, 0); // M(0, 1) = Zu*B.S*RvT
+  gemm(RuSb, ZvT, M_splits[2], 1, 0); // M(1, 0) = Ru*B.S*ZvT
+  gemm(RuSb, RvT, M_splits[3], 1, 0); // M(1, 1) = Ru*B.S*RvT
 
-  timing::start("Merge S");
-  Dense Uhat, Vhat;
-  std::tie(Uhat, A.S, Vhat) = merge_S(A.S, B.S, InnerU, InnerVt);
-  timing::stop("Merge S");
-
-  // TODO Find a way to use more convenient D=gemm(D, D) here?
-  // Restore moved-from U and V and finalize basis
-  A.U = Dense(A.dim[0], A.rank);
-  A.V = Dense(A.rank, A.dim[1]);
-  gemm(OuterU, Uhat, A.U, 1, 0);
-  gemm(Vhat, OuterV, A.V, 1, 0);
-
-  timing::stop("LR += LR");
+  // SVD and truncate
+  Dense Um, Sm, VmT;
+  std::tie(Um, Sm, VmT) = svd(M);
+  A.S = resize(Sm, A.rank, A.rank);
+  A.U = gemm(Uc, resize(Um, Um.dim[0], A.rank));
+  A.V = gemm(resize(VmT, A.rank, VmT.dim[1]), VcT);  
 }
 
 define_method(Matrix&, addition_omm, (LowRank& A, const LowRank& B)) {
   assert(A.dim[0] == B.dim[0]);
   assert(A.dim[1] == B.dim[1]);
-  assert(A.rank == B.rank);
   if (getGlobalValue("HICMA_LRA") == "naive") {
     naive_addition(A, B);
-  } else if (getGlobalValue("HICMA_LRA") == "rounded_orth") {
-    orthogonality_preserving_addition(A, B);
+  } else if (getGlobalValue("HICMA_LRA") == "rounded_addition") {
+    rounded_addition(A, B);
   } else {
-    formatted_addition(A, B);
+    // TODO consider changing default to rounded_addition?
+    fast_rounded_addition(A, B);
   }
   return A;
 }
