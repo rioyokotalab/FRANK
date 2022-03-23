@@ -88,10 +88,10 @@ void naive_addition(LowRank& A, const LowRank& B) {
 // See Bebendorf HMatrix Book p16 for reference
 void rounded_addition(LowRank& A, const LowRank& B) {
   //Concat U bases
-  Dense Uc(get_n_rows(A.U), A.S.dim[0]+B.S.dim[0]);
+  Dense Uc(get_n_rows(A.U), A.S.dim[1]+B.S.dim[1]);
   IndexRange U_row_range(0, Uc.dim[0]);
   IndexRange U_col_range(0, Uc.dim[1]);
-  auto Uc_splits = Uc.split({ U_row_range }, U_col_range.split_at(A.S.dim[0]), false);
+  auto Uc_splits = Uc.split({ U_row_range }, U_col_range.split_at(A.S.dim[1]), false);
   gemm(A.U, A.S, Uc_splits[0], 1, 0);
   gemm(B.U, B.S, Uc_splits[1], 1, 0);
   Dense Qu(Uc.dim[0], std::min(Uc.dim[0], Uc.dim[1]));
@@ -99,10 +99,10 @@ void rounded_addition(LowRank& A, const LowRank& B) {
   qr(Uc, Qu, Ru);
 
   //Concat V bases
-  Dense VcT(A.S.dim[1]+B.S.dim[1], get_n_cols(A.V));
+  Dense VcT(A.V.dim[0]+B.V.dim[0], get_n_cols(A.V));
   IndexRange V_row_range(0, VcT.dim[0]);
   IndexRange V_col_range(0, VcT.dim[1]);
-  auto VcT_splits = VcT.split(V_row_range.split_at(A.S.dim[1]), { V_col_range }, false);
+  auto VcT_splits = VcT.split(V_row_range.split_at(A.V.dim[0]), { V_col_range }, false);
   A.V.copy_to(VcT_splits[0]);
   B.V.copy_to(VcT_splits[1]);
   Dense RvT(VcT.dim[0], std::min(VcT.dim[0], VcT.dim[1]));
@@ -187,7 +187,6 @@ void fast_rounded_addition(LowRank& A, const LowRank& B) {
 define_method(Matrix&, addition_omm, (LowRank& A, const LowRank& B)) {
   assert(A.dim[0] == B.dim[0]);
   assert(A.dim[1] == B.dim[1]);
-  assert(A.rank == B.rank);
   if (getGlobalValue("HICMA_LRA") == "naive") {
     naive_addition(A, B);
   } else if (getGlobalValue("HICMA_LRA") == "rounded_addition") {
