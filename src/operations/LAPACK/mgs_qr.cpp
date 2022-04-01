@@ -148,11 +148,12 @@ define_method(
     SpCurRow(0, i) = splitted(currentRow, i);
   }
   Dense concatenatedRow(SpCurRow);
-  assert(Q.dim[0] == A.dim[0]);
-  assert(Q.dim[1] == A.rank);
-  assert(concatenatedRow.dim[0] == A.rank);
-  assert(concatenatedRow.dim[1] == A.dim[1]);
-  LowRank _A(Dense(Q), Dense(identity, {}, A.rank, A.rank), concatenatedRow);
+  assert(A.dim[0] == Q.dim[0]);
+  assert(A.dim[1] == concatenatedRow.dim[1]);
+  assert(Q.dim[1] == concatenatedRow.dim[0]);
+  int64_t _rank = Q.dim[1];
+  LowRank _A(Dense(Q), Dense(identity, {}, _rank, _rank), concatenatedRow);
+  _A.eps = A.eps;
   currentRow++;
   return _A;
 }
