@@ -12,7 +12,7 @@ class HierarchicalFixedAccuracyTest
  protected:
   void SetUp() override {
     hicma::initialize();
-    hicma::setGlobalValue("HICMA_LRA", "rounded_orth");
+    hicma::setGlobalValue("HICMA_LRA", "rounded_addition");
     std::tie(n_rows, nleaf, eps, admis, admis_type) = GetParam();
     n_cols = n_rows; // Assume square matrix
     nb_row = 2;
@@ -66,11 +66,12 @@ TEST_P(HierarchicalFixedAccuracyTest, LUFactorization) {
   EXPECT_LE(solve_error, eps);
 }
 
+
 INSTANTIATE_TEST_SUITE_P(HierarchicalTest, HierarchicalFixedAccuracyTest,
                          testing::Combine(testing::Values(128, 256),
-                                          testing::Values(16, 32),
+                                          testing::Values(32),
                                           testing::Values(1e-6, 1e-8, 1e-10),
-                                          testing::Values(0.0, 1.0, 2.0),
+                                          testing::Values(0.0, 1.0, 4.0),
                                           testing::Values(POSITION_BASED_ADMIS, GEOMETRY_BASED_ADMIS)
                                           ));
 

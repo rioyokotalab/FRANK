@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
   print("Blocked Modified Gram-Schmidt BLR-QR");
   print("Time");
   timing::start("BLR-QR");
-  qr(A, Q, R);
+  mgs_qr(A, Q, R);
   timing::stopAndPrint("BLR-QR", 1);
 
   print("BLR-QR Accuracy");

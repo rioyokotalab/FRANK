@@ -97,6 +97,10 @@ declare_method(
   (virtual_<Matrix&>, virtual_<Matrix&>, virtual_<Matrix&>)
 )
 declare_method(
+  void, mgs_qr_omm,
+  (virtual_<Matrix&>, virtual_<Matrix&>, virtual_<Matrix&>)
+)
+declare_method(
   DensePair, make_left_orthogonal_omm,
   (virtual_<const Matrix&>)
 )

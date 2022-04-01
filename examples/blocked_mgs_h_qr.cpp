@@ -64,7 +64,7 @@ int main(int argc, char** argv) {
   print("Blocked Modified Gram-Schmidt H-QR");
   print("Time");
   timing::start("H-QR");
-  qr(A, Q, R);
+  mgs_qr(A, Q, R);
   timing::stopAndPrint("H-QR", 1);
   print("H-QR Accuracy");
   Hierarchical QR(zeros, randx, N, N, rank, nleaf, admis, nblocks, nblocks);

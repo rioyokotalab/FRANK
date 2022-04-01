@@ -12,7 +12,7 @@ class BLRFixedAccuracyTest
  protected:
   void SetUp() override {
     hicma::initialize();
-    hicma::setGlobalValue("HICMA_LRA", "rounded_orth");
+    hicma::setGlobalValue("HICMA_LRA", "rounded_addition");
     std::tie(n_rows, nleaf, eps, admis, admis_type) = GetParam();
     n_cols = n_rows; // Assume square matrix
     nb_row = n_rows / nleaf;
@@ -66,11 +66,38 @@ TEST_P(BLRFixedAccuracyTest, LUFactorization) {
   EXPECT_LE(solve_error, eps);
 }
 
+TEST_P(BLRFixedAccuracyTest, GramSchmidtQRFactorization) {
+  hicma::Hierarchical A(hicma::laplacend, randx_A, n_rows, n_cols,
+                        nleaf, eps, admis, nb_row, nb_col, admis_type);
+  hicma::Hierarchical D(hicma::laplacend, randx_A, n_rows, n_cols,
+                        nleaf, nleaf, nb_row, nb_row, nb_col, POSITION_BASED_ADMIS);
+
+  hicma::Hierarchical Q(A);
+  hicma::Hierarchical R(A);
+  hicma::zero_whole(Q);
+  hicma::zero_whole(R);
+  hicma::mgs_qr(A, Q, R);
+  // Residual
+  hicma::Hierarchical QR(Q);
+  hicma::zero_whole(QR);
+  hicma::gemm(Q, R, QR, 1, 0);
+  double residual = hicma::l2_error(D, QR);
+  EXPECT_LE(residual, eps);
+
+  // Orthogonality
+  hicma::Hierarchical QtQ(Q);
+  hicma::zero_whole(QtQ);
+  hicma::Hierarchical Qt = hicma::transpose(Q);
+  hicma::gemm(Qt, Q, QtQ, 1, 0);
+  double orthogonality = hicma::l2_error(hicma::Dense(hicma::identity, randx_A, n_rows, n_rows), QtQ);
+  EXPECT_LE(orthogonality, eps);
+}
+
 INSTANTIATE_TEST_SUITE_P(BLRTest, BLRFixedAccuracyTest,
                          testing::Combine(testing::Values(128, 256),
-                                          testing::Values(16, 32),
+                                          testing::Values(32),
                                           testing::Values(1e-6, 1e-8, 1e-10),
-                                          testing::Values(0.0, 1.0, 2.0),
+                                          testing::Values(0.0, 1.0, 4.0),
                                           testing::Values(POSITION_BASED_ADMIS, GEOMETRY_BASED_ADMIS)
                                           ));
 

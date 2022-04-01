@@ -1,5 +1,6 @@
 #include "hicma/operations/misc.h"
 #include "hicma/extension_headers/classes.h"
+#include "hicma/extension_headers/operations.h"
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
@@ -21,6 +22,55 @@
 
 namespace hicma
 {
+
+void zero_whole(Matrix& A) {
+  zero_whole_omm(A);
+}
+
+define_method(void, zero_whole_omm, (Dense& A)) {
+  A = 0.0;
+}
+
+define_method(void, zero_whole_omm, (LowRank& A)) {
+  A.U = 0.0;
+  A.S = 0.0;
+  A.V = 0.0;
+  for(int64_t i = 0; i < std::min(A.U.dim[0], A.U.dim[1]); i++) {
+    A.U(i, i) = 1;
+  }
+  for(int64_t i = 0; i < std::min(A.V.dim[0], A.V.dim[1]); i++) {
+    A.V(i, i) = 1;
+  }
+}
+
+define_method(void, zero_whole_omm, (Hierarchical& A)) {
+  for(int64_t i = 0; i < A.dim[0]; i++)
+    for(int64_t j = 0; j < A.dim[1]; j++) {
+      zero_whole(A(i, j));
+    }
+}
+
+define_method(void, zero_whole_omm, (Matrix& A)) {
+  omm_error_handler("zero_whole", {A}, __FILE__, __LINE__);
+  std::abort();
+}
+
+
+void zero_lowtri(Matrix& A) {
+  zero_lowtri_omm(A);
+}
+
+define_method(void, zero_lowtri_omm, (Dense& A)) {
+  for(int64_t i=0; i<A.dim[0]; i++)
+    for(int64_t j=0; j<i; j++)
+      A(i,j) = 0.0;
+}
+
+define_method(void, zero_lowtri_omm, (Matrix& A)) {
+  omm_error_handler("zero_lowtri", {A}, __FILE__, __LINE__);
+  std::abort();
+}
+
 
 double cond(Dense A) {
   int64_t k = std::min(A.dim[0], A.dim[1]);

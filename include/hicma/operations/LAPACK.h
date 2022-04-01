@@ -112,8 +112,7 @@ std::tuple<Dense, Dense> truncated_geqp3(const Dense& A, double eps);
 void geqrt(Matrix& A, Matrix& T);
 
 /**
- * @brief Compute reduced QR factorization of a general matrix
- * using Modified Gram-Schmidt iteration
+ * @brief Compute reduced QR factorization of a general matrix using Modified Gram-Schmidt iteration
  *
  * @param A
  * M-by-N `Matrix` to be factorized. Overwritten with \p Q on finish
@@ -121,10 +120,10 @@ void geqrt(Matrix& A, Matrix& T);
  * N-by-N `Matrix` that is overwritten with upper triangular factor \p R on finish
  *
  * This function performs MGS QR factorization
- * Prior to calling, it is assumed that \p A and \p R have been initialized with proper dimensions.
+ * Prior to calling, it is assumed that \p R have been initialized with proper dimension.
  * Upon finish, \p A will be overwritten with the resulting orthogonal factor \p Q.
  */
-void mgs_qr(Dense&, Dense&);
+void mgs_qr(Matrix& A, Matrix& Q, Matrix& R);
 
 /**
  * @brief Apply block householder reflector or its transpose to a general rectangular matrix
@@ -176,16 +175,16 @@ void latms(
 );
 
 /**
- * @brief Compute QR factorization of a general matrix
+ * @brief Compute QR factorization of a general matrix using Householder method
  *
  * @param A
  * M-by-N `Matrix` to be factorized. Overwritten on finish
  * @param Q
- * M-by-N `Matrix` with the same type as \p A. On finish, filled with orthogonal factor
+ * M-by-N `Matrix` with the same type as \p A. Overwritten on finish with orthogonal factor on finish
  * @param R
- * N-by-N `Matrix` with the same type as \p A. On finish, filled with upper triangular factor
+ * N-by-N `Matrix` with the same type as \p A. Overwritten on finish with upper triangular factor
  *
- * This method perform reduced QR factorization of a given matrix.
+ * This method perform Householder QR factorization of a given matrix.
  * Prior to calling, \p Q and \p R need to be initialized with proper dimensions.
  *
  * Definitions may differ depending on the types of the parameters.

@@ -53,30 +53,10 @@ TEST_P(HierarchicalFixedRankTest, ConstructionByDenseMatrix) {
   expect_uniform_rank(A, rank);
 }
 
-TEST_P(HierarchicalFixedRankTest, LUFactorization) {
-  hicma::Dense D(hicma::laplacend, randx_A, n_rows, n_cols);
-  hicma::Hierarchical A(hicma::laplacend, randx_A, n_rows, n_cols,
-                        rank, nleaf, admis, nb_row, nb_col, admis_type);
-  double compress_error = hicma::l2_error(A, D);
-
-  hicma::Dense x(hicma::random_uniform, std::vector<std::vector<double>>(), n_cols, 1);
-  hicma::Dense b(n_rows);
-  hicma::gemm(A, x, b, 1, 1);
-
-  hicma::Hierarchical L, U;
-  std::tie(L, U) = hicma::getrf(A);
-  hicma::trsm(L, b, hicma::TRSM_LOWER);
-  hicma::trsm(U, b, hicma::TRSM_UPPER);
-  double solve_error = hicma::l2_error(x, b);
-
-  // Check result
-  double err_ratio = solve_error / (compress_error + std::numeric_limits<double>::epsilon());
-  EXPECT_LE(err_ratio, 1e+2);
-}
 
 INSTANTIATE_TEST_SUITE_P(HierarchicalTest, HierarchicalFixedRankTest,
                          testing::Combine(testing::Values(128, 256),
-                                          testing::Values(16, 32),
+                                          testing::Values(32),
                                           testing::Values(4, 8),
                                           testing::Values(0.0, 0.5, 1.0, 2.0),
                                           testing::Values(POSITION_BASED_ADMIS, GEOMETRY_BASED_ADMIS)
