@@ -5,8 +5,24 @@
 
 namespace hicma {
 
+/**
+ * @brief Get the global value corresponding to a certain key
+ * 
+ * If the key is not set within hicam, it falls back to environement
+ * variables.
+ * 
+ * @param key the identifier for the global value
+ * @return std::string the value corresponding to the identifier,
+ * empty if the key is not found
+ */
 std::string getGlobalValue(std::string key);
 
+/**
+ * @brief Specify a global key and value pair
+ * 
+ * @param key the identifier
+ * @param value the corresponding value
+ */
 void setGlobalValue(std::string key, std::string value);
 
 } // namespace hicma
