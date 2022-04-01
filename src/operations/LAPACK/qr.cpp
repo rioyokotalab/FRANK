@@ -51,7 +51,6 @@ define_method(void, qr_omm, (Dense& A, Dense& Q, Dense& R)) {
   assert(Q.dim[0] == A.dim[0]);
   assert(Q.dim[1] == R.dim[0]);
   assert(R.dim[1] == A.dim[1]);
-  timing::start("QR");
   int64_t k = std::min(A.dim[0], A.dim[1]);
   std::vector<double> tau(k);
   LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, A.dim[0], A.dim[1], &A, A.stride, &tau[0]);
@@ -73,7 +72,6 @@ define_method(void, qr_omm, (Dense& A, Dense& Q, Dense& R)) {
   // reflector form, uses dormqr instead of gemm and can be transformed to
   // Dense via dorgqr!
   LAPACKE_dorgqr(LAPACK_ROW_MAJOR, Q.dim[0], Q.dim[1], k, &Q, Q.stride, &tau[0]);
-  timing::stop("QR");
 }
 
 define_method(void, qr_omm, (Matrix& A, Matrix& Q, Matrix& R)) {
@@ -162,40 +160,6 @@ void apply_block_col_householder(const Hierarchical& Y, const Hierarchical& T, i
       gemm(Y(i, k), C(0, 0), A(i, j), -1, 1);
     }
   }
-}
-
-
-void rq(Matrix& A, Matrix& R, Matrix& Q) { rq_omm(A, R, Q); }
-
-define_method(void, rq_omm, (Dense& A, Dense& R, Dense& Q)) {
-  assert(R.dim[0] == A.dim[0]);
-  assert(R.dim[1] == Q.dim[0]);
-  assert(Q.dim[1] == A.dim[1]);
-  timing::start("RQ");
-  int64_t k = std::min(A.dim[0], A.dim[1]);
-  std::vector<double> tau(k);
-  LAPACKE_dgerqf(LAPACK_ROW_MAJOR, A.dim[0], A.dim[1], &A, A.stride, &tau[0]);
-  // Copy upper triangular into R
-  for(int64_t i=0; i<R.dim[0]; i++) {
-    for(int64_t j=std::max(i+A.dim[1]-A.dim[0], (int64_t)0); j<A.dim[1]; j++) {
-      R(i, j+R.dim[1]-A.dim[1]) = A(i, j);
-    }
-  }
-  // Copy strictly lower part into Q
-  for(int64_t i=std::max(A.dim[0]-A.dim[1], (int64_t)0); i<A.dim[0]; i++) {
-    for(int64_t j=0; j<(i+A.dim[1]-A.dim[0]); j++) {
-      Q(i+Q.dim[0]-A.dim[0], j) = A(i, j);
-    }
-  }
-  // TODO Consider making special function for this. Performance heavy and not
-  // always needed. If Q should be applied to something, use directly!
-  // Alternatively, create Dense derivative that remains in elementary reflector
-  // form, uses dormrq instead of gemm and can be transformed to Dense via
-  // dorgrq!
-  LAPACKE_dorgrq(
-    LAPACK_ROW_MAJOR, Q.dim[0], Q.dim[1], k, &Q, Q.stride, &tau[0]
-  );
-  timing::stop("RQ");
 }
 
 } // namespace hicma
