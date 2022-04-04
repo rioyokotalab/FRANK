@@ -87,33 +87,55 @@ define_method(
 ) {
   assert(A.dim[0] == A.dim[1]);
   assert(A.dim[0] == (side == 'l' ? B.dim[0] : B.dim[1]));
-  assert(uplo == 'u'); //TODO implement for lower triangular
+  assert(trans != 't'); //TODO implement for transposed case
   Hierarchical B_copy(B);
   if(uplo == 'u') {
     if(side == 'l') {
-      for(int64_t i=0; i<A.dim[0]; i++) {
+      for(int64_t i=0; i<B.dim[0]; i++) {
         for(int64_t j=0; j<B.dim[1]; j++) {
           for(int64_t k=i; k<A.dim[1]; k++) {
-            if(k == i) {
+            if(k == i)
               trmm(A(i, k), B(k, j), side, uplo, trans, diag, alpha);
-            }
-            else {
-              gemm(A(i, k), B_copy(k, j), B(i, j), alpha, 1);
-            }
+            else
+              gemm(A(i, k), B_copy(k, j), B(i, j), alpha, 1.);
           }
         }
       }
     }
     else if(side == 'r') {
       for(int64_t i=0; i<B.dim[0]; i++) {
-        for(int64_t j=0; j<A.dim[1]; j++) {
+        for(int64_t j=0; j<B.dim[1]; j++) {
           for(int64_t k=j; k>=0; k--) {
-            if(k == j) {
+            if(k == j)
               trmm(A(k, j), B(i, k), side, uplo, trans, diag, alpha);
-            }
-            else {
+            else
               gemm(B_copy(i, k), A(k, j), B(i, j), alpha, 1);
-            }
+          }
+        }
+      }
+    }
+  }
+  else if(uplo == 'l') {
+    if(side == 'l') {
+      for(int64_t i=0; i<B.dim[0]; i++) {
+        for(int64_t j=0; j<B.dim[1]; j++) {
+          for(int64_t k=i; k>=0; k--) {
+            if(k == i)
+              trmm(A(i, k), B(k, j), side, uplo, trans, diag, alpha);
+            else
+              gemm(A(i, k), B_copy(k, j), B(i, j), alpha, 1);
+          }
+        }
+      }
+    }
+    else if(side == 'r') {
+      for(int64_t i=0; i<B.dim[0]; i++) {
+        for(int64_t j=0; j<B.dim[1]; j++) {
+          for(int64_t k=j; k<B.dim[1]; k++) {
+            if(k == j)
+              trmm(A(k, j), B(i, k), side, uplo, trans, diag, alpha);
+            else
+              gemm(B_copy(i, k), A(k, j), B(i, j), alpha, 1);
           }
         }
       }
