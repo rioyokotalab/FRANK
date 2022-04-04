@@ -196,39 +196,13 @@ void qr(Matrix& A, Matrix& Q, Matrix& R);
 
 void orthogonalize_block_col(int64_t, const Matrix&, Matrix&, Matrix&);
 
-/**
- * @brief Zero the lower triangular portion of a matrix
- *
- * @param A
- * `Matrix` instance. Modified on finish
- *
- * This method set the elements on lower triangular portion of \p A into zero.
- *
- * Definitions may differ depending on the types of the parameters.
- * Definition for each combination of types (subclasses of `Matrix`) is implemented as a specialization of \OMM.
- * The multi-dispatcher then will select the correct implementation based on the types of parameters given at runtime.
- * Read \ext_hicma for more information.
- */
-void zero_lowtri(Matrix& A);
-
-/**
- * @brief Reset all elements of a matrix to zero
- *
- * @param A
- * `Matrix` instance. Modified on finish
- *
- * This method reset all elements of \p A into zero.
- *
- * Definitions may differ depending on the types of the parameters.
- * Definition for each combination of types (subclasses of `Matrix`) is implemented as a specialization of \OMM.
- * The multi-dispatcher then will select the correct implementation based on the types of parameters given at runtime.
- * Read \ext_hicma for more information.
- */
-void zero_whole(Matrix& A);
-
 void triangularize_block_col(int64_t, Hierarchical&, Hierarchical&);
 
 void apply_block_col_householder(const Hierarchical&, const Hierarchical&, int64_t, bool, Hierarchical&, int64_t);
+
+void blocked_householder_blr_qr(Hierarchical& A, Hierarchical& T);
+
+void tiled_householder_blr_qr(Hierarchical& A, Hierarchical& T);
 
 /**
  * @brief Perform RQ factorization of a `Dense` matrix
