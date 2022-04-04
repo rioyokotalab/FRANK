@@ -162,4 +162,32 @@ void apply_block_col_householder(const Hierarchical& Y, const Hierarchical& T, i
   }
 }
 
+void blocked_householder_blr_qr(Hierarchical& A, Hierarchical& T) {
+  assert(T.dim[0] == A.dim[1]);
+  assert(T.dim[1] == 1);
+  for(int64_t k = 0; k < A.dim[1]; k++) {
+    triangularize_block_col(k, A, T);
+    for(int j = k+1; j < A.dim[1]; j++) {
+      apply_block_col_householder(A, T, k, true, A, j);
+    }
+  }
+}
+
+void tiled_householder_blr_qr(Hierarchical& A, Hierarchical& T) {
+  assert(T.dim[0] == A.dim[0]);
+  assert(T.dim[1] == A.dim[1]);
+  for(int64_t k = 0; k < A.dim[1]; k++) {
+    geqrt(A(k, k), T(k, k));
+    for(int64_t j = k+1; j < A.dim[1]; j++) {
+      larfb(A(k, k), T(k, k), A(k, j), true);
+    }
+    for(int64_t i = k+1; i < A.dim[0]; i++) {
+      tpqrt(A(k, k), A(i, k), T(i, k));
+      for(int64_t j = k+1; j < A.dim[1]; j++) {
+        tpmqrt(A(i, k), T(i, k), A(k, j), A(i, j), true);
+      }
+    }
+  }
+}
+
 } // namespace hicma
