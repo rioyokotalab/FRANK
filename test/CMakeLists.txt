@@ -9,6 +9,7 @@ list(
   "dense_id"
   "dense_qr"
   "rsvd"
+  "trmm"
   "lowrank"
   "blr_fixed_rank"
   "blr_fixed_acc"

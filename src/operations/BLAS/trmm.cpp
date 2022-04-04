@@ -49,6 +49,7 @@ define_method(
     double alpha
   )
 ) {
+  // D D
   assert(A.dim[0] == A.dim[1]);
   assert(A.dim[0] == (side == 'l' ? B.dim[0] : B.dim[1]));
   cblas_dtrmm(
@@ -69,6 +70,7 @@ define_method(
     double alpha
   )
 ) {
+  // D LR
   assert(A.dim[0] == A.dim[1]);
   assert(A.dim[0] == (side == 'l' ? B.dim[0] : B.dim[1]));
   if(side == 'l')
@@ -85,9 +87,10 @@ define_method(
     double alpha
   )
 ) {
+  // H H
   assert(A.dim[0] == A.dim[1]);
   assert(A.dim[0] == (side == 'l' ? B.dim[0] : B.dim[1]));
-  assert(trans != 't'); //TODO implement for transposed case
+  assert(trans != 't'); //TODO implement for transposed case: need transposed gemm complete
   Hierarchical B_copy(B);
   if(uplo == 'u') {
     if(side == 'l') {
