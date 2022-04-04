@@ -202,7 +202,11 @@ void apply_block_col_householder(const Hierarchical&, const Hierarchical&, int64
 
 void blocked_householder_blr_qr(Hierarchical& A, Hierarchical& T);
 
+void left_multiply_blocked_reflector(const Hierarchical& Y, const Hierarchical& T, Hierarchical& C, bool trans);
+
 void tiled_householder_blr_qr(Hierarchical& A, Hierarchical& T);
+
+void left_multiply_tiled_reflector(const Hierarchical& Y, const Hierarchical& T, Hierarchical& C, bool trans);
 
 /**
  * @brief Perform RQ factorization of a `Dense` matrix

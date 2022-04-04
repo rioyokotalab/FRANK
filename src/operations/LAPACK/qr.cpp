@@ -167,8 +167,25 @@ void blocked_householder_blr_qr(Hierarchical& A, Hierarchical& T) {
   assert(T.dim[1] == 1);
   for(int64_t k = 0; k < A.dim[1]; k++) {
     triangularize_block_col(k, A, T);
-    for(int j = k+1; j < A.dim[1]; j++) {
+    for(int64_t j = k+1; j < A.dim[1]; j++) {
       apply_block_col_householder(A, T, k, true, A, j);
+    }
+  }
+}
+
+void left_multiply_blocked_reflector(const Hierarchical& Y, const Hierarchical& T, Hierarchical& C, bool trans) {
+  if(trans) {
+    for(int64_t k = 0; k < Y.dim[1]; k++) {
+      for(int64_t j = k; j < Y.dim[1]; j++) {
+        apply_block_col_householder(Y, T, k, trans, C, j);
+      }
+    }
+  }
+  else {
+    for(int64_t k = Y.dim[1]-1; k >= 0; k--) {
+      for(int64_t j = k; j < Y.dim[1]; j++) {
+        apply_block_col_householder(Y, T, k, trans, C, j);
+      }
     }
   }
 }
@@ -185,6 +202,33 @@ void tiled_householder_blr_qr(Hierarchical& A, Hierarchical& T) {
       tpqrt(A(k, k), A(i, k), T(i, k));
       for(int64_t j = k+1; j < A.dim[1]; j++) {
         tpmqrt(A(i, k), T(i, k), A(k, j), A(i, j), true);
+      }
+    }
+  }
+}
+
+void left_multiply_tiled_reflector(const Hierarchical& Y, const Hierarchical& T, Hierarchical& C, bool trans) {
+  if(trans) {
+    for(int64_t k = 0; k < Y.dim[1]; k++) {
+      for(int64_t j = k; j < Y.dim[1]; j++) {
+        larfb(Y(k, k), T(k, k), C(k, j), trans);
+      }
+      for(int64_t i = k+1; i < Y.dim[0]; i++) {
+        for(int64_t j = k; j < Y.dim[1]; j++) {
+          tpmqrt(Y(i, k), T(i, k), C(k, j), C(i, j), trans);
+        }
+      }
+    }
+  }
+  else {
+    for(int64_t k = Y.dim[1]-1; k >= 0; k--) {
+      for(int64_t i = Y.dim[0]-1; i > k; i--) {
+        for(int64_t j = k; j < Y.dim[1]; j++) {
+          tpmqrt(Y(i, k), T(i, k), C(k, j), C(i, j), trans);
+        }
+      }
+      for(int64_t j = k; j < Y.dim[1]; j++) {
+        larfb(Y(k, k), T(k, k), C(k, j), trans);
       }
     }
   }

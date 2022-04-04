@@ -103,20 +103,18 @@ TEST_P(BLRFixedAccuracyTest, BlockedHouseholderQRFactorization) {
 
   hicma::Hierarchical Q(hicma::identity, randx_A, n_rows, n_cols,
                         nleaf, eps, admis, nb_row, nb_col, admis_type);
-  // Residual
-  // hicma::Hierarchical QR(Q);
-  // hicma::zero_all(QR);
-  // hicma::gemm(Q, R, QR, 1, 0);
-  // double residual = hicma::l2_error(D, QR);
-  // EXPECT_LE(residual, eps);
+  hicma::left_multiply_blocked_reflector(A, T, Q, false);
 
-  // // Orthogonality
-  // hicma::Hierarchical QtQ(Q);
-  // hicma::zero_all(QtQ);
-  // hicma::Hierarchical Qt = hicma::transpose(Q);
-  // hicma::gemm(Qt, Q, QtQ, 1, 0);
-  // double orthogonality = hicma::l2_error(hicma::Dense(hicma::identity, randx_A, n_rows, n_rows), QtQ);
-  // EXPECT_LE(orthogonality, eps);
+  // Residual
+  hicma::Hierarchical QR(Q);
+  hicma::trmm(A, QR, 'r', 'u', 'n', 'n', 1.);
+  double residual = hicma::l2_error(D, QR);
+  EXPECT_LE(residual, eps);
+
+  // Orthogonality
+  hicma::left_multiply_blocked_reflector(A, T, Q, true);
+  double orthogonality = hicma::l2_error(hicma::Dense(hicma::identity, {}, n_cols, n_cols), Q);
+  EXPECT_LE(orthogonality, eps);
 }
 
 TEST_P(BLRFixedAccuracyTest, TiledHouseholderQRFactorization) {
@@ -128,27 +126,25 @@ TEST_P(BLRFixedAccuracyTest, TiledHouseholderQRFactorization) {
   for(int64_t j = 0; j < A.dim[1]; j++) {
     for(int64_t i = 0; i < A.dim[0]; i++) {
       T(i, j) = hicma::Dense(i < j ? 0 : hicma::get_n_cols(A(j, j)),
-			     i < j ? 0 : hicma::get_n_cols(A(j, j)));
+                             i < j ? 0 : hicma::get_n_cols(A(j, j)));
     }
   }
   hicma::tiled_householder_blr_qr(A, T);
 
   hicma::Hierarchical Q(hicma::identity, randx_A, n_rows, n_cols,
                         nleaf, eps, admis, nb_row, nb_col, admis_type);
-  // Residual
-  // hicma::Hierarchical QR(Q);
-  // hicma::zero_all(QR);
-  // hicma::gemm(Q, R, QR, 1, 0);
-  // double residual = hicma::l2_error(D, QR);
-  // EXPECT_LE(residual, eps);
+  hicma::left_multiply_tiled_reflector(A, T, Q, false);
 
-  // // Orthogonality
-  // hicma::Hierarchical QtQ(Q);
-  // hicma::zero_all(QtQ);
-  // hicma::Hierarchical Qt = hicma::transpose(Q);
-  // hicma::gemm(Qt, Q, QtQ, 1, 0);
-  // double orthogonality = hicma::l2_error(hicma::Dense(hicma::identity, randx_A, n_rows, n_rows), QtQ);
-  // EXPECT_LE(orthogonality, eps);
+  // Residual
+  hicma::Hierarchical QR(Q);
+  hicma::trmm(A, QR, 'r', 'u', 'n', 'n', 1.);
+  double residual = hicma::l2_error(D, QR);
+  EXPECT_LE(residual, eps);
+
+  // Orthogonality
+  hicma::left_multiply_tiled_reflector(A, T, Q, true);
+  double orthogonality = hicma::l2_error(hicma::Dense(hicma::identity, {}, n_cols, n_cols), Q);
+  EXPECT_LE(orthogonality, eps);
 }
 
 INSTANTIATE_TEST_SUITE_P(BLRTest, BLRFixedAccuracyTest,
