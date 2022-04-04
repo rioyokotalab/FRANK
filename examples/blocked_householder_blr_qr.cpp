@@ -48,9 +48,9 @@ int main(int argc, char** argv) {
   for(int64_t i=0; i<A.dim[0]; i++) {
     for(int64_t j=0; j<=i; j++) {
       if(i == j) //Diagonal must be dense, zero lower-triangular part
-        zero_lowtri(A(i, j));
+        zero_lower(A(i, j));
       else
-        zero_whole(A(i, j));
+        zero_all(A(i, j));
     }
   }
 

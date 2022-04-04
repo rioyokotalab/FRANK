@@ -72,7 +72,7 @@ int64_t get_n_cols(const Matrix&);
  * The multi-dispatcher then will select the correct implementation based on the types of parameters given at runtime.
  * Read \ext_hicma for more information.
  */
-void zero_whole(Matrix& A);
+void zero_all(Matrix& A);
 
 /**
  * @brief Reset elements below the main diagonal to zero
@@ -87,7 +87,7 @@ void zero_whole(Matrix& A);
  * The multi-dispatcher then will select the correct implementation based on the types of parameters given at runtime.
  * Read \ext_hicma for more information.
  */
-void zero_lowtri(Matrix& A);
+void zero_lower(Matrix& A);
 
 /**
  * @brief Reset elements above the main diagonal to zero
@@ -102,7 +102,7 @@ void zero_lowtri(Matrix& A);
  * The multi-dispatcher then will select the correct implementation based on the types of parameters given at runtime.
  * Read \ext_hicma for more information.
  */
-void zero_upptri(Matrix& A);
+void zero_upper(Matrix& A);
 
 /**
  * @brief Calculate the condition number of a `Dense` matrix

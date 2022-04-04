@@ -124,9 +124,9 @@ declare_method(
   (int64_t, virtual_<const Matrix&>, virtual_<Matrix&>, virtual_<Matrix&>)
 )
 
-declare_method(void, zero_whole_omm, (virtual_<Matrix&>))
-declare_method(void, zero_lowtri_omm, (virtual_<Matrix&>))
-declare_method(void, zero_upptri_omm, (virtual_<Matrix&>))
+declare_method(void, zero_all_omm, (virtual_<Matrix&>))
+declare_method(void, zero_lower_omm, (virtual_<Matrix&>))
+declare_method(void, zero_upper_omm, (virtual_<Matrix&>))
 
 declare_method(
   Dense, get_right_factor_omm,

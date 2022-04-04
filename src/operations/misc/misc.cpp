@@ -23,15 +23,15 @@
 namespace hicma
 {
 
-void zero_whole(Matrix& A) {
-  zero_whole_omm(A);
+void zero_all(Matrix& A) {
+  zero_all_omm(A);
 }
 
-define_method(void, zero_whole_omm, (Dense& A)) {
+define_method(void, zero_all_omm, (Dense& A)) {
   A = 0.0;
 }
 
-define_method(void, zero_whole_omm, (LowRank& A)) {
+define_method(void, zero_all_omm, (LowRank& A)) {
   A.U = 0.0;
   A.S = 0.0;
   A.V = 0.0;
@@ -43,66 +43,66 @@ define_method(void, zero_whole_omm, (LowRank& A)) {
   }
 }
 
-define_method(void, zero_whole_omm, (Hierarchical& A)) {
+define_method(void, zero_all_omm, (Hierarchical& A)) {
   for(int64_t i = 0; i < A.dim[0]; i++)
     for(int64_t j = 0; j < A.dim[1]; j++) {
-      zero_whole(A(i, j));
+      zero_all(A(i, j));
     }
 }
 
-define_method(void, zero_whole_omm, (Matrix& A)) {
-  omm_error_handler("zero_whole", {A}, __FILE__, __LINE__);
+define_method(void, zero_all_omm, (Matrix& A)) {
+  omm_error_handler("zero_all", {A}, __FILE__, __LINE__);
   std::abort();
 }
 
 
-void zero_lowtri(Matrix& A) {
-  zero_lowtri_omm(A);
+void zero_lower(Matrix& A) {
+  zero_lower_omm(A);
 }
 
-define_method(void, zero_lowtri_omm, (Dense& A)) {
+define_method(void, zero_lower_omm, (Dense& A)) {
   for(int64_t i=0; i<A.dim[0]; i++)
     for(int64_t j=0; j<std::min(i, A.dim[1]); j++)
       A(i,j) = 0.0;
 }
 
-define_method(void, zero_lowtri_omm, (Hierarchical& A)) {
+define_method(void, zero_lower_omm, (Hierarchical& A)) {
   for(int64_t i=0; i<A.dim[0]; i++)
     for(int64_t j=0; j<=std::min(i, A.dim[1]-1); j++) {
       if(j == i)
-        zero_lowtri(A(i, j));
+        zero_lower(A(i, j));
       else
-        zero_whole(A(i, j));
+        zero_all(A(i, j));
     }
 }
 
-define_method(void, zero_lowtri_omm, (Matrix& A)) {
-  omm_error_handler("zero_lowtri", {A}, __FILE__, __LINE__);
+define_method(void, zero_lower_omm, (Matrix& A)) {
+  omm_error_handler("zero_lower", {A}, __FILE__, __LINE__);
   std::abort();
 }
 
-void zero_upptri(Matrix& A) {
-  zero_upptri_omm(A);
+void zero_upper(Matrix& A) {
+  zero_upper_omm(A);
 }
 
-define_method(void, zero_upptri_omm, (Dense& A)) {
+define_method(void, zero_upper_omm, (Dense& A)) {
   for(int64_t i=0; i<A.dim[0]; i++)
     for(int64_t j=i+1; j<A.dim[1]; j++)
       A(i,j) = 0.0;
 }
 
-define_method(void, zero_upptri_omm, (Hierarchical& A)) {
+define_method(void, zero_upper_omm, (Hierarchical& A)) {
   for(int64_t i=0; i<A.dim[0]; i++)
     for(int64_t j=i; j<A.dim[1]; j++) {
       if(j == i)
-        zero_upptri(A(i, j));
+        zero_upper(A(i, j));
       else
-        zero_whole(A(i, j));
+        zero_all(A(i, j));
     }
 }
 
-define_method(void, zero_upptri_omm, (Matrix& A)) {
-  omm_error_handler("zero_upptri", {A}, __FILE__, __LINE__);
+define_method(void, zero_upper_omm, (Matrix& A)) {
+  omm_error_handler("zero_upper", {A}, __FILE__, __LINE__);
   std::abort();
 }
 
