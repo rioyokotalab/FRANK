@@ -152,7 +152,7 @@ void apply_block_col_householder(const Hierarchical& Y, const Hierarchical& T, i
       Hierarchical _C(C);
       trmm(Y(k, k), _C(0, 0), 'l', 'l', 'n', 'u', 1);
       gemm(
-        Dense(identity, std::vector<std::vector<double>>(), get_n_rows(_C(0, 0)), get_n_rows(_C(0, 0))),
+        Dense(identity, {}, get_n_rows(_C(0, 0)), get_n_rows(_C(0, 0))),
         _C(0, 0), A(k, j), -1, 1
       );
     }

@@ -86,7 +86,7 @@ class MatrixInitializer {
    */
   MatrixInitializer(
     double admis, double eps, int64_t rank,
-    std::vector<std::vector<double>> params=std::vector<std::vector<double>>(),
+    std::vector<std::vector<double>> params={},
     int admis_type=POSITION_BASED_ADMIS
   );
 

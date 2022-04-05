@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
     A = split(DA, Nc, Nc, true);
   }
   Hierarchical A_copy(A);
-  Hierarchical Q(identity, std::vector<std::vector<double>>(), N, N, 0, Nb, Nc, Nc, Nc);
+  Hierarchical Q(identity, {}, N, N, 0, Nb, Nc, Nc, Nc);
   Hierarchical T(Nc, Nc);
   for(int64_t j = 0; j < Nc; j++) {
     for(int64_t i = j; i < Nc; i++) {
@@ -87,13 +87,13 @@ int main(int argc, char** argv) {
 
   print("Dense-QR Accuracy");
   //Residual
-  Hierarchical QR(zeros, std::vector<std::vector<double>>(), N, N, 0, Nb, Nc, Nc, Nc);
+  Hierarchical QR(zeros, {}, N, N, 0, Nb, Nc, Nc, Nc);
   gemm(Q, A, QR, 1, 0);
   print("Residual", l2_error(A_copy, QR), false);    
   //Orthogonality
-  Hierarchical QtQ(zeros, std::vector<std::vector<double>>(), N, N, 0, Nb, Nc, Nc, Nc);
+  Hierarchical QtQ(zeros, {}, N, N, 0, Nb, Nc, Nc, Nc);
   Hierarchical Qt = transpose(Q);
   gemm(Qt, Q, QtQ, 1, 0);
-  print("Orthogonality", l2_error(Dense(identity, std::vector<std::vector<double>>(), N, N), QtQ), false);
+  print("Orthogonality", l2_error(Dense(identity, {}, N, N), QtQ), false);
   return 0;
 }

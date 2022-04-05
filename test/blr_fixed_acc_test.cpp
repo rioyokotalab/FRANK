@@ -52,7 +52,7 @@ TEST_P(BLRFixedAccuracyTest, LUFactorization) {
   hicma::Hierarchical A(hicma::laplacend, randx_A, n_rows, n_cols,
                         nleaf, eps, admis, nb_row, nb_col, admis_type);
 
-  hicma::Dense x(hicma::random_uniform, std::vector<std::vector<double>>(), n_cols, 1);
+  hicma::Dense x(hicma::random_uniform, {}, n_cols, 1);
   hicma::Dense b(n_rows);
   hicma::gemm(A, x, b, 1, 1);
 

@@ -18,7 +18,7 @@ int main(int argc, char** argv) {
   double admis = argc > 5 ? atof(argv[5]) : 0;
 
   std::vector<std::vector<double>> randx{get_sorted_random_vector(N)};
-  Dense x(random_uniform, std::vector<std::vector<double>>(), N);
+  Dense x(random_uniform, {}, N);
   Dense b(N);
   Dense D(laplacend, randx, N, N);
   timing::start("Hierarchical compression");

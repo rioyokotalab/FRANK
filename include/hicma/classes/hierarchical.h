@@ -267,7 +267,7 @@ class Hierarchical : public Matrix {
     double admis=0,
     int64_t n_row_blocks=2, int64_t n_col_blocks=2,
     int64_t row_start=0, int64_t col_start=0,
-    std::vector<std::vector<double>> params = std::vector<std::vector<double>>(),
+    std::vector<std::vector<double>> params={},
     int admis_type=POSITION_BASED_ADMIS
   );
 
@@ -310,7 +310,7 @@ class Hierarchical : public Matrix {
     double admis=0,
     int64_t n_row_blocks=2, int64_t n_col_blocks=2,
     int64_t row_start=0, int64_t col_start=0,
-    std::vector<std::vector<double>> params = std::vector<std::vector<double>>(),
+    std::vector<std::vector<double>> params={},
     int admis_type=POSITION_BASED_ADMIS
   );
 

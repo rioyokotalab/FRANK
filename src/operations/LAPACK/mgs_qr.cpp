@@ -38,7 +38,7 @@ std::tuple<Dense, Dense> make_left_orthogonal(const Matrix& A) {
 }
 
 define_method(DensePair, make_left_orthogonal_omm, (const Dense& A)) {
-  Dense Id(identity, std::vector<std::vector<double>>(), A.dim[0], A.dim[0]);
+  Dense Id(identity, {}, A.dim[0], A.dim[0]);
   return {std::move(Id), A};
 }
 
