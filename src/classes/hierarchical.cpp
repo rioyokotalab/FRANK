@@ -77,7 +77,7 @@ Hierarchical::Hierarchical(
   int64_t nleaf,
   double admis,
   int64_t n_row_blocks, int64_t n_col_blocks,
-  int admis_type,
+  AdmisType admis_type,
   int64_t row_start, int64_t col_start
 ) {
   MatrixInitializerKernel initializer(kernel, params, admis, 0, rank, admis_type);
@@ -99,7 +99,7 @@ Hierarchical::Hierarchical(
   double eps,
   double admis,
   int64_t n_row_blocks, int64_t n_col_blocks,
-  int admis_type,
+  AdmisType admis_type,
   int64_t row_start, int64_t col_start
 ) {
   MatrixInitializerKernel initializer(kernel, params, admis, eps, 0, admis_type);
@@ -118,7 +118,7 @@ Hierarchical::Hierarchical(
   int64_t n_row_blocks, int64_t n_col_blocks,
   int64_t row_start, int64_t col_start,
   std::vector<std::vector<double>> params,
-  int admis_type
+  AdmisType admis_type
 ) {
   MatrixInitializerBlock initializer(std::move(A), admis, 0, rank, params, admis_type);
   ClusterTree cluster_tree(
@@ -136,7 +136,7 @@ Hierarchical::Hierarchical(
   int64_t n_row_blocks, int64_t n_col_blocks,
   int64_t row_start, int64_t col_start,
   std::vector<std::vector<double>> params,
-  int admis_type
+  AdmisType admis_type
 ) {
   MatrixInitializerBlock initializer(std::move(A), admis, eps, 0, params, admis_type);
   ClusterTree cluster_tree(
@@ -155,7 +155,7 @@ Hierarchical::Hierarchical(
   int64_t nleaf,
   double admis,
   int64_t n_row_blocks, int64_t n_col_blocks,
-  int admis_type,
+  AdmisType admis_type,
   int64_t row_start, int64_t col_start
 ) {
   MatrixInitializerFile initializer(filename, ordering, admis, 0, rank, params, admis_type);
@@ -174,7 +174,7 @@ Hierarchical::Hierarchical(
   double eps,
   double admis,
   int64_t n_row_blocks, int64_t n_col_blocks,
-  int admis_type,
+  AdmisType admis_type,
   int64_t row_start, int64_t col_start
 ) {
   MatrixInitializerFile initializer(filename, ordering, admis, eps, 0, params, admis_type);

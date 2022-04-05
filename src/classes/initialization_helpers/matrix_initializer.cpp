@@ -21,7 +21,7 @@ namespace hicma
 
 MatrixInitializer::MatrixInitializer(
   double admis, double eps, int64_t rank,
-  std::vector<std::vector<double>> params, int admis_type
+  std::vector<std::vector<double>> params, AdmisType admis_type
 ) : admis(admis), eps(eps), rank(rank),
     params(params), admis_type(admis_type) {}
 
@@ -52,7 +52,7 @@ bool MatrixInitializer::is_admissible(const ClusterTree& node) const {
   bool admissible = true;
   // Vectors are never admissible
   admissible &= (node.rows.n > 1 && node.cols.n > 1);
-  if(admis_type == POSITION_BASED_ADMIS)
+  if(admis_type == PositionBasedAdmis)
     admissible &= (node.dist_to_diag() > (int64_t)admis);
   else {
     //Get actual coordinates

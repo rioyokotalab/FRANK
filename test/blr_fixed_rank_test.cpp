@@ -9,7 +9,7 @@
 
 
 class BLRFixedRankTest
-    : public testing::TestWithParam<std::tuple<int64_t, int64_t, int64_t, double, int>> {
+    : public testing::TestWithParam<std::tuple<int64_t, int64_t, int64_t, double, hicma::AdmisType>> {
  protected:
   void SetUp() override {
     hicma::initialize();
@@ -21,7 +21,7 @@ class BLRFixedRankTest
   }
   int64_t n_rows, n_cols, nb_row, nb_col, nleaf, rank;
   double admis;
-  int admis_type;
+  hicma::AdmisType admis_type;
   std::vector<std::vector<double>> randx_A;
 };
 
@@ -60,6 +60,6 @@ INSTANTIATE_TEST_SUITE_P(BLRTest, BLRFixedRankTest,
                                           testing::Values(32),
                                           testing::Values(4, 8),
                                           testing::Values(0.0, 0.5, 1.0, 2.0),
-                                          testing::Values(POSITION_BASED_ADMIS, GEOMETRY_BASED_ADMIS)
+                                          testing::Values(hicma::PositionBasedAdmis, hicma::GeometryBasedAdmis)
                                           ));
 

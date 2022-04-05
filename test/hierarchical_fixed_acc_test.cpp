@@ -8,7 +8,7 @@
 
 
 class HierarchicalFixedAccuracyTest
-    : public testing::TestWithParam<std::tuple<int64_t, int64_t, double, double, int>> {
+    : public testing::TestWithParam<std::tuple<int64_t, int64_t, double, double, hicma::AdmisType>> {
  protected:
   void SetUp() override {
     hicma::initialize();
@@ -21,7 +21,7 @@ class HierarchicalFixedAccuracyTest
   }
   int64_t n_rows, n_cols, nb_row, nb_col, nleaf;
   double eps, admis;
-  int admis_type;
+  hicma::AdmisType admis_type;
   std::vector<std::vector<double>> randx_A;
 };
 
@@ -70,7 +70,7 @@ TEST_P(HierarchicalFixedAccuracyTest, GramSchmidtQRFactorization) {
   hicma::Hierarchical A(hicma::laplacend, randx_A, n_rows, n_cols,
                         nleaf, eps, admis, nb_row, nb_col, admis_type);
   hicma::Hierarchical D(hicma::laplacend, randx_A, n_rows, n_cols,
-                        nleaf, nleaf, nb_row, nb_row, nb_col, POSITION_BASED_ADMIS);
+                        nleaf, nleaf, nb_row, nb_row, nb_col, hicma::PositionBasedAdmis);
 
   hicma::Hierarchical Q(A);
   hicma::Hierarchical R(A);
@@ -99,6 +99,6 @@ INSTANTIATE_TEST_SUITE_P(HierarchicalTest, HierarchicalFixedAccuracyTest,
                                           testing::Values(32),
                                           testing::Values(1e-6, 1e-8, 1e-10),
                                           testing::Values(0.0, 1.0, 4.0),
-                                          testing::Values(POSITION_BASED_ADMIS, GEOMETRY_BASED_ADMIS)
+                                          testing::Values(hicma::PositionBasedAdmis, hicma::GeometryBasedAdmis)
                                           ));
 

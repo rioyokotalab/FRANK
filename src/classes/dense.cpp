@@ -140,7 +140,7 @@ Dense::Dense(
   int64_t row_start, int64_t col_start
 ) : Dense(n_rows, n_cols) {
   MatrixInitializerFile initializer(filename, ordering, 0, 0, 0,
-                                    {}, POSITION_BASED_ADMIS);
+                                    {}, PositionBasedAdmis);
   initializer.fill_dense_representation(*this,
                                         {row_start, n_rows},
                                         {col_start, n_cols});

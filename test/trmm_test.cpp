@@ -116,9 +116,9 @@ TEST_P(TRMMTests, HierarchicalHierarchical_BLR) {
   int64_t A_n = side == 'l' ? n_rows : n_cols;
   int64_t A_nb = A_n / nleaf;
   hicma::Hierarchical A(hicma::laplacend, randx, A_n, A_n,
-                        nleaf, eps, admis, A_nb, A_nb, POSITION_BASED_ADMIS);
+                        nleaf, eps, admis, A_nb, A_nb, hicma::PositionBasedAdmis);
   hicma::Hierarchical B(hicma::laplacend, randx, n_rows, n_cols,
-                        nleaf, eps, admis, nb_rows, nb_cols, POSITION_BASED_ADMIS);
+                        nleaf, eps, admis, nb_rows, nb_cols, hicma::PositionBasedAdmis);
   hicma::Hierarchical B_copy(B);
   trmm(A, B, side, uplo, trans, diag, alpha);
 

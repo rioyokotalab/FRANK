@@ -5,8 +5,15 @@
 
 typedef std::vector<std::vector<double>> vec2d;
 
-enum MatrixLayout { HICMA_ROW_MAJOR, HICMA_COL_MAJOR };
+
+namespace hicma {
+
+enum MatrixLayout { RowMajor, ColumnMajor };
+enum Mode { Upper, Lower };
+enum Side { Left, Right };
 //To be removed if admissibility checker is passed as function
-enum { POSITION_BASED_ADMIS, GEOMETRY_BASED_ADMIS };
+enum AdmisType { PositionBasedAdmis, GeometryBasedAdmis };
+
+} // namespace hicma
 
 #endif // hicma_definitions_h
