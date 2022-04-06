@@ -133,11 +133,10 @@ TEST_P(TRMMTests, HierarchicalHierarchical_BLR) {
     make_unit_diag(A);
   }
   hicma::Hierarchical B_check(B_copy);
-  zero_all(B_check);
   if(side == hicma::Side::Left)
-    hicma::gemm(A, B_copy, B_check, alpha, 1, trans == 't', false);
+    hicma::gemm(A, B_copy, B_check, alpha, 0, trans == 't', false);
   else
-    hicma::gemm(B_copy, A, B_check, alpha, 1, false, trans == 't');
+    hicma::gemm(B_copy, A, B_check, alpha, 0, false, trans == 't');
 
   double diff = l2_error(B, B_check);
   EXPECT_LT(diff, eps);

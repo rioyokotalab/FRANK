@@ -6,6 +6,7 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/operations/BLAS.h"
+#include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
 #include "hicma/util/timer.h"
 
@@ -77,6 +78,43 @@ define_method(
     trmm(A, B.U, side, uplo, trans, diag, alpha);
   else if(side == Side::Right)
     trmm(A, B.V, side, uplo, trans, diag, alpha);
+}
+
+define_method(
+  void, trmm_omm,
+  (
+    const Hierarchical& A, Dense& B,
+    const Side side, const Mode uplo,  const char& trans, const char& diag,
+    double alpha
+  )
+) {
+  // H D
+  assert(A.dim[0] == A.dim[1]);
+  assert(get_n_rows(A) == (side == Side::Left ? B.dim[0] : B.dim[1]));
+  Hierarchical HB = split(B,
+                          side == Side::Left ? A.dim[1] : 1,
+                          side == Side::Left ? 1 : A.dim[0],
+                          false);
+  trmm(A, HB, side, uplo, trans, diag, alpha);
+}
+
+define_method(
+  void, trmm_omm,
+  (
+    const Hierarchical& A, LowRank& B,
+    const Side side, const Mode uplo,  const char& trans, const char& diag,
+    double alpha
+  )
+) {
+  // H LR
+  assert(A.dim[0] == A.dim[1]);
+  assert(get_n_rows(A) == (side == Side::Left ? B.dim[0] : B.dim[1]));
+  Hierarchical HB = split(
+      side == Side::Left ? B.U : B.V,
+      side == Side::Left ? A.dim[1] : 1,
+      side == Side::Left ? 1 : A.dim[0],
+      false);
+  trmm(A, HB, side, uplo, trans, diag, alpha);
 }
 
 define_method(
