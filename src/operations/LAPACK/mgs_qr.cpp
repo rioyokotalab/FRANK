@@ -316,7 +316,7 @@ define_method(void, mgs_qr_omm, (Hierarchical& A, Hierarchical &Q, Hierarchical 
     }
     for (int64_t k=j+1; k<A.dim[1]; k++) {
       for(int64_t i=0; i<A.dim[0]; i++) { //Rjk = Q*j^T x A*k
-        gemm(QjT(0, i), A(i, k), R(j, k), 1, 1);
+        gemm(QjT(0, i), A(i, k), R(j, k), 1, i == 0 ? 0 : 1);
       }
       for(int64_t i=0; i<A.dim[0]; i++) { //A*k = A*k - Q*j x Rjk
         gemm(Q(i, j), R(j, k), A(i, k), -1, 1);

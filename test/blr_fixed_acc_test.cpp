@@ -74,19 +74,15 @@ TEST_P(BLRFixedAccuracyTest, GramSchmidtQRFactorization) {
 
   hicma::Hierarchical Q(A);
   hicma::Hierarchical R(A);
-  hicma::zero_all(Q);
-  hicma::zero_all(R);
   hicma::mgs_qr(A, Q, R);
   // Residual
   hicma::Hierarchical QR(Q);
-  hicma::zero_all(QR);
-  hicma::gemm(Q, R, QR, 1, 0);
+  hicma::trmm(R, QR, hicma::Side::Right, hicma::Mode::Upper, 'n', 'n', 1.);
   double residual = hicma::l2_error(D, QR);
   EXPECT_LE(residual, eps);
 
   // Orthogonality
   hicma::Hierarchical QtQ(Q);
-  hicma::zero_all(QtQ);
   hicma::Hierarchical Qt = hicma::transpose(Q);
   hicma::gemm(Qt, Q, QtQ, 1, 0);
   double orthogonality = hicma::l2_error(hicma::Dense(hicma::identity, randx_A, n_rows, n_rows), QtQ);
