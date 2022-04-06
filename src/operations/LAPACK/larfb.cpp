@@ -44,67 +44,9 @@ define_method(
 
 define_method(
   void, larfb_omm,
-  (const Hierarchical& V, const Hierarchical& T, Dense& C, bool trans)
-) {
-  Hierarchical CH = split(C, V.dim[0], V.dim[1], true);
-  larfb(V, T, CH, trans);
-  C = Dense(CH);
-}
-
-define_method(
-  void, larfb_omm,
   (const Dense& V, const Dense& T, LowRank& C, bool trans)
 ) {
   larfb(V, T, C.U, trans);
-}
-
-define_method(
-  void, larfb_omm,
-  (const Dense& V, const Dense& T, Hierarchical& C, bool trans)
-) {
-  Dense V_lower_tri(V);
-  for(int64_t i = 0; i < V_lower_tri.dim[0]; i++) {
-    for(int64_t j = i; j < V_lower_tri.dim[1]; j++) {
-      if(i == j) V_lower_tri(i, j) = 1.0;
-      else V_lower_tri(i, j) = 0.0;
-    }
-  }
-  Dense VT(V_lower_tri);
-  trmm(T, VT, Side::Right, Mode::Upper, trans ? 't' : 'n', 'n', 1);
-  Dense VTVt(VT.dim[0], V_lower_tri.dim[0]);
-  gemm(VT, V_lower_tri, VTVt, 1, 0, false, true);
-  Hierarchical C_copy(C);
-  gemm(VTVt, C_copy, C, -1, 1);
-}
-
-define_method(
-  void, larfb_omm,
-  (const Hierarchical& V, const Hierarchical& T, Hierarchical& C, bool trans)
-) {
-  if(trans) {
-    for(int64_t k = 0; k < C.dim[1]; k++) {
-      for(int64_t j = k; j < C.dim[1]; j++) {
-        larfb(V(k, k), T(k, k), C(k, j), trans);
-      }
-      for(int64_t i = k+1; i < C.dim[0]; i++) {
-        for(int64_t j = k; j < C.dim[1]; j++) {
-          tpmqrt(V(i, k), T(i, k), C(k, j), C(i, j), trans);
-        }
-      }
-    }
-  }
-  else {
-    for(int64_t k = C.dim[1]-1; k >= 0; k--) {
-      for(int64_t i = C.dim[0]-1; i > k; i--) {
-        for(int64_t j = k; j < C.dim[1]; j++) {
-          tpmqrt(V(i, k), T(i, k), C(k, j), C(i, j), trans);
-        }
-      }
-      for(int64_t j = k; j < C.dim[1]; j++) {
-        larfb(V(k, k), T(k, k), C(k, j), trans);
-      }
-    }
-  }
 }
 
 // Fallback default, abort with error message

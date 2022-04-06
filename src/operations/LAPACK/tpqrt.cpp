@@ -46,20 +46,6 @@ define_method(void, tpqrt_omm, (Dense& A, LowRank& B, Dense& T)) {
   tpqrt(A, B.V, T);
 }
 
-define_method(
-  void, tpqrt_omm,
-  (Hierarchical& A, Hierarchical& B, Hierarchical& T)
-) {
-  for(int64_t i = 0; i < B.dim[0]; i++) {
-    for(int64_t j = 0; j < B.dim[1]; j++) {
-      tpqrt(A(j, j), B(i, j), T(i, j));
-      for(int64_t k = j+1; k < B.dim[1]; k++) {
-        tpmqrt(B(i, j), T(i, j), A(j, k), B(i, k), true);
-      }
-    }
-  }
-}
-
 // Fallback default, abort with error message
 define_method(void, tpqrt_omm, (Matrix& A, Matrix& B, Matrix& T)) {
   omm_error_handler("tpqrt", {A, B, T}, __FILE__, __LINE__);
