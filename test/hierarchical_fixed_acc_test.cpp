@@ -58,8 +58,8 @@ TEST_P(HierarchicalFixedAccuracyTest, LUFactorization) {
 
   hicma::Hierarchical L, U;
   std::tie(L, U) = hicma::getrf(A);
-  hicma::trsm(L, b, hicma::TRSM_LOWER);
-  hicma::trsm(U, b, hicma::TRSM_UPPER);
+  hicma::trsm(L, b, hicma::Lower);
+  hicma::trsm(U, b, hicma::Upper);
   double solve_error = hicma::l2_error(x, b);
 
   // Check result

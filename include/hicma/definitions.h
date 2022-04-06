@@ -11,7 +11,6 @@ namespace hicma {
 enum MatrixLayout { RowMajor, ColumnMajor };
 enum Mode { Upper, Lower };
 enum Side { Left, Right };
-//To be removed if admissibility checker is passed as function
 enum AdmisType { PositionBasedAdmis, GeometryBasedAdmis };
 
 } // namespace hicma

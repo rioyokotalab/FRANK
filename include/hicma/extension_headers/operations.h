@@ -58,14 +58,14 @@ declare_method(
   void, trmm_omm,
   (
     virtual_<const Matrix&>, virtual_<Matrix&>,
-    const char&, const char&, const char&, const char&,
+    const Side, const Mode, const char&, const char&,
     double
   )
 )
 
 declare_method(
   void, trsm_omm,
-  (virtual_<const Matrix&>, virtual_<Matrix&>, int, int)
+  (virtual_<const Matrix&>, virtual_<Matrix&>, const Mode, const Side)
 )
 
 // LAPACK

@@ -54,7 +54,7 @@ define_method(DenseIndexSetPair, one_sided_id_omm, (Dense& A, int64_t k)) {
     std::vector<Dense> split = R.split(
       IndexRange(0, R.dim[0]).split_at(k), IndexRange(0, R.dim[1]).split_at(k)
     );
-    trsm(split[0], split[1], TRSM_UPPER);
+    trsm(split[0], split[1], Upper);
     col_basis = interleave_id(split[1], selected_cols);
   } else {
     col_basis = interleave_id(

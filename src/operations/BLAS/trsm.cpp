@@ -26,103 +26,101 @@
 namespace hicma
 {
 
-void trsm(const Matrix& A, Matrix& B, int uplo, int lr) {
-  assert(uplo == TRSM_UPPER || uplo == TRSM_LOWER);
-  assert(lr == TRSM_LEFT || lr == TRSM_RIGHT);
-  trsm_omm(A, B, uplo, lr);
+void trsm(const Matrix& A, Matrix& B, const Mode uplo, const Side side) {
+  assert(uplo == Upper || uplo == Lower);
+  assert(side == Left || side == Right);
+  trsm_omm(A, B, uplo, side);
 }
 
 define_method(
   void, trsm_omm,
-  (const Hierarchical& A, Hierarchical& B, int uplo, int lr)
+  (const Hierarchical& A, Hierarchical& B, const Mode uplo, const Side side)
 ) {
   switch (uplo) {
-  case TRSM_UPPER:
-    switch (lr) {
-    case TRSM_LEFT:
-      if (B.dim[1] == 1) {
-        for (int64_t i=B.dim[0]-1; i>=0; i--) {
-          for (int64_t j=B.dim[0]-1; j>i; j--) {
-            gemm(A(i,j), B[j], B[i], -1, 1);
+    case Upper:
+      switch (side) {
+        case Left:
+          if (B.dim[1] == 1) {
+            for (int64_t i=B.dim[0]-1; i>=0; i--) {
+              for (int64_t j=B.dim[0]-1; j>i; j--) {
+                gemm(A(i,j), B[j], B[i], -1, 1);
+              }
+              trsm(A(i,i), B[i], Upper, Left);
+            }
+          } else {
+            omm_error_handler(
+                "Left upper with B.dim[1] != 1 trsm", {A, B}, __FILE__, __LINE__);
+            std::abort();
           }
-          trsm(A(i,i), B[i], TRSM_UPPER, TRSM_LEFT);
-        }
-      } else {
-        omm_error_handler(
-          "Left upper with B.dim[1] != 1 trsm", {A, B}, __FILE__, __LINE__);
-        std::abort();
+          break;
+        case Right:
+          for (int64_t i=0; i<B.dim[0]; i++) {
+            for (int64_t j=0; j<B.dim[1]; j++) {
+              for (int64_t k=0; k<j; k++) {
+                gemm(B(i,k), A(k,j), B(i,j), -1, 1);
+              }
+              trsm(A(j,j), B(i,j), Upper, Right);
+            }
+          }
       }
       break;
-    case TRSM_RIGHT:
-      for (int64_t i=0; i<B.dim[0]; i++) {
-        for (int64_t j=0; j<B.dim[1]; j++) {
-          for (int64_t k=0; k<j; k++) {
-            gemm(B(i,k), A(k,j), B(i,j), -1, 1);
+    case Lower:
+      switch (side) {
+        case Left:
+          for (int64_t j=0; j<B.dim[1]; j++) {
+            for (int64_t i=0; i<B.dim[0]; i++) {
+              for (int64_t k=0; k<i; k++) {
+                gemm(A(i,k), B(k,j), B(i,j), -1, 1);
+              }
+              trsm(A(i,i), B(i,j), Lower, Left);
+            }
           }
-          trsm(A(j,j), B(i,j), TRSM_UPPER, TRSM_RIGHT);
-        }
-      }
-    }
-    break;
-  case TRSM_LOWER:
-    switch (lr) {
-    case TRSM_LEFT:
-      for (int64_t j=0; j<B.dim[1]; j++) {
-        for (int64_t i=0; i<B.dim[0]; i++) {
-          for (int64_t k=0; k<i; k++) {
-            gemm(A(i,k), B(k,j), B(i,j), -1, 1);
-          }
-          trsm(A(i,i), B(i,j), TRSM_LOWER, TRSM_LEFT);
-        }
+          break;
+        case Right:
+          omm_error_handler("Right lower trsm", {A, B}, __FILE__, __LINE__);
+          std::abort();
       }
       break;
-    case TRSM_RIGHT:
-      omm_error_handler("Right lower trsm", {A, B}, __FILE__, __LINE__);
-      std::abort();
-    }
-    break;
   }
 }
 
-define_method(void, trsm_omm, (const Dense& A, Dense& B, int uplo, int lr)) {
-  timing::start("DTRSM");
+define_method(void, trsm_omm, (const Dense& A, Dense& B, const Mode uplo, const Side side)) {
   cblas_dtrsm(
     CblasRowMajor,
-    lr==TRSM_LEFT?CblasLeft:CblasRight,
-    uplo==TRSM_UPPER?CblasUpper:CblasLower,
+    side==Left?CblasLeft:CblasRight,
+    uplo==Upper?CblasUpper:CblasLower,
     CblasNoTrans,
-    uplo==TRSM_UPPER?CblasNonUnit:CblasUnit,
+    uplo==Upper?CblasNonUnit:CblasUnit,
     B.dim[0], B.dim[1],
     1,
     &A, A.stride,
     &B, B.stride
   );
-  timing::stop("DTRSM");
 }
 
-define_method(void, trsm_omm, (const Matrix& A, LowRank& B, int uplo, int lr)) {
-  switch (lr) {
-  case TRSM_LEFT:
-    trsm(A, B.U, uplo, lr);
+define_method(void, trsm_omm, (const Matrix& A, LowRank& B, const Mode uplo, const Side side)) {
+  switch (side) {
+  case Left:
+    trsm(A, B.U, uplo, side);
     break;
-  case TRSM_RIGHT:
-    trsm(A, B.V, uplo, lr);
+  case Right:
+    trsm(A, B.V, uplo, side);
     break;
   }
 }
 
 define_method(
   void, trsm_omm,
-  (const Hierarchical& A, Dense& B, int uplo, int lr)
+  (const Hierarchical& A, Dense& B, const Mode uplo, const Side side)
 ) {
   Hierarchical BH = split(
-    B, lr==TRSM_LEFT?A.dim[0]:1, lr==TRSM_LEFT?1:A.dim[1]
+    B, side==Left?A.dim[0]:1, side==Left?1:A.dim[1]
   );
-  trsm(A, BH, uplo, lr);
+  trsm(A, BH, uplo, side);
 }
 
 // Fallback default, abort with error message
-define_method(void, trsm_omm, (const Matrix& A, Matrix& B, int, int)) {
+define_method(void, trsm_omm, (const Matrix& A, Matrix& B, const Mode, const Side)) {
   omm_error_handler("trsm", {A, B}, __FILE__, __LINE__);
   std::abort();
 }

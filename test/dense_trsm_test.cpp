@@ -19,8 +19,8 @@ TEST_P(TRSMTests, DenseTrsm) {
   hicma::Dense L, U;
 
   std::tie(L, U) = hicma::getrf(A);
-  hicma::trsm(L, b, hicma::TRSM_LOWER);
-  hicma::trsm(U, b, hicma::TRSM_UPPER);
+  hicma::trsm(L, b, hicma::Lower);
+  hicma::trsm(U, b, hicma::Upper);
 
   // Check result
   for (int64_t i = 0; i < n; ++i) {

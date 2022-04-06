@@ -27,7 +27,7 @@ namespace hicma
 
 void trmm(
   const Matrix& A, Matrix& B,
-  const char& side, const char& uplo, const char& trans, const char& diag,
+  const Side side, const Mode uplo, const char& trans, const char& diag,
   double alpha
 ) {
   trmm_omm(A, B, side, uplo, trans, diag, alpha);
@@ -35,7 +35,7 @@ void trmm(
 
 void trmm(
   const Matrix& A, Matrix& B,
-  const char& side, const char& uplo,
+  const Side side, const Mode uplo,
   double alpha
 ) {
   trmm_omm(A, B, side, uplo, 'n', 'n', alpha);
@@ -45,17 +45,17 @@ define_method(
   void, trmm_omm,
   (
     const Dense& A, Dense& B,
-    const char& side, const char& uplo, const char& trans, const char& diag,
+    const Side side, const Mode uplo, const char& trans, const char& diag,
     double alpha
   )
 ) {
   // D D
   assert(A.dim[0] == A.dim[1]);
-  assert(A.dim[0] == (side == 'l' ? B.dim[0] : B.dim[1]));
+  assert(A.dim[0] == (side == Left ? B.dim[0] : B.dim[1]));
   cblas_dtrmm(
     CblasRowMajor,
-    side == 'l' ? CblasLeft : CblasRight,
-    uplo == 'u' ? CblasUpper : CblasLower,
+    side == Left ? CblasLeft : CblasRight,
+    uplo == Upper ? CblasUpper : CblasLower,
     trans == 't' ? CblasTrans : CblasNoTrans,
     diag == 'u' ? CblasUnit : CblasNonUnit,
     B.dim[0], B.dim[1], alpha, &A, A.stride, &B, B.stride
@@ -66,16 +66,16 @@ define_method(
   void, trmm_omm,
   (
     const Dense& A, LowRank& B,
-    const char& side, const char& uplo,  const char& trans, const char& diag,
+    const Side side, const Mode uplo,  const char& trans, const char& diag,
     double alpha
   )
 ) {
   // D LR
   assert(A.dim[0] == A.dim[1]);
-  assert(A.dim[0] == (side == 'l' ? B.dim[0] : B.dim[1]));
-  if(side == 'l')
+  assert(A.dim[0] == (side == Left ? B.dim[0] : B.dim[1]));
+  if(side == Left)
     trmm(A, B.U, side, uplo, trans, diag, alpha);
-  else if(side == 'r')
+  else if(side == Right)
     trmm(A, B.V, side, uplo, trans, diag, alpha);
 }
 
@@ -83,17 +83,17 @@ define_method(
   void, trmm_omm,
   (
     const Hierarchical& A, Hierarchical& B,
-    const char& side, const char& uplo, const char& trans, const char& diag,
+    const Side side, const Mode uplo, const char& trans, const char& diag,
     double alpha
   )
 ) {
   // H H
   assert(A.dim[0] == A.dim[1]);
-  assert(A.dim[0] == (side == 'l' ? B.dim[0] : B.dim[1]));
+  assert(A.dim[0] == (side == Left ? B.dim[0] : B.dim[1]));
   assert(trans != 't'); //TODO implement for transposed case: need transposed gemm complete
   Hierarchical B_copy(B);
-  if(uplo == 'u') {
-    if(side == 'l') {
+  if(uplo == Upper) {
+    if(side == Left) {
       for(int64_t i=0; i<B.dim[0]; i++) {
         for(int64_t j=0; j<B.dim[1]; j++) {
           for(int64_t k=i; k<A.dim[1]; k++) {
@@ -105,7 +105,7 @@ define_method(
         }
       }
     }
-    else if(side == 'r') {
+    else if(side == Right) {
       for(int64_t i=0; i<B.dim[0]; i++) {
         for(int64_t j=0; j<B.dim[1]; j++) {
           for(int64_t k=j; k>=0; k--) {
@@ -118,8 +118,8 @@ define_method(
       }
     }
   }
-  else if(uplo == 'l') {
-    if(side == 'l') {
+  else if(uplo == Lower) {
+    if(side == Left) {
       for(int64_t i=0; i<B.dim[0]; i++) {
         for(int64_t j=0; j<B.dim[1]; j++) {
           for(int64_t k=i; k>=0; k--) {
@@ -131,7 +131,7 @@ define_method(
         }
       }
     }
-    else if(side == 'r') {
+    else if(side == Right) {
       for(int64_t i=0; i<B.dim[0]; i++) {
         for(int64_t j=0; j<B.dim[1]; j++) {
           for(int64_t k=j; k<B.dim[1]; k++) {
@@ -151,7 +151,7 @@ define_method(
   void, trmm_omm,
   (
     const Matrix& A, Matrix& B,
-    const char&, const char&, const char&, const char&, double
+    const Side, const Mode, const char&, const char&, double
   )
 ) {
   omm_error_handler("trmm", {A, B}, __FILE__, __LINE__);

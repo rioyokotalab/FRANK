@@ -58,8 +58,8 @@ TEST_P(BLRFixedAccuracyTest, LUFactorization) {
 
   hicma::Hierarchical L, U;
   std::tie(L, U) = hicma::getrf(A);
-  hicma::trsm(L, b, hicma::TRSM_LOWER);
-  hicma::trsm(U, b, hicma::TRSM_UPPER);
+  hicma::trsm(L, b, hicma::Lower);
+  hicma::trsm(U, b, hicma::Upper);
   double solve_error = hicma::l2_error(x, b);
 
   // Check result
@@ -107,7 +107,7 @@ TEST_P(BLRFixedAccuracyTest, BlockedHouseholderQRFactorization) {
 
   // Residual
   hicma::Hierarchical QR(Q);
-  hicma::trmm(A, QR, 'r', 'u', 'n', 'n', 1.);
+  hicma::trmm(A, QR, hicma::Right, hicma::Upper, 'n', 'n', 1.);
   double residual = hicma::l2_error(D, QR);
   EXPECT_LE(residual, eps);
 
@@ -137,7 +137,7 @@ TEST_P(BLRFixedAccuracyTest, TiledHouseholderQRFactorization) {
 
   // Residual
   hicma::Hierarchical QR(Q);
-  hicma::trmm(A, QR, 'r', 'u', 'n', 'n', 1.);
+  hicma::trmm(A, QR, hicma::Right, hicma::Upper, 'n', 'n', 1.);
   double residual = hicma::l2_error(D, QR);
   EXPECT_LE(residual, eps);
 

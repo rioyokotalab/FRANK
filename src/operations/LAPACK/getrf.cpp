@@ -44,11 +44,11 @@ define_method(MatrixPair, getrf_omm, (Hierarchical& A)) {
     for (int64_t i_c=i+1; i_c<L.dim[0]; i_c++) {
       L(i_c, i) = std::move(A(i_c, i));
       A(i_c, i) = Empty(get_n_rows(L(i_c, i)), get_n_cols(L(i_c, i)));
-      trsm(A(i, i), L(i_c, i), TRSM_UPPER, TRSM_RIGHT);
+      trsm(A(i, i), L(i_c, i), Upper, Right);
     }
     for (int64_t j=i+1; j<A.dim[1]; j++) {
       L(i, j) = Empty(get_n_rows(A(i, j)), get_n_cols(A(i, j)));
-      trsm(L(i, i), A(i, j), TRSM_LOWER, TRSM_LEFT);
+      trsm(L(i, i), A(i, j), Lower, Left);
     }
     for (int64_t i_c=i+1; i_c<L.dim[0]; i_c++) {
       for (int64_t k=i+1; k<A.dim[1]; k++) {
@@ -60,7 +60,6 @@ define_method(MatrixPair, getrf_omm, (Hierarchical& A)) {
 }
 
 define_method(MatrixPair, getrf_omm, (Dense& A)) {
-  timing::start("DGETRF");
   Dense L(A.dim[0], A.dim[1]);
   std::vector<int> ipiv(std::min(A.dim[0], A.dim[1]));
   LAPACKE_dgetrf(
@@ -76,7 +75,6 @@ define_method(MatrixPair, getrf_omm, (Dense& A)) {
     }
     L(i, i) = 1;
   }
-  timing::stop("DGETRF");
   return {std::move(L), std::move(A)};
 }
 

@@ -115,7 +115,6 @@ define_method(
   )
 ) {
   // D D D
-  timing::start("DGEMM");
   int64_t k = TransA ? A.dim[0] : A.dim[1];
   cblas_dgemm(
     CblasRowMajor,
@@ -127,7 +126,6 @@ define_method(
     beta,
     &C, C.stride
   );
-  timing::stop("DGEMM");
 }
 
 define_method(
