@@ -54,7 +54,7 @@ define_method(
   Dense C(A);
   LowRank Vt = transpose(V);
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
-  trmm(T, C, Left, Upper, trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
+  trmm(T, C, Side::Left, Mode::Upper, trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(
     Dense(identity, {}, C.dim[0], C.dim[0]),
     C, A, -1, 1
@@ -68,7 +68,7 @@ define_method(
 ) {
   Dense C(A);
   gemm(V, B, C, 1, 1, true, false); //C = A + Y^t*B
-  trmm(T, C, Left, Upper, trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
+  trmm(T, C, Side::Left, Mode::Upper, trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(
     Dense(identity, {}, C.dim[0], C.dim[0]),
     C, A, -1, 1
@@ -83,7 +83,7 @@ define_method(
   LowRank C(A);
   LowRank Vt = transpose(V);
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
-  trmm(T, C, Left, Upper, trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
+  trmm(T, C, Side::Left, Mode::Upper, trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(
     Dense(identity, {}, C.dim[0], C.dim[0]),
     C, A, -1, 1
@@ -127,7 +127,7 @@ define_method(
   Dense C(A);
   Dense Vt = transpose(V);
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
-  trmm(T, C, Left, Upper, trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
+  trmm(T, C, Side::Left, Mode::Upper, trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(
     Dense(identity, {}, C.dim[0], C.dim[0]),
     C, A, -1, 1
@@ -142,7 +142,7 @@ define_method(
   Dense C(A);
   LowRank Vt = transpose(V);
   gemm(Vt, B, C, 1, 1); //C = A + Y^t * B
-  trmm(T, C, Left, Upper, trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
+  trmm(T, C, Side::Left, Mode::Upper, trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(
     Dense(identity, {}, C.dim[0], C.dim[0]),
     C, A, -1, 1
@@ -157,7 +157,7 @@ define_method(
   LowRank C(A);
   Dense Vt = transpose(V);
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
-  trmm(T, C, Left, Upper, trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
+  trmm(T, C, Side::Left, Mode::Upper, trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(
     Dense(identity, {}, C.dim[0], C.dim[0]),
     C, A, -1, 1
@@ -172,7 +172,7 @@ define_method(
   LowRank C(A);
   LowRank Vt = transpose(V);
   gemm(Vt, B, C, 1, 1); //C = A + Y^t*B
-  trmm(T, C, Left, Upper, trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
+  trmm(T, C, Side::Left, Mode::Upper, trans ? 't' : 'n', 'n', 1); //C = T*C or T^t*C
   gemm(
     Dense(identity, {}, C.dim[0], C.dim[0]),
     C, A, -1, 1

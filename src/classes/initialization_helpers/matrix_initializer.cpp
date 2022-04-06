@@ -52,7 +52,7 @@ bool MatrixInitializer::is_admissible(const ClusterTree& node) const {
   bool admissible = true;
   // Vectors are never admissible
   admissible &= (node.rows.n > 1 && node.cols.n > 1);
-  if(admis_type == PositionBasedAdmis)
+  if(admis_type == AdmisType::PositionBased)
     admissible &= (node.dist_to_diag() > (int64_t)admis);
   else {
     //Get actual coordinates

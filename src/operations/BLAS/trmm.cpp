@@ -51,11 +51,11 @@ define_method(
 ) {
   // D D
   assert(A.dim[0] == A.dim[1]);
-  assert(A.dim[0] == (side == Left ? B.dim[0] : B.dim[1]));
+  assert(A.dim[0] == (side == Side::Left ? B.dim[0] : B.dim[1]));
   cblas_dtrmm(
     CblasRowMajor,
-    side == Left ? CblasLeft : CblasRight,
-    uplo == Upper ? CblasUpper : CblasLower,
+    side == Side::Left ? CblasLeft : CblasRight,
+    uplo == Mode::Upper ? CblasUpper : CblasLower,
     trans == 't' ? CblasTrans : CblasNoTrans,
     diag == 'u' ? CblasUnit : CblasNonUnit,
     B.dim[0], B.dim[1], alpha, &A, A.stride, &B, B.stride
@@ -72,10 +72,10 @@ define_method(
 ) {
   // D LR
   assert(A.dim[0] == A.dim[1]);
-  assert(A.dim[0] == (side == Left ? B.dim[0] : B.dim[1]));
-  if(side == Left)
+  assert(A.dim[0] == (side == Side::Left ? B.dim[0] : B.dim[1]));
+  if(side == Side::Left)
     trmm(A, B.U, side, uplo, trans, diag, alpha);
-  else if(side == Right)
+  else if(side == Side::Right)
     trmm(A, B.V, side, uplo, trans, diag, alpha);
 }
 
@@ -89,11 +89,11 @@ define_method(
 ) {
   // H H
   assert(A.dim[0] == A.dim[1]);
-  assert(A.dim[0] == (side == Left ? B.dim[0] : B.dim[1]));
+  assert(A.dim[0] == (side == Side::Left ? B.dim[0] : B.dim[1]));
   assert(trans != 't'); //TODO implement for transposed case: need transposed gemm complete
   Hierarchical B_copy(B);
-  if(uplo == Upper) {
-    if(side == Left) {
+  if(uplo == Mode::Upper) {
+    if(side == Side::Left) {
       for(int64_t i=0; i<B.dim[0]; i++) {
         for(int64_t j=0; j<B.dim[1]; j++) {
           for(int64_t k=i; k<A.dim[1]; k++) {
@@ -105,7 +105,7 @@ define_method(
         }
       }
     }
-    else if(side == Right) {
+    else if(side == Side::Right) {
       for(int64_t i=0; i<B.dim[0]; i++) {
         for(int64_t j=0; j<B.dim[1]; j++) {
           for(int64_t k=j; k>=0; k--) {
@@ -118,8 +118,8 @@ define_method(
       }
     }
   }
-  else if(uplo == Lower) {
-    if(side == Left) {
+  else if(uplo == Mode::Lower) {
+    if(side == Side::Left) {
       for(int64_t i=0; i<B.dim[0]; i++) {
         for(int64_t j=0; j<B.dim[1]; j++) {
           for(int64_t k=i; k>=0; k--) {
@@ -131,7 +131,7 @@ define_method(
         }
       }
     }
-    else if(side == Right) {
+    else if(side == Side::Right) {
       for(int64_t i=0; i<B.dim[0]; i++) {
         for(int64_t j=0; j<B.dim[1]; j++) {
           for(int64_t k=j; k<B.dim[1]; k++) {

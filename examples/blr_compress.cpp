@@ -28,13 +28,16 @@ int main(int argc, char** argv) {
   if(inputName.length() == 0) { //Default to Laplace1D kernel
     nodes.push_back(equallySpacedVector(N, 0.0, 1.0));
     D = Hierarchical(laplacend, nodes, N, N, Nb, Nb, Nc, Nc, Nc);
-    A = Hierarchical(laplacend, nodes, N, N, rank, Nb, admis, Nc, Nc, PositionBasedAdmis);
+    A = Hierarchical(laplacend, nodes, N, N,
+                     rank, Nb, admis, Nc, Nc, AdmisType::PositionBased);
     outName <<"Laplace1D_"<<N;
   }
   else { // Read matrix (.csv) and geometry information (.geom)
     nodes = read_geometry_file(inputName+".geom");
-    D = Hierarchical(inputName+".csv", RowMajor, nodes, N, N, 0, Nb, Nc, Nc, Nc);
-    A = Hierarchical(inputName+".csv", RowMajor, nodes, N, N, rank, Nb, admis, Nc, Nc, GeometryBasedAdmis);
+    D = Hierarchical(inputName+".csv", MatrixLayout::RowMajor, nodes, N, N,
+                     0, Nb, Nc, Nc, Nc);
+    A = Hierarchical(inputName+".csv", MatrixLayout::RowMajor, nodes, N, N,
+                     rank, Nb, admis, Nc, Nc, AdmisType::GeometryBased);
     outName <<inputName<<"_"<<N;
   }
   print("BLR Compression Accuracy");

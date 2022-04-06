@@ -3,15 +3,13 @@
 
 #include <vector>
 
-typedef std::vector<std::vector<double>> vec2d;
-
 
 namespace hicma {
 
-enum MatrixLayout { RowMajor, ColumnMajor };
-enum Mode { Upper, Lower };
-enum Side { Left, Right };
-enum AdmisType { PositionBasedAdmis, GeometryBasedAdmis };
+enum class MatrixLayout { RowMajor, ColumnMajor };
+enum class Side { Left, Right };
+enum class Mode { Upper, Lower };
+enum class AdmisType { PositionBased, GeometryBased };
 
 } // namespace hicma
 

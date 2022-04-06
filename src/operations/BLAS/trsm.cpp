@@ -27,8 +27,8 @@ namespace hicma
 {
 
 void trsm(const Matrix& A, Matrix& B, const Mode uplo, const Side side) {
-  assert(uplo == Upper || uplo == Lower);
-  assert(side == Left || side == Right);
+  assert(uplo == Mode::Upper || uplo == Mode::Lower);
+  assert(side == Side::Left || side == Side::Right);
   trsm_omm(A, B, uplo, side);
 }
 
@@ -37,15 +37,15 @@ define_method(
   (const Hierarchical& A, Hierarchical& B, const Mode uplo, const Side side)
 ) {
   switch (uplo) {
-    case Upper:
+    case Mode::Upper:
       switch (side) {
-        case Left:
+        case Side::Left:
           if (B.dim[1] == 1) {
             for (int64_t i=B.dim[0]-1; i>=0; i--) {
               for (int64_t j=B.dim[0]-1; j>i; j--) {
                 gemm(A(i,j), B[j], B[i], -1, 1);
               }
-              trsm(A(i,i), B[i], Upper, Left);
+              trsm(A(i,i), B[i], Mode::Upper, Side::Left);
             }
           } else {
             omm_error_handler(
@@ -53,30 +53,30 @@ define_method(
             std::abort();
           }
           break;
-        case Right:
+        case Side::Right:
           for (int64_t i=0; i<B.dim[0]; i++) {
             for (int64_t j=0; j<B.dim[1]; j++) {
               for (int64_t k=0; k<j; k++) {
                 gemm(B(i,k), A(k,j), B(i,j), -1, 1);
               }
-              trsm(A(j,j), B(i,j), Upper, Right);
+              trsm(A(j,j), B(i,j), Mode::Upper, Side::Right);
             }
           }
       }
       break;
-    case Lower:
+    case Mode::Lower:
       switch (side) {
-        case Left:
+        case Side::Left:
           for (int64_t j=0; j<B.dim[1]; j++) {
             for (int64_t i=0; i<B.dim[0]; i++) {
               for (int64_t k=0; k<i; k++) {
                 gemm(A(i,k), B(k,j), B(i,j), -1, 1);
               }
-              trsm(A(i,i), B(i,j), Lower, Left);
+              trsm(A(i,i), B(i,j), Mode::Lower, Side::Left);
             }
           }
           break;
-        case Right:
+        case Side::Right:
           omm_error_handler("Right lower trsm", {A, B}, __FILE__, __LINE__);
           std::abort();
       }
@@ -87,10 +87,10 @@ define_method(
 define_method(void, trsm_omm, (const Dense& A, Dense& B, const Mode uplo, const Side side)) {
   cblas_dtrsm(
     CblasRowMajor,
-    side==Left?CblasLeft:CblasRight,
-    uplo==Upper?CblasUpper:CblasLower,
+    side==Side::Left?CblasLeft:CblasRight,
+    uplo==Mode::Upper?CblasUpper:CblasLower,
     CblasNoTrans,
-    uplo==Upper?CblasNonUnit:CblasUnit,
+    uplo==Mode::Upper?CblasNonUnit:CblasUnit,
     B.dim[0], B.dim[1],
     1,
     &A, A.stride,
@@ -100,10 +100,10 @@ define_method(void, trsm_omm, (const Dense& A, Dense& B, const Mode uplo, const 
 
 define_method(void, trsm_omm, (const Matrix& A, LowRank& B, const Mode uplo, const Side side)) {
   switch (side) {
-  case Left:
+  case Side::Left:
     trsm(A, B.U, uplo, side);
     break;
-  case Right:
+  case Side::Right:
     trsm(A, B.V, uplo, side);
     break;
   }
@@ -114,7 +114,7 @@ define_method(
   (const Hierarchical& A, Dense& B, const Mode uplo, const Side side)
 ) {
   Hierarchical BH = split(
-    B, side==Left?A.dim[0]:1, side==Left?1:A.dim[1]
+    B, side==Side::Left?A.dim[0]:1, side==Side::Left?1:A.dim[1]
   );
   trsm(A, BH, uplo, side);
 }

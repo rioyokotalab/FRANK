@@ -44,8 +44,8 @@ int main(int argc, char** argv) {
   timing::stopAndPrint("LU decomposition", 2);
 
   timing::start("Solution");
-  trsm(L, b, Lower);
-  trsm(U, b, Upper);
+  trsm(L, b, Mode::Lower);
+  trsm(U, b, Mode::Upper);
   timing::stopAndPrint("Solution");
 
   print("LU Accuracy");

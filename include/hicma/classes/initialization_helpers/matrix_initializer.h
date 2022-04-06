@@ -82,12 +82,12 @@ class MatrixInitializer {
    * Vector containing parameters used as input to the kernel
    * and as coordinate of particles
    * @param admis_type
-   * Either PositionBasedAdmis (Default) or GeometryBasedAdmis
+   * Either AdmisType::PositionBased (Default) or AdmisType::GeometryBased
    */
   MatrixInitializer(
     double admis, double eps, int64_t rank,
     std::vector<std::vector<double>> params={},
-    AdmisType admis_type=PositionBasedAdmis
+    AdmisType admis_type=AdmisType::PositionBased
   );
 
   /**

@@ -59,6 +59,6 @@ INSTANTIATE_TEST_SUITE_P(HierarchicalTest, HierarchicalFixedRankTest,
                                           testing::Values(32),
                                           testing::Values(4, 8),
                                           testing::Values(0.0, 0.5, 1.0, 2.0),
-                                          testing::Values(hicma::PositionBasedAdmis, hicma::GeometryBasedAdmis)
+                                          testing::Values(hicma::AdmisType::PositionBased, hicma::AdmisType::GeometryBased)
                                           ));
 

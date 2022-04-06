@@ -141,16 +141,16 @@ void apply_block_col_householder(const Hierarchical& Y, const Hierarchical& T, i
 
   Hierarchical C(1, 1);
   C(0, 0) = A(k, j); //C = Akj
-  trmm(Y(k, k), C(0, 0), Left, Lower, 't', 'u', 1); //C = Ykk^T x Akj
+  trmm(Y(k, k), C(0, 0), Side::Left, Mode::Lower, 't', 'u', 1); //C = Ykk^T x Akj
   for(int64_t i=k+1; i<A.dim[0]; i++) {
     gemm(YkT(0, i-k), A(i, j), C(0, 0), 1, 1); //C += Yik^T x Aij
   }
-  trmm(T(k, 0), C(0, 0), Left, Upper, trans ? 't' : 'n', 'n', 1); //C = (T or T^T) x C
+  trmm(T(k, 0), C(0, 0), Side::Left, Mode::Upper, trans ? 't' : 'n', 'n', 1); //C = (T or T^T) x C
   for(int64_t i=k; i<A.dim[0]; i++) {
     //Aij = Aij - Yik x C
     if(i == k) { //Use trmm since Ykk is unit lower triangular
       Hierarchical _C(C);
-      trmm(Y(k, k), _C(0, 0), Left, Lower, 'n', 'u', 1);
+      trmm(Y(k, k), _C(0, 0), Side::Left, Mode::Lower, 'n', 'u', 1);
       gemm(
         Dense(identity, {}, get_n_rows(_C(0, 0)), get_n_rows(_C(0, 0))),
         _C(0, 0), A(k, j), -1, 1

@@ -65,7 +65,7 @@ class MatrixInitializerKernel : public MatrixInitializer {
    * @param rank
    * Fixed rank to be used for approximating admissible submatrices.
    * @param admis_type
-   * Either PositionBasedAdmis or GeometryBasedAdmis
+   * Either AdmisType::PositionBased or AdmisType::GeometryBased
    */
   MatrixInitializerKernel(
     void (*kernel)(

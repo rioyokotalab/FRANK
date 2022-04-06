@@ -58,8 +58,8 @@ TEST_P(HierarchicalFixedAccuracyTest, LUFactorization) {
 
   hicma::Hierarchical L, U;
   std::tie(L, U) = hicma::getrf(A);
-  hicma::trsm(L, b, hicma::Lower);
-  hicma::trsm(U, b, hicma::Upper);
+  hicma::trsm(L, b, hicma::Mode::Lower);
+  hicma::trsm(U, b, hicma::Mode::Upper);
   double solve_error = hicma::l2_error(x, b);
 
   // Check result
@@ -70,7 +70,7 @@ TEST_P(HierarchicalFixedAccuracyTest, GramSchmidtQRFactorization) {
   hicma::Hierarchical A(hicma::laplacend, randx_A, n_rows, n_cols,
                         nleaf, eps, admis, nb_row, nb_col, admis_type);
   hicma::Hierarchical D(hicma::laplacend, randx_A, n_rows, n_cols,
-                        nleaf, nleaf, nb_row, nb_row, nb_col, hicma::PositionBasedAdmis);
+                        nleaf, nleaf, nb_row, nb_row, nb_col, hicma::AdmisType::PositionBased);
 
   hicma::Hierarchical Q(A);
   hicma::Hierarchical R(A);
@@ -99,6 +99,6 @@ INSTANTIATE_TEST_SUITE_P(HierarchicalTest, HierarchicalFixedAccuracyTest,
                                           testing::Values(32),
                                           testing::Values(1e-6, 1e-8, 1e-10),
                                           testing::Values(0.0, 1.0, 4.0),
-                                          testing::Values(hicma::PositionBasedAdmis, hicma::GeometryBasedAdmis)
+                                          testing::Values(hicma::AdmisType::PositionBased, hicma::AdmisType::GeometryBased)
                                           ));
 

@@ -58,8 +58,8 @@ TEST_P(BLRFixedAccuracyTest, LUFactorization) {
 
   hicma::Hierarchical L, U;
   std::tie(L, U) = hicma::getrf(A);
-  hicma::trsm(L, b, hicma::Lower);
-  hicma::trsm(U, b, hicma::Upper);
+  hicma::trsm(L, b, hicma::Mode::Lower);
+  hicma::trsm(U, b, hicma::Mode::Upper);
   double solve_error = hicma::l2_error(x, b);
 
   // Check result
@@ -70,7 +70,7 @@ TEST_P(BLRFixedAccuracyTest, GramSchmidtQRFactorization) {
   hicma::Hierarchical A(hicma::laplacend, randx_A, n_rows, n_cols,
                         nleaf, eps, admis, nb_row, nb_col, admis_type);
   hicma::Hierarchical D(hicma::laplacend, randx_A, n_rows, n_cols,
-                        nleaf, nleaf, nb_row, nb_row, nb_col, hicma::PositionBasedAdmis);
+                        nleaf, nleaf, nb_row, nb_row, nb_col, hicma::AdmisType::PositionBased);
 
   hicma::Hierarchical Q(A);
   hicma::Hierarchical R(A);
@@ -97,7 +97,7 @@ TEST_P(BLRFixedAccuracyTest, BlockedHouseholderQRFactorization) {
   hicma::Hierarchical A(hicma::laplacend, randx_A, n_rows, n_cols,
                         nleaf, eps, admis, nb_row, nb_col, admis_type);
   hicma::Hierarchical D(hicma::laplacend, randx_A, n_rows, n_cols,
-                        nleaf, nleaf, nb_row, nb_row, nb_col, hicma::PositionBasedAdmis);
+                        nleaf, nleaf, nb_row, nb_row, nb_col, hicma::AdmisType::PositionBased);
   hicma::Hierarchical T(A.dim[1], 1);
   hicma::blocked_householder_blr_qr(A, T);
 
@@ -107,7 +107,7 @@ TEST_P(BLRFixedAccuracyTest, BlockedHouseholderQRFactorization) {
 
   // Residual
   hicma::Hierarchical QR(Q);
-  hicma::trmm(A, QR, hicma::Right, hicma::Upper, 'n', 'n', 1.);
+  hicma::trmm(A, QR, hicma::Side::Right, hicma::Mode::Upper, 'n', 'n', 1.);
   double residual = hicma::l2_error(D, QR);
   EXPECT_LE(residual, eps);
 
@@ -121,7 +121,7 @@ TEST_P(BLRFixedAccuracyTest, TiledHouseholderQRFactorization) {
   hicma::Hierarchical A(hicma::laplacend, randx_A, n_rows, n_cols,
                         nleaf, eps, admis, nb_row, nb_col, admis_type);
   hicma::Hierarchical D(hicma::laplacend, randx_A, n_rows, n_cols,
-                        nleaf, nleaf, nb_row, nb_row, nb_col, hicma::PositionBasedAdmis);
+                        nleaf, nleaf, nb_row, nb_row, nb_col, hicma::AdmisType::PositionBased);
   hicma::Hierarchical T(A.dim[0], A.dim[1]);
   for(int64_t j = 0; j < A.dim[1]; j++) {
     for(int64_t i = 0; i < A.dim[0]; i++) {
@@ -137,7 +137,7 @@ TEST_P(BLRFixedAccuracyTest, TiledHouseholderQRFactorization) {
 
   // Residual
   hicma::Hierarchical QR(Q);
-  hicma::trmm(A, QR, hicma::Right, hicma::Upper, 'n', 'n', 1.);
+  hicma::trmm(A, QR, hicma::Side::Right, hicma::Mode::Upper, 'n', 'n', 1.);
   double residual = hicma::l2_error(D, QR);
   EXPECT_LE(residual, eps);
 
@@ -152,6 +152,6 @@ INSTANTIATE_TEST_SUITE_P(BLRTest, BLRFixedAccuracyTest,
                                           testing::Values(32),
                                           testing::Values(1e-6, 1e-8, 1e-10),
                                           testing::Values(0.0, 1.0, 4.0),
-                                          testing::Values(hicma::PositionBasedAdmis, hicma::GeometryBasedAdmis)
+                                          testing::Values(hicma::AdmisType::PositionBased, hicma::AdmisType::GeometryBased)
                                           ));
 

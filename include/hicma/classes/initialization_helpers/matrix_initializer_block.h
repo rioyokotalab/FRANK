@@ -51,8 +51,8 @@ class MatrixInitializerBlock : public MatrixInitializer {
    * Large `Dense` matrix from which elements are used to assign to submatrices.
    * @param admis
    * Admissibility in terms of distance from the diagonal of the matrix on the
-   * current recursion level (for `PositionBasedAdmis`) or admissibility constant
-   * (for `GeometryBasedAdmis`)
+   * current recursion level (for `AdmisType::PositionBased`) or admissibility constant
+   * (for `AdmisType::GeometryBased`)
    * @param eps
    * Fixed error threshold used for approximating admissible submatrices.
    * @param rank
@@ -60,7 +60,7 @@ class MatrixInitializerBlock : public MatrixInitializer {
    * @param params
    * Vector containing the underlying geometry information of the input `Dense` matrix
    * @param admis_type
-   * Either `PositionBasedAdmis` or `GeometryBasedAdmis`
+   * Either `AdmisType::PositionBased` or `AdmisType::GeometryBased`
    */
   MatrixInitializerBlock(
     Dense&& A, double admis, double eps, int64_t rank,

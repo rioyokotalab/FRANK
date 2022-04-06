@@ -50,14 +50,14 @@ void make_unit_diag(hicma::Hierarchical& A) {
 
 TEST_P(TRMMTests, DenseDense) {
   hicma::Dense A(hicma::random_normal, {},
-                 side == hicma::Left ? n_rows : n_cols,
-                 side == hicma::Left ? n_rows : n_cols);
+                 side == hicma::Side::Left ? n_rows : n_cols,
+                 side == hicma::Side::Left ? n_rows : n_cols);
   hicma::Dense B(hicma::random_normal, {}, n_rows, n_cols);
   hicma::Dense B_copy(B);
   trmm(A, B, side, uplo, trans, diag, alpha);
 
   // Check result
-  if(uplo == hicma::Lower)
+  if(uplo == hicma::Mode::Lower)
     hicma::zero_upper(A);
   else
     hicma::zero_lower(A);
@@ -66,7 +66,7 @@ TEST_P(TRMMTests, DenseDense) {
       A(k, k) = 1.0;
   }
   hicma::Dense B_check(n_rows, n_cols);
-  if(side == hicma::Left)
+  if(side == hicma::Side::Left)
     hicma::gemm(A, B_copy, B_check, alpha, 0, trans == 't', false);
   else
     hicma::gemm(B_copy, A, B_check, alpha, 0, false, trans == 't');
@@ -76,8 +76,8 @@ TEST_P(TRMMTests, DenseDense) {
 
 TEST_P(TRMMTests, DenseLowrank) {
   hicma::Dense A(hicma::random_normal, {},
-                 side == hicma::Left ? n_rows : n_cols,
-                 side == hicma::Left ? n_rows : n_cols);
+                 side == hicma::Side::Left ? n_rows : n_cols,
+                 side == hicma::Side::Left ? n_rows : n_cols);
   std::vector<std::vector<double>> randx {
     hicma::get_sorted_random_vector(4 * std::max(n_rows, n_cols))
   };
@@ -87,7 +87,7 @@ TEST_P(TRMMTests, DenseLowrank) {
   trmm(A, B, side, uplo, trans, diag, alpha);
 
   // Check result
-  if(uplo == hicma::Lower)
+  if(uplo == hicma::Mode::Lower)
     hicma::zero_upper(A);
   else
     hicma::zero_lower(A);
@@ -96,7 +96,7 @@ TEST_P(TRMMTests, DenseLowrank) {
       A(k, k) = 1.0;
   }
   hicma::LowRank B_check(B_copy);
-  if(side == hicma::Left)
+  if(side == hicma::Side::Left)
     hicma::gemm(A, B_copy.U, B_check.U, alpha, 0, trans == 't', false);
   else
     hicma::gemm(B_copy.V, A, B_check.V, alpha, 0, false, trans == 't');
@@ -115,17 +115,17 @@ TEST_P(TRMMTests, HierarchicalHierarchical_BLR) {
   int64_t nb_cols = n_cols / nleaf;
   double admis = 0;
   double eps = 1e-10;
-  int64_t A_n = side == hicma::Left ? n_rows : n_cols;
+  int64_t A_n = side == hicma::Side::Left ? n_rows : n_cols;
   int64_t A_nb = A_n / nleaf;
   hicma::Hierarchical A(hicma::laplacend, randx, A_n, A_n,
-                        nleaf, eps, admis, A_nb, A_nb, hicma::PositionBasedAdmis);
+                        nleaf, eps, admis, A_nb, A_nb, hicma::AdmisType::PositionBased);
   hicma::Hierarchical B(hicma::laplacend, randx, n_rows, n_cols,
-                        nleaf, eps, admis, nb_rows, nb_cols, hicma::PositionBasedAdmis);
+                        nleaf, eps, admis, nb_rows, nb_cols, hicma::AdmisType::PositionBased);
   hicma::Hierarchical B_copy(B);
   trmm(A, B, side, uplo, trans, diag, alpha);
 
   // Check result
-  if(uplo == hicma::Lower)
+  if(uplo == hicma::Mode::Lower)
     hicma::zero_upper(A);
   else
     hicma::zero_lower(A);
@@ -134,7 +134,7 @@ TEST_P(TRMMTests, HierarchicalHierarchical_BLR) {
   }
   hicma::Hierarchical B_check(B_copy);
   zero_all(B_check);
-  if(side == hicma::Left)
+  if(side == hicma::Side::Left)
     hicma::gemm(A, B_copy, B_check, alpha, 1, trans == 't', false);
   else
     hicma::gemm(B_copy, A, B_check, alpha, 1, false, trans == 't');
@@ -146,8 +146,8 @@ TEST_P(TRMMTests, HierarchicalHierarchical_BLR) {
 INSTANTIATE_TEST_SUITE_P(TRMMTests, TRMMTests,
                          testing::Combine(testing::Values(64),
                                           testing::Values(32, 64, 128),
-                                          testing::Values(hicma::Left, hicma::Right),
-                                          testing::Values(hicma::Upper, hicma::Lower),
+                                          testing::Values(hicma::Side::Left, hicma::Side::Right),
+                                          testing::Values(hicma::Mode::Upper, hicma::Mode::Lower),
                                           testing::Values('n'),
                                           testing::Values('u', 'n'),
                                           testing::Values(1.0, 2.0)
