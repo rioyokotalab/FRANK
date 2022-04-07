@@ -27,14 +27,15 @@ int main(int argc, char** argv) {
   std::vector<std::vector<double>> nodes;
   if(inputName.length() == 0) { //Default to Laplace1D kernel
     nodes.push_back(equallySpacedVector(N, 0.0, 1.0));
-    D = Hierarchical<double>(LaplacendKernel<double>(nodes), N, N, Nb, Nb, Nc, Nc, Nc);
-    A = Hierarchical<double>(LaplacendKernel<double>(nodes), N, N, rank, Nb, admis, Nc, Nc, POSITION_BASED_ADMIS);
+    D = Hierarchical<double>(laplacend, nodes, N, N, Nb, Nb, Nc, Nc, Nc);
+    A = Hierarchical<double>(laplacend, nodes, N, N, rank, Nb, admis, Nc, Nc, POSITION_BASED_ADMIS);
     outName <<"Laplace1D_"<<N;
   }
   else { // Read matrix (.csv) and geometry information (.geom)
     nodes = read_geometry_file(inputName+".geom");
-    D = Hierarchical(inputName+".csv", HICMA_ROW_MAJOR, nodes, N, N, 0, Nb, Nc, Nc, Nc);
-    A = Hierarchical(inputName+".csv", HICMA_ROW_MAJOR, nodes, N, N, rank, Nb, admis, Nc, Nc, GEOMETRY_BASED_ADMIS);
+    D = Hierarchical(inputName+".csv", HICMA_ROW_MAJOR, N, N, 0, Nb, Nc, Nc, Nc);
+    // TODO geometry based admiss? does this work?
+    A = Hierarchical(inputName+".csv", HICMA_ROW_MAJOR, N, N, rank, Nb, admis, Nc, Nc, GEOMETRY_BASED_ADMIS);
     outName <<inputName<<"_"<<N;
   }
   print("BLR Compression Accuracy");

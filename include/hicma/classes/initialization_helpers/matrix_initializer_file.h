@@ -9,7 +9,6 @@
 namespace hicma
 {
 
-template<typename U = double>
 class MatrixInitializerFile : public MatrixInitializer {
   private:
     std::string filename;
@@ -31,17 +30,14 @@ class MatrixInitializerFile : public MatrixInitializer {
 
     // Additional constructors
     MatrixInitializerFile(
-      std::string filename, MatrixLayout ordering, double admis, int64_t rank
+      std::string filename, MatrixLayout ordering, double admis=0, int64_t rank=0,
+      int admis_type=POSITION_BASED_ADMIS, vec2d<double> params= vec2d<double>()
     );
 
+    //template<typename P>
     void fill_dense_representation(
       Matrix& A, const IndexRange& row_range, const IndexRange& col_range
     ) const override;
-    
-    template<typename T>
-    void fill_dense_representation(
-      Dense<T>& A, int64_t row_start, int64_t col_start
-    ) const;
 };
 
 } // namespace hicma

@@ -24,8 +24,6 @@ namespace hicma
 
 class MatrixProxy;
 class IndexRange;
-template<typename T>
-class MatrixKernel;
 
 /**
  * @brief Class handling a regular dense matrix
@@ -60,10 +58,6 @@ class Dense : public Matrix {
   // need to be used every time the indexing operator is called, leading to
   // measurable performance decrease.
   T* data_ptr = nullptr;
-  // Shared-unique ID. Shared with Dense matrices that this matrix shares its
-  // data with, otherwise unique.
-  // TODO Consider moving this to the DataHandler class.
-  uint64_t unique_id = -1;
  public:
   Dense() = default;
 
@@ -155,7 +149,7 @@ class Dense : public Matrix {
   /**
    * @brief Construct a new `Dense` object from a kernel function
    *
-   * @param kernel
+   * @param func
    * Kernel used to compute matrix entries from together with \p params.
    * @param params
    * Vector with parameters used as input to the kernel.
@@ -179,20 +173,25 @@ class Dense : public Matrix {
    * for example be used to generate the `Dense` blocks of a `Hierarchical`
    * matrix.
    */
-  // TODO Legacy code, remove?
   Dense(
-    void (*kernel)(
+    void (*func)(
       T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-      const std::vector<std::vector<double>>& params,
+      const vec2d<double>& params,
       int64_t row_start, int64_t col_start
     ),
-    const std::vector<std::vector<double>>& params,
+    const vec2d<double>& params,
     int64_t n_rows, int64_t n_cols=1,
     int64_t row_start=0, int64_t col_start=0
   );
-
-  template<typename U>
-  Dense(const MatrixKernel<U>& kernel, int64_t n_rows, int64_t n_cols=1, int64_t row_start=0, int64_t col_start=0);
+  Dense(
+    void (*func)(
+      T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+      const vec2d<double>& params,
+      int64_t row_start, int64_t col_start
+    ),
+    int64_t n_rows, int64_t n_cols=1,
+    int64_t row_start=0, int64_t col_start=0
+  );
 
   Dense(
     std::string filename, MatrixLayout ordering,
@@ -323,19 +322,6 @@ class Dense : public Matrix {
    * covers a smaller part.
    */
   bool is_submatrix() const;
-
-  // TODO Consider adding conversion operator to uint64_t. Risky though...
-  /**
-   * @brief Get the shared-unique id of this `Dense` instance
-   *
-   * @return uint64_t
-   * Shared-unique ID of the `Dense` instance.
-   *
-   * Shared-unique means that it is unique module shared `Dense` instances. Two
-   * `Dense` instances for which ::is_shared() returns true will have the same
-   * ID. Otherwise, the ID will always be unique.
-   */
-  uint64_t id() const;
 
   /**
    * @brief Split the matrix according to row and column index ranges

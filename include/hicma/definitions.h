@@ -6,8 +6,6 @@
 template <typename U>
 using vec2d = std::vector<std::vector<U>>;
 
-//typedef std::vector<std::vector<double>> vec2d;
-
 enum MatrixLayout { HICMA_ROW_MAJOR, HICMA_COL_MAJOR };
 //To be removed if admissibility checker is passed as function
 enum { POSITION_BASED_ADMIS, GEOMETRY_BASED_ADMIS };

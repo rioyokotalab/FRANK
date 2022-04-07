@@ -40,6 +40,10 @@ MatrixProxy::operator Matrix&() {
   return *ptr;
 }
 
+define_method(std::unique_ptr<Matrix>, clone, (const Dense<float>& A)) {
+  return std::make_unique<Dense<float>>(A);
+}
+
 define_method(std::unique_ptr<Matrix>, clone, (const Dense<double>& A)) {
   return std::make_unique<Dense<double>>(A);
 }
@@ -48,9 +52,18 @@ define_method(std::unique_ptr<Matrix>, clone, (const Empty& A)) {
   return std::make_unique<Empty>(A);
 }
 
+define_method(std::unique_ptr<Matrix>, clone, (const LowRank<float>& A)) {
+  return std::make_unique<LowRank<float>>(A);
+}
+
 define_method(std::unique_ptr<Matrix>, clone, (const LowRank<double>& A)) {
   return std::make_unique<LowRank<double>>(A);
 }
+
+define_method(std::unique_ptr<Matrix>, clone, (const Hierarchical<float>& A)) {
+  return std::make_unique<Hierarchical<float>>(A);
+}
+
 define_method(std::unique_ptr<Matrix>, clone, (const Hierarchical<double>& A)) {
   return std::make_unique<Hierarchical<double>>(A);
 }
@@ -58,6 +71,10 @@ define_method(std::unique_ptr<Matrix>, clone, (const Hierarchical<double>& A)) {
 define_method(std::unique_ptr<Matrix>, clone, (const Matrix& A)) {
   omm_error_handler("clone", {A}, __FILE__, __LINE__);
   std::abort();
+}
+
+define_method(std::unique_ptr<Matrix>, move_clone, (Dense<float>&& A)) {
+  return std::make_unique<Dense<float>>(std::move(A));
 }
 
 define_method(std::unique_ptr<Matrix>, move_clone, (Dense<double>&& A)) {
@@ -68,8 +85,16 @@ define_method(std::unique_ptr<Matrix>, move_clone, (Empty&& A)) {
   return std::make_unique<Empty>(std::move(A));
 }
 
+define_method(std::unique_ptr<Matrix>, move_clone, (LowRank<float>&& A)) {
+  return std::make_unique<LowRank<float>>(std::move(A));
+}
+
 define_method(std::unique_ptr<Matrix>, move_clone, (LowRank<double>&& A)) {
   return std::make_unique<LowRank<double>>(std::move(A));
+}
+
+define_method(std::unique_ptr<Matrix>, move_clone, (Hierarchical<float>&& A)) {
+  return std::make_unique<Hierarchical<float>>(std::move(A));
 }
 
 define_method(std::unique_ptr<Matrix>, move_clone, (Hierarchical<double>&& A)) {

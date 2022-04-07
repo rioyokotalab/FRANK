@@ -47,10 +47,12 @@ class LowRank;
  * sufficient to fully implement the initializer.
  */
 class MatrixInitializer {
- protected:
+ private:
   double admis;
   int64_t rank;
   int admis_type;
+protected:
+  vec2d<double> params;
 
  public:
   // Special member functions
@@ -77,7 +79,8 @@ class MatrixInitializer {
    * Either POSITION_BASED_ADMIS (Default) or GEOMETRY_BASED_ADMIS
    */
   MatrixInitializer(
-    double admis, int64_t rank, int admis_type=POSITION_BASED_ADMIS
+    double admis, int64_t rank, int admis_type=POSITION_BASED_ADMIS,
+    vec2d<double> params = vec2d<double>()
   );
 
   /**
@@ -97,7 +100,7 @@ class MatrixInitializer {
    * assignment works is up to the user, but it is recommended to implement it
    * as a StarPU task so that task parallelism can be used.
    */
-  virtual void fill_dense_representation(
+   virtual void fill_dense_representation(
     Matrix& A, const IndexRange& row_range, const IndexRange& col_range
   ) const = 0;
 
@@ -137,7 +140,10 @@ class MatrixInitializer {
    * @return false
    * If the node is not admissible.
    */
-  virtual bool is_admissible(const ClusterTree& node) const;
+  //template<typename P>
+  bool is_admissible(const ClusterTree& node) const;
+
+  vec2d<double> get_coords_range(const IndexRange& range) const;
 };
 
 } // namespace hicma

@@ -41,14 +41,14 @@ class MatrixInitializerBlock : public MatrixInitializer {
     /**
      * @brief Construct a new `MatrixInitializerBlock` object
      *
-     * @param A
+     * @param matrix
      * Large `Dense` matrix from which elements are used to assign to submatrices.
      * @param admis
      * Distance-to-diagonal admissibility condition.
      * @param rank
      * Fixed rank to be used for approximating admissible submatrices.
      */
-    MatrixInitializerBlock(Dense<U>&& A, double admis, int64_t rank);
+    MatrixInitializerBlock(Dense<U>&& matrix, double admis, int64_t rank);
 
     /**
      * @brief Specialization for assigning matrix elements
@@ -66,6 +66,7 @@ class MatrixInitializerBlock : public MatrixInitializer {
      * \p row_range and \p col_range are both used as indices into the large
      * `Dense` matrix that was passed to the constructor of this class.
      */
+    //template<typename P>
     void fill_dense_representation(
       Matrix& A, const IndexRange& row_range, const IndexRange& col_range
     ) const override;

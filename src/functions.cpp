@@ -1,12 +1,8 @@
 #include "hicma/functions.h"
 
-#include "hicma/operations/misc.h"
-
-#include <algorithm>
 #include <cmath>
-#include <cstdint>
 #include <random>
-#include <vector>
+#include <cassert>
 
 namespace hicma
 {
@@ -129,6 +125,7 @@ void random_normal(
   std::normal_distribution<double> dist(0.0, 1.0);
   for (uint64_t i=0; i<A_rows; i++) {
     for (uint64_t j=0; j<A_cols; j++) {
+      // relies on implicit type conversion
       A[i*A_stride+j] = dist(gen);
     }
   }
@@ -146,6 +143,7 @@ void random_uniform(
   std::uniform_real_distribution<double> dist(0.0, 1.0);
   for (uint64_t i=0; i<A_rows; i++) {
     for (uint64_t j=0; j<A_cols; j++) {
+      // relies on implicit type conversion
       A[i*A_stride+j] = dist(gen);
     }
   }
@@ -154,11 +152,12 @@ void random_uniform(
 template<typename T>
 void arange(
   T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-  const std::vector<std::vector<double>>&, int64_t, int64_t
+  const std::vector<std::vector<double>>&, int64_t row_start, int64_t col_start
 ) {
   for (uint64_t i=0; i<A_rows; i++) {
     for (uint64_t j=0; j<A_cols; j++) {
-      A[i*A_stride+j] = (double)(i*A_cols+j);
+      // relies on implicit type conversion
+      A[i*A_stride+j] = ((row_start+i)*A_cols+col_start+j);
     }
   }
 }
@@ -169,10 +168,12 @@ void cauchy2d(
   const std::vector<std::vector<double>>& x,
   int64_t row_start, int64_t col_start
 ) {
+  assert(x.size()>1);
   for (uint64_t i=0; i<A_rows; i++) {
     for (uint64_t j=0; j<A_cols; j++) {
       // double sgn = (arc4random() % 2 ? 1.0 : -1.0);
       double rij = (x[0][i+row_start] - x[1][j+col_start]) + 1e-2;
+      // relies on implicit type conversion
       A[i*A_stride+j] = 1.0 / rij;
     }
   }
@@ -193,6 +194,7 @@ void laplacend(
           * (x[k][i+row_start] - x[k][j+col_start])
         );
       }
+      // relies on implicit type conversion
       A[i*A_stride+j] = 1 / (std::sqrt(rij) + 1e-3);
     }
   }
@@ -213,6 +215,7 @@ void helmholtznd(
           * (x[k][i+row_start] - x[k][j+col_start])
         );
       }
+      // relies on implicit type conversion
       A[i*A_stride+j] = std::exp(-1.0 * rij) / (std::sqrt(rij) + 1e-3);
     }
   }

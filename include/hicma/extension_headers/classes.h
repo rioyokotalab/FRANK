@@ -24,7 +24,7 @@ declare_method(std::unique_ptr<Matrix>, move_clone, (virtual_<Matrix&&>))
 declare_method(MatrixProxy, shallow_copy_omm, (virtual_<const Matrix&>))
 
 declare_method(
-  Hierarchical<double>, split_omm,
+  MatrixProxy, split_omm,
   (
     virtual_<const Matrix&>,
     const std::vector<IndexRange>&, const std::vector<IndexRange>&,
@@ -32,8 +32,12 @@ declare_method(
   )
 )
 
+// TODO overload of OMM function to allow for default arguments
+// row_start and colum_start are only used in case of 2 dense matrices
+void fill_dense_from(const Matrix& A, Matrix &B);
+
 declare_method(
-  void, fill_dense_from, (virtual_<const Matrix&>, virtual_<Matrix&>)
+  void, fill_dense_from, (virtual_<const Matrix&>, virtual_<Matrix&>, int64_t, int64_t)
 )
 
 } // namespace hicma

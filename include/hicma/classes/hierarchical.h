@@ -8,14 +8,11 @@
 #define hicma_classes_hierarchical_h
 
 #include "hicma/definitions.h"
-//added this line instead of declaring Dense below
-#include "hicma/classes/dense.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
 
 #include <array>
 #include <cstdint>
-#include <tuple>
 #include <vector>
 
 
@@ -25,10 +22,11 @@
 namespace hicma
 {
 
-//class Dense<double>;
 class ClusterTree;
-template<typename T>
 class MatrixInitializer;
+template<typename T>
+class Dense;
+
 
 /**
  * @brief Flexible class handling any kind of block-structured matrix.
@@ -114,7 +112,78 @@ class Hierarchical : public Matrix {
    */
   Hierarchical(
     const ClusterTree& node,
-    MatrixInitializer<T>& initializer
+    MatrixInitializer& initializer
+  );
+
+    /**
+   * @brief Construct a new `Hierarchical` matrix from a kernel and parameters
+   *
+   * @param kernel
+   * Kernel used to compute matrix entries from together with \p params.
+   * @param params
+   * Vector with parameters used as input to the kernel.
+   * @param n_rows
+   * Number of rows of the new matrix.
+   * @param n_cols
+   * Number of columns of the new matrix.
+   * @param rank
+   * Fixed rank used for any `LowRank` approximations.
+   * @param nleaf
+   * Maximum size for leaf level submatrices.
+   * @param admis
+   * Admissibility in terms of distance from the diagonal of the matrix on the
+   * current recursion level (for `POSITION_BASED_ADMIS`) or admissibility constant
+   * (for `GEOMETRY_BASED_ADMIS`)
+   * @param admis_type
+   * Either `POSITION_BASED_ADMIS` or `GEOMETRY_BASED_ADMIS`
+   * @param n_row_blocks
+   * Number of blocks rows of the new `Hierarchical` matrix.
+   * @param n_col_blocks
+   * Number of blocks columns of the new `Hierarchical` matrix.
+   * @param row_start
+   * Starting index into the vector \p params of the rows of the new matrix.
+   * @param col_start
+   * Starting index into the vector \p params of the columns of the new matrix.
+   *
+   * The elements of the submatrices of the `Hierarchical` matrix will be
+   * calculated according to the kernel function as well as the vector of values
+   * passed to this function. In an application, the parameters could for
+   * example be coordinates of particles, and the kernel could describe the
+   * interaction of particles. The result would be an interaction matrix between
+   * two groups of particles. Using \p row_start, \p col_start as well as \p
+   * n_rows and \p n_cols, one can create this matrix for the interaction
+   * between arbitrary sub-groups of the particles for which the parameters are
+   * available in \p params.
+   */
+
+  Hierarchical(
+    void (*func)(
+      T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+      const vec2d<double>& params,
+      int64_t row_start, int64_t col_start
+    ),
+    int64_t n_rows, int64_t n_cols,
+    int64_t rank,
+    int64_t nleaf,
+    double admis=0,
+    int64_t n_row_blocks=2, int64_t n_col_blocks=2,
+    int64_t row_start=0, int64_t col_start=0
+  );
+
+  Hierarchical(
+    void (*func)(
+      T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+      const vec2d<double>& params,
+      int64_t row_start, int64_t col_start
+    ),
+    const vec2d<double>& params,
+    int64_t n_rows, int64_t n_cols,
+    int64_t rank,
+    int64_t nleaf,
+    double admis=0,
+    int64_t n_row_blocks=2, int64_t n_col_blocks=2,
+    int admis_type=POSITION_BASED_ADMIS,
+    int64_t row_start=0, int64_t col_start=0
   );
 
   /**
@@ -157,13 +226,22 @@ class Hierarchical : public Matrix {
    * between arbitrary sub-groups of the particles for which the parameters are
    * available in \p params.
    */
+  /*template<typename U>
   Hierarchical(
-    void (*kernel)(
-      T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-      const std::vector<std::vector<double>>& params,
-      int64_t row_start, int64_t col_start
-    ),
-    std::vector<std::vector<double>> params,
+    const MatrixKernel<U>& kernel,
+    int64_t n_rows, int64_t n_cols,
+    int64_t rank,
+    int64_t nleaf,
+    double admis=0,
+    int64_t n_row_blocks=2, int64_t n_col_blocks=2,
+    const vec2d<double>& params = vec2d<double>(),
+    int admis_type=POSITION_BASED_ADMIS,
+    int64_t row_start=0, int64_t col_start=0
+  );
+
+  template<typename U>
+  Hierarchical(
+    MatrixKernel<U>&& kernel,
     int64_t n_rows, int64_t n_cols,
     int64_t rank,
     int64_t nleaf,
@@ -172,7 +250,7 @@ class Hierarchical : public Matrix {
     int admis_type=POSITION_BASED_ADMIS,
     int64_t row_start=0, int64_t col_start=0
   );
-
+*/
   /**
    * @brief Construct a new `Hierarchical` matrix from a `Dense` matrix
    *
@@ -199,8 +277,9 @@ class Hierarchical : public Matrix {
    * If the input data is already available as a `Dense` matrix, use this
    * constructor to create the hierarchical compression.
    */
+  template<typename U>
   Hierarchical(
-    Dense<T>&& A,
+    Dense<U>&& A,
     int64_t rank,
     int64_t nleaf,
     double admis=0,
@@ -210,20 +289,22 @@ class Hierarchical : public Matrix {
 
   Hierarchical(
     std::string filename, MatrixLayout ordering,
-    std::vector<std::vector<double>> params,
     int64_t n_rows, int64_t n_cols,
     int64_t rank,
     int64_t nleaf,
     double admis=0,
     int64_t n_row_blocks=2, int64_t n_col_blocks=2,
-    int admis_type=POSITION_BASED_ADMIS,
     int64_t row_start=0, int64_t col_start=0
   );
 
   Hierarchical(
-    int64_t N, int64_t nleaf, int64_t nblocks,
-    double beta, double nu, double noise, double sigma, int ndim,
-    double admis, int64_t rank, int admis_type=POSITION_BASED_ADMIS,
+    std::string filename, MatrixLayout ordering,
+    const vec2d<double>& params,
+    int64_t n_rows, int64_t n_cols,
+    int64_t rank,
+    int64_t nleaf,
+    double admis=0,
+    int64_t n_row_blocks=2, int64_t n_col_blocks=2,
     int64_t row_start=0, int64_t col_start=0
   );
 

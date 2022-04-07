@@ -6,7 +6,6 @@
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix_proxy.h"
 #include "hicma/classes/initialization_helpers/index_range.h"
-#include "hicma/classes/initialization_helpers/matrix_kernels/matrix_kernel.h"
 #include "hicma/classes/initialization_helpers/matrix_initializer_file.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/misc.h"
@@ -26,22 +25,16 @@ namespace hicma
 // explicit template initialization (these are the only available types)
 template class Dense<float>;
 template class Dense<double>;
-template Dense<float>::Dense(const MatrixKernel<float>&, int64_t, int64_t, int64_t, int64_t);
-template Dense<float>::Dense(const MatrixKernel<double>&, int64_t, int64_t, int64_t, int64_t);
-template Dense<double>::Dense(const MatrixKernel<float>&, int64_t, int64_t, int64_t, int64_t);
-template Dense<double>::Dense(const MatrixKernel<double>&, int64_t, int64_t, int64_t, int64_t);
 template void Dense<float>::copy_to(Dense<float>&, int64_t, int64_t) const;
 template void Dense<float>::copy_to(Dense<double>&, int64_t, int64_t) const;
 template void Dense<double>::copy_to(Dense<float>&, int64_t, int64_t) const;
 template void Dense<double>::copy_to(Dense<double>&, int64_t, int64_t) const;
 
-uint64_t next_unique_id = 0;
 
-//TODO does this enable implicit type conversion?
+//TODO no implicit type conversion
 template<typename T>
 Dense<T>::Dense(const Dense<T>& A)
-: Matrix(A), dim{A.dim[0], A.dim[1]}, stride(A.dim[1]), rel_start{0, 0},
-  unique_id(next_unique_id++)
+: Matrix(A), dim{A.dim[0], A.dim[1]}, stride(A.dim[1]), rel_start{0, 0}
 {
   timing::start("Dense cctor");
   (*data).resize(dim[0]*dim[1], 0);
@@ -61,16 +54,16 @@ Dense<T>& Dense<T>::operator=(const Dense<T>& A) {
   rel_start = {0, 0};
   data_ptr = &(*data)[0];
   fill_dense_from(A, *this);
-  unique_id = next_unique_id++;
   timing::stop("Dense copy assignment");
   return *this;
 }
 
+// Also enables switching between template types
 template<typename T>
 Dense<T>::Dense(const Matrix& A)
 : Matrix(A), dim{get_n_rows(A), get_n_cols(A)}, stride(dim[1]),
   data(std::make_shared<std::vector<T>>(dim[0]*dim[1], 0)),
-  rel_start{0, 0}, data_ptr(&(*data)[0]), unique_id(next_unique_id++)
+  rel_start{0, 0}, data_ptr(&(*data)[0])
 {
   fill_dense_from(A, *this);
 }
@@ -87,10 +80,10 @@ void fill_dense_from_hierarchical(const Hierarchical<T>& A, Dense<T>& B) {
   timing::stop("make_dense(H)"); 
 }
 
-define_method(void, fill_dense_from, (const Hierarchical<double>& A, Dense<double>& B)) {
+define_method(void, fill_dense_from, (const Hierarchical<double>& A, Dense<double>& B, int64_t, int64_t)) {
   fill_dense_from_hierarchical(A, B);
 }
-define_method(void, fill_dense_from, (const Hierarchical<float>& A, Dense<float>& B)) {
+define_method(void, fill_dense_from, (const Hierarchical<float>& A, Dense<float>& B, int64_t, int64_t)) {
   fill_dense_from_hierarchical(A, B);
 }
 
@@ -101,31 +94,24 @@ void fill_dense_from_low_rank(const LowRank<T>& A, Dense<T>& B) {
   timing::stop("make_dense(LR)");
 }
 
-define_method(void, fill_dense_from, (const LowRank<double>& A, Dense<double>& B)) {
+define_method(void, fill_dense_from, (const LowRank<double>& A, Dense<double>& B, int64_t, int64_t)) {
   fill_dense_from_low_rank(A, B);
 }
-define_method(void, fill_dense_from, (const LowRank<float>& A, Dense<float>& B)) {
+define_method(void, fill_dense_from, (const LowRank<float>& A, Dense<float>& B, int64_t, int64_t)) {
   fill_dense_from_low_rank(A, B);
 }
 
-template<typename T, typename U>
-void fill_dense_from_dense(const Dense<T>& A, Dense<U>& B) {
-  assert(A.dim[0] == B.dim[0]);
-  assert(A.dim[1] == B.dim[1]);
-  A.copy_to(B);
+define_method(void, fill_dense_from, (const Dense<double>& A, Dense<double>& B, int64_t row_start, int64_t col_start)) {
+  A.copy_to(B, row_start, col_start);
 }
-
-define_method(void, fill_dense_from, (const Dense<double>& A, Dense<double>& B)) {
-  fill_dense_from_dense(A, B);
+define_method(void, fill_dense_from, (const Dense<float>& A, Dense<float>& B, int64_t row_start, int64_t col_start)) {
+  A.copy_to(B, row_start, col_start);
 }
-define_method(void, fill_dense_from, (const Dense<float>& A, Dense<float>& B)) {
-  fill_dense_from_dense(A, B);
+define_method(void, fill_dense_from, (const Dense<double>& A, Dense<float>& B, int64_t row_start, int64_t col_start)) {
+  A.copy_to(B, row_start, col_start);
 }
-define_method(void, fill_dense_from, (const Dense<double>& A, Dense<float>& B)) {
-  fill_dense_from_dense(A, B);
-}
-define_method(void, fill_dense_from, (const Dense<float>& A, Dense<double>& B)) {
-  fill_dense_from_dense(A, B);
+define_method(void, fill_dense_from, (const Dense<float>& A, Dense<double>& B, int64_t row_start, int64_t col_start)) {
+  A.copy_to(B, row_start, col_start);
 }
 
 template<typename T>
@@ -135,14 +121,14 @@ void fill_dense_from_empty(const Empty&, Dense<T>& B) {
   B = 0.0;
 }
 
-define_method(void, fill_dense_from, (const Empty& A, Dense<double>& B)) {
+define_method(void, fill_dense_from, (const Empty& A, Dense<double>& B, int64_t, int64_t)) {
   fill_dense_from_empty(A, B);
 }
-define_method(void, fill_dense_from, (const Empty& A, Dense<float>& B)) {
+define_method(void, fill_dense_from, (const Empty& A, Dense<float>& B, int64_t, int64_t)) {
   fill_dense_from_empty(A, B);
 }
 
-define_method(void, fill_dense_from, (const Matrix& A, Matrix& B)) {
+define_method(void, fill_dense_from, (const Matrix& A, Matrix& B, int64_t, int64_t)) {
   omm_error_handler("fill_dense_from", {A, B}, __FILE__, __LINE__);
   std::abort();
 }
@@ -170,7 +156,7 @@ define_method(Matrix&&, move_from_dense, (Matrix& A)) {
 
 template<typename T>
 Dense<T>::Dense(int64_t n_rows, int64_t n_cols)
-: dim{n_rows, n_cols}, stride(dim[1]), unique_id(next_unique_id++) {
+: dim{n_rows, n_cols}, stride(dim[1]) {
   timing::start("Dense alloc");
   (*data).resize(dim[0]*dim[1], 0);
   rel_start = {0, 0};
@@ -178,36 +164,45 @@ Dense<T>::Dense(int64_t n_rows, int64_t n_cols)
   timing::stop("Dense alloc");
 }
 
-// TODO Legacy code, remove?
 template<typename T>
 Dense<T>::Dense(
-  void (*kernel)(
+  void (*func)(
     T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-    const std::vector<std::vector<double>>& params,
+    const vec2d<double>& params,
     int64_t row_start, int64_t col_start
   ),
-  const std::vector<std::vector<double>>& params,
   int64_t n_rows, int64_t n_cols,
   int64_t row_start, int64_t col_start
 ) : Dense(n_rows, n_cols) {
-    kernel(
+    vec2d<double> params;
+    func(
       &(*this), dim[0], dim[1], stride, params, row_start, col_start
     );
 }
 
-template<typename T> template<typename U>
-Dense<T>::Dense(const MatrixKernel<U>& kernel, int64_t n_rows, int64_t n_cols, int64_t row_start, int64_t col_start) : Dense(n_rows, n_cols) {
-  kernel.apply(*this, row_start, col_start);
+template<typename T>
+Dense<T>::Dense(
+  void (*func)(
+    T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+    const vec2d<double>& params,
+    int64_t row_start, int64_t col_start
+  ),
+  const vec2d<double>& params,
+  int64_t n_rows, int64_t n_cols,
+  int64_t row_start, int64_t col_start
+) : Dense(n_rows, n_cols) {
+    func(
+      &(*this), dim[0], dim[1], stride, params, row_start, col_start
+    );
 }
 
-//TODO this can not set the datatype of the file?
 template<typename T>
 Dense<T>::Dense(
   std::string filename, MatrixLayout ordering,
   int64_t n_rows, int64_t n_cols,
   int64_t row_start, int64_t col_start
 ) : Dense(n_rows, n_cols) {
-  MatrixInitializerFile<T> initializer(filename, ordering, 0, 0);
+  MatrixInitializerFile initializer(filename, ordering);
   initializer.fill_dense_representation(*this,
 					{row_start, n_rows},
 					{col_start, n_cols});
@@ -288,7 +283,6 @@ Dense<T> Dense<T>::shallow_copy() const {
   out.data = data;
   out.rel_start = rel_start;
   out.data_ptr = data_ptr;
-  out.unique_id = unique_id;
   return out;
 }
 
@@ -299,10 +293,6 @@ bool Dense<T>::is_submatrix() const {
   out &= (data->size() == uint64_t(dim[0] * dim[1]));
   return !out;
 }
-
-// TODO does not make sense, remove or write test
-template<typename T>
-uint64_t Dense<T>::id() const { return unique_id; }
 
 template<typename T>
 std::vector<Dense<T>> Dense<T>::split(
@@ -331,7 +321,6 @@ std::vector<Dense<T>> Dense<T>::split(
         child.data_ptr = &(*child.data)[
           child.rel_start[0]*child.stride + child.rel_start[1]
         ];
-        child.unique_id = next_unique_id++;
         out[i*col_ranges.size()+j] = std::move(child);
       }
     }
@@ -347,6 +336,11 @@ std::vector<Dense<T>> Dense<T>::split(
   return split(
     row_index.split(n_row_splits), col_index.split(n_col_splits), copy
   );
+}
+
+//TODO move somewhere else?
+void fill_dense_from(const Matrix& A, Matrix &B){
+  fill_dense_from(A, B, 0, 0);
 }
 
 //TODO remove

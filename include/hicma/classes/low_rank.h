@@ -9,7 +9,6 @@
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/matrix.h"
-#include "hicma/classes/matrix_proxy.h"
 
 #include <array>
 #include <cstdint>
@@ -20,6 +19,8 @@
  */
 namespace hicma
 {
+
+class MatrixProxy;
 
 /**
  * @brief Class handling a matrix decomposed into three factors

@@ -7,16 +7,7 @@ target_sources(hicma PRIVATE
   ${CMAKE_CURRENT_LIST_DIR}/initialization_helpers/index_range.cpp
   ${CMAKE_CURRENT_LIST_DIR}/initialization_helpers/matrix_initializer.cpp
   ${CMAKE_CURRENT_LIST_DIR}/initialization_helpers/matrix_initializer_block.cpp
-  ${CMAKE_CURRENT_LIST_DIR}/initialization_helpers/matrix_initializer_kernel.cpp
+#  ${CMAKE_CURRENT_LIST_DIR}/initialization_helpers/matrix_initializer_kernel.cpp
+  ${CMAKE_CURRENT_LIST_DIR}/initialization_helpers/matrix_initializer_function.cpp
   ${CMAKE_CURRENT_LIST_DIR}/initialization_helpers/matrix_initializer_file.cpp
-  ${CMAKE_CURRENT_LIST_DIR}/initialization_helpers/matrix_kernels/matrix_kernel.cpp
-  ${CMAKE_CURRENT_LIST_DIR}/initialization_helpers/matrix_kernels/zero_kernel.cpp
-  ${CMAKE_CURRENT_LIST_DIR}/initialization_helpers/matrix_kernels/arange_kernel.cpp
-  ${CMAKE_CURRENT_LIST_DIR}/initialization_helpers/matrix_kernels/identity_kernel.cpp
-  ${CMAKE_CURRENT_LIST_DIR}/initialization_helpers/matrix_kernels/random_uniform_kernel.cpp
-  ${CMAKE_CURRENT_LIST_DIR}/initialization_helpers/matrix_kernels/random_normal_kernel.cpp
-  ${CMAKE_CURRENT_LIST_DIR}/initialization_helpers/matrix_kernels/parameterized_kernel.cpp
-  ${CMAKE_CURRENT_LIST_DIR}/initialization_helpers/matrix_kernels/cauchy2d_kernel.cpp
-  ${CMAKE_CURRENT_LIST_DIR}/initialization_helpers/matrix_kernels/laplacend_kernel.cpp
-  ${CMAKE_CURRENT_LIST_DIR}/initialization_helpers/matrix_kernels/helmholtznd_kernel.cpp
 )
