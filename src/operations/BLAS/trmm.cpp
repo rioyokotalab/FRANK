@@ -83,6 +83,24 @@ define_method(
 define_method(
   void, trmm_omm,
   (
+    const Dense& A, Hierarchical& B,
+    const Side side, const Mode uplo,  const char& trans, const char& diag,
+    double alpha
+  )
+) {
+  // D H
+  assert(A.dim[0] == A.dim[1]);
+  assert(A.dim[0] == (side == Side::Left ? get_n_rows(B) : get_n_cols(B)));
+  Hierarchical HA = split(A,
+			  side == Side::Left ? B.dim[0] : B.dim[1],
+			  side == Side::Left ? B.dim[0] : B.dim[1],
+			  false);
+  trmm(HA, B, side, uplo, trans, diag, alpha);
+}
+
+define_method(
+  void, trmm_omm,
+  (
     const Hierarchical& A, Dense& B,
     const Side side, const Mode uplo,  const char& trans, const char& diag,
     double alpha
