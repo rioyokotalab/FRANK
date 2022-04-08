@@ -51,7 +51,7 @@ TEST(DenseTest, StandardConstructors) {
     }
   }
 
-  // Copy constructor, different datatype
+  // Copy constructor, different 
   Dense<float> Bf(B);
   Dense<double> C(Cf);
   for (int64_t i=0; i<n; ++i) {
@@ -79,27 +79,13 @@ TEST(DenseTest, ConstructorKernel) {
   int64_t offset = 5;
 
   // construct from Kernel
-  Dense<float> Af(IdentityKernel<double>(), n, n);
-  Dense<double> A(ArangeKernel<double>(), n, n, offset, offset);
+  // TODO more conversions?
+  Dense<float> Af(identity, n, n);
+  Dense<double> A(arange, n, n, offset, offset);
   for (int64_t i=0; i<n; ++i) {
     for (int64_t j=0; j<n; ++j) {
       EXPECT_EQ(Af(i,j), i!=j?0:1);
       EXPECT_EQ(A(i,j), (i+offset)*n + offset+j);
-    } 
-  }
-
-  // construct from Function
-  // TODO Legacy code, remove?
-  Dense<double> B(
-    arange, std::vector<std::vector<double>>(),
-    n, n, offset, offset);
-  Dense<float> Bf(
-    identity, std::vector<std::vector<double>>(), n, n);
-  for (int64_t i=0; i<n; ++i) {
-    for (int64_t j=0; j<n; ++j) {
-      // note that the old arange function ignores the offset!
-      EXPECT_EQ(B(i,j), i*n + j);
-      EXPECT_EQ(Af(i,j), Bf(i,j));
     } 
   }
 }
@@ -164,9 +150,9 @@ TEST(DenseTEST, ConstructorLowRank) {
   int64_t m = 3;
   int64_t n = 2;
 
-  Dense<double> U(ArangeKernel<double>(), m, n);
-  Dense<double> V(ArangeKernel<double>(), n, m);
-  Dense<double> S(IdentityKernel<double>(), n, n);
+  Dense<double> U(arange, m, n);
+  Dense<double> V(arange, n, m);
+  Dense<double> S(identity, n, n);
   LowRank<double> USV (U, S, V);
 
   Dense<double> check(m, m);
@@ -197,7 +183,9 @@ TEST(DenseTest, ContructorHierarchical) {
   int64_t nleaf = n / nblocks;
 
   // Construct single level all-dense hierarchical
-  Hierarchical H(RandomUniformKernel<double>(),
+  // TODO activate
+  
+  Hierarchical H(random_uniform<double>,
     n, n, 0, nleaf, nblocks, nblocks, nblocks
   );
   Dense D(H);
@@ -217,8 +205,8 @@ TEST(DenseTest, ContructorHierarchical) {
 
 TEST(DenseTest, ElementAccess) {
   int64_t n = 8;
-  Dense<float> Af(ArangeKernel<float>(), n);
-  Dense<double> A(ArangeKernel<float>(), 1, n);
+  Dense<float> Af(arange, n, n);
+  Dense<double> A(arange, n, 1, n);
   for (int64_t i=0; i<n; ++i) {
       EXPECT_EQ(Af(i,0), Af[i]);
       EXPECT_EQ(A(0,i), A[i]);
@@ -230,8 +218,8 @@ TEST(DenseTest, Copying) {
   hicma::initialize();
   int64_t n = 42;
 
-  Dense<double> A(RandomNormalKernel<double>(), n, n);
-  Dense<float> Af(RandomNormalKernel<double>(3), n, n);
+  Dense<double> A(random_normal, n, n);
+  Dense<float> Af(random_normal, n, n);
   Dense<double> B(n, n);
   Dense<float> Bf(n, n);
   
@@ -288,7 +276,7 @@ TEST(DenseTest, Split) {
   float value = -7;
 
   // no copy
-  Dense<float> Af(RandomUniformKernel<double>(), n, n);
+  Dense<float> Af(random_uniform, n, n);
   std::vector<Dense<float>> submatrices_f = Af.split(3, 3);
   for (size_t k=0; k<submatrices_f.size(); ++k) {
     EXPECT_EQ(submatrices_f[k].dim[0], k<6?14:12);
@@ -304,7 +292,7 @@ TEST(DenseTest, Split) {
 
   // copy
   n = 30;
-  Dense<double> A(RandomUniformKernel<double>(), n, n);
+  Dense<double> A(random_uniform, n, n);
   std::vector<Dense<double>> submatrices = A.split(3, 3, true);
   for (size_t k=0; k<submatrices.size(); ++k) {
     EXPECT_EQ(submatrices[k].dim[0], 10);
@@ -329,17 +317,6 @@ TEST(DenseTest, IsSubmatrix) {
     EXPECT_TRUE(submatrices[i].is_submatrix());
 }
 
-// TODO remove
-/*
-TEST(DenseTest, Id) {
-  Dense<double> A;
-  Dense<double> B;
-  EXPECT_NE(A.id(), B.id());
-  Dense<double> C = A.shallow_copy();
-  EXPECT_EQ(A.id(), C.id());
-}
-*/
-
 
 // TODO move
 // this tests the dense split in the broader context of the general split function
@@ -349,7 +326,7 @@ TEST(DenseTest, Split1DTest) {
   int64_t N = 128;
   int64_t nblocks = 2;
   int64_t nleaf = N / nblocks;
-  Dense D(random_uniform, std::vector<std::vector<double>>(), N, N);
+  Dense D(random_uniform<double>, N, N);
   Hierarchical DH = split<double>(D, nblocks, nblocks);
   Hierarchical DH_copy = split<double>(D, nblocks, nblocks, true);
     
@@ -382,8 +359,8 @@ TEST(DenseTest, SplitTest) {
   int64_t N = 128;
   int64_t nblocks = 4;
   int64_t nleaf = N / nblocks;
-  Dense col(random_normal, std::vector<std::vector<double>>(), N, nleaf);
-  Dense row(random_normal, std::vector<std::vector<double>>(), nleaf, N);
+  Dense col(random_normal<double>, N, nleaf);
+  Dense row(random_normal<double>, nleaf, N);
   Dense test1 = gemm(row, col);
   test1 *= 2;
 
@@ -402,7 +379,7 @@ TEST(DenseTest, Resize) {
   timing::start("Init");
   hicma::initialize();
   int64_t N = 1024;
-  Dense D(random_normal, std::vector<std::vector<double>>(), N, N);
+  Dense D(random_normal<double>, N, N);
   timing::stopAndPrint("Init");
   timing::start("Resize");
   Dense D_resized = resize(D, N-N/8, N-N/8);

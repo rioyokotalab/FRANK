@@ -11,6 +11,7 @@ using namespace hicma;
 
 class RSVDTests : public testing::TestWithParam<std::tuple<int64_t, int64_t>> {};
 
+// TODO this is actually a low rank test and has been moved there. Replacement?
 TEST_P(RSVDTests, randomizedSVD) {
   int64_t n, rank;
   std::tie(n, rank) = GetParam();

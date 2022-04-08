@@ -195,7 +195,7 @@ TEST_P(ArithmeticTests, Transpose) {
   std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m>n?m:n)};
   hicma::Dense A(hicma::laplacend, randx_A, m, n);
   hicma::Dense A_copy(A);
-  hicma::Dense A_trans = transpose(A);
+  hicma::Dense A_trans = hicma::transpose(A);
 
   EXPECT_EQ(A_trans.dim[0], n);
   EXPECT_EQ(A_trans.dim[1], m);

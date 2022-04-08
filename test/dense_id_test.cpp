@@ -30,7 +30,7 @@ TEST_P(IDTests, ID) {
   std::tie(n, rank) = GetParam();
 
   hicma::Dense U, S, V;
-  std::tie(U, S, V) = hicma::id(A_work, rank);
+  std::tie(U, S, V) = hicma::id<double>(A_work, rank);
   A_check = hicma::gemm(hicma::gemm(U, S), V);
 
   double error = l2_error(A, A_check);
@@ -43,7 +43,7 @@ TEST_P(IDTests, OID) {
 
   std::vector<int64_t> indices;
   hicma::Dense V;
-  std::tie(V, indices) = hicma::one_sided_id(A_work, rank);
+  std::tie(V, indices) = hicma::one_sided_id<double>(A_work, rank);
   hicma::Dense A_cols = get_cols(A, indices);
 
   A_check = gemm(A_cols, V);
@@ -65,7 +65,7 @@ TEST_P(IDTests, RID) {
 
 INSTANTIATE_TEST_SUITE_P(
     Low_Rank, IDTests,
-    testing::Values(std::make_tuple(2048, 16)),    
+    testing::Values(std::make_tuple(1024, 16)),    
     [](const testing::TestParamInfo<IDTests::ParamType>& info) {
       std::string name = ("n" + std::to_string(std::get<0>(info.param)) + "rank" +
                           std::to_string(std::get<1>(info.param)));

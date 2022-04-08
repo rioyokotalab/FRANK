@@ -8,7 +8,8 @@
 #include "hicma/hicma.h"
 #include "gtest/gtest.h"
 
-void naive_gemm(const hicma::Dense<double> &A, const hicma::Dense<double> &B, hicma::Dense<double> &C, bool transA, bool transB, double alpha, double beta) {
+template<typename T>
+void naive_gemm(const hicma::Dense<T> &A, const hicma::Dense<T> &B, hicma::Dense<T> &C, bool transA, bool transB, double alpha, double beta) {
   for (int64_t i = 0; i < C.dim[0]; ++i) {
     for (int64_t j = 0; j < C.dim[1]; ++j) {
       C(i, j) =
@@ -35,10 +36,12 @@ TEST_P(GEMMTests, DenseGemm) {
   
   hicma::initialize();
   std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m>k?m:k)};
-  hicma::Dense A(hicma::laplacend, randx_A, transA?k:m, transA?m:k);
   std::vector<std::vector<double>> randx_B{hicma::get_sorted_random_vector(k>n?k:n)};
-  hicma::Dense B(hicma::laplacend, randx_B, transB?n:k, transB?k:n);
   std::vector<std::vector<double>> randx_C{hicma::get_sorted_random_vector(m>n?m:n)};
+  
+  // double precision
+  hicma::Dense A(hicma::laplacend, randx_A, transA?k:m, transA?m:k);
+  hicma::Dense B(hicma::laplacend, randx_B, transB?n:k, transB?k:n);
   hicma::Dense C(hicma::laplacend, randx_C, m, n);
   hicma::Dense C_check(C);
   hicma::gemm(A, B, C, alpha, beta, transA, transB);
@@ -52,6 +55,22 @@ TEST_P(GEMMTests, DenseGemm) {
       //EXPECT_NEAR(C_check(i, j), C(i, j), 10e-14);
     }
   }
+
+  // single precision
+  hicma::Dense<float> Af(hicma::laplacend, randx_A, transA?k:m, transA?m:k);
+  hicma::Dense<float> Bf(hicma::laplacend, randx_B, transB?n:k, transB?k:n);
+  hicma::Dense<float> Cf(hicma::laplacend, randx_C, m, n);
+  hicma::Dense<float> Cf_check(Cf);
+  hicma::gemm(Af, Bf, Cf, alpha, beta, transA, transB);
+
+  naive_gemm(Af, Bf, Cf_check, transA, transB, alpha, beta);
+
+  // Check result
+  for (int64_t i = 0; i < m; ++i) {
+    for (int64_t j = 0; j < n; ++j) {
+      EXPECT_FLOAT_EQ(Cf_check(i, j), Cf(i, j));
+    }
+  }
 }
 
 TEST_P(GEMMTests, DenseGemmAssign) {
@@ -62,8 +81,10 @@ TEST_P(GEMMTests, DenseGemmAssign) {
 
   hicma::initialize();
   std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m>k?m:k)};
-  hicma::Dense A(hicma::laplacend, randx_A, transA?k:m, transA?m:k);
   std::vector<std::vector<double>> randx_B{hicma::get_sorted_random_vector(k>n?k:n)};
+ 
+  // double precision
+  hicma::Dense A(hicma::laplacend, randx_A, transA?k:m, transA?m:k);
   hicma::Dense B(hicma::laplacend, randx_B, transB?n:k, transB?k:n);
   hicma::Dense C = hicma::gemm(A, B, alpha, transA, transB);
 
@@ -74,8 +95,23 @@ TEST_P(GEMMTests, DenseGemmAssign) {
   // Check result
   for (int64_t i = 0; i < m; ++i) {
     for (int64_t j = 0; j < n; ++j) {
-      //EXPECT_NEAR(C_check(i, j), C(i, j), 10e-14);
       EXPECT_DOUBLE_EQ(C_check(i, j), C(i, j));
+    }
+  }
+
+  // single precision
+  hicma::Dense<float> Af(hicma::laplacend, randx_A, transA?k:m, transA?m:k);
+  hicma::Dense<float> Bf(hicma::laplacend, randx_B, transB?n:k, transB?k:n);
+  hicma::Dense<float> Cf = hicma::gemm(Af, Bf, alpha, transA, transB);
+
+  // Manual matmul
+  hicma::Dense<float> Cf_check(Cf.dim[0], Cf.dim[1]);
+  naive_gemm(Af, Bf, Cf_check, transA, transB, alpha, 0);
+
+  // Check result
+  for (int64_t i = 0; i < m; ++i) {
+    for (int64_t j = 0; j < n; ++j) {
+      EXPECT_FLOAT_EQ(Cf_check(i, j), Cf(i, j));
     }
   }
 }

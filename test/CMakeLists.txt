@@ -1,10 +1,10 @@
 list(APPEND GTEST_TESTS 
      "dense" "low_rank" "hierarchical"
-     "kernel" "initializer"
+     "kernel" #"initializer"
      "dense_arithmetic" "dense_gemm" "dense_getrf" "dense_trsm" "dense_svd" "dense_id" "dense_qr"
      "h_lu"
      "rsvd"
-     "template"
+     #"template"
     )
 foreach(TEST ${GTEST_TESTS})
   add_executable(${TEST}_test ${TEST}_test.cpp)
@@ -17,6 +17,6 @@ foreach(TEST ${GTEST_TESTS})
 endforeach()
 
 # TODO maybe change?
-add_custom_command(TARGET initializer_test POST_BUILD
+add_custom_command(TARGET dense_test POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${CMAKE_CURRENT_SOURCE_DIR}/test_data ${CMAKE_UNIT_TEST_OUTPUT_DIRECTORY}/test_data)
