@@ -271,6 +271,38 @@ define_method(
 define_method(
   void, gemm_omm,
   (
+    const Dense& A, const Hierarchical& B, LowRank& C,
+    double alpha, double beta,
+    bool TransA, bool TransB
+  )
+) {
+  // D H LR
+  Hierarchical HA = split(A,
+			  TransA ? B.dim[TransB ? 1 : 0] : 1,
+			  TransA ? 1 : B.dim[TransB ? 1 : 0],
+			  false);
+  gemm(HA, B, C, alpha, beta, TransA, TransB);
+}
+
+define_method(
+  void, gemm_omm,
+  (
+    const Hierarchical& A, const Dense& B, LowRank& C,
+    double alpha, double beta,
+    bool TransA, bool TransB
+  )
+) {
+  // H D LR
+  Hierarchical HB = split(B,
+			  TransB ? 1 : A.dim[TransA ? 0 : 1],
+			  TransB ? A.dim[TransA ? 0 : 1] : 1,
+			  false);
+  gemm(A, HB, C, alpha, beta, TransA, TransB);
+}
+
+define_method(
+  void, gemm_omm,
+  (
     const LowRank& A, const Hierarchical& B, LowRank& C,
     double alpha, double beta,
     bool TransA, bool TransB
@@ -282,6 +314,40 @@ define_method(
   MatrixProxy AVxB = gemm(A.V, B, alpha, false, TransB);
   LowRank AxB(A.U, A.S, AVxB, false);
   C.S *= beta;
+  C += AxB;
+}
+
+define_method(
+  void, gemm_omm,
+  (
+    const Dense& A, const LowRank& B, Hierarchical& C,
+    double alpha, double beta,
+    bool TransA, bool TransB
+  )
+) {
+  // D LR H
+  // TODO Not implemented
+  if (TransA || TransB) std::abort();
+  Dense AxBU = gemm(A, B.U, alpha);
+  LowRank AxB(AxBU, B.S, B.V, false);
+  C *= beta;
+  C += AxB;
+}
+
+define_method(
+  void, gemm_omm,
+  (
+    const LowRank& A, const Dense& B, Hierarchical& C,
+    double alpha, double beta,
+    bool TransA, bool TransB
+  )
+) {
+  // LR D H
+  // TODO Not implemented
+  if (TransA || TransB) std::abort();
+  Dense AVxB = gemm(A.V, B, alpha);
+  LowRank AxB(A.U, A.S, AVxB, false);
+  C *= beta;
   C += AxB;
 }
 
@@ -314,9 +380,9 @@ define_method(
   /*
     Making a Hierarchical out of C might be better
     But LowRank(Hierarchical, rank) constructor is needed
-    Hierarchical CH(C);
+      Hierarchical CH(C);
       gemm(A, B, CH, alpha, beta);
-    C = LowRank(CH, rank);
+      C = LowRank(CH, rank);
   */
   Dense CD(C);
   gemm(A, B, CD, alpha, beta, TransA, TransB);
