@@ -7,8 +7,6 @@
 #include "gtest/gtest.h"
 
 
-using namespace hicma;
-
 class RSVDTests : public testing::TestWithParam<std::tuple<int64_t, int64_t>> {};
 
 TEST_P(RSVDTests, randomizedSVD) {
@@ -19,8 +17,8 @@ TEST_P(RSVDTests, randomizedSVD) {
   std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(2*n)};
   hicma::Dense A(hicma::laplacend, randx_A, n, n, 0, n);
 
-  LowRank LR(A, rank);
-  double error = l2_error(A, LR);
+  hicma::LowRank LR(A, rank);
+  double error = hicma::l2_error(A, LR);
   EXPECT_LT(error, 1e-8);
 }
 

@@ -9,8 +9,6 @@
 #include <vector>
 
 
-using namespace hicma;
-
 class IDTests : public testing::TestWithParam<std::tuple<int64_t, int64_t>> {
     protected:
     void SetUp() override {

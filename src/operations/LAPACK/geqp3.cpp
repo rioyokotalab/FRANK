@@ -33,7 +33,6 @@ std::tuple<Dense, std::vector<int64_t>> geqp3(Matrix& A) {
 
 // Fallback default, abort with error message
 define_method(DenseIndexSetPair, geqp3_omm, (Dense& A)) {
-  timing::start("DGEQP3");
   // TODO The 0 initial value is important! Otherwise axes are fixed and results
   // can be wrong. See netlib dgeqp3 reference.
   // However, much faster with -1... maybe better starting values exist?
@@ -48,14 +47,12 @@ define_method(DenseIndexSetPair, geqp3_omm, (Dense& A)) {
   // jpvt is 1-based, bad for indexing!
   std::vector<int64_t> column_order(jpvt.size());
   for (size_t i=0; i<jpvt.size(); ++i) column_order[i] = jpvt[i] - 1;
-  timing::start("R construction");
   Dense R(A.dim[1], A.dim[1]);
   for(int64_t i=0; i<std::min(A.dim[0], R.dim[0]); i++) {
     for(int64_t j=i; j<R.dim[1]; j++) {
       R(i, j) = A(i, j);
     }
-  }timing::stop("R construction");
-  timing::stop("DGEQP3");
+  }
   return {std::move(R), std::move(column_order)};
 }
 

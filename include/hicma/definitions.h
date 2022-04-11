@@ -3,10 +3,14 @@
 
 #include <vector>
 
-typedef std::vector<std::vector<double>> vec2d;
 
-enum MatrixLayout { HICMA_ROW_MAJOR, HICMA_COL_MAJOR };
-//To be removed if admissibility checker is passed as function
-enum { POSITION_BASED_ADMIS, GEOMETRY_BASED_ADMIS };
+namespace hicma {
+
+enum class MatrixLayout { RowMajor, ColumnMajor };
+enum class Side { Left, Right };
+enum class Mode { Upper, Lower };
+enum class AdmisType { PositionBased, GeometryBased };
+
+} // namespace hicma
 
 #endif // hicma_definitions_h

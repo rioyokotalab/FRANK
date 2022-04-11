@@ -51,7 +51,7 @@ class MatrixInitializer {
   double eps;
   int64_t rank;
   std::vector<std::vector<double>> params;
-  int admis_type;
+  AdmisType admis_type;
 
   void find_admissible_blocks(const ClusterTree& node);
 
@@ -82,12 +82,12 @@ class MatrixInitializer {
    * Vector containing parameters used as input to the kernel
    * and as coordinate of particles
    * @param admis_type
-   * Either POSITION_BASED_ADMIS (Default) or GEOMETRY_BASED_ADMIS
+   * Either AdmisType::PositionBased (Default) or AdmisType::GeometryBased
    */
   MatrixInitializer(
     double admis, double eps, int64_t rank,
-    std::vector<std::vector<double>> params=std::vector<std::vector<double>>(),
-    int admis_type=POSITION_BASED_ADMIS
+    std::vector<std::vector<double>> params={},
+    AdmisType admis_type=AdmisType::PositionBased
   );
 
   /**

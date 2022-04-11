@@ -17,7 +17,7 @@ MatrixInitializerKernel::MatrixInitializerKernel(
     int64_t row_start, int64_t col_start
   ),
   std::vector<std::vector<double>> params,
-  double admis, double eps, int64_t rank, int admis_type
+  double admis, double eps, int64_t rank, AdmisType admis_type
 ) : MatrixInitializer(admis, eps, rank, params, admis_type),
     kernel(kernel) {}
 

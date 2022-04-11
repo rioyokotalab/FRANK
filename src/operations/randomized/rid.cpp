@@ -18,8 +18,7 @@ namespace hicma
 std::tuple<Dense, Dense, Dense> rid(
   const Dense& A, int64_t sample_size, int64_t rank
 ) {
-  Dense RN(
-    random_uniform, std::vector<std::vector<double>>(), A.dim[1], sample_size);
+  Dense RN(random_uniform, {}, A.dim[1], sample_size);
   Dense Y = gemm(A, RN);
   Dense Q(Y.dim[0], Y.dim[1]);
   Dense R(Y.dim[1], Y.dim[1]);
@@ -36,7 +35,7 @@ std::tuple<Dense, std::vector<int64_t>> one_sided_rid(
 ) {
   // Number of random samples: ColumnID -> m, RowID -> n
   Dense RN(
-    random_uniform, std::vector<std::vector<double>>(),
+    random_uniform, {},
     A.dim[column? 0 : 1], sample_size
   );
   Dense Y;
@@ -56,7 +55,7 @@ std::tuple<Dense, std::vector<int64_t>> old_one_sided_rid(
   const Dense& A, int64_t sample_size, int64_t rank, bool transA
 ) {
   Dense RN(
-    random_uniform, std::vector<std::vector<double>>(),
+    random_uniform, {},
     A.dim[transA? 0 : 1], sample_size
   );
   Dense Y = gemm(A, RN, 1, transA, false);

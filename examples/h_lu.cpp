@@ -18,7 +18,7 @@ int main(int argc, char** argv) {
   double admis = argc > 5 ? atof(argv[5]) : 0;
 
   std::vector<std::vector<double>> randx{get_sorted_random_vector(N)};
-  Dense x(random_uniform, std::vector<std::vector<double>>(), N);
+  Dense x(random_uniform, {}, N);
   Dense b(N);
   Dense D(laplacend, randx, N, N);
   timing::start("Hierarchical compression");
@@ -44,8 +44,8 @@ int main(int argc, char** argv) {
   timing::stopAndPrint("LU decomposition", 2);
 
   timing::start("Solution");
-  trsm(L, b, TRSM_LOWER);
-  trsm(U, b, TRSM_UPPER);
+  trsm(L, b, Mode::Lower);
+  trsm(U, b, Mode::Upper);
   timing::stopAndPrint("Solution");
 
   print("LU Accuracy");

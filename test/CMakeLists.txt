@@ -8,11 +8,14 @@ list(
   "dense_svd"
   "dense_id"
   "dense_qr"
-  "lowrank"
-  "hierarchical_fixed_rank_constructor"
-  "hierarchical_fixed_acc_constructor"
-  "h_lu"
   "rsvd"
+  "trmm"
+  "misc"
+  "lowrank"
+  "blr_fixed_rank"
+  "blr_fixed_acc"
+  "hierarchical_fixed_rank"
+  "hierarchical_fixed_acc"
 )
 foreach(TEST ${GTEST_TESTS})
   add_executable(${TEST}_test ${TEST}_test.cpp)

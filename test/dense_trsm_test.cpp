@@ -14,13 +14,13 @@ TEST_P(TRSMTests, DenseTrsm) {
   hicma::initialize();
   std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(n)};
   hicma::Dense A(hicma::laplacend, randx_A, n, n);
-  hicma::Dense x(hicma::random_uniform, std::vector<std::vector<double>>(), n);
+  hicma::Dense x(hicma::random_uniform, {}, n);
   hicma::Dense b = gemm(A, x);
   hicma::Dense L, U;
 
   std::tie(L, U) = hicma::getrf(A);
-  hicma::trsm(L, b, hicma::TRSM_LOWER);
-  hicma::trsm(U, b, hicma::TRSM_UPPER);
+  hicma::trsm(L, b, hicma::Mode::Lower);
+  hicma::trsm(U, b, hicma::Mode::Upper);
 
   // Check result
   for (int64_t i = 0; i < n; ++i) {

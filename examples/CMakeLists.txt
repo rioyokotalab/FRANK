@@ -2,7 +2,6 @@
 list(
   APPEND EXECUTABLES
   "lr_add"
-  "tiled_householder_dense_qr"
   "blr_compress"
   "blocked_mgs_blr_qr"
   "blocked_householder_blr_qr"
@@ -30,9 +29,9 @@ if(OpenMP_FOUND)
   )
 foreach(EXECUTABLE ${MULTITHREADED_EXECUTABLES})
     add_executable(${EXECUTABLE} ${EXECUTABLE}.cpp)
-    target_link_libraries(${EXECUTABLE} hicma stdc++ m dl ${OpenMP_LIB_NAMES})
     target_compile_definitions(${EXECUTABLE} PRIVATE ${HICMA_DEFINITIONS})
     target_compile_features(${EXECUTABLE} PRIVATE ${HICMA_FEATURES})
-    target_compile_options(${EXECUTABLE} PRIVATE ${HICMA_OPTIONS})
+    target_compile_options(${EXECUTABLE} PRIVATE ${HICMA_OPTIONS} ${OpenMP_CXX_FLAGS})
+    target_link_libraries(${EXECUTABLE} hicma stdc++ m dl ${OpenMP_LIB_NAMES})
   endforeach()
 endif()

@@ -60,6 +60,51 @@ int64_t get_n_rows(const Matrix&);
 int64_t get_n_cols(const Matrix&);
 
 /**
+ * @brief Reset all elements to zero
+ *
+ * @param A
+ * `Matrix` instance. Modified on finish
+ *
+ * This method reset all elements of \p A to zero.
+ *
+ * Definitions may differ depending on the types of the parameters.
+ * Definition for each combination of types (subclasses of `Matrix`) is implemented as a specialization of \OMM.
+ * The multi-dispatcher then will select the correct implementation based on the types of parameters given at runtime.
+ * Read \ext_hicma for more information.
+ */
+void zero_all(Matrix& A);
+
+/**
+ * @brief Reset elements below the main diagonal to zero
+ *
+ * @param A
+ * `Matrix` instance. Modified on finish
+ *
+ * This method set all elements below the main diagonal of \p A to zero.
+ *
+ * Definitions may differ depending on the types of the parameters.
+ * Definition for each combination of types (subclasses of `Matrix`) is implemented as a specialization of \OMM.
+ * The multi-dispatcher then will select the correct implementation based on the types of parameters given at runtime.
+ * Read \ext_hicma for more information.
+ */
+void zero_lower(Matrix& A);
+
+/**
+ * @brief Reset elements above the main diagonal to zero
+ *
+ * @param A
+ * `Matrix` instance. Modified on finish
+ *
+ * This method set all elements above the main diagonal of \p A to zero.
+ *
+ * Definitions may differ depending on the types of the parameters.
+ * Definition for each combination of types (subclasses of `Matrix`) is implemented as a specialization of \OMM.
+ * The multi-dispatcher then will select the correct implementation based on the types of parameters given at runtime.
+ * Read \ext_hicma for more information.
+ */
+void zero_upper(Matrix& A);
+
+/**
  * @brief Calculate the condition number of a `Dense` matrix
  *
  * @param A

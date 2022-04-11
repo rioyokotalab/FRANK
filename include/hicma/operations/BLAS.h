@@ -1,6 +1,7 @@
 #ifndef hicma_operations_BLAS_h
 #define hicma_operations_BLAS_h
 
+#include "hicma/definitions.h"
 #include "hicma/classes/dense.h"
 
 
@@ -90,9 +91,6 @@ MatrixProxy gemm(
   bool TransA=false, bool TransB=false
 );
 
-enum { TRSM_UPPER, TRSM_LOWER };
-enum { TRSM_LEFT, TRSM_RIGHT };
-
 /**
  * @brief Perform in-place triangular matrix multiplication
  *
@@ -101,9 +99,9 @@ enum { TRSM_LEFT, TRSM_RIGHT };
  * @param B
  * `Matrix` instance
  * @param side
- * \p 'l' if \p A is multiplied from the left of \p B, \p 'r' if multiplied from the right
+ * \p Side::Left if \p A is multiplied from the left of \p B, \p Side::Right if multiplied from the right
  * @param uplo
- * \p 'u' if \p A is an upper triangular matrix, \p 'l' if lower triangular
+ * \p Mode::Upper if \p A is an upper triangular matrix, \p Mode::Lower if lower triangular
  * @param trans
  * \p 't' if \p transpose(A) will be used, \p 'n' otherwise
  * @param diag
@@ -130,13 +128,13 @@ enum { TRSM_LEFT, TRSM_RIGHT };
  */
 void trmm(
   const Matrix& A, Matrix& B,
-  const char& side, const char& uplo, const char& trans, const char& diag,
+  const Side side, const Mode uplo, const char& trans, const char& diag,
   double alpha
 );
 
 void trmm(
   const Matrix& A, Matrix& B,
-  const char& side, const char& uplo,
+  const Side side, const Mode uplo,
   double alpha
 );
 
@@ -148,9 +146,9 @@ void trmm(
  * @param B
  * `Matrix` instance
  * @param uplo
- * \p TRSM_UPPER if \p A is an upper triangular matrix, \p TRSM_LOWER if lower triangular
+ * \p Mode::Upper if \p A is an upper triangular matrix, \p Mode::Lower if lower triangular
  * @param lr
- * \p TRSM_LEFT if \p A is multiplied from the left of \p X, \p TRSM_RIGHT if multiplied from the right of \p X
+ * \p Side::Left if \p A is multiplied from the left of \p X, \p Side::Right if multiplied from the right of \p X
  *
  * This function solves triangular matrix equation, i.e.
  *
@@ -169,7 +167,7 @@ void trmm(
  * Thus at the core, this method relies on <a target="_blank" href="http://www.netlib.org/lapack/explore-html/d1/d54/group__double__blas__level3_gaf07edfbb2d2077687522652c9e283e1e.html#gaf07edfbb2d2077687522652c9e283e1e"><tt>dtrsm</tt></a> subroutine provided by BLAS/LAPACK.
  * See the documentation for more information.
  */
-void trsm(const Matrix& A, Matrix& B, int uplo, int lr=TRSM_LEFT);
+void trsm(const Matrix& A, Matrix& B, const Mode uplo, const Side side=Side::Left);
 
 } // namespace hicma
 

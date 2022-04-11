@@ -58,14 +58,14 @@ declare_method(
   void, trmm_omm,
   (
     virtual_<const Matrix&>, virtual_<Matrix&>,
-    const char&, const char&, const char&, const char&,
+    const Side, const Mode, const char&, const char&,
     double
   )
 )
 
 declare_method(
   void, trsm_omm,
-  (virtual_<const Matrix&>, virtual_<Matrix&>, int, int)
+  (virtual_<const Matrix&>, virtual_<Matrix&>, const Mode, const Side)
 )
 
 // LAPACK
@@ -97,6 +97,10 @@ declare_method(
   (virtual_<Matrix&>, virtual_<Matrix&>, virtual_<Matrix&>)
 )
 declare_method(
+  void, mgs_qr_omm,
+  (virtual_<Matrix&>, virtual_<Matrix&>, virtual_<Matrix&>)
+)
+declare_method(
   DensePair, make_left_orthogonal_omm,
   (virtual_<const Matrix&>)
 )
@@ -120,8 +124,9 @@ declare_method(
   (int64_t, virtual_<const Matrix&>, virtual_<Matrix&>, virtual_<Matrix&>)
 )
 
-declare_method(void, zero_lowtri_omm, (virtual_<Matrix&>))
-declare_method(void, zero_whole_omm, (virtual_<Matrix&>))
+declare_method(void, zero_all_omm, (virtual_<Matrix&>))
+declare_method(void, zero_lower_omm, (virtual_<Matrix&>))
+declare_method(void, zero_upper_omm, (virtual_<Matrix&>))
 
 declare_method(
   Dense, get_right_factor_omm,
