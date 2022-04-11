@@ -82,10 +82,11 @@ TEST_P(HierarchicalFixedAccuracyTest, GramSchmidtQRFactorization) {
   EXPECT_LE(residual, eps);
 
   // Orthogonality
-  hicma::Hierarchical QtQ(Q);
+  hicma::Hierarchical QtQ(hicma::zeros, randx_A, n_cols, n_cols,
+                          nleaf, eps, admis, nb_col, nb_col, admis_type);
   hicma::Hierarchical Qt = hicma::transpose(Q);
   hicma::gemm(Qt, Q, QtQ, 1, 0);
-  double orthogonality = hicma::l2_error(hicma::Dense(hicma::identity, randx_A, n_rows, n_rows), QtQ);
+  double orthogonality = hicma::l2_error(hicma::Dense(hicma::identity, randx_A, n_cols, n_cols), QtQ);
   EXPECT_LE(orthogonality, eps);
 }
 
