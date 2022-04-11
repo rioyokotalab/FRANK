@@ -10,6 +10,7 @@ list(
   "dense_qr"
   "rsvd"
   "trmm"
+  "misc"
   "lowrank"
   "blr_fixed_rank"
   "blr_fixed_acc"
