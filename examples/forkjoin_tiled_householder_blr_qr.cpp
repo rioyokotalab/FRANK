@@ -7,6 +7,9 @@
 #include <omp.h>
 #include <sys/time.h>
 #include <cstdlib>
+#include <cassert>
+
+using namespace hicma;
 
 double get_time() {
   struct timeval tv;
@@ -14,86 +17,106 @@ double get_time() {
   return (double)(tv.tv_sec+tv.tv_usec*1e-6);
 }
 
-using namespace hicma;
-
 int main(int argc, char** argv) {
   hicma::initialize();
-  int64_t N = argc > 1 ? atoi(argv[1]) : 256;
-  int64_t Nb = argc > 2 ? atoi(argv[2]) : 32;
-  int64_t rank = argc > 3 ? atoi(argv[3]) : 16;
-  double admis = argc > 4 ? atof(argv[4]) : 0;
-  int64_t Nc = N / Nb;
+  int64_t m = argc > 1 ? atoi(argv[1]) : 256;
+  int64_t n = argc > 2 ? atoi(argv[2]) : m / 2;
+  int64_t b = argc > 3 ? atoi(argv[3]) : 32;
+  double eps = argc > 4 ? atof(argv[4]) : 1e-6;
+  double admis = argc > 5 ? atof(argv[5]) : 0;
   setGlobalValue("HICMA_LRA", "rounded_addition");
   setGlobalValue("HICMA_DISABLE_TIMER", "1");
 
+  assert(m >= n);
+  assert(m % b == 0);
+  assert(n % b == 0);
+  int64_t p = m / b;
+  int64_t q = n / b;
+
   std::vector<std::vector<double>> randpts;
-  randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
-  randpts.push_back(equallySpacedVector(N, 0.0, 1.0));
-  Hierarchical D(laplacend, randpts, N, N, Nb, Nb, Nc, Nc, Nc);
-  Hierarchical A(laplacend, randpts, N, N, rank, Nb, admis, Nc, Nc);
-  Hierarchical A_copy(A);
+  randpts.push_back(equallySpacedVector(m, 0.0, 1.0));
+  randpts.push_back(equallySpacedVector(m, 0.0, 1.0));
+  Hierarchical D(laplacend, randpts, m, n, b, b, p, p, q);
+  Hierarchical A(laplacend, randpts, m, n, b, eps, admis, p, q);
   print("BLR Compression Accuracy");
   print("Rel. L2 Error", l2_error(D, A), false);
 
-  Hierarchical Q(identity, {}, N, N, rank, Nb, admis, Nc, Nc);
-  Hierarchical T(Nc, Nc);
-  for(int64_t j = 0; j < Nc; j++) {
-    for(int64_t i = j; i < Nc; i++) {
-      T(i, j) = Dense(get_n_cols(A(j, j)), get_n_cols(A(j, j)));
+  Hierarchical T(p, q);
+  for(int64_t i = 0; i < p; i++) {
+    for(int64_t j = 0; j < q; j++) {
+      T(i, j) = Dense(i < j ? 0 : b, i < j ? 0 : b);
     }
   }
-
-  print("Forkjoin Tiled Householder BLR-QR");
+  print("Tiled Householder BLR-QR");
   print("Time");
   double tic = get_time();
-  for(int64_t k = 0; k < Nc; k++) {
+  for(int64_t k = 0; k < q; k++) {
     geqrt(A(k, k), T(k, k));
     #pragma omp parallel for schedule(dynamic)
-    for(int64_t j = k+1; j < Nc; j++) {
+    for(int64_t j = k+1; j < q; j++) {
       larfb(A(k, k), T(k, k), A(k, j), true);
     }
-    for(int64_t i = k+1; i < Nc; i++) {
+    for(int64_t i = k+1; i < p; i++) {
       tpqrt(A(k, k), A(i, k), T(i, k));
       #pragma omp parallel for schedule(dynamic)
-      for(int64_t j = k+1; j < Nc; j++) {
+      for(int64_t j = k+1; j < q; j++) {
         tpmqrt(A(i, k), T(i, k), A(k, j), A(i, j), true);
       }
     }
   }
   double toc = get_time();
   print("BLR-QR", toc-tic);
-  //Build Q: Apply Q to Id
-  for(int64_t k = Nc-1; k >= 0; k--) {
-    for(int64_t i = Nc-1; i > k; i--) {
+
+  //Q has same structure as A but initialized with identity
+  Hierarchical Q(identity, randpts, m, n, b, eps, admis, p, q);
+  for(int64_t k = q-1; k >= 0; k--) {
+    for(int64_t i = p-1; i > k; i--) {
       #pragma omp parallel for schedule(dynamic)
-      for(int64_t j = k; j < Nc; j++) {
+      for(int64_t j = k; j < q; j++) {
         tpmqrt(A(i, k), T(i, k), Q(k, j), Q(i, j), false);
       }
     }
     #pragma omp parallel for schedule(dynamic)
-    for(int64_t j = k; j < Nc; j++) {
+    for(int64_t j = k; j < q; j++) {
       larfb(A(k, k), T(k, k), Q(k, j), false);
-    }
-  }
-  //Build R: Take upper triangular part of modified A
-  for(int64_t i=0; i<A.dim[0]; i++) {
-    for(int64_t j=0; j<=i; j++) {
-      if(i == j) //Diagonal must be dense, zero lower-triangular part
-        zero_lower(A(i, j));
-      else
-        zero_all(A(i, j));
     }
   }
 
   print("BLR-QR Accuracy");
   //Residual
-  Hierarchical QR(zeros, {}, N, N, rank, Nb, admis, Nc, Nc);
-  gemm(Q, A, QR, 1, 0);
-  print("Residual", l2_error(A_copy, QR), false);  
+  Hierarchical QR(Q);
+  //R is taken from upper triangular part of A
+  Hierarchical R(q, q);
+  for(int64_t i=0; i<q; i++) {
+    for(int64_t j=i; j<q; j++) {
+      R(i, j) = A(i, j);
+    }
+  }
+  //Use trmm here since lower triangular part of R is not initialized
+  trmm(R, QR, Side::Right, Mode::Upper, 'n', 'n', 1.);
+  print("Residual", l2_error(D, QR), false);
+  
   //Orthogonality
-  Hierarchical QtQ(zeros, {}, N, N, rank, Nb, admis, Nc, Nc);
-  Hierarchical Qt = transpose(Q);
-  gemm(Qt, Q, QtQ, 1, 0);
-  print("Orthogonality", l2_error(Dense(identity, {}, N, N), QtQ), false);
+  //QtQ: Left multiply Q^T to Q
+  for(int64_t k = 0; k < q; k++) {
+    #pragma omp parallel for schedule(dynamic)
+    for(int64_t j = k; j < q; j++) {
+      larfb(A(k, k), T(k, k), Q(k, j), true);
+    }
+    for(int64_t i = k+1; i < p; i++) {
+      #pragma omp parallel for schedule(dynamic)
+      for(int64_t j = k; j < q; j++) {
+        tpmqrt(A(i, k), T(i, k), Q(k, j), Q(i, j), true);
+      }
+    }
+  }
+  // Take square part as Q^T x Q (assuming m >= n)
+  Hierarchical QtQ(q, q);
+  for(int64_t i = 0; i < q; i++) {
+    for(int64_t j = 0; j < q; j++) {
+      QtQ(i, j) = Q(i, j);
+    }
+  }
+  print("Orthogonality", l2_error(Dense(identity, {}, n, n), QtQ), false);
   return 0;
 }
