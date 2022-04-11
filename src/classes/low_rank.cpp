@@ -50,11 +50,13 @@ LowRank::LowRank(const Dense& A, int64_t rank)
 
 LowRank::LowRank(const Dense& A, double eps)
 : Matrix(A), dim{A.dim[0], A.dim[1]}, eps(eps) {
-  std::tie(U, V) = truncated_geqp3(A, eps);
+  Dense R;
+  std::tie(U, R) = truncated_geqp3(A, eps);
   rank = U.dim[1];
-  // Set S as identity
-  std::vector<std::vector<double>> randx;
-  S = Dense(identity, randx, rank, rank);
+  // Orthogonalize R from RRQR
+  S = Dense(rank, rank);
+  V = Dense(rank, dim[1]);
+  rq(R, S, V);
 }
 
 LowRank::LowRank(const Matrix& U, const Dense& S, const Matrix& V, bool copy)
