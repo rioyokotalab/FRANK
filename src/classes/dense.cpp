@@ -33,15 +33,12 @@ Dense::Dense(const Dense& A)
 : Matrix(A), dim{A.dim[0], A.dim[1]}, stride(A.dim[1]), rel_start{0, 0},
   unique_id(next_unique_id++)
 {
-  timing::start("Dense cctor");
   data = std::make_shared<std::vector<double>>(dim[0]*dim[1], 0);
   data_ptr = (*data).data();
   fill_dense_from(A, *this);
-  timing::stop("Dense cctor");
 }
 
 Dense& Dense::operator=(const Dense& A) {
-  timing::start("Dense copy assignment");
   Matrix::operator=(A);
   dim = A.dim;
   stride = A.stride;
@@ -50,7 +47,6 @@ Dense& Dense::operator=(const Dense& A) {
   data_ptr = (*data).data();
   fill_dense_from(A, *this);
   unique_id = next_unique_id++;
-  timing::stop("Dense copy assignment");
   return *this;
 }
 
@@ -63,20 +59,16 @@ Dense::Dense(const Matrix& A)
 }
 
 define_method(void, fill_dense_from, (const Hierarchical& A, Dense& B)) {
-  timing::start("make_dense(H)");
   Hierarchical BH = split(B, A);
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {
       fill_dense_from(A(i, j), BH(i, j));
     }
   }
-  timing::stop("make_dense(H)");
 }
 
 define_method(void, fill_dense_from, (const LowRank& A, Dense& B)) {
-  timing::start("make_dense(LR)");
   gemm(gemm(A.U, A.S), A.V, B, 1, 0);
-  timing::stop("make_dense(LR)");
 }
 
 define_method(void, fill_dense_from, (const Dense& A, Dense& B)) {
@@ -112,11 +104,9 @@ define_method(Dense&&, move_from_dense, (Matrix& A)) {
 
 Dense::Dense(int64_t n_rows, int64_t n_cols)
 : dim{n_rows, n_cols}, stride(dim[1]), unique_id(next_unique_id++) {
-  timing::start("Dense alloc");
   data = std::make_shared<std::vector<double>>(dim[0]*dim[1], 0);
   rel_start = {0, 0};
   data_ptr = (*data).data();
-  timing::stop("Dense alloc");
 }
 
 Dense::Dense(

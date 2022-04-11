@@ -21,13 +21,11 @@ double norm(const Matrix& A) { return norm_omm(A); }
 
 define_method(double, norm_omm, (const Dense& A)) {
   double l2 = 0;
-  timing::start("Norm(Dense)");
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {
       l2 += A(i, j) * A(i, j);
     }
   }
-  timing::stop("Norm(Dense)");
   return l2;
 }
 
