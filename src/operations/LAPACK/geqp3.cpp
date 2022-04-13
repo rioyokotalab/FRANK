@@ -53,6 +53,7 @@ define_method(DenseIndexSetPair, geqp3_omm, (Dense& A)) {
       R(i, j) = A(i, j);
     }
   }
+  // TODO return tau as well so Q can be constructed outside
   return {std::move(R), std::move(column_order)};
 }
 
