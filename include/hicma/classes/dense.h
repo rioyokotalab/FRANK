@@ -178,6 +178,16 @@ class Dense : public Matrix {
    * the particles for which the parameters are available in \p params. This can
    * for example be used to generate the `Dense` blocks of a `Hierarchical`
    * matrix.
+   *
+   * \p params stores n-dimensional points in Euclidean space as follows
+   * ```
+   * axis\point   p1  p2  p3 ... pn
+   *   x          x1  x2  x3 ... xn
+   *   y          y1  y2  y3 ... yn
+   *   z          z1  z2  z3 ... zn
+   * ...
+   * ```
+   * i.e. each row of params (`params[i]`) contain the coordinates along one axis.
    */
   Dense(
     void (*kernel)(
@@ -190,6 +200,22 @@ class Dense : public Matrix {
     int64_t row_start=0, int64_t col_start=0
   );
 
+  /**
+   * @brief Construct a new `Dense` object from a textfile
+   *
+   * @param filename
+   * Path to file that contain the dense matrix
+   * @param ordering
+   * Ordering of matrix elements within the text file
+   * @param n_rows
+   * Number of rows of the new matrix.
+   * @param n_cols
+   * Number of columns of the new matrix.
+   * @param row_start
+   * Row offset
+   * @param col_start
+   * Column offset
+   */
   Dense(
     std::string filename, MatrixLayout ordering,
     int64_t n_rows, int64_t n_cols,

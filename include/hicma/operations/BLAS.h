@@ -132,6 +132,37 @@ void trmm(
   double alpha
 );
 
+/**
+ * @brief Perform in-place triangular matrix multiplication
+ *
+ * @param A
+ * A (lower or upper) triangular `Matrix`
+ * @param B
+ * `Matrix` instance
+ * @param side
+ * \p Side::Left if \p A is multiplied from the left of \p B, \p Side::Right if multiplied from the right
+ * @param uplo
+ * \p Mode::Upper if \p A is an upper triangular matrix, \p Mode::Lower if lower triangular
+ * @param alpha
+ * Scalar value
+ *
+ * This function performs in-place triangular matrix multiplication
+ *
+ * <tt>B = alpha*A*B</tt> or <tt>B = alpha*B*A</tt>,
+ *
+ * where \p A is an upper (or lower) triangular matrix and \p B is any matrix with proper size.
+ * Prior to calling, it is assumed that \p A and \p B have been initialized with proper dimensions.
+ * On finish, the result is overwritten on \p B.
+ *
+ * Definitions may differ depending on the types of the parameters.
+ * Definition for each combination of types (subclasses of `Matrix`) is implemented as a specialization of \OMM.
+ * The multi-dispatcher then will select the correct implementation based on the types of parameters given at runtime.
+ * Read \ext_hicma for more information.
+ *
+ * <b>Note</b> that for any types of \p A and \p B, at the lowest level it will end up with operations involving only `Dense` matrices.
+ * Thus at the core, this method relies on <a target="_blank" href="http://www.netlib.org/lapack/explore-html/d1/d54/group__double__blas__level3_gaf07edfbb2d2077687522652c9e283e1e.html#gaf07edfbb2d2077687522652c9e283e1e"><tt>dtrmm</tt></a> subroutine provided by BLAS/LAPACK.
+ * See the documentation for more information.
+ */
 void trmm(
   const Matrix& A, Matrix& B,
   const Side side, const Mode uplo,
