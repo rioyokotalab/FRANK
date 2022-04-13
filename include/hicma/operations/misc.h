@@ -111,17 +111,48 @@ void zero_upper(Matrix& A);
  * `Dense` matrix
  *
  * @return double
- * Condition number of \p A
+ * Condition number of \p A with respect to 2-norm
  */
 double cond(Dense A);
 
 /**
- * @brief Find truncation rank r from a diagonal matrix containing singular values
- * such that r is the smallest value that satisfies |A-A_r|_F < eps*|A|_F.
- * |A|_F denotes the Frobenius norm of A.
+ * @brief Find SVD compression rank based on relative error threshold
+ *
+ * @param S
+ * `Dense` matrix containing singular values in its diagonal elements
+ * @param eps
+ * Relative error threshold of the compression
+ *
+ * Find truncation rank r from a diagonal matrix containing singular values such that r is the smallest value that satisfies
+ *
+ * <tt>|A-A_r|_F < eps*|A|_F</tt>.
+ *
+ * where |A|_F denotes the Frobenius norm of A.
  */
 int64_t find_svd_truncation_rank(const Dense& S, double eps);
 
+/**
+ * @brief Sort n-dimensional points on euclidean space based on Morton Ordering
+ *
+ * @param x
+ * Points to be sorted
+ * @param level
+ * Recursion level of the morton quadtree
+ * @param perm
+ * Row (and column) permutation for dense matrix that uses the original ordering
+ *
+ * The parameter \p level controls the depth of quadtree, i.e. the number of different boxes that will be created is 2<sup>level+1</sup>.
+ *
+ * The n-dimensional points is assumed to be stored as follows
+ * ```
+ * axis\point   p1  p2  p3 ... pn
+ *   x          x1  x2  x3 ... xn
+ *   y          y1  y2  y3 ... yn
+ *   z          z1  z2  z3 ... zn
+ * ...
+ * ```
+ * i.e. each row of x (`x[i]`) contain the coordinates along one axis.
+ */
 void sortByMortonIndex(std::vector<std::vector<double>> &x, int64_t level, std::vector<int64_t>& perm);
 
 /**
@@ -193,10 +224,24 @@ Hierarchical split(
  */
 Hierarchical split(const Matrix& A, const Hierarchical& like, bool copy=false);
 
+/**
+ * @brief Get the shallow copy of a general `Matrix`
+ *
+ * @param A
+ * `Matrix` instance
+ *
+ * @return
+ * `Matrix` instance that points to the same data as \p A
+ *
+ * Definitions may differ depending on the types of the parameters.
+ * Definition for each combination of types (subclasses of `Matrix`) is implemented as a specialization of \OMM.
+ * The multi-dispatcher then will select the correct implementation based on the types of parameters given at runtime.
+ * Read \ext_hicma for more information.
+ */
 MatrixProxy shallow_copy(const Matrix& A);
 
 /**
- * @brief Compute the L2 norm of a matrix
+ * @brief Compute the L2 (Frobenius) norm of a matrix
  *
  * @param A
  * `Matrix` instance
