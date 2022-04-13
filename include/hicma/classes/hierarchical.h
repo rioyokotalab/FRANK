@@ -354,32 +354,6 @@ class Hierarchical : public Matrix {
     AdmisType admis_type=AdmisType::PositionBased
   );
 
-  //TODO remove
-  Hierarchical(
-    std::string filename, MatrixLayout ordering,
-    std::vector<std::vector<double>> params,
-    int64_t n_rows, int64_t n_cols,
-    int64_t rank,
-    int64_t nleaf,
-    double admis=0,
-    int64_t n_row_blocks=2, int64_t n_col_blocks=2,
-    AdmisType admis_type=AdmisType::PositionBased,
-    int64_t row_start=0, int64_t col_start=0
-  );
-
-  //TODO remove
-  Hierarchical(
-    std::string filename, MatrixLayout ordering,
-    std::vector<std::vector<double>> params,
-    int64_t n_rows, int64_t n_cols,
-    int64_t nleaf,
-    double eps,
-    double admis=0,
-    int64_t n_row_blocks=2, int64_t n_col_blocks=2,
-    AdmisType admis_type=AdmisType::PositionBased,
-    int64_t row_start=0, int64_t col_start=0
-  );
-
   /**
    * @brief Access elements of `Hierarchical` with a pair of indices
    *
