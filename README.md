@@ -13,7 +13,32 @@ cd build
 cmake -DUSE_MKL=ON ..
 make
 ```
-binaries will be compiled into bin.
+binaries will be compiled into bin. C++17 is requiered in order to build HiCMA. The build process will try to detect or download the following dependencies:
+- nlohmann_json
+- YOMM2
+
+
+# Build flags
+```
+-DUSE_MKL
+```
+If this is specified, HiCMA will try to use the Intel MKL library on your system. Otherwise it will try to detect the default BLAS and LAPACK libraries installed on your system.
+
+```
+-DBUILD_DOCS
+```
+If this is set, the documentation files are created during the build process.
+
+```
+-DBUILD_TESTS
+```
+If this is set, test files will be included in the build process.
+
+```
+-DBUILD_EXAMPLES
+```
+If this is set, examples files will be included in the build process.
+
 
 # Classes and their details
 ```c++

@@ -154,6 +154,16 @@ class Hierarchical : public Matrix {
    * n_rows and \p n_cols, one can create this matrix for the interaction
    * between arbitrary sub-groups of the particles for which the parameters are
    * available in \p params.
+   *
+   * \p params stores n-dimensional points in Euclidean space as follows
+   * ```
+   * axis\point   p1  p2  p3 ... pn
+   *   x          x1  x2  x3 ... xn
+   *   y          y1  y2  y3 ... yn
+   *   z          z1  z2  z3 ... zn
+   * ...
+   * ```
+   * i.e. each row of params (`params[i]`) contain the coordinates along one axis.
    */
   Hierarchical(
     void (*kernel)(
@@ -211,6 +221,16 @@ class Hierarchical : public Matrix {
    * n_rows and \p n_cols, one can create this matrix for the interaction
    * between arbitrary sub-groups of the particles for which the parameters are
    * available in \p params.
+   *
+   * \p params stores n-dimensional points in Euclidean space as follows
+   * ```
+   * axis\point   p1  p2  p3 ... pn
+   *   x          x1  x2  x3 ... xn
+   *   y          y1  y2  y3 ... yn
+   *   z          z1  z2  z3 ... zn
+   * ...
+   * ```
+   * i.e. each row of params (`params[i]`) contain the coordinates along one axis.
    */
   Hierarchical(
     void (*kernel)(
@@ -259,6 +279,16 @@ class Hierarchical : public Matrix {
    *
    * If the input data is already available as a `Dense` matrix, use this
    * constructor to create the hierarchical compression.
+   *
+   * \p params stores n-dimensional points in Euclidean space as follows
+   * ```
+   * axis\point   p1  p2  p3 ... pn
+   *   x          x1  x2  x3 ... xn
+   *   y          y1  y2  y3 ... yn
+   *   z          z1  z2  z3 ... zn
+   * ...
+   * ```
+   * i.e. each row of params (`params[i]`) contain the coordinates along one axis.
    */
   Hierarchical(
     Dense&& A,
@@ -302,6 +332,16 @@ class Hierarchical : public Matrix {
    *
    * If the input data is already available as a `Dense` matrix, use this
    * constructor to create the hierarchical compression.
+   *
+   * \p params stores n-dimensional points in Euclidean space as follows
+   * ```
+   * axis\point   p1  p2  p3 ... pn
+   *   x          x1  x2  x3 ... xn
+   *   y          y1  y2  y3 ... yn
+   *   z          z1  z2  z3 ... zn
+   * ...
+   * ```
+   * i.e. each row of params (`params[i]`) contain the coordinates along one axis.
    */
   Hierarchical(
     Dense&& A,
@@ -314,7 +354,7 @@ class Hierarchical : public Matrix {
     AdmisType admis_type=AdmisType::PositionBased
   );
 
-  // TODO write documentation
+  //TODO remove
   Hierarchical(
     std::string filename, MatrixLayout ordering,
     std::vector<std::vector<double>> params,
@@ -327,7 +367,7 @@ class Hierarchical : public Matrix {
     int64_t row_start=0, int64_t col_start=0
   );
 
-  //TODO write documentation
+  //TODO remove
   Hierarchical(
     std::string filename, MatrixLayout ordering,
     std::vector<std::vector<double>> params,

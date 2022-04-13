@@ -77,7 +77,7 @@ class MatrixInitializer {
    * @param eps
    * Fixed error threshold used for approximating admissible submatrices.
    * @param rank
-   * Fixed rank to be used for approximating admissible submatrices.
+   * Fixed rank to be used for approximating admissible submatrices. Ignored if eps &ne; 0
    * @param params
    * Vector containing parameters used as input to the kernel
    * and as coordinate of particles
@@ -96,10 +96,10 @@ class MatrixInitializer {
    * @param A
    * Matrix whose elements are to be assigned.
    * @param row_range
-   * Row range of \p A. The start of the `IndexRange` is that within the root
+   * Row range of \p A. The start of the `IndexRange` within the root
    * level `Hierarchical` matrix.
    * @param col_range
-   * Column range of \p A. The start of the `IndexRange` is that within the root
+   * Column range of \p A. The start of the `IndexRange` within the root
    * level `Hierarchical` matrix.
    *
    * Aside from a constructor, deriving classes need to implement this single

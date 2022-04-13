@@ -12,24 +12,96 @@
  */
 namespace hicma
 {
+
+/**
+ * @brief Namespace for timer
+ *
+ * Contain utility methods to create and manipulate timer. Uses C++ `std::chrono` under the hood.
+ *
+ * Note that this timer is NOT thread-safe and should not be called from multithreaded region
+ */
 namespace timing
 {
 
 class Timer;
 
 // Functions to manipulate global timer state machine
+
+/**
+ * @brief Starts timing of an event
+ * 
+ * Starts the timer for a specified event.
+ * 
+ * @param event the name of the event
+ * @return Timer& reference to the timer
+ */
 Timer& start(std::string event);
 
+/**
+ * @brief Stops the timing of an event
+ * 
+ * Stops the timer for a specified event.
+ * Returns 0 if there is no cprresponding event.
+ * 
+ * @param event the name of the event
+ * @return double elapsed time in seconds
+ */
 double stop(std::string event);
 
+/**
+ * @brief Resets all timers
+ * 
+ * Clears all stored events and thus resets all timings.
+ * 
+ */
 void clearTimers();
 
+/**
+ * @brief Stops the timing of an event and prints the result
+ * 
+ * Stops the timer for a specified event and prints the result
+ * up to a specified depth.
+ * The depth specifies the granularity of the result
+ * (i.e. it also displays sub-timers)
+ * 
+ * @param event the name of the event
+ * @param depth the number of sub-timers to print
+ */
 void stopAndPrint(std::string event, int depth = 0);
 
+/**
+ * @brief Prints the timings for an event
+ * 
+ * Prints the timings for a specified event
+ * up to a specified depth.
+ * The depth specifies the granularity of the result
+ * (i.e. it also displays sub-timers)
+ * 
+ * @param event the name of the event
+ * @param depth the number of sub-timers to print
+ */
 void printTime(std::string event, int depth = 0);
 
+/**
+ * @brief Calculates the total time for an event
+ * 
+ * Total time represents the sum of the timer and all
+ * sub-timers
+ * 
+ * @param event name of the event
+ * @return double elapsed time in seconds
+ */
 double getTotalTime(std::string event);
 
+/**
+ * @brief Get the number of timings for an event
+ * 
+ * Total number of timings for an event
+ * (i.e. number of sub-timers).
+ * 
+ * @param event name of the event
+ * @return unsigned int number of timings
+ */
 unsigned int getNRuns(std::string event);
 
 // Interface of the Timer class if user wants to create own timers
