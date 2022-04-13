@@ -274,6 +274,12 @@ define_method(MatrixProxy, shallow_copy_omm, (const Dense& A)) {
   return A.shallow_copy();
 }
 
+define_method(MatrixProxy, shallow_copy_omm, (const LowRank& A)) {
+  LowRank scopy(A.U, A.S, A.V, false);
+  scopy.eps = A.eps;
+  return scopy;
+}
+
 define_method(MatrixProxy, shallow_copy_omm, (const Hierarchical& A)) {
   Hierarchical new_shallow_copy(A.dim[0], A.dim[1]);
   for (int64_t i=0; i<A.dim[0]; ++i) {
