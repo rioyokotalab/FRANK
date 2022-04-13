@@ -47,15 +47,31 @@ std::tuple<MatrixProxy, MatrixProxy> getrf(Matrix& A);
  * @param k
  * Determines how many columns that needs to be taken (stopping criterion)
  *
- * @return TODO explain
+ * @return
+ * Tuple containing two values: the matrix \p V and chosen column indices of \p A
  *
- * TODO add more explanation
  * This method performs one-sided interpolative decomposition of a given matrix.
+ * The matrix \p A is approximated as
+ *
+ * <tt>A &asymp; U * V</tt>
+ *
+ * Where <tt>U</tt> is a M-by-k matrix composed of the chosen \p k columns of \p A and
+ * <tt>V</tt> is a k-by-N matrix.
  */
 std::tuple<Dense, std::vector<int64_t>> one_sided_id(Matrix& A, int64_t k);
 
-// TODO Does this need to be in the header?
-Dense get_cols(const Dense& A, std::vector<int64_t> P);
+/**
+ * @brief Get subset of columns from a `Dense` matrix
+ *
+ * @param A
+ * M-by-N `Dense` matrix
+ * @param Pr
+ * Column indices
+ *
+ * @return `Dense`
+ * A `Dense` matrix containing the specified subset of columns ordered as \p Pr.
+ */
+Dense get_cols(const Dense& A, std::vector<int64_t> Pr);
 
 /**
  * @brief Compute two-sided interpolative decomposition (ID) of a `Dense` matrix
@@ -65,24 +81,53 @@ Dense get_cols(const Dense& A, std::vector<int64_t> P);
  * @param k
  * Determines how many columns that needs to be taken (stopping criterion)
  *
- * @return TODO explain
+ * @return
+ * Tuple containing three matrices: `U`, `S`, and `V`.
  *
- * TODO add more explanation
  * This method performs two-sided interpolative decomposition of a given matrix.
+ * The matrix \p A is approximated as
+ *
+ * <tt>A &asymp; U * S * V</tt>
+ *
+ * Where <tt>U</tt> is a M-by-k matrix, <tt>S</tt> is a k-by-k matrix, and <tt>V</tt> is a k-by-N matrix.
  */
 std::tuple<Dense, Dense, Dense> id(Matrix& A, int64_t k);
 
+/**
+ * @brief Compute Householder QR factorization with column pivoting
+ *
+ * @param A
+ * M-by-N `Dense` instance to be factorized. Overwritten on finish
+ *
+ * @return
+ * Tuple containing the upper triangular matrix <tt>R</tt> and permuted column indices
+ *
+ * This method performs Householder QR factorization with column pivoting. On finish, the lower trapezoidal part of \p A will be overwritten with householder reflectors representing the orthogonal factor Q.
+ */
 std::tuple<Dense, std::vector<int64_t>> geqp3(Matrix& A);
 
 /**
- * @brief Compute a truncated householder QR with column pivoting
- * with stopping criterion based on relative error threshold.
- * This is typically used for low-rank approximation
+ * @brief Compute truncated Householder QR factorization with column pivoting
  *
  * @param A
  * M-by-N `Dense` instance to be factorized
  * @param eps
- * Error threshold
+ * Relative error threshold
+ *
+ * @return
+ * Tuple containing the matrices <tt>Q</tt> and <tt>R</tt>.
+ *
+ * Truncation is performed based on the specified relative error threshold.
+ * The matrix \p A is approximated as
+ *
+ * <tt>A &asymp; Q * R</tt>
+ *
+ * such that <tt>Q</tt> is a M-by-k matrix with orthonormal columns, <tt>R</tt> is a k-by-N matrix,
+ * and k is the minimum rank that satisfies
+ *
+ * <tt>|A-QR|_F &le; eps * |A|_F</tt>,
+ *
+ * where |A|_F denotes the Frobenius norm of \p A.
  */
 std::tuple<Dense, Dense> truncated_geqp3(const Dense& A, double eps);
 
@@ -200,12 +245,84 @@ void triangularize_block_col(int64_t, Hierarchical&, Hierarchical&);
 
 void apply_block_col_householder(const Hierarchical&, const Hierarchical&, int64_t, bool, Hierarchical&, int64_t);
 
+/**
+ * @brief Perform Blocked Householder BLR-QR Factorization
+ *
+ * @param A
+ * Block Low-Rank matrix with p-by-q blocks. Overwritten on finish
+ * @param T
+ * Block Dense matrix with q-by-1 blocks. Overwritten on finish
+ *
+ * This method computes the QR factorization of a Block Low-Rank matrix \p A using blocked Householder technique.
+ * Prior to calling, \p T needs to be initialized with proper dimension.
+ * The BLR matrix \p A is factorized as
+ *
+ * <tt>A &asymp; Q * R</tt>,
+ *
+ * where \p Q is an orthogonal BLR matrix with p-by-p blocks and \p R is an upper triangular BLR matrix with p-by-q blocks.
+ * On finish, \p R is stored in the upper triangular part of \p A.
+ * \p Q is implicitly stored as \p Y and \p T such that \p Y contains Householder vectors stored in the strictly lower trapezoidal part of \p A and each block in \p T is an upper triangular matrix.
+ */
 void blocked_householder_blr_qr(Hierarchical& A, Hierarchical& T);
 
+/**
+ * @brief Perform left multiplication by Q from blocked Householder BLR-QR
+ *
+ * @param Y
+ * Block Low-Rank matrix with p-by-q blocks containing Householder vectors in its strictly lower trapezoidal part
+ * @param T
+ * Block Dense matrix with q-by-1 blocks
+ * @param C
+ * Block Low-Rank matrix C with p-by-q blocks
+ * @param trans
+ * \p true if \p transpose(Q) will be used, \p false otherwise
+ *
+ * This method performs the following operation
+ *
+ * <tt>C = Q*C</tt> or <tt>C = transpose(Q)*C</tt>
+ *
+ * where \p Q is the orthogonal p-by-p blocks BLR matrix coming from the blocked Householder BLR-QR factorization that is stored in \p Y and \p T matrices.
+ */
 void left_multiply_blocked_reflector(const Hierarchical& Y, const Hierarchical& T, Hierarchical& C, bool trans);
 
+/**
+ * @brief Perform Tiled Householder BLR-QR Factorization
+ *
+ * @param A
+ * Block Low-Rank matrix with p-by-q blocks. Overwritten on finish
+ * @param T
+ * Block Dense matrix with p-by-q blocks. Overwritten on finish
+ *
+ * This method computes the QR factorization of a Block Low-Rank matrix \p A using tiled Householder technique.
+ * Prior to calling, \p T needs to be initialized with proper dimension
+ * The BLR matrix \p A is factorized as
+ *
+ * <tt>A &asymp; Q * R</tt>,
+ *
+ * where \p Q is an orthogonal BLR matrix with p-by-p blocks and \p R is an upper triangular BLR matrix with p-by-q blocks.
+ * On finish, \p R is stored in the upper triangular part of \p A.
+ * \p Q is implicitly stored as \p Y and \p T such that \p Y contains Householder vectors stored in the strictly lower trapezoidal part of \p A and each block in \p T is an upper triangular matrix.
+ */
 void tiled_householder_blr_qr(Hierarchical& A, Hierarchical& T);
 
+/**
+ * @brief Perform left multiplication by Q from tiled Householder BLR-QR
+ *
+ * @param Y
+ * Block Low-Rank matrix with p-by-q blocks containing Householder vectors in its strictly lower trapezoidal part
+ * @param T
+ * Block Dense matrix with p-by-q blocks
+ * @param C
+ * Block Low-Rank matrix C with p-by-q blocks
+ * @param trans
+ * \p true if \p transpose(Q) will be used, \p false otherwise
+ *
+ * This method performs the following operation
+ *
+ * <tt>C = Q*C</tt> or <tt>C = transpose(Q)*C</tt>
+ *
+ * where \p Q is the orthogonal p-by-p blocks BLR matrix coming from the tiled Householder BLR-QR factorization that is stored in \p Y and \p T matrices.
+ */
 void left_multiply_tiled_reflector(const Hierarchical& Y, const Hierarchical& T, Hierarchical& C, bool trans);
 
 /**
@@ -242,9 +359,6 @@ void rq(Matrix&, Matrix&, Matrix&);
  */
 std::tuple<Dense, Dense, Dense> svd(Dense& A);
 
-std::tuple<Dense, Dense, Dense> sdd(Dense& A);
-
-// TODO Does this need to be in the header?
 /**
  * @brief Compute the singular values of a `Dense` matrix
  *
@@ -254,7 +368,7 @@ std::tuple<Dense, Dense, Dense> sdd(Dense& A);
  * @return a vector containing singular values of \p A
  *
  * This method uses Singular Value Decomposition to compute the singular values of \p A.
- * The singular values are sorted from the largest to the smallest.
+ * The obtained singular values are sorted descendingly.
  */
 std::vector<double> get_singular_values(Dense& A);
 
