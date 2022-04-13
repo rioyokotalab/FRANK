@@ -6,7 +6,7 @@
 #include "hicma/classes/initialization_helpers/matrix_initializer.h"
 
 #include <cstdint>
-
+#include <string>
 
 /**
  * @brief General namespace of the HiCMA library
