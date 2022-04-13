@@ -43,29 +43,6 @@ std::tuple<Dense, Dense, Dense> svd(Dense& A) {
   return {std::move(U), std::move(S), std::move(V)};
 }
 
-std::tuple<Dense, Dense, Dense> sdd(Dense& A) {
-  int64_t dim_min = std::min(A.dim[0], A.dim[1]);
-  Dense Sdiag(dim_min, 1);
-  Dense work(dim_min-1, 1);
-  Dense U(A.dim[0], dim_min);
-  Dense V(dim_min, A.dim[1]);
-  // dgesdd is faster, but makes little/no difference in randomized SVD
-  LAPACKE_dgesdd(
-    LAPACK_ROW_MAJOR,
-    'S',
-    A.dim[0], A.dim[1],
-    &A, A.stride,
-    &Sdiag,
-    &U, U.stride,
-    &V, V.stride
-  );
-  Dense S(dim_min, dim_min);
-  for(int64_t i=0; i<dim_min; i++){
-    S(i, i) = Sdiag[i];
-  }
-  return {std::move(U), std::move(S), std::move(V)};
-}
-
 std::vector<double> get_singular_values(Dense& A) {
   std::vector<double> Sdiag(std::min(A.dim[0], A.dim[1]), 1);
   Dense work(A.dim[1]-1,1);
