@@ -26,7 +26,7 @@ class Dense;
 class IndexRange;
 
 /**
- * @brief `MatrixInitializer` specialization initializing matrix elements from a
+ * @brief `MatrixInitializer` specialization that initializes matrix elements from a
  * kernel and parameters
  */
 class MatrixInitializerKernel : public MatrixInitializer {
@@ -63,7 +63,7 @@ class MatrixInitializerKernel : public MatrixInitializer {
    * @param eps
    * Fixed error threshold used for approximating admissible submatrices.
    * @param rank
-   * Fixed rank to be used for approximating admissible submatrices.
+   * Fixed rank to be used for approximating admissible submatrices. Ignored if eps &ne; 0
    * @param admis_type
    * Either AdmisType::PositionBased or AdmisType::GeometryBased
    */
@@ -83,10 +83,10 @@ class MatrixInitializerKernel : public MatrixInitializer {
    * @param A
    * Matrix whose elements are to be assigned.
    * @param row_range
-   * Row range of \p A. The start of the `IndexRange` is that within the root
+   * Row range of \p A. The start of the `IndexRange` within the root
    * level `Hierarchical` matrix.
    * @param col_range
-   * Column range of \p A. The start of the `IndexRange` is that within the root
+   * Column range of \p A. The start of the `IndexRange` within the root
    * level `Hierarchical` matrix.
    *
    * Uses the kernel and parameters stored in this class to assign elements. The

@@ -24,7 +24,7 @@ class ClusterTree;
 class IndexRange;
 
 /**
- * @brief `MatrixInitializer` specialization initializing matrix elements from a
+ * @brief `MatrixInitializer` specialization that initializes matrix elements from a
  * large `Dense` matrix instance
  */
 class MatrixInitializerBlock : public MatrixInitializer {
@@ -56,7 +56,7 @@ class MatrixInitializerBlock : public MatrixInitializer {
    * @param eps
    * Fixed error threshold used for approximating admissible submatrices.
    * @param rank
-   * Fixed rank to be used for approximating admissible submatrices.
+   * Fixed rank to be used for approximating admissible submatrices. Ignored if eps &ne; 0
    * @param params
    * Vector containing the underlying geometry information of the input `Dense` matrix
    * @param admis_type
@@ -73,10 +73,10 @@ class MatrixInitializerBlock : public MatrixInitializer {
    * @param A
    * Matrix whose elements are to be assigned.
    * @param row_range
-   * Row range of \p A. The start of the `IndexRange` is that within the root
+   * Row range of \p A. The start of the `IndexRange` within the root
    * level `Hierarchical` matrix.
    * @param col_range
-   * Column range of \p A. The start of the `IndexRange` is that within the root
+   * Column range of \p A. The start of the `IndexRange` within the root
    * level `Hierarchical` matrix.
    *
    * Use the large `Dense` matrix stored in this class to assign elements. The
