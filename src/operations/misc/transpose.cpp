@@ -18,29 +18,56 @@ namespace hicma
 
 MatrixProxy transpose(const Matrix& A) { return transpose_omm(A); }
 
-define_method(MatrixProxy, transpose_omm, (const Dense<double>& A)) {
-  Dense<double> transposed(A.dim[1], A.dim[0]);
+template<typename T>
+MatrixProxy dense_transpose(const Dense<T>& A) {
+  Dense<T> transposed(A.dim[1], A.dim[0]);
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {
       transposed(j,i) = A(i,j);
     }
   }
-  return transposed;
+  return std::move(transposed);
+}
+
+define_method(MatrixProxy, transpose_omm, (const Dense<float>& A)) {
+  return dense_transpose(A);
+}
+
+define_method(MatrixProxy, transpose_omm, (const Dense<double>& A)) {
+  return dense_transpose(A);
+}
+
+template<typename T>
+MatrixProxy low_rank_transpose(const LowRank<T>& A) {
+  LowRank<T> transposed(transpose(A.V), transpose(A.S), transpose(A.U));
+  return std::move(transposed);
+}
+
+define_method(MatrixProxy, transpose_omm, (const LowRank<float>& A)) {
+  return low_rank_transpose(A);
 }
 
 define_method(MatrixProxy, transpose_omm, (const LowRank<double>& A)) {
-  LowRank<double> transposed(transpose(A.V), transpose(A.S), transpose(A.U));
-  return transposed;
+  return low_rank_transpose(A);
 }
 
-define_method(MatrixProxy, transpose_omm, (const Hierarchical<double>& A)) {
-  Hierarchical<double> transposed(A.dim[1], A.dim[0]);
+template<typename T>
+MatrixProxy hierarchical_transpose(const Hierarchical<T>& A) {
+  Hierarchical<T> transposed(A.dim[1], A.dim[0]);
   for(int64_t i=0; i<A.dim[0]; i++) {
     for(int64_t j=0; j<A.dim[1]; j++) {
       transposed(j, i) = transpose(A(i, j));
     }
   }
-  return transposed;
+  return std::move(transposed);
+}
+
+define_method(MatrixProxy, transpose_omm, (const Hierarchical<float>& A)) {
+  return hierarchical_transpose(A);
+}
+
+define_method(MatrixProxy, transpose_omm, (const Hierarchical<double>& A)) {
+  return hierarchical_transpose(A);
 }
 
 define_method(MatrixProxy, transpose_omm, (const Matrix& A)) {

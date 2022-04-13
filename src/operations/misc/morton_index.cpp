@@ -21,6 +21,7 @@
 
 namespace hicma
 {
+// TODO this is currently not used, so no templates necessary
 
 std::vector<int64_t> getCartesianIndex(int64_t dim, int64_t mortonIndex) {
   std::vector<int64_t> index(dim, 0);

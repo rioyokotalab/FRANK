@@ -30,6 +30,10 @@ static const int decimal = 7; //!< Decimal precision
 
 std::string type(const Matrix& A) { return type_omm(A); }
 
+define_method(std::string, type_omm, (const Dense<float>&)) {
+  return "Dense";
+}
+
 define_method(std::string, type_omm, (const Dense<double>&)) {
   return "Dense";
 }
@@ -38,8 +42,16 @@ define_method(std::string, type_omm, (const Empty&)) {
   return "Empty";
 }
 
+define_method(std::string, type_omm, (const LowRank<float>&)) {
+  return "LowRank";
+}
+
 define_method(std::string, type_omm, (const LowRank<double>&)) {
   return "LowRank";
+}
+
+define_method(std::string, type_omm, (const Hierarchical<float>&)) {
+  return "Hierarchical";
 }
 
 define_method(std::string, type_omm, (const Hierarchical<double>&)) {
@@ -64,13 +76,9 @@ void to_json(
   to_json_omm(A, json, i_abs, j_abs, level);
 }
 
-define_method(
-  void, to_json_omm,
-  (
-    const Hierarchical<double>& A, nlohmann::json& json,
-    int64_t i_abs, int64_t j_abs, int64_t level
-  )
-) {
+template<typename T>
+void hierarchical_to_json(const Hierarchical<T>& A, nlohmann::json& json,
+  int64_t i_abs, int64_t j_abs, int64_t level) {
   json["abs_pos"] = {i_abs, j_abs};
   json["level"] = level;
   json["children"] = {};
@@ -89,10 +97,26 @@ define_method(
 define_method(
   void, to_json_omm,
   (
-    const LowRank<double>& A, nlohmann::json& json,
+    const Hierarchical<float>& A, nlohmann::json& json,
     int64_t i_abs, int64_t j_abs, int64_t level
   )
 ) {
+  hierarchical_to_json(A, json, i_abs, j_abs, level);
+}
+
+define_method(
+  void, to_json_omm,
+  (
+    const Hierarchical<double>& A, nlohmann::json& json,
+    int64_t i_abs, int64_t j_abs, int64_t level
+  )
+) {
+  hierarchical_to_json(A, json, i_abs, j_abs, level);
+}
+
+template<typename T>
+void low_rank_to_json(const LowRank<T>& A, nlohmann::json& json,
+  int64_t i_abs, int64_t j_abs, int64_t level) {
   json["abs_pos"] = {i_abs, j_abs};
   json["level"] = level;
   Dense<double> AD(A);
@@ -103,14 +127,50 @@ define_method(
 define_method(
   void, to_json_omm,
   (
-    const Dense<double>& A, nlohmann::json& json,
+    const LowRank<float>& A, nlohmann::json& json,
     int64_t i_abs, int64_t j_abs, int64_t level
   )
 ) {
+  low_rank_to_json(A, json, i_abs, j_abs, level);
+}
+
+define_method(
+  void, to_json_omm,
+  (
+    const LowRank<double>& A, nlohmann::json& json,
+    int64_t i_abs, int64_t j_abs, int64_t level
+  )
+) {
+  low_rank_to_json(A, json, i_abs, j_abs, level);
+}
+
+template<typename T>
+void dense_to_json(const Dense<T>& A, nlohmann::json& json,
+  int64_t i_abs, int64_t j_abs, int64_t level) {
   json["abs_pos"] = {i_abs, j_abs};
   json["level"] = level;
   Dense<double> A_(A);
   json["svalues"] = get_singular_values(A_);
+}
+
+define_method(
+  void, to_json_omm,
+  (
+    const Dense<float>& A, nlohmann::json& json,
+    int64_t i_abs, int64_t j_abs, int64_t level
+  )
+) {
+  dense_to_json(A, json, i_abs, j_abs, level);
+}
+
+define_method(
+  void, to_json_omm,
+  (
+    const Dense<double>& A, nlohmann::json& json,
+    int64_t i_abs, int64_t j_abs, int64_t level
+  )
+) {
+  dense_to_json(A, json, i_abs, j_abs, level);
 }
 
 define_method(
@@ -140,7 +200,8 @@ define_method(void, print_omm, (const Matrix& A)) {
   omm_error_handler("print", {A}, __FILE__, __LINE__);
 }
 
-define_method(void, print_omm, (const Dense<double>& A)) {
+template<typename T>
+void print_dense(const Dense<T>& A) {
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {
       std::cout << std::setw(20) << std::setprecision(15) << A(i, j) << ' ';
@@ -150,7 +211,16 @@ define_method(void, print_omm, (const Dense<double>& A)) {
   print_separation_line();
 }
 
-define_method(void, print_omm, (const LowRank<double>& A)) {
+define_method(void, print_omm, (const Dense<float>& A)) {
+  print_dense(A);
+}
+
+define_method(void, print_omm, (const Dense<double>& A)) {
+  print_dense(A);
+}
+
+template<typename T>
+void print_low_rank(const LowRank<T>& A) {
   std::cout << "U : --------------------------------------" << std::endl;
   print(A.U);
   std::cout << "S : --------------------------------------" << std::endl;
@@ -160,7 +230,16 @@ define_method(void, print_omm, (const LowRank<double>& A)) {
   print_separation_line();
 }
 
-define_method(void, print_omm, (const Hierarchical<double>& A)) {
+define_method(void, print_omm, (const LowRank<float>& A)) {
+  print_low_rank(A);
+}
+
+define_method(void, print_omm, (const LowRank<double>& A)) {
+  print_low_rank(A);
+}
+
+template<typename T>
+void print_hierarchical(const Hierarchical<T>& A) {
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {
       std::cout << type(A(i, j)) << " (" << i << "," << j << ")" << std::endl;
@@ -169,6 +248,14 @@ define_method(void, print_omm, (const Hierarchical<double>& A)) {
     std::cout << std::endl;
   }
   print_separation_line();
+}
+
+define_method(void, print_omm, (const Hierarchical<float>& A)) {
+  print_hierarchical(A);
+}
+
+define_method(void, print_omm, (const Hierarchical<double>& A)) {
+  print_hierarchical(A);
 }
 
 void print(std::string s) {

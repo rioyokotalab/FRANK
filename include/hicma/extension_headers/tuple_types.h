@@ -22,6 +22,8 @@ typedef std::tuple<MatrixProxy, MatrixProxy> MatrixPair;
 typedef std::tuple<Dense<double>, Dense<double>> DensePair;
 typedef std::tuple<Dense<double>, Dense<double>, Dense<double>> DenseTriplet;
 typedef std::tuple<Dense<double>, std::vector<int64_t>> DenseIndexSetPair;
+typedef std::tuple<MatrixProxy, std::vector<int64_t>> MatrixIndexSetPair;
+typedef std::tuple<MatrixProxy, MatrixProxy, MatrixProxy> MatrixTriplet;
 
 typedef std::tuple<double, double> DoublePair;
 

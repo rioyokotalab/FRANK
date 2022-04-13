@@ -25,6 +25,18 @@ namespace hicma
 
 void tpqrt(Matrix& A, Matrix& B, Matrix& T) { tpqrt_omm(A, B, T); }
 
+// single precision
+define_method(void, tpqrt_omm, (Dense<float>& A, Dense<float>& B, Dense<float>& T)) {
+  LAPACKE_stpqrt2(
+    LAPACK_ROW_MAJOR,
+    B.dim[0], B.dim[1], 0,
+    &A, A.stride,
+    &B, B.stride,
+    &T, T.stride
+  );
+}
+
+// double precision
 define_method(void, tpqrt_omm, (Dense<double>& A, Dense<double>& B, Dense<double>& T)) {
   LAPACKE_dtpqrt2(
     LAPACK_ROW_MAJOR,
@@ -35,28 +47,49 @@ define_method(void, tpqrt_omm, (Dense<double>& A, Dense<double>& B, Dense<double
   );
 }
 
-define_method(void, tpqrt_omm, (Dense<double>& A, LowRank<double>& B, Dense<double>& T)) {
-  Dense<double> BV_copy(B.V);
+template<typename T>
+void tpqrt_d_lr_d(Dense<T>& A, LowRank<T>& B, Dense<T>& S) {
+  Dense<T> BV_copy(B.V);
   B.V = gemm(B.S, BV_copy);
   B.S = 0.0;
   for(int64_t i = 0; i < std::min(B.S.dim[0], B.S.dim[1]); i++) {
     B.S(i, i) = 1.0;
   }
-  tpqrt(A, B.V, T);
+  tpqrt(A, B.V, S);
+}
+
+define_method(void, tpqrt_omm, (Dense<float>& A, LowRank<float>& B, Dense<float>& T)) {
+  tpqrt_d_lr_d(A, B, T);
+}
+
+define_method(void, tpqrt_omm, (Dense<double>& A, LowRank<double>& B, Dense<double>& T)) {
+  tpqrt_d_lr_d(A, B, T);
+}
+
+template<typename T>
+void tpqrt_h_h_h(Hierarchical<T>& A, Hierarchical<T>& B, Hierarchical<T>& S) {
+  for(int64_t i = 0; i < B.dim[0]; i++) {
+    for(int64_t j = 0; j < B.dim[1]; j++) {
+      tpqrt(A(j, j), B(i, j), S(i, j));
+      for(int64_t k = j+1; k < B.dim[1]; k++) {
+        tpmqrt(B(i, j), S(i, j), A(j, k), B(i, k), true);
+      }
+    }
+  }
+}
+
+define_method(
+  void, tpqrt_omm,
+  (Hierarchical<float>& A, Hierarchical<float>& B, Hierarchical<float>& T)
+) {
+  tpqrt_h_h_h(A, B, T);
 }
 
 define_method(
   void, tpqrt_omm,
   (Hierarchical<double>& A, Hierarchical<double>& B, Hierarchical<double>& T)
 ) {
-  for(int64_t i = 0; i < B.dim[0]; i++) {
-    for(int64_t j = 0; j < B.dim[1]; j++) {
-      tpqrt(A(j, j), B(i, j), T(i, j));
-      for(int64_t k = j+1; k < B.dim[1]; k++) {
-        tpmqrt(B(i, j), T(i, j), A(j, k), B(i, k), true);
-      }
-    }
-  }
+  tpqrt_h_h_h(A, B, T);
 }
 
 // Fallback default, abort with error message

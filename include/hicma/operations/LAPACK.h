@@ -21,7 +21,8 @@ class MatrixProxy;
 //class Dense;
 //class Hierarchical;
 
-std::tuple<Dense<double>, std::vector<int64_t>> geqp3(Matrix& A);
+template<typename T>
+std::tuple<Dense<T>, std::vector<int64_t>> geqp3(Matrix& A);
 
 /**
  * @brief Compute full Householder QR factorization of a general matrix
@@ -48,7 +49,8 @@ std::tuple<Dense<double>, std::vector<int64_t>> geqp3(Matrix& A);
  */
 void geqrt(Matrix& A, Matrix& T);
 
-void geqrt2(Dense<double>&, Dense<double>&);
+template<typename T>
+void geqrt2(Dense<T>&, Dense<T>&);
 
 /**
  * @brief Compute reduced QR factorization of a general matrix
@@ -63,7 +65,8 @@ void geqrt2(Dense<double>&, Dense<double>&);
  * Prior to calling, it is assumed that \p A and \p R have been initialized with proper dimensions.
  * Upon finish, \p A will be overwritten with the resulting orthogonal factor \p Q.
  */
-void mgs_qr(Dense<double>&, Dense<double>&);
+template<typename T>
+void mgs_qr(Dense<T>&, Dense<T>&);
 
 /**
  * @brief Compute LU factorization of a general matrix
@@ -100,10 +103,12 @@ std::tuple<MatrixProxy, MatrixProxy> getrf(Matrix& A);
  * TODO add more explanation
  * This method performs one-sided interpolative decomposition of a given matrix.
  */
-std::tuple<Dense<double>, std::vector<int64_t>> one_sided_id(Matrix& A, int64_t k);
+template<typename T>
+std::tuple<Dense<T>, std::vector<int64_t>> one_sided_id(Matrix& A, int64_t k);
 
-// TODO Does this need to be in the header?
-Dense<double> get_cols(const Dense<double>& A, std::vector<int64_t> P);
+// TODO Does this need to be in the header (it is only used in the test)?
+template<typename T>
+Dense<T> get_cols(const Dense<T>& A, std::vector<int64_t> P);
 
 /**
  * @brief Compute two-sided interpolative decomposition (ID) of a `Dense` matrix
@@ -118,7 +123,8 @@ Dense<double> get_cols(const Dense<double>& A, std::vector<int64_t> P);
  * TODO add more explanation
  * This method performs two-sided interpolative decomposition of a given matrix.
  */
-std::tuple<Dense<double>, Dense<double>, Dense<double>> id(Matrix& A, int64_t k);
+template<typename T>
+std::tuple<Dense<T>, Dense<T>, Dense<T>> id(Matrix& A, int64_t k);
 
 /**
  * @brief Apply block householder reflector or its transpose to a general rectangular matrix
@@ -156,17 +162,18 @@ void larfb(const Matrix& V, const Matrix& T, Matrix& C, bool trans);
  * It relies on <a target="_blank" href="http://www.netlib.org/lapack/explore-html/d1/dc0/group__double__matgen_gadf4ba9c37cb5f67132e71433efa825d4.html#gadf4ba9c37cb5f67132e71433efa825d4"><tt>dlatms</tt></a> subroutine provided by BLAS/LAPACK.
  * See the documentation page for detailed explanation about the parameters.
  */
+template<typename T>
 void latms(
   const char& dist,
   std::vector<int>& iseed,
   const char& sym,
-  std::vector<double>& d,
+  std::vector<T>& d,
   int mode,
-  double cond,
-  double dmax,
+  T cond,
+  T dmax,
   int kl, int ku,
   const char& pack,
-  Dense<double>& A
+  Dense<T>& A
 );
 
 /**
@@ -221,9 +228,11 @@ void zero_lowtri(Matrix& A);
  */
 void zero_whole(Matrix& A);
 
-void triangularize_block_col(int64_t, Hierarchical<double>&, Hierarchical<double>&);
+template<typename T>
+void triangularize_block_col(int64_t, Hierarchical<T>&, Hierarchical<T>&);
 
-void apply_block_col_householder(const Hierarchical<double>&, const Hierarchical<double>&, int64_t, bool, Hierarchical<double>&, int64_t);
+template<typename T>
+void apply_block_col_householder(const Hierarchical<T>&, const Hierarchical<T>&, int64_t, bool, Hierarchical<T>&, int64_t);
 
 /**
  * @brief Perform RQ factorization of a `Dense` matrix
@@ -257,9 +266,11 @@ void rq(Matrix&, Matrix&, Matrix&);
  * This method internally calls <a target="_blank" href="http://www.netlib.org/lapack/explore-html/d1/d7e/group__double_g_esing_ga84fdf22a62b12ff364621e4713ce02f2.html#ga84fdf22a62b12ff364621e4713ce02f2"><tt>dgesvd</tt></a> subroutine provided by BLAS/LAPACK to perform the operation.
  * See the documentation page for more information.
  */
-std::tuple<Dense<double>, Dense<double>, Dense<double>> svd(Dense<double>& A);
+template<typename T>
+std::tuple<Dense<T>, Dense<T>, Dense<T>> svd(Dense<T>& A);
 
-std::tuple<Dense<double>, Dense<double>, Dense<double>> sdd(Dense<double>& A);
+template<typename T>
+std::tuple<Dense<T>, Dense<T>, Dense<T>> sdd(Dense<T>& A);
 
 // TODO Does this need to be in the header?
 /**
@@ -273,7 +284,8 @@ std::tuple<Dense<double>, Dense<double>, Dense<double>> sdd(Dense<double>& A);
  * This method uses Singular Value Decomposition to compute the singular values of \p A.
  * The singular values are sorted from the largest to the smallest.
  */
-std::vector<double> get_singular_values(Dense<double>& A);
+template<typename T>
+std::vector<T> get_singular_values(Dense<T>& A);
 
 /**
  * @brief Apply a "lower trapezoidal" blocked reflector to a matrix composed of two blocks

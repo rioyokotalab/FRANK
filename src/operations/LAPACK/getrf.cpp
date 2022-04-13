@@ -37,8 +37,9 @@ std::tuple<MatrixProxy, MatrixProxy> getrf(Matrix& A) {
   return out;
 }
 
-define_method(MatrixPair, getrf_omm, (Hierarchical<double>& A)) {
-  Hierarchical<double> L(A.dim[0], A.dim[1]);
+template<typename T>
+MatrixPair hierarchical_getrf(Hierarchical<T>& A) {
+  Hierarchical<T> L(A.dim[0], A.dim[1]);
   for (int64_t i=0; i<A.dim[0]; i++) {
     std::tie(L(i, i), A(i, i)) = getrf_omm(A(i, i));
     for (int64_t i_c=i+1; i_c<L.dim[0]; i_c++) {
@@ -59,6 +60,37 @@ define_method(MatrixPair, getrf_omm, (Hierarchical<double>& A)) {
   return {std::move(L), std::move(A)};
 }
 
+define_method(MatrixPair, getrf_omm, (Hierarchical<float>& A)) {
+  return hierarchical_getrf(A);
+}
+
+define_method(MatrixPair, getrf_omm, (Hierarchical<double>& A)) {
+  return hierarchical_getrf(A);
+}
+
+// single precision
+define_method(MatrixPair, getrf_omm, (Dense<float>& A)) {
+  timing::start("SGETRF");
+  Dense<float> L(A.dim[0], A.dim[1]);
+  std::vector<int> ipiv(std::min(A.dim[0], A.dim[1]));
+  LAPACKE_sgetrf(
+    LAPACK_ROW_MAJOR,
+    A.dim[0], A.dim[1],
+    &A, A.stride,
+    &ipiv[0]
+  );
+  for (int64_t i=0; i<A.dim[0]; i++) {
+    for (int64_t j=0; j<i; j++) {
+      L(i, j) = A(i, j);
+      A(i, j) = 0;
+    }
+    L(i, i) = 1;
+  }
+  timing::stop("SGETRF");
+  return {std::move(L), std::move(A)};
+}
+
+// double precision
 define_method(MatrixPair, getrf_omm, (Dense<double>& A)) {
   timing::start("DGETRF");
   Dense<double> L(A.dim[0], A.dim[1]);

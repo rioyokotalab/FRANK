@@ -21,14 +21,23 @@ MatrixProxy operator-(const Matrix& A, const Matrix& B) {
   return subtraction_omm(A, B);
 }
 
-define_method(MatrixProxy, subtraction_omm, (const Dense<double>& A, const Dense<double>& B)) {
-  Dense<double> out(A);
+template<typename T>
+Dense<T> subtraction_dense(const Dense<T>& A, const Dense<T>& B) {
+  Dense<T> out(A);
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {
       out(i, j) = A(i, j) - B(i, j);
     }
   }
   return out;
+}
+
+define_method(MatrixProxy, subtraction_omm, (const Dense<float>& A, const Dense<float>& B)) {
+  return subtraction_dense(A, B);
+}
+
+define_method(MatrixProxy, subtraction_omm, (const Dense<double>& A, const Dense<double>& B)) {
+  return subtraction_dense(A, B);
 }
 
 define_method(

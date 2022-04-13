@@ -40,6 +40,28 @@ void trmm(
   trmm_omm(A, B, side, uplo, 'n', 'n', alpha);
 }
 
+// single precision
+define_method(
+  void, trmm_omm,
+  (
+    const Dense<float>& A, Dense<float>& B,
+    const char& side, const char& uplo, const char& trans, const char& diag,
+    double alpha
+  )
+) {
+  assert(A.dim[0] == A.dim[1]);
+  assert(A.dim[0] == (side == 'l' ? B.dim[0] : B.dim[1]));
+  cblas_strmm(
+    CblasRowMajor,
+    side == 'l' ? CblasLeft : CblasRight,
+    uplo == 'u' ? CblasUpper : CblasLower,
+    trans == 't' ? CblasTrans : CblasNoTrans,
+    diag == 'u' ? CblasUnit : CblasNonUnit,
+    B.dim[0], B.dim[1], alpha, &A, A.stride, &B, B.stride
+  );
+}
+
+// double precision
 define_method(
   void, trmm_omm,
   (
@@ -60,6 +82,29 @@ define_method(
   );
 }
 
+template<typename T>
+void dense_low_rank_trmm(const Dense<T>& A, LowRank<T>& B,
+  const char& side, const char& uplo, const char& trans, const char& diag,
+  double alpha) {
+  assert(A.dim[0] == A.dim[1]);
+  assert(A.dim[0] == (side == 'l' ? B.dim[0] : B.dim[1]));
+  if(side == 'l')
+    trmm(A, B.U, side, uplo, trans, diag, alpha);
+  else if(side == 'r')
+    trmm(A, B.V, side, uplo, trans, diag, alpha);
+  }
+
+define_method(
+  void, trmm_omm,
+  (
+    const Dense<float>& A, LowRank<float>& B,
+    const char& side, const char& uplo,  const char& trans, const char& diag,
+    double alpha
+  )
+) {
+  dense_low_rank_trmm(A, B, side, uplo, trans, diag, alpha);
+}
+
 define_method(
   void, trmm_omm,
   (
@@ -68,26 +113,17 @@ define_method(
     double alpha
   )
 ) {
-  assert(A.dim[0] == A.dim[1]);
-  assert(A.dim[0] == (side == 'l' ? B.dim[0] : B.dim[1]));
-  if(side == 'l')
-    trmm(A, B.U, side, uplo, trans, diag, alpha);
-  else if(side == 'r')
-    trmm(A, B.V, side, uplo, trans, diag, alpha);
+  dense_low_rank_trmm(A, B, side, uplo, trans, diag, alpha);
 }
 
-define_method(
-  void, trmm_omm,
-  (
-    const Hierarchical<double>& A, Hierarchical<double>& B,
-    const char& side, const char& uplo, const char& trans, const char& diag,
-    double alpha
-  )
-) {
+template<typename T>
+void hierarchical_trmm(const Hierarchical<T>& A, Hierarchical<T>& B,
+  const char& side, const char& uplo, const char& trans, const char& diag,
+  double alpha) {
   assert(A.dim[0] == A.dim[1]);
   assert(A.dim[0] == (side == 'l' ? B.dim[0] : B.dim[1]));
   assert(uplo == 'u'); //TODO implement for lower triangular
-  Hierarchical<double> B_copy(B);
+  Hierarchical<T> B_copy(B);
   if(uplo == 'u') {
     if(side == 'l') {
       for(int64_t i=0; i<A.dim[0]; i++) {
@@ -118,6 +154,28 @@ define_method(
       }
     }
   }
+}
+
+define_method(
+  void, trmm_omm,
+  (
+    const Hierarchical<float>& A, Hierarchical<float>& B,
+    const char& side, const char& uplo, const char& trans, const char& diag,
+    double alpha
+  )
+) {
+  hierarchical_trmm(A, B, side, uplo, trans, diag, alpha);
+}
+
+define_method(
+  void, trmm_omm,
+  (
+    const Hierarchical<double>& A, Hierarchical<double>& B,
+    const char& side, const char& uplo, const char& trans, const char& diag,
+    double alpha
+  )
+) {
+  hierarchical_trmm(A, B, side, uplo, trans, diag, alpha);
 }
 
 // Fallback default, abort with error message

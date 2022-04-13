@@ -19,7 +19,10 @@ namespace hicma
 
 double norm(const Matrix& A) { return norm_omm(A); }
 
-define_method(double, norm_omm, (const Dense<double>& A)) {
+// TODO why don't we use LAPACK here?
+
+template<typename T>
+double dense_norm(const Dense<T>& A) {
   double l2 = 0;
   timing::start("Norm(Dense)");
   for (int64_t i=0; i<A.dim[0]; i++) {
@@ -29,11 +32,23 @@ define_method(double, norm_omm, (const Dense<double>& A)) {
   }
   timing::stop("Norm(Dense)");
   return l2;
+
 }
+
+define_method(double, norm_omm, (const Dense<float>& A)) {
+  return dense_norm(A);
+}
+
+define_method(double, norm_omm, (const Dense<double>& A)) {
+  return dense_norm(A);
+}
+
+define_method(double, norm_omm, (const LowRank<float>& A)) { return norm(Dense<float>(A)); }
 
 define_method(double, norm_omm, (const LowRank<double>& A)) { return norm(Dense<double>(A)); }
 
-define_method(double, norm_omm, (const Hierarchical<double>& A)) {
+template<typename T>
+double hierarchical_norm(const Hierarchical<T>& A) {
   double l2 = 0;
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {
@@ -41,6 +56,14 @@ define_method(double, norm_omm, (const Hierarchical<double>& A)) {
     }
   }
   return l2;
+}
+
+define_method(double, norm_omm, (const Hierarchical<float>& A)) {
+  return hierarchical_norm(A);
+}
+
+define_method(double, norm_omm, (const Hierarchical<double>& A)) {
+  return hierarchical_norm(A);
 }
 
 define_method(double, norm_omm, (const Matrix& A)) {

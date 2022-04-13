@@ -15,8 +15,8 @@ TEST(HierarchicalTest, h_lu) {
   int64_t rank = 8;
   int64_t nblocks = 2;
   double admis = 0;
-  timing::start("Total");
   std::vector<std::vector<double>> randx{get_sorted_random_vector(n)};
+  timing::start("Total");
   Dense x(random_uniform, n);
   Dense b(n);
   Dense D(laplacend, randx, n, n);
@@ -36,8 +36,32 @@ TEST(HierarchicalTest, h_lu) {
   timing::stopAndPrint("Solve");
   double solve_error = l2_error(x, b);
   timing::stopAndPrint("Total");
-
   // Check result
   EXPECT_NEAR(compress_error, solve_error, compress_error);
+
+  // single precision
+  timing::start("F_Total");
+  Dense<float> x_f(random_uniform<float>, n);
+  Dense<float> b_f(n);
+  Dense<float> D_f(laplacend<float>, randx, n, n);
+  timing::start("F_Hierarchical compression");
+  Hierarchical<float> A_f(laplacend<float>, randx, n, n, rank, nleaf, admis, nblocks, nblocks);
+  timing::stopAndPrint("F_Hierarchical compression");
+  gemm(A_f, x_f, b_f, 1, 1);
+  compress_error = l2_error(A_f, D_f);
+
+  Hierarchical<float> L_f, U_f;
+  timing::start("F_Factorization");
+  std::tie(L_f, U_f) = getrf(A_f);
+  timing::stopAndPrint("F_Factorization");
+  timing::start("F_Solve");
+  trsm(L_f, b_f, TRSM_LOWER);
+  trsm(U_f, b_f, TRSM_UPPER);
+  timing::stopAndPrint("F_Solve");
+  solve_error = l2_error(x_f, b_f);
+  timing::stopAndPrint("F_Total");
+
+  // Check result
+  EXPECT_NEAR(compress_error, solve_error, 1e-5);
 
 }

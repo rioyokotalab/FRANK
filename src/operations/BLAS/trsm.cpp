@@ -32,10 +32,8 @@ void trsm(const Matrix& A, Matrix& B, int uplo, int lr) {
   trsm_omm(A, B, uplo, lr);
 }
 
-define_method(
-  void, trsm_omm,
-  (const Hierarchical<double>& A, Hierarchical<double>& B, int uplo, int lr)
-) {
+template<typename T>
+void hierarchical_trsm(const Hierarchical<T>& A, Hierarchical<T>& B, int uplo, int lr){
   switch (uplo) {
   case TRSM_UPPER:
     switch (lr) {
@@ -84,6 +82,38 @@ define_method(
   }
 }
 
+define_method(
+  void, trsm_omm,
+  (const Hierarchical<float>& A, Hierarchical<float>& B, int uplo, int lr)
+) {
+ hierarchical_trsm(A, B, uplo, lr);
+}
+
+define_method(
+  void, trsm_omm,
+  (const Hierarchical<double>& A, Hierarchical<double>& B, int uplo, int lr)
+) {
+ hierarchical_trsm(A, B, uplo, lr);
+}
+
+// single precision
+define_method(void, trsm_omm, (const Dense<float>& A, Dense<float>& B, int uplo, int lr)) {
+  timing::start("STRSM");
+  cblas_strsm(
+    CblasRowMajor,
+    lr==TRSM_LEFT?CblasLeft:CblasRight,
+    uplo==TRSM_UPPER?CblasUpper:CblasLower,
+    CblasNoTrans,
+    uplo==TRSM_UPPER?CblasNonUnit:CblasUnit,
+    B.dim[0], B.dim[1],
+    1,
+    &A, A.stride,
+    &B, B.stride
+  );
+  timing::stop("STRSM");
+}
+
+// double precision
 define_method(void, trsm_omm, (const Dense<double>& A, Dense<double>& B, int uplo, int lr)) {
   timing::start("DTRSM");
   cblas_dtrsm(
@@ -100,7 +130,8 @@ define_method(void, trsm_omm, (const Dense<double>& A, Dense<double>& B, int upl
   timing::stop("DTRSM");
 }
 
-define_method(void, trsm_omm, (const Matrix& A, LowRank<double>& B, int uplo, int lr)) {
+template<typename T>
+void low_rank_trsm(const Matrix& A, LowRank<T>& B, int uplo, int lr) {
   switch (lr) {
   case TRSM_LEFT:
     trsm(A, B.U, uplo, lr);
@@ -111,14 +142,34 @@ define_method(void, trsm_omm, (const Matrix& A, LowRank<double>& B, int uplo, in
   }
 }
 
+define_method(void, trsm_omm, (const Matrix& A, LowRank<float>& B, int uplo, int lr)) {
+  low_rank_trsm(A, B, uplo, lr);
+}
+
+define_method(void, trsm_omm, (const Matrix& A, LowRank<double>& B, int uplo, int lr)) {
+  low_rank_trsm(A, B, uplo, lr);
+}
+
+template<typename T>
+void hierarchical_dense_trsm(const Hierarchical<T>& A, Dense<T>& B, int uplo, int lr) {
+  Hierarchical<T> BH = split<T>(
+    B, lr==TRSM_LEFT?A.dim[0]:1, lr==TRSM_LEFT?1:A.dim[1]
+  );
+  trsm(A, BH, uplo, lr);
+}
+
+define_method(
+  void, trsm_omm,
+  (const Hierarchical<float>& A, Dense<float>& B, int uplo, int lr)
+) {
+  hierarchical_dense_trsm(A, B, uplo, lr);
+}
+
 define_method(
   void, trsm_omm,
   (const Hierarchical<double>& A, Dense<double>& B, int uplo, int lr)
 ) {
-  Hierarchical<double> BH = split(
-    B, lr==TRSM_LEFT?A.dim[0]:1, lr==TRSM_LEFT?1:A.dim[1]
-  );
-  trsm(A, BH, uplo, lr);
+  hierarchical_dense_trsm(A, B, uplo, lr);
 }
 
 // Fallback default, abort with error message

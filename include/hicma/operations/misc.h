@@ -68,7 +68,8 @@ int64_t get_n_cols(const Matrix&);
  * @return double
  * Condition number of \p A
  */
-double cond(Dense<double> A);
+template<typename T>
+double cond(Dense<T> A);
 
 void sortByMortonIndex(std::vector<std::vector<double>> &x, int64_t level, std::vector<int64_t>& perm);
 
@@ -112,7 +113,8 @@ std::vector<double> equallySpacedVector(
  * The multi-dispatcher then will select the correct implementation based on the types of parameters given at runtime.
  * Read \ext_hicma for more information.
  */
-Hierarchical<double> split(
+template<typename T>
+Hierarchical<T> split(
   const Matrix& A, int64_t n_row_blocks, int64_t n_col_blocks, bool copy=false
 );
 
@@ -139,7 +141,8 @@ Hierarchical<double> split(
  * The multi-dispatcher then will select the correct implementation based on the types of parameters given at runtime.
  * Read \ext_hicma for more information.
  */
-Hierarchical<double> split(const Matrix& A, const Hierarchical<double>& like, bool copy=false);
+template<typename T>
+Hierarchical<T> split(const Matrix& A, const Hierarchical<T>& like, bool copy=false);
 
 MatrixProxy shallow_copy(const Matrix& A);
 

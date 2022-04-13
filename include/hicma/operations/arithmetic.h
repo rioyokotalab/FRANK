@@ -41,7 +41,8 @@ Matrix& operator+=(Matrix& A, const Matrix& B);
  * @return Dense
  * `Dense` matrix that contains <tt>A+B</tt>
  */
-Dense<double> operator+(const Dense<double>&, const Dense<double>&);
+template<typename T>
+Dense<T> operator+(const Dense<T>&, const Dense<T>&);
 
 /**
  * @brief Defines subtraction operator between two matrices

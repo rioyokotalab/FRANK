@@ -33,12 +33,23 @@ double l2_error(const Matrix& A, const Matrix& B) {
   return std::sqrt(diff/mat_norm);
 }
 
-define_method(
-  DoublePair, collect_diff_norm_omm, (const Dense<double>& A, const Dense<double>& B)
-) {
+template<typename T>
+DoublePair collect_diff_norm_dense_dense(const Dense<T>& A, const Dense<T>& B) {
   double diff = norm(A - B);
   double mat_norm = norm(A);
   return {diff, mat_norm};
+}
+
+define_method(
+  DoublePair, collect_diff_norm_omm, (const Dense<double>& A, const Dense<double>& B)
+) {
+  return collect_diff_norm_dense_dense(A, B);
+}
+
+define_method(
+  DoublePair, collect_diff_norm_omm, (const Dense<float>& A, const Dense<float>& B)
+) {
+  return collect_diff_norm_dense_dense(A, B);
 }
 
 define_method(
@@ -48,9 +59,21 @@ define_method(
 }
 
 define_method(
+  DoublePair, collect_diff_norm_omm, (const Dense<float>& A, const LowRank<float>& B)
+) {
+  return collect_diff_norm_omm(A, Dense<float>(B));
+}
+
+define_method(
   DoublePair, collect_diff_norm_omm, (const LowRank<double>& A, const Dense<double>& B)
 ) {
   return collect_diff_norm_omm(Dense<double>(A), B);
+}
+
+define_method(
+  DoublePair, collect_diff_norm_omm, (const LowRank<float>& A, const Dense<float>& B)
+) {
+  return collect_diff_norm_omm(Dense<float>(A), B);
 }
 
 define_method(
@@ -60,16 +83,36 @@ define_method(
 }
 
 define_method(
+  DoublePair, collect_diff_norm_omm, (const LowRank<float>& A, const LowRank<float>& B)
+) {
+  return collect_diff_norm_omm(Dense<float>(A), Dense<float>(B));
+}
+
+define_method(
   DoublePair, collect_diff_norm_omm, (const Hierarchical<double>& A, const Matrix& B)
 ) {
-  Hierarchical<double> BH = split(B, A.dim[0], A.dim[1]);
+  Hierarchical<double> BH = split<double>(B, A.dim[0], A.dim[1]);
+  return collect_diff_norm_omm(A, BH);
+}
+
+define_method(
+  DoublePair, collect_diff_norm_omm, (const Hierarchical<float>& A, const Matrix& B)
+) {
+  Hierarchical<float> BH = split<float>(B, A.dim[0], A.dim[1]);
   return collect_diff_norm_omm(A, BH);
 }
 
 define_method(
   DoublePair, collect_diff_norm_omm, (const Matrix& A, const Hierarchical<double>& B)
 ) {
-  Hierarchical<double> AH = split(A, B.dim[0], B.dim[1]);
+  Hierarchical<double> AH = split<double>(A, B.dim[0], B.dim[1]);
+  return collect_diff_norm_omm(AH, B);
+}
+
+define_method(
+  DoublePair, collect_diff_norm_omm, (const Matrix& A, const Hierarchical<float>& B)
+) {
+  Hierarchical<float> AH = split<float>(A, B.dim[0], B.dim[1]);
   return collect_diff_norm_omm(AH, B);
 }
 
@@ -90,6 +133,26 @@ define_method(
     return {total_diff, total_norm};
   } else {
     return collect_diff_norm_omm(Dense<double>(A), Dense<double>(B));
+  }
+}
+
+define_method(
+  DoublePair, collect_diff_norm_omm,
+  (const Hierarchical<float>& A, const Hierarchical<float>& B)
+) {
+  if (A.dim[0] == B.dim[0] && A.dim[1] == B.dim[1]) {
+    double total_diff = 0, total_norm = 0;
+    for (int64_t i=0; i<A.dim[0]; ++i) {
+      for (int64_t j=0; j<A.dim[1]; ++j) {
+        double diff, mat_norm;
+        std::tie(diff, mat_norm) = collect_diff_norm_omm(A(i, j), B(i, j));
+        total_diff += diff;
+        total_norm += mat_norm;
+      }
+    }
+    return {total_diff, total_norm};
+  } else {
+    return collect_diff_norm_omm(Dense<float>(A), Dense<float>(B));
   }
 }
 

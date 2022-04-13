@@ -17,7 +17,7 @@ using yorel::yomm2::virtual_;
 namespace hicma
 {
 
-// Arithmetic
+/* ARITHMETIC FUNCTUONS */
 declare_method(
   Matrix&, addition_omm,
   (virtual_<Matrix&>, virtual_<const Matrix&>)
@@ -38,7 +38,24 @@ declare_method(
   (virtual_<Matrix&>, double)
 )
 
-// BLAS
+/* BLAS FUNCTIONS */
+// single precision
+declare_method(
+  void, gemm_omm,
+  (
+    virtual_<const Matrix&>, virtual_<const Matrix&>, virtual_<Matrix&>,
+    float, float, bool, bool
+  )
+)
+declare_method(
+  MatrixProxy, gemm_omm,
+  (
+    virtual_<const Matrix&>, virtual_<const Matrix&>,
+    float, bool, bool
+  )
+)
+
+// double precision
 declare_method(
   void, gemm_omm,
   (
@@ -69,7 +86,7 @@ declare_method(
 )
 
 // LAPACK
-declare_method(DenseIndexSetPair, geqp3_omm, (virtual_<Matrix&>))
+declare_method(MatrixIndexSetPair, geqp3_omm, (virtual_<Matrix&>))
 
 declare_method(
   void, geqrt_omm,
@@ -82,10 +99,10 @@ declare_method(
 )
 
 declare_method(
-  DenseIndexSetPair, one_sided_id_omm, (virtual_<Matrix&>, int64_t)
+  MatrixIndexSetPair, one_sided_id_omm, (virtual_<Matrix&>, int64_t)
 )
 
-declare_method(DenseTriplet, id_omm, (virtual_<Matrix&>, int64_t))
+declare_method(MatrixTriplet, id_omm, (virtual_<Matrix&>, int64_t))
 
 declare_method(
   void, larfb_omm,
@@ -97,7 +114,7 @@ declare_method(
   (virtual_<Matrix&>, virtual_<Matrix&>, virtual_<Matrix&>)
 )
 declare_method(
-  DensePair, make_left_orthogonal_omm,
+  MatrixPair, make_left_orthogonal_omm,
   (virtual_<const Matrix&>)
 )
 declare_method(
@@ -124,7 +141,7 @@ declare_method(void, zero_lowtri_omm, (virtual_<Matrix&>))
 declare_method(void, zero_whole_omm, (virtual_<Matrix&>))
 
 declare_method(
-  Dense<double>, get_right_factor_omm,
+  MatrixProxy, get_right_factor_omm,
   (virtual_<const Matrix&>)
 )
 declare_method(

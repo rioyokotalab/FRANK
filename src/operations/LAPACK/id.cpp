@@ -24,11 +24,19 @@
 
 namespace hicma
 {
+// explicit template initialization (these are the only available types)
+template std::tuple<Dense<float>, std::vector<int64_t>> one_sided_id(Matrix& A, int64_t k);
+template std::tuple<Dense<double>, std::vector<int64_t>> one_sided_id(Matrix& A, int64_t k);
+template std::tuple<Dense<float>, Dense<float>, Dense<float>> id(Matrix& A, int64_t k);
+template std::tuple<Dense<double>, Dense<double>, Dense<double>> id(Matrix& A, int64_t k);
+template Dense<float> get_cols(const Dense<float>& A, std::vector<int64_t> P);
+template Dense<double> get_cols(const Dense<double>& A, std::vector<int64_t> P);
 
-Dense<double> interleave_id(const Dense<double>& A, std::vector<int64_t>& P) {
+template<typename T>
+Dense<T> interleave_id(const Dense<T>& A, std::vector<int64_t>& P) {
   int64_t k = P.size() - A.dim[1];
   assert(k >= 0); // 0 case if for k=min(M, N), ie full rank
-  Dense<double> Anew(A.dim[0], P.size());
+  Dense<T> Anew(A.dim[0], P.size());
   for (int64_t i=0; i<Anew.dim[0]; ++i) {
     for (int64_t j=0; j<Anew.dim[1]; ++j) {
       Anew(i, P[j]) = j < k ? (i == j ? 1 : 0) : A(i, j-k);
@@ -37,32 +45,42 @@ Dense<double> interleave_id(const Dense<double>& A, std::vector<int64_t>& P) {
   return Anew;
 }
 
-std::tuple<Dense<double>, std::vector<int64_t>> one_sided_id(Matrix& A, int64_t k) {
+template<typename T>
+std::tuple<Dense<T>, std::vector<int64_t>> one_sided_id(Matrix& A, int64_t k) {
   return one_sided_id_omm(A, k);
 }
 
-define_method(DenseIndexSetPair, one_sided_id_omm, (Dense<double>& A, int64_t k)) {
+template<typename T>
+MatrixIndexSetPair dense_one_sided_id(Dense<T>& A, int64_t k) {
   assert(k <= std::min(A.dim[0], A.dim[1]));
-  Dense<double> R;
+  Dense<T> R;
   std::vector<int64_t> selected_cols;
-  std::tie(R, selected_cols) = geqp3(A);
+  std::tie(R, selected_cols) = geqp3<T>(A);
   // TODO Consider row index range issues
-  Dense<double> col_basis;
+  Dense<T> col_basis;
   // First case applies also when A.dim[1] > A.dim[0] end k == A.dim[0]
   if (k < std::min(A.dim[0], A.dim[1]) || A.dim[1] > A.dim[0]) {
     // Get R11 (split[0]) and R22 (split[1])
-    std::vector<Dense<double>> split = R.split(
+    std::vector<Dense<T>> split = R.split(
       IndexRange(0, R.dim[0]).split_at(k), IndexRange(0, R.dim[1]).split_at(k)
     );
     trsm(split[0], split[1], TRSM_UPPER);
     col_basis = interleave_id(split[1], selected_cols);
   } else {
     col_basis = interleave_id(
-      Dense<double>(identity, std::vector<std::vector<double>>(), k, k), selected_cols);
+      Dense<T>(identity, k, k), selected_cols);
   }
   selected_cols.resize(k);
   // Returns the selected columns of A
   return {std::move(col_basis), std::move(selected_cols)};
+}
+
+define_method(MatrixIndexSetPair, one_sided_id_omm, (Dense<float>& A, int64_t k)) {
+  return dense_one_sided_id(A, k);
+}
+
+define_method(MatrixIndexSetPair, one_sided_id_omm, (Dense<double>& A, int64_t k)) {
+  return dense_one_sided_id(A, k);
 }
 
 // Fallback default, abort with error message
@@ -71,12 +89,14 @@ define_method(DenseIndexSetPair, one_sided_id_omm, (Matrix& A, int64_t)) {
   std::abort();
 }
 
-std::tuple<Dense<double>, Dense<double>, Dense<double>> id(Matrix& A, int64_t k) {
+template<typename T>
+std::tuple<Dense<T>, Dense<T>, Dense<T>> id(Matrix& A, int64_t k) {
   return id_omm(A, k);
 }
 
-Dense<double> get_cols(const Dense<double>& A, std::vector<int64_t> Pr) {
-  Dense<double> B(A.dim[0], Pr.size());
+template<typename T>
+Dense<T> get_cols(const Dense<T>& A, std::vector<int64_t> Pr) {
+  Dense<T> B(A.dim[0], Pr.size());
   for (int64_t i=0; i<A.dim[0]; ++i) {
     for (int64_t j=0; j<B.dim[1]; ++j) {
       B(i, j) = A(i, Pr[j]);
@@ -85,8 +105,9 @@ Dense<double> get_cols(const Dense<double>& A, std::vector<int64_t> Pr) {
   return B;
 }
 
-Dense<double> get_rows(const Dense<double>& A, std::vector<int64_t> Pr) {
-  Dense<double> B(Pr.size(), A.dim[1]);
+template<typename T>
+Dense<T> get_rows(const Dense<T>& A, std::vector<int64_t> Pr) {
+  Dense<T> B(Pr.size(), A.dim[1]);
   for (int64_t i=0; i<B.dim[0]; ++i) {
     for (int64_t j=0; j<A.dim[1]; ++j) {
       B(i, j) = A(Pr[i], j);
@@ -95,17 +116,26 @@ Dense<double> get_rows(const Dense<double>& A, std::vector<int64_t> Pr) {
   return B;
 }
 
-define_method(DenseTriplet, id_omm, (Dense<double>& A, int64_t k)) {
-  Dense<double> V(k, A.dim[1]);
-  Dense<double> Awork(A);
+template<typename T>
+MatrixTriplet dense_id(Dense<T>& A, int64_t k) {
+  Dense<T> V(k, A.dim[1]);
+  Dense<T> Awork(A);
   std::vector<int64_t> selected_cols;
-  std::tie(V, selected_cols) = one_sided_id(Awork, k);
-  Dense<double> AC = get_cols(A, selected_cols);
-  Dense<double> ACwork = transpose(AC);
-  Dense<double> Ut(k, A.dim[0]);
+  std::tie(V, selected_cols) = one_sided_id<T>(Awork, k);
+  Dense<T> AC = get_cols(A, selected_cols);
+  Dense<T> ACwork = transpose(AC);
+  Dense<T> Ut(k, A.dim[0]);
   std::vector<int64_t> selected_rows;
-  std::tie(Ut, selected_rows) = one_sided_id(ACwork, k);
+  std::tie(Ut, selected_rows) = one_sided_id<T>(ACwork, k);
   return {transpose(Ut), get_rows(AC, selected_rows), std::move(V)};
+}
+
+define_method(MatrixTriplet, id_omm, (Dense<float>& A, int64_t k)) {
+  return dense_id(A, k);
+}
+
+define_method(MatrixTriplet, id_omm, (Dense<double>& A, int64_t k)) {
+  return dense_id(A, k);
 }
 
 // Fallback default, abort with error message
