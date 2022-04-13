@@ -12,6 +12,14 @@
  */
 namespace hicma
 {
+
+/**
+ * @brief Namespace for timer
+ *
+ * Contain utility methods to create and manipulate timer. Uses C++ `std::chrono` under the hood.
+ *
+ * Note that this timer is NOT thread-safe and should not be called from multithreaded region
+ */
 namespace timing
 {
 
