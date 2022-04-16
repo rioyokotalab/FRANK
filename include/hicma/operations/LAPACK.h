@@ -280,9 +280,9 @@ void triangularize_block_col(int64_t j, Hierarchical& A, Hierarchical& T);
  *
  * This function performs the following operation
  *
- * <tt>A[*,j] = Q_k * A[*,j]</tt> or <tt>A[*,j] = transpose(Q_k) * A[*,j]</tt>
+ * <tt>A[*,j] = Q_k * A[*,j]</tt> &nbsp;&nbsp;or &nbsp;&nbsp;<tt>A[*,j] = transpose(Q_k) * A[*,j]</tt>
  *
- * where \p Q_k is the orthogonal factor coming from hicma::triangularize_block_col stored in Compact WY representation:
+ * where \p Q_k is the orthogonal factor coming from hicma::triangularize_block_col stored in compact WY representation:
  *
  * <tt>Q_k = I - (Y[*,k] * T[k] * transpose(Y[*,k]))
  */
