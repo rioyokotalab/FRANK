@@ -47,7 +47,8 @@ int main(int argc, char** argv) {
       T(i, j) = Dense(i < j ? 0 : b, i < j ? 0 : b);
     }
   }
-  print("Tiled Householder BLR-QR");
+  print("Forkjoin Tiled Householder BLR-QR");
+  print("Number of Threads: ", omp_get_max_threads());
   print("Time");
   double tic = get_time();
   for(int64_t k = 0; k < q; k++) {

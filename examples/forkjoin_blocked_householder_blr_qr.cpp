@@ -42,7 +42,8 @@ int main(int argc, char** argv) {
   print("Rel. L2 Error", l2_error(D, A), false);
 
   Hierarchical T(q, 1);
-  print("Blocked Householder BLR-QR");
+  print("Forkjoin Blocked Householder BLR-QR");
+  print("Number of Threads: ", omp_get_max_threads());
   print("Time");
   double tic = get_time();
   for(int64_t k = 0; k < q; k++) {

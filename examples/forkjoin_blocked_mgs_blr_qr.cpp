@@ -46,6 +46,7 @@ int main(int argc, char** argv) {
   Hierarchical Q(zeros, randpts, m, n, b, eps, admis, p, q);
   Hierarchical R(zeros, randpts, n, n, b, eps, admis, q, q);
   print("Forkjoin Blocked Modified Gram-Schmidt BLR-QR");
+  print("Number of Threads: ", omp_get_max_threads());
   print("Time");
   double tic = get_time();
   for (int64_t j=0; j<q; j++) {
