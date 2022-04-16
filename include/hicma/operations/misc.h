@@ -60,6 +60,19 @@ int64_t get_n_rows(const Matrix&);
 int64_t get_n_cols(const Matrix&);
 
 /**
+ * @brief Get subset of columns from a `Dense` matrix
+ *
+ * @param A
+ * M-by-N `Dense` matrix
+ * @param Pr
+ * Column indices
+ *
+ * @return `Dense`
+ * A `Dense` matrix containing the specified subset of columns ordered as \p Pr.
+ */
+Dense get_cols(const Dense& A, std::vector<int64_t> Pr);
+
+/**
  * @brief Reset all elements to zero
  *
  * @param A

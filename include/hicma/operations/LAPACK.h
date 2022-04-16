@@ -17,20 +17,6 @@ class MatrixProxy;
 class Dense;
 class Hierarchical;
 
-// TODO Move this to misc.h
-/**
- * @brief Get subset of columns from a `Dense` matrix
- *
- * @param A
- * M-by-N `Dense` matrix
- * @param Pr
- * Column indices
- *
- * @return `Dense`
- * A `Dense` matrix containing the specified subset of columns ordered as \p Pr.
- */
-Dense get_cols(const Dense& A, std::vector<int64_t> Pr);
-
 /**
  * @brief Compute LU factorization of a general matrix
  *
