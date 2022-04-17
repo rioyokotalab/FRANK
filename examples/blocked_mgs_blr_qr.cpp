@@ -12,23 +12,24 @@ using namespace hicma;
 
 int main(int argc, char** argv) {
   hicma::initialize();
-  int64_t m = argc > 1 ? atoi(argv[1]) : 256;
-  int64_t n = argc > 2 ? atoi(argv[2]) : m / 2;
-  int64_t b = argc > 3 ? atoi(argv[3]) : 32;
-  double eps = argc > 4 ? atof(argv[4]) : 1e-6;
-  double admis = argc > 5 ? atof(argv[5]) : 0;
+  const int64_t m = argc > 1 ? atoi(argv[1]) : 256;
+  const int64_t n = argc > 2 ? atoi(argv[2]) : m / 2;
+  const int64_t b = argc > 3 ? atoi(argv[3]) : 32;
+  const double eps = argc > 4 ? atof(argv[4]) : 1e-6;
+  const double admis = argc > 5 ? atof(argv[5]) : 0;
   setGlobalValue("HICMA_LRA", "rounded_addition");
 
   assert(m >= n);
   assert(m % b == 0);
   assert(n % b == 0);
-  int64_t p = m / b;
-  int64_t q = n / b;
+  const int64_t p = m / b;
+  const int64_t q = n / b;
 
-  std::vector<std::vector<double>> randpts;
-  randpts.push_back(equallySpacedVector(m, 0.0, 1.0));
-  randpts.push_back(equallySpacedVector(m, 0.0, 1.0));
-  Hierarchical D(laplacend, randpts, m, n, b, b, p, p, q);
+  const std::vector<std::vector<double>> randpts {
+    equallySpacedVector(m, 0.0, 1.0),
+    equallySpacedVector(m, 0.0, 1.0)
+  };
+  const Hierarchical D(laplacend, randpts, m, n, b, b, p, p, q);
   Hierarchical A(laplacend, randpts, m, n, b, eps, admis, p, q);
   print("BLR Compression Accuracy");
   print("Rel. L2 Error", l2_error(D, A), false);
@@ -49,7 +50,7 @@ int main(int argc, char** argv) {
   print("Residual", l2_error(D, QR), false);
   //Orthogonality
   Hierarchical QtQ(zeros, randpts, n, n, b, eps, admis, q, q);
-  Hierarchical Qt = transpose(Q);
+  const Hierarchical Qt = transpose(Q);
   gemm(Qt, Q, QtQ, 1, 0);
   print("Orthogonality", l2_error(Dense(identity, {}, n, n), QtQ), false);
   return 0;

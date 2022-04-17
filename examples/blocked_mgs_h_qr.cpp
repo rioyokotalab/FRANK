@@ -9,10 +9,13 @@ using namespace hicma;
 
 int main(int argc, char** argv) {
   hicma::initialize();
-  int64_t N = 128;
-  int64_t nleaf = 16;
-  int64_t rank = 8;
-  std::vector<std::vector<double>> randx{get_sorted_random_vector(N)};
+  hicma::setGlobalValue("HICMA_LRA", "rounded_addition");
+  constexpr int64_t N = 128;
+  constexpr int64_t nleaf = 16;
+  constexpr double eps = 1e-6;
+  const std::vector<std::vector<double>> randx{
+    get_sorted_random_vector(N)
+  };
   timing::start("Init matrix");
   int64_t nblocks=0;
   double admis=0;
@@ -29,18 +32,14 @@ int main(int argc, char** argv) {
     admis = N / nleaf; // Full rank
   }
   else if (atoi(argv[1]) == 2) {
-    nblocks = 4; // Hierarchical (log_4(N/nleaf) levels)
-    admis = N / nleaf; // Full rank
-  }
-  else if (atoi(argv[1]) == 3) {
     nblocks = N / nleaf; // 1 level
     admis = 0; // Weak admissibility
   }
-  else if (atoi(argv[1]) == 4) {
+  else if (atoi(argv[1]) == 3) {
     nblocks = N / nleaf; // 1 level
     admis = 1; // Strong admissibility
   }
-  else if (atoi(argv[1]) == 5) {
+  else if (atoi(argv[1]) == 4) {
     nblocks = 2; // Hierarchical (log_2(N/nleaf) levels)
     admis = 0; // Weak admissibility
   }
@@ -48,31 +47,31 @@ int main(int argc, char** argv) {
     nblocks = 2; // Hierarchical (log_2(N/nleaf) levels)
     admis = 1; // Strong admissibility
   }
-  timing::start("CPU compression");
-  Hierarchical A(laplacend, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
-  timing::stop("CPU compression");
-  Hierarchical A_copy(A);
-  Hierarchical Q(zeros, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
-  Hierarchical R(zeros, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
-  timing::stopAndPrint("Init matrix");
-  admis = N / nleaf; // Full rank
   timing::start("Dense tree");
-  Hierarchical D(laplacend, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
+  const Hierarchical D(laplacend, randx, N, N, nleaf, nleaf, N / nleaf, nblocks, nblocks);
   timing::stopAndPrint("Dense tree");
+  timing::start("CPU compression");
+  Hierarchical A(laplacend, randx, N, N, nleaf, eps, admis, nblocks, nblocks);
+  timing::stop("CPU compression");
   print("Compression Accuracy");
   print("Rel. L2 Error", l2_error(D, A), false);
+
+  Hierarchical Q(A);
+  Hierarchical R(A);
   print("Blocked Modified Gram-Schmidt H-QR");
   print("Time");
   timing::start("H-QR");
   mgs_qr(A, Q, R);
   timing::stopAndPrint("H-QR", 1);
+  
   print("H-QR Accuracy");
-  Hierarchical QR(zeros, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
-  gemm(Q, R, QR, 1, 1);
-  print("Residual", l2_error(A_copy, QR), false);
-  Hierarchical QtQ(zeros, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
-  Hierarchical Qt = transpose(Q);
-  gemm(Qt, Q, QtQ, 1, 1);
+  Hierarchical QR(Q);
+  trmm(R, QR, hicma::Side::Right, hicma::Mode::Upper, 'n', 'n', 1.);
+  print("Residual", l2_error(D, QR), false);
+  
+  Hierarchical QtQ(zeros, randx, N, N, nleaf, eps, admis, nblocks, nblocks);
+  const Hierarchical Qt = transpose(Q);
+  gemm(Qt, Q, QtQ, 1, 0);
   print("Orthogonality", l2_error(Dense(identity, randx, N, N), QtQ), false);
   return 0;
 }
