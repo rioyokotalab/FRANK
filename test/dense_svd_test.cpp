@@ -12,13 +12,13 @@ TEST_P(SVDTests, DenseSvd) {
   std::tie(m, n) = GetParam();
 
   hicma::initialize();
-  std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(n)};
+  const std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(n)};
   hicma::Dense A(hicma::laplacend, randx_A, n, n);
 
-  hicma::Dense A_copy(A);
+  const hicma::Dense A_copy(A);
   hicma::Dense U, S, V;
   std::tie(U, S, V) = hicma::svd(A);
-  hicma::Dense A_rebuilt = hicma::gemm(hicma::gemm(U, S), V);
+  const hicma::Dense A_rebuilt = hicma::gemm(hicma::gemm(U, S), V);
 
   // Check result
   for (int64_t i = 0; i < A.dim[0]; ++i) {

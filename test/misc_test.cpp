@@ -37,11 +37,11 @@ void EXPECT_HIERARCHICAL_ZERO(hicma::Hierarchical& A) {
   for(int64_t i = 0; i < A.dim[0]; i++) {
     for(int64_t j = 0; j < A.dim[1]; j++) {
       if(hicma::type(A(i, j)) == "Dense") {
-        hicma::Dense Aij(std::move(A(i, j)));
+        const hicma::Dense Aij(std::move(A(i, j)));
         EXPECT_DENSE_ZERO(Aij);
       }
       else if(hicma::type(A(i, j)) == "LowRank") {
-        hicma::LowRank Aij(std::move(A(i, j)));
+        const hicma::LowRank Aij(std::move(A(i, j)));
         EXPECT_LOWRANK_ZERO(Aij);
       }
       else {
@@ -67,10 +67,10 @@ TEST_P(MakeZeroTests, ZeroAll_LowRank) {
   int64_t n_rows, n_cols;
   std::tie(n_rows, n_cols) = GetParam();
 
-  std::vector<std::vector<double>> randx {
+  const std::vector<std::vector<double>> randx {
     hicma::get_sorted_random_vector(4 * std::max(n_rows, n_cols))
   };
-  hicma::Dense A_(hicma::laplacend, randx, n_rows, n_cols, 0, 2 * n_cols);
+  const hicma::Dense A_(hicma::laplacend, randx, n_rows, n_cols, 0, 2 * n_cols);
   hicma::LowRank A(A_, 1e-8);
 
   hicma::zero_all(A);
@@ -94,14 +94,14 @@ TEST_P(MakeZeroTests, ZeroAll_Hierarchical) {
   int64_t n_rows, n_cols;
   std::tie(n_rows, n_cols) = GetParam();
 
-  std::vector<std::vector<double>> randx {
+  const std::vector<std::vector<double>> randx {
     hicma::get_sorted_random_vector(std::max(n_rows, n_cols))
   };
-  int64_t nleaf = 8;
-  int64_t nb_rows = 2;
-  int64_t nb_cols = 2;
-  double admis = 0;
-  double eps = 1e-8;
+  constexpr int64_t nleaf = 8;
+  constexpr int64_t nb_rows = 2;
+  constexpr int64_t nb_cols = 2;
+  constexpr double admis = 0;
+  constexpr double eps = 1e-8;
   hicma::Hierarchical A(hicma::laplacend, randx, n_rows, n_cols,
                         nleaf, eps, admis, nb_rows, nb_cols, hicma::AdmisType::PositionBased);
 
@@ -123,7 +123,7 @@ void EXPECT_HIERARCHICAL_UPPERTRI(hicma::Hierarchical& A) {
     for(int64_t j = 0; j < A.dim[1]; j++) {
       if(i == j) {
         if(hicma::type(A(i, j)) == "Dense") {
-          hicma::Dense Aij(std::move(A(i, j)));
+          const hicma::Dense Aij(std::move(A(i, j)));
           EXPECT_DENSE_UPPERTRI(Aij);
         }
         else if(hicma::type(A(i, j)) == "Hierarchical") {
@@ -133,11 +133,11 @@ void EXPECT_HIERARCHICAL_UPPERTRI(hicma::Hierarchical& A) {
       }
       else if(i > j) {
         if(hicma::type(A(i, j)) == "Dense") {
-          hicma::Dense Aij(std::move(A(i, j)));
+          const hicma::Dense Aij(std::move(A(i, j)));
           EXPECT_DENSE_ZERO(Aij);
         }
         else if(hicma::type(A(i, j)) == "LowRank") {
-          hicma::LowRank Aij(std::move(A(i, j)));
+          const hicma::LowRank Aij(std::move(A(i, j)));
           EXPECT_LOWRANK_ZERO(Aij);
         }
         else {
@@ -164,14 +164,14 @@ TEST_P(MakeZeroTests, ZeroLower_Hierarchical) {
   int64_t n_rows, n_cols;
   std::tie(n_rows, n_cols) = GetParam();
 
-  std::vector<std::vector<double>> randx {
+  const std::vector<std::vector<double>> randx {
     hicma::get_sorted_random_vector(std::max(n_rows, n_cols))
   };
-  int64_t nleaf = 8;
-  int64_t nb_rows = 2;
-  int64_t nb_cols = 2;
-  double admis = 0;
-  double eps = 1e-8;
+  constexpr int64_t nleaf = 8;
+  constexpr int64_t nb_rows = 2;
+  constexpr int64_t nb_cols = 2;
+  constexpr double admis = 0;
+  constexpr double eps = 1e-8;
   hicma::Hierarchical A(hicma::laplacend, randx, n_rows, n_cols,
                         nleaf, eps, admis, nb_rows, nb_cols, hicma::AdmisType::PositionBased);
 
@@ -193,7 +193,7 @@ void EXPECT_HIERARCHICAL_LOWERTRI(hicma::Hierarchical& A) {
     for(int64_t j = 0; j < A.dim[1]; j++) {
       if(i == j) {
         if(hicma::type(A(i, j)) == "Dense") {
-          hicma::Dense Aij(std::move(A(i, j)));
+          const hicma::Dense Aij(std::move(A(i, j)));
           EXPECT_DENSE_LOWERTRI(Aij);
         }
         else if(hicma::type(A(i, j)) == "Hierarchical") {
@@ -203,11 +203,11 @@ void EXPECT_HIERARCHICAL_LOWERTRI(hicma::Hierarchical& A) {
       }
       else if(i < j) {
         if(hicma::type(A(i, j)) == "Dense") {
-          hicma::Dense Aij(std::move(A(i, j)));
+          const hicma::Dense Aij(std::move(A(i, j)));
           EXPECT_DENSE_ZERO(Aij);
         }
         else if(hicma::type(A(i, j)) == "LowRank") {
-          hicma::LowRank Aij(std::move(A(i, j)));
+          const hicma::LowRank Aij(std::move(A(i, j)));
           EXPECT_LOWRANK_ZERO(Aij);
         }
         else {
@@ -234,14 +234,14 @@ TEST_P(MakeZeroTests, ZeroUpper_Hierarchical) {
   int64_t n_rows, n_cols;
   std::tie(n_rows, n_cols) = GetParam();
 
-  std::vector<std::vector<double>> randx {
+  const std::vector<std::vector<double>> randx {
     hicma::get_sorted_random_vector(std::max(n_rows, n_cols))
   };
-  int64_t nleaf = 8;
-  int64_t nb_rows = 2;
-  int64_t nb_cols = 2;
-  double admis = 0;
-  double eps = 1e-8;
+  constexpr int64_t nleaf = 8;
+  constexpr int64_t nb_rows = 2;
+  constexpr int64_t nb_cols = 2;
+  constexpr double admis = 0;
+  constexpr double eps = 1e-8;
   hicma::Hierarchical A(hicma::laplacend, randx, n_rows, n_cols,
                         nleaf, eps, admis, nb_rows, nb_cols, hicma::AdmisType::PositionBased);
 

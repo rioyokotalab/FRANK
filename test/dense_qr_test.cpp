@@ -17,12 +17,12 @@ TEST_P(QRTests, DenseQr) {
   std::tie(m, n, k) = GetParam();
 
   hicma::initialize();
-  std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m>n?m:n)};
+  const std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m>n?m:n)};
   hicma::Dense A(hicma::laplacend, randx_A, m, n);
-  hicma::Dense A_copy(A);
+  const hicma::Dense A_copy(A);
   hicma::Dense Q(m, k), R(k, n);
   hicma::qr(A, Q, R);
-  hicma::Dense A_rebuilt = hicma::gemm(Q, R);
+  const hicma::Dense A_rebuilt = hicma::gemm(Q, R);
 
   // Check accuracy
   for (int64_t i = 0; i < m; i++) {
@@ -31,7 +31,7 @@ TEST_P(QRTests, DenseQr) {
     }
   }
   // Check orthogonality
-  hicma::Dense QtQ = gemm(Q, Q, 1, true, false);
+  const hicma::Dense QtQ = gemm(Q, Q, 1, true, false);
   for (int64_t i = 0; i < QtQ.dim[0]; i++) {
     for (int64_t j = 0; j < QtQ.dim[1]; j++) {
       if (i == j)
@@ -47,12 +47,12 @@ TEST_P(QRTests, DenseRq) {
   std::tie(m, n, k) = GetParam();
 
   hicma::initialize();
-  std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m>n?m:n)};
+  const std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m>n?m:n)};
   hicma::Dense A(hicma::laplacend, randx_A, n, m);
-  hicma::Dense A_copy(A);
+  const hicma::Dense A_copy(A);
   hicma::Dense R(n, k), Q(k, m);
   hicma::rq(A, R, Q);
-  hicma::Dense A_rebuilt = hicma::gemm(R, Q);
+  const hicma::Dense A_rebuilt = hicma::gemm(R, Q);
 
   // Check accuracy
   for (int64_t i = 0; i < n; i++) {
@@ -61,7 +61,7 @@ TEST_P(QRTests, DenseRq) {
     }
   }
   // Check orthogonality
-  hicma::Dense QQt = gemm(Q, Q, 1, false, true);
+  const hicma::Dense QQt = gemm(Q, Q, 1, false, true);
   for (int64_t i = 0; i < QQt.dim[0]; i++) {
     for (int64_t j = 0; j < QQt.dim[1]; j++) {
       if (i == j)
@@ -78,10 +78,10 @@ TEST_P(TruncatedQRTests, ThresholdBasedTruncation) {
   std::tie(m, n, eps) = GetParam();
   
   hicma::initialize();
-  std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m>n?2*m:2*n)};
+  const std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m>n?2*m:2*n)};
   
   // Construct rank deficient block
-  hicma::Dense D(hicma::laplacend, randx_A, m, n, 0, n);
+  const hicma::Dense D(hicma::laplacend, randx_A, m, n, 0, n);
   hicma::Dense Q, RP;
   std::tie(Q, RP) = truncated_geqp3(D, eps);
 
@@ -91,7 +91,7 @@ TEST_P(TruncatedQRTests, ThresholdBasedTruncation) {
   EXPECT_EQ(RP.dim[1], D.dim[1]);
   
   // Check compression error
-  double error = hicma::l2_error(D, hicma::gemm(Q, RP));
+  const double error = hicma::l2_error(D, hicma::gemm(Q, RP));
   EXPECT_NEAR(error, eps, 10*eps);
 }
 
@@ -103,7 +103,7 @@ TEST_P(TruncatedQRTests, ZeroMatrixHandler) {
   hicma::initialize();
   
   // Construct m x n zero matrix
-  hicma::Dense D(m, n);
+  const hicma::Dense D(m, n);
   hicma::Dense Q, RP;
   std::tie(Q, RP) = truncated_geqp3(D, eps);
   
@@ -112,7 +112,7 @@ TEST_P(TruncatedQRTests, ZeroMatrixHandler) {
   EXPECT_EQ(Q.dim[1], RP.dim[0]);
   EXPECT_EQ(RP.dim[1], D.dim[1]);
   // Ensure rank = 1
-  const double EPS = std::numeric_limits<double>::epsilon();
+  constexpr double EPS = std::numeric_limits<double>::epsilon();
   EXPECT_EQ(Q.dim[1], 1);
   for(int64_t i = 0; i < Q.dim[0]; i++) {
     if(i == 0) {
@@ -136,9 +136,9 @@ INSTANTIATE_TEST_SUITE_P(LAPACK, TruncatedQRTests,
                          testing::Values(std::make_tuple(32, 32, 1e-6),
                                          std::make_tuple(32, 24, 1e-6),
                                          std::make_tuple(24, 32, 1e-6),
-					 std::make_tuple(32, 32, 1e-8),
+                                         std::make_tuple(32, 32, 1e-8),
                                          std::make_tuple(32, 24, 1e-8),
                                          std::make_tuple(24, 32, 1e-8),
-					 std::make_tuple(32, 32, 1e-10),
+                                         std::make_tuple(32, 32, 1e-10),
                                          std::make_tuple(32, 24, 1e-10),
                                          std::make_tuple(24, 32, 1e-10)));

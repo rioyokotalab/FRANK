@@ -15,7 +15,7 @@ class IDTests : public testing::TestWithParam<std::tuple<int64_t, int64_t>> {
       int64_t n, rank;
       std::tie(n, rank) = GetParam();
       hicma::initialize();
-      std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(2*n)};
+      const std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(2*n)};
       A = hicma::Dense(hicma::laplacend, randx_A, n, n, 0, n);
       A_work = A;
     }
@@ -30,7 +30,7 @@ TEST_P(IDTests, ID) {
   std::tie(U, S, V) = hicma::id(A_work, rank);
   A_check = hicma::gemm(hicma::gemm(U, S), V);
 
-  double error = l2_error(A, A_check);
+  const double error = l2_error(A, A_check);
   EXPECT_LT(error, 1e-7);
 }
 
@@ -41,10 +41,10 @@ TEST_P(IDTests, OID) {
   std::vector<int64_t> indices;
   hicma::Dense V;
   std::tie(V, indices) = hicma::one_sided_id(A_work, rank);
-  hicma::Dense A_cols = get_cols(A, indices);
+  const hicma::Dense A_cols = get_cols(A, indices);
 
   A_check = gemm(A_cols, V);
-  double error = l2_error(A, A_check);
+  const double error = l2_error(A, A_check);
   EXPECT_LT(error, 1e-7);
 }
 
@@ -56,7 +56,7 @@ TEST_P(IDTests, RID) {
   std::tie(U, S, V) = hicma::rid(A_work, rank+5, rank);
   A_check = hicma::gemm(hicma::gemm(U, S), V);
 
-  double error = l2_error(A, A_check);
+  const double error = l2_error(A, A_check);
   EXPECT_LT(error, 1e-7);
 }
 

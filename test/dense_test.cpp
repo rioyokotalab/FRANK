@@ -9,13 +9,13 @@
 TEST(DenseTest, ConstructorHierarchical) {
   hicma::initialize();
   // Check whether the Dense(Hierarchical) constructor works correctly.
-  int64_t N = 128;
-  int64_t nblocks = 4;
-  int64_t nleaf = N / nblocks;
+  constexpr int64_t N = 128;
+  constexpr int64_t nblocks = 4;
+  constexpr int64_t nleaf = N / nblocks;
   // Construct single level all-dense hierarchical
-  hicma::Hierarchical H(hicma::random_uniform, {},
-                        N, N, 0, nleaf, nblocks, nblocks, nblocks);
-  hicma::Dense D(H);
+  const hicma::Hierarchical H(hicma::random_uniform, {},
+                              N, N, 0, nleaf, nblocks, nblocks, nblocks);
+  const hicma::Dense D(H);
   // Check block-by-block and element-by-element if values match
   for (int64_t ib=0; ib<nblocks; ++ib) {
     for (int64_t jb=0; jb<nblocks; ++jb) {
@@ -31,12 +31,12 @@ TEST(DenseTest, ConstructorHierarchical) {
 
 TEST(DenseTest, Split1DTest) {
   hicma::initialize();
-  int64_t N = 128;
-  int64_t nblocks = 2;
-  int64_t nleaf = N / nblocks;
-  hicma::Dense D(hicma::random_uniform, {}, N, N);
-  hicma::Hierarchical DH = hicma::split(D, nblocks, nblocks);
-  hicma::Hierarchical DH_copy = hicma::split(D, nblocks, nblocks, true);
+  constexpr int64_t N = 128;
+  constexpr int64_t nblocks = 2;
+  constexpr int64_t nleaf = N / nblocks;
+  const hicma::Dense D(hicma::random_uniform, {}, N, N);
+  const hicma::Hierarchical DH = hicma::split(D, nblocks, nblocks);
+  const hicma::Hierarchical DH_copy = hicma::split(D, nblocks, nblocks, true);
     
   for (int64_t ib=0; ib<nblocks; ++ib) {
     for (int64_t jb=0; jb<nblocks; ++jb) {
@@ -48,32 +48,20 @@ TEST(DenseTest, Split1DTest) {
       }
     }
   }
-
-  hicma::Hierarchical H = hicma::split(D, nblocks, nblocks);
-  hicma::Dense HD(H);
-  hicma::Dense Q(HD.dim[0], HD.dim[1]);
-  hicma::Dense R(HD.dim[1], HD.dim[1]);
-  hicma::qr(HD, Q, R);
-  hicma::Dense QR = hicma::gemm(Q, R);
-  for (int64_t i=0; i<N; ++i) {
-    for (int64_t j=0; j<N; ++j) {
-      ASSERT_FLOAT_EQ(D(i, j), QR(i, j));
-    }
-  }
 }
 
 TEST(DenseTest, SplitTest) {
   hicma::initialize();
-  int64_t N = 128;
-  int64_t nblocks = 4;
-  int64_t nleaf = N / nblocks;
-  hicma::Dense col(hicma::random_normal, {}, N, nleaf);
-  hicma::Dense row(hicma::random_normal, {}, nleaf, N);
+  constexpr int64_t N = 128;
+  constexpr int64_t nblocks = 4;
+  constexpr int64_t nleaf = N / nblocks;
+  const hicma::Dense col(hicma::random_normal, {}, N, nleaf);
+  const hicma::Dense row(hicma::random_normal, {}, nleaf, N);
   hicma::Dense test1 = hicma::gemm(row, col);
   test1 *= 2;
 
-  hicma::Hierarchical colH = hicma::split(col, nblocks, 1);
-  hicma::Hierarchical rowH = hicma::split(row, 1, nblocks);
+  const hicma::Hierarchical colH = hicma::split(col, nblocks, 1);
+  const hicma::Hierarchical rowH = hicma::split(row, 1, nblocks);
   hicma::Dense test2 = hicma::gemm(rowH, colH);
   test2 *= 2;
   for (int64_t i=0; i<nleaf; ++i) {
@@ -85,9 +73,9 @@ TEST(DenseTest, SplitTest) {
 
 TEST(DenseTest, Resize) {
   hicma::initialize();
-  int64_t N = 1024;
-  hicma::Dense D(hicma::random_normal, {}, N, N);
-  hicma::Dense D_resized = hicma::resize(D, N-N/8, N-N/8);
+  constexpr int64_t N = 1024;
+  const hicma::Dense D(hicma::random_normal, {}, N, N);
+  const hicma::Dense D_resized = hicma::resize(D, N-N/8, N-N/8);
   for (int64_t i=0; i<D_resized.dim[0]; ++i) {
     for (int64_t j=0; j<D_resized.dim[1]; ++j) {
       ASSERT_EQ(D(i, j), D_resized(i, j));
@@ -97,7 +85,7 @@ TEST(DenseTest, Resize) {
 
 TEST(DenseTest, Assign) {
   hicma::initialize();
-  int64_t N = 24;
+  constexpr int64_t N = 24;
   hicma::Dense D(N, N);
   D = 8;
   for (int64_t i=0; i<N; ++i) {
@@ -109,9 +97,9 @@ TEST(DenseTest, Assign) {
 
 TEST(DenseTest, Copy) {
   hicma::initialize();
-  int64_t N = 42;
-  hicma::Dense D(hicma::random_normal, {}, N, N);
-  hicma::Dense A(D);
+  constexpr int64_t N = 42;
+  const hicma::Dense D(hicma::random_normal, {}, N, N);
+  const hicma::Dense A(D);
   hicma::Dense B(N, N);
   A.copy_to(B);
   for (int64_t i=0; i<N; ++i) {
@@ -121,7 +109,7 @@ TEST(DenseTest, Copy) {
     }
   }
   hicma::Dense C(30, 30);
-  int offset = 12;
+  const int offset = 12;
   D.copy_to(C, offset, offset);
   for (int64_t i=0; i<C.dim[0]; ++i) {
     for (int64_t j=0; j<C.dim[1]; ++j) {

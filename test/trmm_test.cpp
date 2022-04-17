@@ -21,7 +21,7 @@ class TRMMTests
   double alpha;
 };
 
-void EXPECT_DENSE_NEAR(const hicma::Dense& A, const hicma::Dense& B, double threshold) {
+void EXPECT_DENSE_NEAR(const hicma::Dense& A, const hicma::Dense& B, const double threshold) {
   EXPECT_EQ(A.dim[0], B.dim[0]);
   EXPECT_EQ(A.dim[1], B.dim[1]);
   for(int64_t i = 0; i < A.dim[0]; i++) {
@@ -53,7 +53,7 @@ TEST_P(TRMMTests, DenseDense) {
                  side == hicma::Side::Left ? n_rows : n_cols,
                  side == hicma::Side::Left ? n_rows : n_cols);
   hicma::Dense B(hicma::random_normal, {}, n_rows, n_cols);
-  hicma::Dense B_copy(B);
+  const hicma::Dense B_copy(B);
   trmm(A, B, side, uplo, trans, diag, alpha);
 
   // Check result
@@ -78,12 +78,12 @@ TEST_P(TRMMTests, DenseLowrank) {
   hicma::Dense A(hicma::random_normal, {},
                  side == hicma::Side::Left ? n_rows : n_cols,
                  side == hicma::Side::Left ? n_rows : n_cols);
-  std::vector<std::vector<double>> randx {
+  const std::vector<std::vector<double>> randx {
     hicma::get_sorted_random_vector(4 * std::max(n_rows, n_cols))
   };
-  hicma::Dense B_(hicma::laplacend, randx, n_rows, n_cols, 0, 2 * n_cols);
+  const hicma::Dense B_(hicma::laplacend, randx, n_rows, n_cols, 0, 2 * n_cols);
   hicma::LowRank B(B_, 1e-8);
-  hicma::LowRank B_copy(B);
+  const hicma::LowRank B_copy(B);
   trmm(A, B, side, uplo, trans, diag, alpha);
 
   // Check result
@@ -107,20 +107,20 @@ TEST_P(TRMMTests, DenseLowrank) {
 }
 
 TEST_P(TRMMTests, DenseHierarchical) {
-  std::vector<std::vector<double>> randx {
+  const std::vector<std::vector<double>> randx {
     hicma::get_sorted_random_vector(std::max(n_rows, n_cols))
   };
-  int64_t nleaf = 8;
-  int64_t nb_rows = 2;
-  int64_t nb_cols = 2;
-  double admis = 0;
-  double eps = 1e-10;
+  constexpr int64_t nleaf = 8;
+  constexpr int64_t nb_rows = 2;
+  constexpr int64_t nb_cols = 2;
+  constexpr double admis = 0;
+  constexpr double eps = 1e-10;
   hicma::Dense A(hicma::random_normal, {},
                  side == hicma::Side::Left ? n_rows : n_cols,
                  side == hicma::Side::Left ? n_rows : n_cols);
   hicma::Hierarchical B(hicma::laplacend, randx, n_rows, n_cols,
                         nleaf, eps, admis, nb_rows, nb_cols, hicma::AdmisType::PositionBased);
-  hicma::Hierarchical B_copy(B);
+  const hicma::Hierarchical B_copy(B);
   trmm(A, B, side, uplo, trans, diag, alpha);
 
   // Check result
@@ -138,23 +138,23 @@ TEST_P(TRMMTests, DenseHierarchical) {
   else
     hicma::gemm(B_copy, A, B_check, alpha, 0, false, trans == 't');
 
-  double diff = l2_error(B, B_check);
+  const double diff = l2_error(B, B_check);
   EXPECT_LT(diff, eps);
 }
 
 TEST_P(TRMMTests, HierarchicalDense) {
-  std::vector<std::vector<double>> randx {
+  const std::vector<std::vector<double>> randx {
     hicma::get_sorted_random_vector(std::max(n_rows, n_cols))
   };
-  int64_t nleaf = 8;
-  double admis = 0;
-  double eps = 1e-10;
-  int64_t A_n = side == hicma::Side::Left ? n_rows : n_cols;
-  int64_t A_nb = 2;
+  constexpr int64_t nleaf = 8;
+  constexpr double admis = 0;
+  constexpr double eps = 1e-10;
+  const int64_t A_n = side == hicma::Side::Left ? n_rows : n_cols;
+  constexpr int64_t A_nb = 2;
   hicma::Hierarchical A(hicma::laplacend, randx, A_n, A_n,
                         nleaf, eps, admis, A_nb, A_nb, hicma::AdmisType::PositionBased);
   hicma::Dense B(hicma::random_normal, {}, n_rows, n_cols);
-  hicma::Dense B_copy(B);
+  const hicma::Dense B_copy(B);
   trmm(A, B, side, uplo, trans, diag, alpha);
 
   // Check result
@@ -175,19 +175,19 @@ TEST_P(TRMMTests, HierarchicalDense) {
 }
 
 TEST_P(TRMMTests, HierarchicalLowrank) {
-  std::vector<std::vector<double>> randx {
+  const std::vector<std::vector<double>> randx {
     hicma::get_sorted_random_vector(std::max(n_rows, n_cols))
   };
-  int64_t nleaf = 8;
-  double admis = 0;
-  double eps = 1e-8;
-  int64_t A_n = side == hicma::Side::Left ? n_rows : n_cols;
-  int64_t A_nb = 2;
+  constexpr int64_t nleaf = 8;
+  constexpr double admis = 0;
+  constexpr double eps = 1e-8;
+  const int64_t A_n = side == hicma::Side::Left ? n_rows : n_cols;
+  constexpr int64_t A_nb = 2;
   hicma::Hierarchical A(hicma::laplacend, randx, A_n, A_n,
                         nleaf, eps, admis, A_nb, A_nb, hicma::AdmisType::PositionBased);
-  hicma::Dense B_(hicma::laplacend, randx, n_rows, n_cols, 0, 2 * n_cols);
+  const hicma::Dense B_(hicma::laplacend, randx, n_rows, n_cols, 0, 2 * n_cols);
   hicma::LowRank B(B_, eps);
-  hicma::LowRank B_copy(B);
+  const hicma::LowRank B_copy(B);
   trmm(A, B, side, uplo, trans, diag, alpha);
 
   // Check result
@@ -213,18 +213,18 @@ TEST_P(TRMMTests, HierarchicalHierarchical_Weak) {
   std::vector<std::vector<double>> randx {
     hicma::get_sorted_random_vector(std::max(n_rows, n_cols))
   };
-  int64_t nleaf = 8;
-  int64_t nb_rows = 2;
-  int64_t nb_cols = 2;
-  double admis = 0;
-  double eps = 1e-8;
-  int64_t A_n = side == hicma::Side::Left ? n_rows : n_cols;
-  int64_t A_nb = 2;
+  constexpr int64_t nleaf = 8;
+  constexpr int64_t nb_rows = 2;
+  constexpr int64_t nb_cols = 2;
+  constexpr double admis = 0;
+  constexpr double eps = 1e-8;
+  const int64_t A_n = side == hicma::Side::Left ? n_rows : n_cols;
+  constexpr int64_t A_nb = 2;
   hicma::Hierarchical A(hicma::laplacend, randx, A_n, A_n,
                         nleaf, eps, admis, A_nb, A_nb, hicma::AdmisType::PositionBased);
   hicma::Hierarchical B(hicma::laplacend, randx, n_rows, n_cols,
                         nleaf, eps, admis, nb_rows, nb_cols, hicma::AdmisType::PositionBased);
-  hicma::Hierarchical B_copy(B);
+  const hicma::Hierarchical B_copy(B);
   trmm(A, B, side, uplo, trans, diag, alpha);
 
   // Check result
@@ -241,7 +241,7 @@ TEST_P(TRMMTests, HierarchicalHierarchical_Weak) {
   else
     hicma::gemm(B_copy, A, B_check, alpha, 0, false, trans == 't');
 
-  double diff = l2_error(B, B_check);
+  const double diff = l2_error(B, B_check);
   EXPECT_LT(diff, eps);
 }
 
@@ -249,18 +249,18 @@ TEST_P(TRMMTests, HierarchicalHierarchical_Strong) {
   std::vector<std::vector<double>> randx {
     hicma::get_sorted_random_vector(std::max(n_rows, n_cols))
   };
-  int64_t nleaf = 8;
-  int64_t nb_rows = 2;
-  int64_t nb_cols = 2;
-  double admis = 1;
-  double eps = 1e-8;
-  int64_t A_n = side == hicma::Side::Left ? n_rows : n_cols;
-  int64_t A_nb = 2;
+  constexpr int64_t nleaf = 8;
+  constexpr int64_t nb_rows = 2;
+  constexpr int64_t nb_cols = 2;
+  constexpr double admis = 1;
+  constexpr double eps = 1e-8;
+  const int64_t A_n = side == hicma::Side::Left ? n_rows : n_cols;
+  constexpr int64_t A_nb = 2;
   hicma::Hierarchical A(hicma::laplacend, randx, A_n, A_n,
                         nleaf, eps, admis, A_nb, A_nb, hicma::AdmisType::PositionBased);
   hicma::Hierarchical B(hicma::laplacend, randx, n_rows, n_cols,
                         nleaf, eps, admis, nb_rows, nb_cols, hicma::AdmisType::PositionBased);
-  hicma::Hierarchical B_copy(B);
+  const hicma::Hierarchical B_copy(B);
   trmm(A, B, side, uplo, trans, diag, alpha);
 
   // Check result
@@ -277,7 +277,7 @@ TEST_P(TRMMTests, HierarchicalHierarchical_Strong) {
   else
     hicma::gemm(B_copy, A, B_check, alpha, 0, false, trans == 't');
 
-  double diff = l2_error(B, B_check);
+  const double diff = l2_error(B, B_check);
   EXPECT_LT(diff, eps);
 }
 

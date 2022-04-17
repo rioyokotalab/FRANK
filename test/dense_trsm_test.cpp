@@ -12,9 +12,9 @@ TEST_P(TRSMTests, DenseTrsm) {
   n = GetParam();
 
   hicma::initialize();
-  std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(n)};
+  const std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(n)};
   hicma::Dense A(hicma::laplacend, randx_A, n, n);
-  hicma::Dense x(hicma::random_uniform, {}, n);
+  const hicma::Dense x(hicma::random_uniform, {}, n);
   hicma::Dense b = gemm(A, x);
   hicma::Dense L, U;
 
