@@ -92,7 +92,7 @@ class Hierarchical : public Matrix {
    * Before using any submatrices, it is thus necessary to initialize them to
    * some child type of `Matrix`.
    */
-  Hierarchical(int64_t n_row_blocks, int64_t n_col_blocks=1);
+  Hierarchical(const int64_t n_row_blocks, const int64_t n_col_blocks=1);
 
   /**
    * @brief General constructor of the `Hierarchical` class
@@ -110,8 +110,8 @@ class Hierarchical : public Matrix {
    */
   Hierarchical(
     const ClusterTree& node,
-    MatrixInitializer& initializer,
-    bool fixed_rank=true
+    const MatrixInitializer& initializer,
+    const bool fixed_rank=true
   );
 
   /**
@@ -167,18 +167,18 @@ class Hierarchical : public Matrix {
    */
   Hierarchical(
     void (*kernel)(
-      double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+      double* A, const uint64_t A_rows, const uint64_t A_cols, const uint64_t A_stride,
       const std::vector<std::vector<double>>& params,
-      int64_t row_start, int64_t col_start
+      const int64_t row_start, const int64_t col_start
     ),
-    std::vector<std::vector<double>> params,
-    int64_t n_rows, int64_t n_cols,
-    int64_t rank,
-    int64_t nleaf,
-    double admis=0,
-    int64_t n_row_blocks=2, int64_t n_col_blocks=2,
-    AdmisType admis_type=AdmisType::PositionBased,
-    int64_t row_start=0, int64_t col_start=0
+    const std::vector<std::vector<double>> params,
+    const int64_t n_rows, const int64_t n_cols,
+    const int64_t rank,
+    const int64_t nleaf,
+    const double admis=0,
+    const int64_t n_row_blocks=2, const int64_t n_col_blocks=2,
+    const AdmisType admis_type=AdmisType::PositionBased,
+    const int64_t row_start=0, const int64_t col_start=0
   );
 
   /**
@@ -234,18 +234,18 @@ class Hierarchical : public Matrix {
    */
   Hierarchical(
     void (*kernel)(
-      double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+      double* A, const uint64_t A_rows, const uint64_t A_cols, const uint64_t A_stride,
       const std::vector<std::vector<double>>& params,
-      int64_t row_start, int64_t col_start
+      const int64_t row_start, const int64_t col_start
     ),
-    std::vector<std::vector<double>> params,
-    int64_t n_rows, int64_t n_cols,
-    int64_t nleaf,
-    double eps,
-    double admis=0,
-    int64_t n_row_blocks=2, int64_t n_col_blocks=2,
-    AdmisType admis_type=AdmisType::PositionBased,
-    int64_t row_start=0, int64_t col_start=0
+    const std::vector<std::vector<double>> params,
+    const int64_t n_rows, const int64_t n_cols,
+    const int64_t nleaf,
+    const double eps,
+    const double admis=0,
+    const int64_t n_row_blocks=2, const int64_t n_col_blocks=2,
+    const AdmisType admis_type=AdmisType::PositionBased,
+    const int64_t row_start=0, const int64_t col_start=0
   );
 
   /**
@@ -292,13 +292,13 @@ class Hierarchical : public Matrix {
    */
   Hierarchical(
     Dense&& A,
-    int64_t rank,
-    int64_t nleaf,
-    double admis=0,
-    int64_t n_row_blocks=2, int64_t n_col_blocks=2,
-    int64_t row_start=0, int64_t col_start=0,
-    std::vector<std::vector<double>> params={},
-    AdmisType admis_type=AdmisType::PositionBased
+    const int64_t rank,
+    const int64_t nleaf,
+    const double admis=0,
+    const int64_t n_row_blocks=2, const int64_t n_col_blocks=2,
+    const int64_t row_start=0, const int64_t col_start=0,
+    const std::vector<std::vector<double>> params={},
+    const AdmisType admis_type=AdmisType::PositionBased
   );
 
   /**
@@ -345,13 +345,13 @@ class Hierarchical : public Matrix {
    */
   Hierarchical(
     Dense&& A,
-    int64_t nleaf,
-    double eps,
-    double admis=0,
-    int64_t n_row_blocks=2, int64_t n_col_blocks=2,
-    int64_t row_start=0, int64_t col_start=0,
-    std::vector<std::vector<double>> params={},
-    AdmisType admis_type=AdmisType::PositionBased
+    const int64_t nleaf,
+    const double eps,
+    const double admis=0,
+    const int64_t n_row_blocks=2, const int64_t n_col_blocks=2,
+    const int64_t row_start=0, const int64_t col_start=0,
+    const std::vector<std::vector<double>> params={},
+    const AdmisType admis_type=AdmisType::PositionBased
   );
 
   /**
@@ -399,7 +399,7 @@ class Hierarchical : public Matrix {
    * The type of the return matrix contained the in the returned `MatrixProxy`
    * is generally runtime dependent.
    */
-  const MatrixProxy& operator[](int64_t i) const;
+  const MatrixProxy& operator[](const int64_t i) const;
 
   /**
    * @brief Access elements of `Hierarchical` matrix assuming it is vector-like
@@ -417,7 +417,7 @@ class Hierarchical : public Matrix {
    * It is possible to move it directly into a desired matrix type if the type
    * is known, for example directly after using ::split.
    */
-  MatrixProxy& operator[](int64_t i);
+  MatrixProxy& operator[](const int64_t i);
 
   /**
    * @brief Access elements of `Hierarchical` with a row and column index
@@ -432,7 +432,7 @@ class Hierarchical : public Matrix {
    * The type of the return matrix contained the in the returned `MatrixProxy`
    * is generally runtime dependent.
    */
-  const MatrixProxy& operator()(int64_t i, int64_t j) const;
+  const MatrixProxy& operator()(const int64_t i, const int64_t j) const;
 
   /**
    * @brief Access elements of `Hierarchical` with a row and column index
@@ -449,7 +449,7 @@ class Hierarchical : public Matrix {
    * It is possible to move it directly into a desired matrix type if the type
    * is known, for example directly after using ::split.
    */
-  MatrixProxy& operator()(int64_t i, int64_t j);
+  MatrixProxy& operator()(const int64_t i, const int64_t j);
 };
 
 } // namespace hicma

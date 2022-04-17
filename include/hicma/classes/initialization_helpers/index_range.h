@@ -70,7 +70,7 @@ class IndexRange {
    * @param n
    * Length of the `IndexRange` to be constructed.
    */
-  IndexRange(int64_t start, int64_t n);
+  IndexRange(const int64_t start, const int64_t n);
 
   /**
    * @brief Split the `IndexRange` into \p n_splits equal parts
@@ -84,7 +84,7 @@ class IndexRange {
    * `IndexRange` returned is shorter than the others and ends on the end of the
    * parent `IndexRange`.
    */
-  std::vector<IndexRange> split(int64_t n_splits) const;
+  std::vector<IndexRange> split(const int64_t n_splits) const;
 
   /**
    * @brief Split the `IndexRange` in two at a certain \p index.
@@ -94,7 +94,7 @@ class IndexRange {
    * @return std::vector<IndexRange>
    * Vector containing the `IndexRange`s resulting from the split in order.
    */
-  std::vector<IndexRange> split_at(int64_t index) const;
+  std::vector<IndexRange> split_at(const int64_t index) const;
 
   /**
    * @brief Split the `IndexRange` along a specified axis to match the structure
@@ -112,7 +112,7 @@ class IndexRange {
    * Note that this function is not recursive. Only the first level of \p A is
    * mimicked in the resulting `IndexRange`s.
    */
-  std::vector<IndexRange> split_like(const Hierarchical& A, int along) const;
+  std::vector<IndexRange> split_like(const Hierarchical& A, const int along) const;
 };
 
 } // namespace hicma

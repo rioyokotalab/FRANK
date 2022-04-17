@@ -118,7 +118,7 @@ MatrixProxy concat_columns(
 define_method(
   MatrixProxy, concat_columns_omm,
   (
-    const Dense& A, const Hierarchical& splitted, const Dense&,
+    [[maybe_unused]] const Dense& A, const Hierarchical& splitted, const Dense&,
     int64_t& currentRow
   )
 ) {
@@ -151,7 +151,7 @@ define_method(
   assert(A.dim[0] == Q.dim[0]);
   assert(A.dim[1] == concatenatedRow.dim[1]);
   assert(Q.dim[1] == concatenatedRow.dim[0]);
-  int64_t _rank = Q.dim[1];
+  const int64_t _rank = Q.dim[1];
   LowRank _A(Dense(Q), Dense(identity, {}, _rank, _rank), concatenatedRow);
   _A.eps = A.eps;
   currentRow++;
@@ -206,7 +206,7 @@ define_method(
 
 
 std::tuple<Hierarchical, Hierarchical> split_block_col(
-  int64_t j, const Hierarchical& A
+  const int64_t j, const Hierarchical& A
 ) {
   int64_t splitRowSize = 0;
   int64_t splitColSize = 1;
@@ -223,7 +223,7 @@ std::tuple<Hierarchical, Hierarchical> split_block_col(
 }
 
 void restore_block_col(
-  int64_t j,
+  const int64_t j,
   const Hierarchical& Q_splitA, const Hierarchical& QL, Hierarchical& Q
 ) {
   assert(QL.dim[0] == Q.dim[0]);
@@ -238,13 +238,13 @@ void mgs_qr(Matrix& A, Matrix& Q, Matrix& R) {
   mgs_qr_omm(A, Q, R);
 }
 
-void orthogonalize_block_col(int64_t j, const Matrix& A, Matrix& Q, Matrix& R) {
+void orthogonalize_block_col(const int64_t j, const Matrix& A, Matrix& Q, Matrix& R) {
   orthogonalize_block_col_omm(j, A, Q, R);
 }
 
 define_method(
   void, orthogonalize_block_col_omm,
-  (int64_t j, const Hierarchical& A, Hierarchical& Q, Dense& R)
+  (const int64_t j, const Hierarchical& A, Hierarchical& Q, Dense& R)
 ) {
   Hierarchical Qu(A.dim[0], 1);
   Hierarchical B(A.dim[0], 1);
@@ -273,7 +273,7 @@ define_method(
 
 define_method(
   void, orthogonalize_block_col_omm,
-  (int64_t j, const Hierarchical& A, Hierarchical& Q, Hierarchical& R)
+  (const int64_t j, const Hierarchical& A, Hierarchical& Q, Hierarchical& R)
 ) {
   Hierarchical splitA;
   Hierarchical QL;
@@ -291,7 +291,7 @@ define_method(void, mgs_qr_omm, (Dense& A, Dense& Q, Dense& R)) {
   for(int j = 0; j < A.dim[1]; j++) {
     R(j, j) = LAPACKE_dlange(LAPACK_ROW_MAJOR, 'F',
                              A.dim[0], 1, &A + j, A.dim[1]);
-    double alpha = 1./R(j, j);
+    const double alpha = 1./R(j, j);
     cblas_dscal(A.dim[0], alpha, &A + j, A.dim[1]);
     for(int k = j + 1; k < A.dim[1]; k++) {
       R(j, k) = cblas_ddot(A.dim[0], &A + j, A.dim[1],

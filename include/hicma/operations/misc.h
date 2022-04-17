@@ -142,7 +142,7 @@ double cond(Dense A);
  *
  * where |A|_F denotes the Frobenius norm of A.
  */
-int64_t find_svd_truncation_rank(const Dense& S, double eps);
+int64_t find_svd_truncation_rank(const Dense& S, const double eps);
 
 /**
  * @brief Sort n-dimensional points on euclidean space based on Morton Ordering
@@ -166,7 +166,7 @@ int64_t find_svd_truncation_rank(const Dense& S, double eps);
  * ```
  * i.e. each row of x (`x[i]`) contain the coordinates along one axis.
  */
-void sortByMortonIndex(std::vector<std::vector<double>> &x, int64_t level, std::vector<int64_t>& perm);
+void sortByMortonIndex(std::vector<std::vector<double>> &x, const int64_t level, std::vector<int64_t>& perm);
 
 /**
  * @brief Generate equally spaced floating points between a specified range
@@ -182,7 +182,7 @@ void sortByMortonIndex(std::vector<std::vector<double>> &x, int64_t level, std::
  * Vector containing \p N equally spaced numbers taken from the interval [\p minVal, \p maxVal].
  */
 std::vector<double> equallySpacedVector(
-  int64_t N, double minVal, double maxVal);
+  const int64_t N, const double minVal, const double maxVal);
 
 /**
  * @brief Split a matrix based on the specified number of block-row and block-column
@@ -209,7 +209,7 @@ std::vector<double> equallySpacedVector(
  * Read \ext_hicma for more information.
  */
 Hierarchical split(
-  const Matrix& A, int64_t n_row_blocks, int64_t n_col_blocks, bool copy=false
+  const Matrix& A, const int64_t n_row_blocks, const int64_t n_col_blocks, const bool copy=false
 );
 
 /**
@@ -235,7 +235,7 @@ Hierarchical split(
  * The multi-dispatcher then will select the correct implementation based on the types of parameters given at runtime.
  * Read \ext_hicma for more information.
  */
-Hierarchical split(const Matrix& A, const Hierarchical& like, bool copy=false);
+Hierarchical split(const Matrix& A, const Hierarchical& like, const bool copy=false);
 
 /**
  * @brief Get the shallow copy of a general `Matrix`
@@ -305,7 +305,7 @@ MatrixProxy transpose(const Matrix&);
  * The multi-dispatcher then will select the correct implementation based on the types of parameters given at runtime.
  * Read \ext_hicma for more information.
  */
-MatrixProxy resize(const Matrix&, int64_t n_rows, int64_t n_cols);
+MatrixProxy resize(const Matrix&, const int64_t n_rows, const int64_t n_cols);
 
 } // namespace hicma
 

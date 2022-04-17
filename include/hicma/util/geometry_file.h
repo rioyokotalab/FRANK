@@ -18,7 +18,7 @@ namespace hicma
  * @param filename location of the file to be read
  * @return std::vector<std::vector<double>> matrix of vertices representing the geometry
  */
-std::vector<std::vector<double>> read_geometry_file(std::string filename);
+std::vector<std::vector<double>> read_geometry_file(const std::string filename);
 
 } // namespace hicma
 

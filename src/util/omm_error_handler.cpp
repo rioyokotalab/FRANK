@@ -14,8 +14,8 @@ namespace hicma
 
 void omm_error_handler(
   const char* omm_name,
-  std::vector<std::reference_wrapper<const Matrix>> virtual_arguments,
-  const char* file, int line
+  const std::vector<std::reference_wrapper<const Matrix>> virtual_arguments,
+  const char* file, const int line
 ) {
   std::cerr << omm_name << "(";
   if (virtual_arguments.size() > 0) {

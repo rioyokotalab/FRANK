@@ -12,12 +12,12 @@ namespace hicma
 {
 
 ClusterTree::ClusterTree(
-  IndexRange rows, IndexRange cols,
-  int64_t n_row_blocks, int64_t n_col_blocks,
-  int64_t nleaf,
-  int64_t level,
-  int64_t i_rel, int64_t j_rel,
-  int64_t i_abs, int64_t j_abs,
+  const IndexRange rows, const IndexRange cols,
+  const int64_t n_row_blocks, const int64_t n_col_blocks,
+  const int64_t nleaf,
+  const int64_t level,
+  const int64_t i_rel, const int64_t j_rel,
+  const int64_t i_abs, const int64_t j_abs,
   ClusterTree* parent
 ) : rows(rows), cols(cols), block_dim{n_row_blocks, n_col_blocks},
     nleaf(nleaf), level(level), rel_pos{i_rel, j_rel},
@@ -25,12 +25,12 @@ ClusterTree::ClusterTree(
 {
   if (parent == nullptr || !is_leaf()) {
     children.reserve(block_dim[0]*block_dim[1]);
-    std::vector<IndexRange> row_subranges = rows.split(block_dim[0]);
-    std::vector<IndexRange> col_subranges = cols.split(block_dim[1]);
+    const std::vector<IndexRange> row_subranges = rows.split(block_dim[0]);
+    const std::vector<IndexRange> col_subranges = cols.split(block_dim[1]);
     for (int64_t i=0; i<block_dim[0]; ++i) {
-      int64_t child_i_abs = abs_pos[0]*block_dim[0] + i;
+      const int64_t child_i_abs = abs_pos[0]*block_dim[0] + i;
       for (int64_t j=0; j<block_dim[1]; ++j) {
-        int64_t child_j_abs = abs_pos[1]*block_dim[1] + j;
+        const int64_t child_j_abs = abs_pos[1]*block_dim[1] + j;
         children.emplace_back(
           row_subranges[i], col_subranges[j],
           n_row_blocks, n_col_blocks,
@@ -60,11 +60,11 @@ std::vector<ClusterTree>::const_iterator ClusterTree::end() const {
   return children.end();
 }
 
-ClusterTree& ClusterTree::operator()(int64_t i, int64_t j) {
+ClusterTree& ClusterTree::operator()(const int64_t i, const int64_t j) {
   return children[i*block_dim[1] + j];
 }
 
-const ClusterTree& ClusterTree::operator()(int64_t i, int64_t j) const {
+const ClusterTree& ClusterTree::operator()(const int64_t i, const int64_t j) const {
   return children[i*block_dim[1] + j];
 }
 

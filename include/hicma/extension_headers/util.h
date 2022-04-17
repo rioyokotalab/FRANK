@@ -14,7 +14,7 @@ namespace hicma
 {
 
 declare_method(
-  unsigned long, get_memory_usage_omm, (virtual_<const Matrix&>, bool)
+  unsigned long, get_memory_usage_omm, (virtual_<const Matrix&>, const bool)
 )
 
 declare_method(

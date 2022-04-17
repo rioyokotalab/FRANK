@@ -44,13 +44,13 @@ define_method(Hierarchical&&, move_from_hierarchical, (Matrix& A)) {
   std::abort();
 }
 
-Hierarchical::Hierarchical(int64_t n_row_blocks, int64_t n_col_blocks)
+Hierarchical::Hierarchical(const int64_t n_row_blocks, const int64_t n_col_blocks)
 : dim{n_row_blocks, n_col_blocks}, data(dim[0]*dim[1]) {}
 
 Hierarchical::Hierarchical(
   const ClusterTree& node,
-  MatrixInitializer& initializer,
-  bool fixed_rank
+  const MatrixInitializer& initializer,
+  const bool fixed_rank
 ) : dim(node.block_dim), data(dim[0]*dim[1]) {
   for (const ClusterTree& child : node) {
     if (initializer.is_admissible(child)) {
@@ -67,21 +67,21 @@ Hierarchical::Hierarchical(
 
 Hierarchical::Hierarchical(
   void (*kernel)(
-    double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+    double* A, const uint64_t A_rows, const uint64_t A_cols, const uint64_t A_stride,
     const std::vector<std::vector<double>>& params,
-    int64_t row_start, int64_t col_start
+    const int64_t row_start, const int64_t col_start
   ),
-  std::vector<std::vector<double>> params,
-  int64_t n_rows, int64_t n_cols,
-  int64_t rank,
-  int64_t nleaf,
-  double admis,
-  int64_t n_row_blocks, int64_t n_col_blocks,
-  AdmisType admis_type,
-  int64_t row_start, int64_t col_start
+  const std::vector<std::vector<double>> params,
+  const int64_t n_rows, int64_t n_cols,
+  const int64_t rank,
+  const int64_t nleaf,
+  const double admis,
+  const int64_t n_row_blocks, const int64_t n_col_blocks,
+  const AdmisType admis_type,
+  const int64_t row_start, const int64_t col_start
 ) {
-  MatrixInitializerKernel initializer(kernel, params, admis, 0, rank, admis_type);
-  ClusterTree cluster_tree(
+  const MatrixInitializerKernel initializer(kernel, params, admis, 0, rank, admis_type);
+  const ClusterTree cluster_tree(
     {row_start, n_rows}, {col_start, n_cols}, n_row_blocks, n_col_blocks, nleaf
   );
   *this = Hierarchical(cluster_tree, initializer, true);
@@ -89,21 +89,21 @@ Hierarchical::Hierarchical(
 
 Hierarchical::Hierarchical(
   void (*kernel)(
-    double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+    double* A, const uint64_t A_rows, const uint64_t A_cols, const uint64_t A_stride,
     const std::vector<std::vector<double>>& params,
-    int64_t row_start, int64_t col_start
+    const int64_t row_start, const int64_t col_start
   ),
-  std::vector<std::vector<double>> params,
-  int64_t n_rows, int64_t n_cols,
-  int64_t nleaf,
-  double eps,
-  double admis,
-  int64_t n_row_blocks, int64_t n_col_blocks,
-  AdmisType admis_type,
-  int64_t row_start, int64_t col_start
+  const std::vector<std::vector<double>> params,
+  const int64_t n_rows, const int64_t n_cols,
+  const int64_t nleaf,
+  const double eps,
+  const double admis,
+  const int64_t n_row_blocks, const int64_t n_col_blocks,
+  const AdmisType admis_type,
+  const int64_t row_start, const int64_t col_start
 ) {
-  MatrixInitializerKernel initializer(kernel, params, admis, eps, 0, admis_type);
-  ClusterTree cluster_tree(
+  const MatrixInitializerKernel initializer(kernel, params, admis, eps, 0, admis_type);
+  const ClusterTree cluster_tree(
     {row_start, n_rows}, {col_start, n_cols}, n_row_blocks, n_col_blocks, nleaf
   );
   *this = Hierarchical(cluster_tree, initializer, false);
@@ -112,16 +112,16 @@ Hierarchical::Hierarchical(
 
 Hierarchical::Hierarchical(
   Dense&& A,
-  int64_t rank,
-  int64_t nleaf,
-  double admis,
-  int64_t n_row_blocks, int64_t n_col_blocks,
-  int64_t row_start, int64_t col_start,
-  std::vector<std::vector<double>> params,
-  AdmisType admis_type
+  const int64_t rank,
+  const int64_t nleaf,
+  const double admis,
+  const int64_t n_row_blocks, const int64_t n_col_blocks,
+  const int64_t row_start, const int64_t col_start,
+  const std::vector<std::vector<double>> params,
+  const AdmisType admis_type
 ) {
-  MatrixInitializerBlock initializer(std::move(A), admis, 0, rank, params, admis_type);
-  ClusterTree cluster_tree(
+  const MatrixInitializerBlock initializer(std::move(A), admis, 0, rank, params, admis_type);
+  const ClusterTree cluster_tree(
     {row_start, A.dim[0]}, {col_start, A.dim[1]},
     n_row_blocks, n_col_blocks, nleaf
   );
@@ -130,16 +130,16 @@ Hierarchical::Hierarchical(
 
 Hierarchical::Hierarchical(
   Dense&& A,
-  int64_t nleaf,
-  double eps,
-  double admis,
-  int64_t n_row_blocks, int64_t n_col_blocks,
-  int64_t row_start, int64_t col_start,
-  std::vector<std::vector<double>> params,
-  AdmisType admis_type
+  const int64_t nleaf,
+  const double eps,
+  const double admis,
+  const int64_t n_row_blocks, const int64_t n_col_blocks,
+  const int64_t row_start, const int64_t col_start,
+  const std::vector<std::vector<double>> params,
+  const AdmisType admis_type
 ) {
-  MatrixInitializerBlock initializer(std::move(A), admis, eps, 0, params, admis_type);
-  ClusterTree cluster_tree(
+  const MatrixInitializerBlock initializer(std::move(A), admis, eps, 0, params, admis_type);
+  const ClusterTree cluster_tree(
     {row_start, A.dim[0]}, {col_start, A.dim[1]},
     n_row_blocks, n_col_blocks, nleaf
   );
@@ -156,25 +156,25 @@ MatrixProxy& Hierarchical::operator[](const std::array<int64_t, 2>& pos) {
   return (*this)(pos[0], pos[1]);
 }
 
-const MatrixProxy& Hierarchical::operator[](int64_t i) const {
+const MatrixProxy& Hierarchical::operator[](const int64_t i) const {
   assert(dim[0] == 1 || dim[1] == 1);
   assert(i < (dim[0] != 1 ? dim[0] : dim[1]));
   return data[i];
 }
 
-MatrixProxy& Hierarchical::operator[](int64_t i) {
+MatrixProxy& Hierarchical::operator[](const int64_t i) {
   assert(dim[0] == 1 || dim[1] == 1);
   assert(i < (dim[0] != 1 ? dim[0] : dim[1]));
   return data[i];
 }
 
-const MatrixProxy& Hierarchical::operator()(int64_t i, int64_t j) const {
+const MatrixProxy& Hierarchical::operator()(const int64_t i, const int64_t j) const {
   assert(i < dim[0]);
   assert(j < dim[1]);
   return data[i*dim[1]+j];
 }
 
-MatrixProxy& Hierarchical::operator()(int64_t i, int64_t j) {
+MatrixProxy& Hierarchical::operator()(const int64_t i, const int64_t j) {
   assert(i < dim[0]);
   assert(j < dim[1]);
   return data[i*dim[1]+j];

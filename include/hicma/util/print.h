@@ -33,7 +33,7 @@ std::string type(const Matrix&);
  * @param A the matrix to store
  * @param filename  outputfile location
  */
-void write_JSON(const Matrix& A, std::string filename = "matrix.json");
+void write_JSON(const Matrix& A, const std::string filename = "matrix.json");
 
 /**
  * @brief Prints the contents of a `Matrix`
@@ -68,7 +68,7 @@ void print(std::string s);
  * otherwise scientific notation is used
  */
 template<typename T>
-void print(std::string s, T v, bool fixed=true);
+void print(const std::string s, const T v, const bool fixed=true);
 
 }
 

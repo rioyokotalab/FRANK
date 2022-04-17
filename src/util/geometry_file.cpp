@@ -8,7 +8,7 @@
 namespace hicma
 {
 
-std::vector<std::vector<double>> read_geometry_file(std::string filename) {
+std::vector<std::vector<double>> read_geometry_file(const std::string filename) {
   std::ifstream file;
   file.open(filename);
   int64_t n, dim;

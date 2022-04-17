@@ -27,8 +27,8 @@ class Matrix;
  */
 void omm_error_handler(
   const char* omm_name,
-  std::vector<std::reference_wrapper<const Matrix>> virtual_arguments,
-  const char* file, int line
+  const std::vector<std::reference_wrapper<const Matrix>> virtual_arguments,
+  const char* file, const int line
 );
 
 } // namespace hicma

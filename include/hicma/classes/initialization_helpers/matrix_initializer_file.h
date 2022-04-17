@@ -23,8 +23,8 @@ class IndexRange;
  */
 class MatrixInitializerFile : public MatrixInitializer {
  private:
-  std::string filename;
-  MatrixLayout ordering;
+  const std::string filename;
+  const MatrixLayout ordering;
  public:
   // Special member functions
   MatrixInitializerFile() = delete;
@@ -47,7 +47,7 @@ class MatrixInitializerFile : public MatrixInitializer {
    * @param ordering
    * Ordering of matrix elements within the text file
    */
-  MatrixInitializerFile(std::string filename, MatrixLayout ordering);
+  MatrixInitializerFile(const std::string filename, const MatrixLayout ordering);
 
   /**
    * @brief Specialization for assigning matrix elements

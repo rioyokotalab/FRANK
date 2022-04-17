@@ -39,7 +39,7 @@ define_method(void, rq_omm, (Dense& A, Dense& R, Dense& Q)) {
   assert(R.dim[0] == A.dim[0]);
   assert(R.dim[1] == Q.dim[0]);
   assert(Q.dim[1] == A.dim[1]);
-  int64_t k = std::min(A.dim[0], A.dim[1]);
+  const int64_t k = std::min(A.dim[0], A.dim[1]);
   std::vector<double> tau(k);
   LAPACKE_dgerqf(LAPACK_ROW_MAJOR, A.dim[0], A.dim[1], &A, A.stride, &tau[0]);
   // Copy upper triangular into R

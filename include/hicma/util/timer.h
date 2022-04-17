@@ -35,7 +35,7 @@ class Timer;
  * @param event the name of the event
  * @return Timer& reference to the timer
  */
-Timer& start(std::string event);
+Timer& start(const std::string event);
 
 /**
  * @brief Stops the timing of an event
@@ -46,7 +46,7 @@ Timer& start(std::string event);
  * @param event the name of the event
  * @return double elapsed time in seconds
  */
-double stop(std::string event);
+double stop(const std::string event);
 
 /**
  * @brief Resets all timers
@@ -67,7 +67,7 @@ void clearTimers();
  * @param event the name of the event
  * @param depth the number of sub-timers to print
  */
-void stopAndPrint(std::string event, int depth = 0);
+void stopAndPrint(const std::string event, const int depth = 0);
 
 /**
  * @brief Prints the timings for an event
@@ -80,7 +80,7 @@ void stopAndPrint(std::string event, int depth = 0);
  * @param event the name of the event
  * @param depth the number of sub-timers to print
  */
-void printTime(std::string event, int depth = 0);
+void printTime(const std::string event, const int depth = 0);
 
 /**
  * @brief Calculates the total time for an event
@@ -91,7 +91,7 @@ void printTime(std::string event, int depth = 0);
  * @param event name of the event
  * @return double elapsed time in seconds
  */
-double getTotalTime(std::string event);
+double getTotalTime(const std::string event);
 
 /**
  * @brief Get the number of timings for an event
@@ -102,18 +102,18 @@ double getTotalTime(std::string event);
  * @param event name of the event
  * @return unsigned int number of timings
  */
-unsigned int getNRuns(std::string event);
+unsigned int getNRuns(const std::string event);
 
 // Interface of the Timer class if user wants to create own timers
 class Timer {
  public:
   Timer();
 
-  Timer(std::string name, Timer* parent=nullptr);
+  Timer(const std::string name, Timer* parent=nullptr);
 
   void start();
 
-  void start_subtimer(std::string event);
+  void start_subtimer(const std::string event);
 
   double stop();
 
@@ -131,11 +131,11 @@ class Timer {
 
   const std::map<std::string, double> get_subtimers() const;
 
-  const Timer& operator[](std::string event) const;
+  const Timer& operator[](const std::string event) const;
 
-  Timer& operator[](std::string event);
+  Timer& operator[](const std::string event);
 
-  void print_to_depth(int depth) const;
+  void print_to_depth(const int depth) const;
 
  private:
   using clock = std::chrono::high_resolution_clock;
@@ -149,7 +149,7 @@ class Timer {
   seconds total_time = seconds::zero();
   std::map<std::string, Timer> subtimers;
 
-  void print_to_depth(int depth, int at_depth, std::string tag_pre = "") const;
+  void print_to_depth(const int depth, const int at_depth, const std::string tag_pre = "") const;
 };
 
 } // namespace timing

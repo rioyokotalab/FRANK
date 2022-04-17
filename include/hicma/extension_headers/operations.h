@@ -43,14 +43,14 @@ declare_method(
   void, gemm_omm,
   (
     virtual_<const Matrix&>, virtual_<const Matrix&>, virtual_<Matrix&>,
-    double, double, bool, bool
+    const double, const double, const bool, const bool
   )
 )
 declare_method(
   MatrixProxy, gemm_omm,
   (
     virtual_<const Matrix&>, virtual_<const Matrix&>,
-    double, bool, bool
+    const double, const bool, const bool
   )
 )
 
@@ -58,8 +58,7 @@ declare_method(
   void, trmm_omm,
   (
     virtual_<const Matrix&>, virtual_<Matrix&>,
-    const Side, const Mode, const char&, const char&,
-    double
+    const Side, const Mode, const char&, const char&, const double
   )
 )
 
@@ -82,14 +81,14 @@ declare_method(
 )
 
 declare_method(
-  DenseIndexSetPair, one_sided_id_omm, (virtual_<Matrix&>, int64_t)
+  DenseIndexSetPair, one_sided_id_omm, (virtual_<Matrix&>, const int64_t)
 )
 
-declare_method(DenseTriplet, id_omm, (virtual_<Matrix&>, int64_t))
+declare_method(DenseTriplet, id_omm, (virtual_<Matrix&>, const int64_t))
 
 declare_method(
   void, larfb_omm,
-  (virtual_<const Matrix&>, virtual_<const Matrix&>, virtual_<Matrix&>, bool)
+  (virtual_<const Matrix&>, virtual_<const Matrix&>, virtual_<Matrix&>, const bool)
 )
 
 declare_method(
@@ -121,7 +120,7 @@ declare_method(
 )
 declare_method(
   void, orthogonalize_block_col_omm,
-  (int64_t, virtual_<const Matrix&>, virtual_<Matrix&>, virtual_<Matrix&>)
+  (const int64_t, virtual_<const Matrix&>, virtual_<Matrix&>, virtual_<Matrix&>)
 )
 
 declare_method(void, zero_all_omm, (virtual_<Matrix&>))
@@ -165,7 +164,7 @@ declare_method(double, norm_omm, (virtual_<const Matrix&>))
 declare_method(MatrixProxy, transpose_omm, (virtual_<const Matrix&>))
 
 declare_method(
-  MatrixProxy, resize_omm, (virtual_<const Matrix&>, int64_t, int64_t)
+  MatrixProxy, resize_omm, (virtual_<const Matrix&>, const int64_t, const int64_t)
 )
 
 } // namespace hicma

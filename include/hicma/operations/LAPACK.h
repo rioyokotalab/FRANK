@@ -58,7 +58,7 @@ std::tuple<MatrixProxy, MatrixProxy> getrf(Matrix& A);
  * Where <tt>U</tt> is a M-by-k matrix composed of the chosen \p k columns of \p A and
  * <tt>V</tt> is a k-by-N matrix.
  */
-std::tuple<Dense, std::vector<int64_t>> one_sided_id(Matrix& A, int64_t k);
+std::tuple<Dense, std::vector<int64_t>> one_sided_id(Matrix& A, const int64_t k);
 
 /**
  * @brief Generate random matrix with specified singular values
@@ -72,10 +72,10 @@ void latms(
   std::vector<int>& iseed,
   const char& sym,
   std::vector<double>& d,
-  int mode,
-  double cond,
-  double dmax,
-  int kl, int ku,
+  const int mode,
+  const double cond,
+  const double dmax,
+  const int kl, const int ku,
   const char& pack,
   Dense& A
 );
@@ -129,7 +129,7 @@ std::vector<double> get_singular_values(Dense& A);
  *
  * Where <tt>U</tt> is a M-by-k matrix, <tt>S</tt> is a k-by-k matrix, and <tt>V</tt> is a k-by-N matrix.
  */
-std::tuple<Dense, Dense, Dense> id(Matrix& A, int64_t k);
+std::tuple<Dense, Dense, Dense> id(Matrix& A, const int64_t k);
 
 /**
  * @brief Compute Householder QR factorization with column pivoting
@@ -167,7 +167,7 @@ std::tuple<Dense, std::vector<int64_t>> geqp3(Matrix& A);
  *
  * where |A|_F denotes the Frobenius norm of \p A.
  */
-std::tuple<Dense, Dense> truncated_geqp3(const Dense& A, double eps);
+std::tuple<Dense, Dense> truncated_geqp3(const Dense& A, const double eps);
 
 /**
  * @brief Orthogonalize a block column of a BLR or H-matrix
@@ -190,7 +190,7 @@ std::tuple<Dense, Dense> truncated_geqp3(const Dense& A, double eps);
  * The multi-dispatcher then will select the correct implementation based on the types of parameters given at runtime.
  * Read \ext_hicma for more information.
  */
-void orthogonalize_block_col(int64_t j, const Matrix& A, Matrix& Q, Matrix& R);
+void orthogonalize_block_col(const int64_t j, const Matrix& A, Matrix& Q, Matrix& R);
 
 /**
  * @brief Compute reduced QR factorization of a general matrix using Modified Gram-Schmidt iteration
@@ -248,7 +248,7 @@ void qr(Matrix& A, Matrix& Q, Matrix& R);
  *
  * <tt>Q_j = I - (Y_j * T_j * transpose(Y_j))</tt>
  */
-void triangularize_block_col(int64_t j, Hierarchical& A, Hierarchical& T);
+void triangularize_block_col(const int64_t j, Hierarchical& A, Hierarchical& T);
 
 /**
  * @brief Apply an orthogonal factor from hicma::triangularize_block_col to a block column of a BLR-matrix
@@ -272,7 +272,10 @@ void triangularize_block_col(int64_t j, Hierarchical& A, Hierarchical& T);
  *
  * <tt>Q_k = I - (Y[*,k] * T[k] * transpose(Y[*,k]))
  */
-void apply_block_col_householder(const Hierarchical& Y, const Hierarchical& T, int64_t k, bool trans, Hierarchical& A, int64_t j);
+void apply_block_col_householder(
+    const Hierarchical& Y, const Hierarchical& T, const int64_t k, const bool trans,
+    Hierarchical& A, const int64_t j
+);
 
 /**
  * @brief Perform Blocked Householder BLR-QR Factorization
@@ -312,7 +315,9 @@ void blocked_householder_blr_qr(Hierarchical& A, Hierarchical& T);
  *
  * where \p Q is the orthogonal p-by-p blocks BLR matrix coming from the blocked Householder BLR-QR factorization that is stored in \p Y and \p T matrices.
  */
-void left_multiply_blocked_reflector(const Hierarchical& Y, const Hierarchical& T, Hierarchical& C, bool trans);
+void left_multiply_blocked_reflector(
+    const Hierarchical& Y, const Hierarchical& T, Hierarchical& C, const bool trans
+);
 
 /**
  * @brief Compute full Householder QR factorization of a general matrix
@@ -366,7 +371,7 @@ void geqrt(Matrix& A, Matrix& T);
  * Thus at the core, this method relies on <a target="_blank" href="http://www.netlib.org/lapack/explore-html/d8/d9b/group__double_o_t_h_e_rauxiliary_ga83c81583bd444e0cf021fb006cd9a5e8.html#ga83c81583bd444e0cf021fb006cd9a5e8"><tt>dlarfb</tt></a> subroutine provided by BLAS/LAPACK.
  * See the documentation for more information.
  */
-void larfb(const Matrix& V, const Matrix& T, Matrix& C, bool trans);
+void larfb(const Matrix& V, const Matrix& T, Matrix& C, const bool trans);
 
 /**
  * @brief Computes QR factorization of a "lower trapezoidal" matrix using compact WY representation for Q
@@ -422,7 +427,7 @@ void tpqrt(Matrix& A, Matrix& B, Matrix& T);
  * Dispatcher will select the correct implementation based on the types of parameters at runtime.
  * Read \ext_hicma for more information.
  */
-void tpmqrt(const Matrix& V, const Matrix& T, Matrix& A, Matrix& B, bool);
+void tpmqrt(const Matrix& V, const Matrix& T, Matrix& A, Matrix& B, const bool trans);
 
 /**
  * @brief Perform Tiled Householder BLR-QR Factorization
@@ -462,7 +467,9 @@ void tiled_householder_blr_qr(Hierarchical& A, Hierarchical& T);
  *
  * where \p Q is the orthogonal p-by-p blocks BLR matrix coming from the tiled Householder BLR-QR factorization that is stored in \p Y and \p T matrices.
  */
-void left_multiply_tiled_reflector(const Hierarchical& Y, const Hierarchical& T, Hierarchical& C, bool trans);
+void left_multiply_tiled_reflector(
+    const Hierarchical& Y, const Hierarchical& T, Hierarchical& C, const bool trans
+);
 
 /**
  * @brief Perform RQ factorization of a `Dense` matrix

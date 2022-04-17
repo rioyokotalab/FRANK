@@ -112,7 +112,7 @@ class LowRank : public Matrix {
    * A randomized SVD is used to factorize \p A into three matrices #U, #S and
    * #V.
    */
-  LowRank(const Dense& A, int64_t rank);
+  LowRank(const Dense& A, const int64_t rank);
 
   /**
    * @brief Construct a new `LowRank` object by compressing a `Dense` matrix
@@ -126,7 +126,7 @@ class LowRank : public Matrix {
    * Truncated RRQR is used to factorize \p A into two matrices #U and #V.
    * #S is initialized as order \p rank identity matrix.
    */
-  LowRank(const Dense& A, double eps);
+  LowRank(const Dense& A, const double eps);
 
   /**
    * @brief Construct a new `LowRank` object from the three factors
@@ -143,7 +143,7 @@ class LowRank : public Matrix {
    * Note that shallow copies resulting in shared data will be made of \p U and
    * \p V, whereas this depends on \p copy_S for \p S.
    */
-  LowRank(const Matrix& U, const Dense& S, const Matrix& V, bool copy=true);
+  LowRank(const Matrix& U, const Dense& S, const Matrix& V, const bool copy=true);
 
 
   /**

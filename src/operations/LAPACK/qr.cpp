@@ -51,7 +51,7 @@ define_method(void, qr_omm, (Dense& A, Dense& Q, Dense& R)) {
   assert(Q.dim[0] == A.dim[0]);
   assert(Q.dim[1] == R.dim[0]);
   assert(R.dim[1] == A.dim[1]);
-  int64_t k = std::min(A.dim[0], A.dim[1]);
+  const int64_t k = std::min(A.dim[0], A.dim[1]);
   std::vector<double> tau(k);
   LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, A.dim[0], A.dim[1], &A, A.stride, &tau[0]);
   // Copy upper triangular (or trapezoidal) part of A into R
@@ -106,7 +106,7 @@ define_method(
   A.V = std::move(R);
 }
 
-void triangularize_block_col(int64_t j, Hierarchical& A, Hierarchical& T) {
+void triangularize_block_col(const int64_t j, Hierarchical& A, Hierarchical& T) {
   //Put right factors of Aj into Rj
   Hierarchical Rj(A.dim[0]-j, 1);
   for(int64_t i=0; i<Rj.dim[0]; i++) {
@@ -133,7 +133,10 @@ void triangularize_block_col(int64_t j, Hierarchical& A, Hierarchical& T) {
   }
 }
 
-void apply_block_col_householder(const Hierarchical& Y, const Hierarchical& T, int64_t k, bool trans, Hierarchical& A, int64_t j) {
+void apply_block_col_householder(
+    const Hierarchical& Y, const Hierarchical& T, const int64_t k, const bool trans,
+    Hierarchical& A, const int64_t j
+) {
   assert(A.dim[0] == Y.dim[0]);
   Hierarchical YkT(1, Y.dim[0]-k);
   for(int64_t i=0; i<YkT.dim[1]; i++)
@@ -173,7 +176,9 @@ void blocked_householder_blr_qr(Hierarchical& A, Hierarchical& T) {
   }
 }
 
-void left_multiply_blocked_reflector(const Hierarchical& Y, const Hierarchical& T, Hierarchical& C, bool trans) {
+void left_multiply_blocked_reflector(
+    const Hierarchical& Y, const Hierarchical& T, Hierarchical& C, const bool trans
+) {
   if(trans) {
     for(int64_t k = 0; k < Y.dim[1]; k++) {
       for(int64_t j = k; j < Y.dim[1]; j++) {
@@ -207,7 +212,9 @@ void tiled_householder_blr_qr(Hierarchical& A, Hierarchical& T) {
   }
 }
 
-void left_multiply_tiled_reflector(const Hierarchical& Y, const Hierarchical& T, Hierarchical& C, bool trans) {
+void left_multiply_tiled_reflector(
+    const Hierarchical& Y, const Hierarchical& T, Hierarchical& C, const bool trans
+) {
   if(trans) {
     for(int64_t k = 0; k < Y.dim[1]; k++) {
       for(int64_t j = k; j < Y.dim[1]; j++) {

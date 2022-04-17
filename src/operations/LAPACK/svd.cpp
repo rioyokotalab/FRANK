@@ -21,7 +21,7 @@ namespace hicma
 {
 
 std::tuple<Dense, Dense, Dense> svd(Dense& A) {
-  int64_t dim_min = std::min(A.dim[0], A.dim[1]);
+  const int64_t dim_min = std::min(A.dim[0], A.dim[1]);
   Dense U(A.dim[0], dim_min);
   Dense S(dim_min, dim_min);
   Dense V(dim_min, A.dim[1]);

@@ -47,11 +47,11 @@ class ClusterTree;
  */
 class MatrixInitializer {
  protected:
-  double admis;
-  double eps;
-  int64_t rank;
-  std::vector<std::vector<double>> params;
-  AdmisType admis_type;
+  const double admis;
+  const double eps;
+  const int64_t rank;
+  const std::vector<std::vector<double>> params;
+  const AdmisType admis_type;
 
   void find_admissible_blocks(const ClusterTree& node);
 
@@ -85,9 +85,9 @@ class MatrixInitializer {
    * Either AdmisType::PositionBased (Default) or AdmisType::GeometryBased
    */
   MatrixInitializer(
-    double admis, double eps, int64_t rank,
-    std::vector<std::vector<double>> params={},
-    AdmisType admis_type=AdmisType::PositionBased
+    const double admis, const double eps, const int64_t rank,
+    const std::vector<std::vector<double>> params={},
+    const AdmisType admis_type=AdmisType::PositionBased
   );
 
   /**
@@ -135,7 +135,7 @@ class MatrixInitializer {
    * @return LowRank
    * `LowRank` approximation representing \p node.
    */
-  LowRank get_compressed_representation(const ClusterTree& node, bool fixed_rank);
+  LowRank get_compressed_representation(const ClusterTree& node, const bool fixed_rank) const;
 
   /**
    * @brief Check if a `ClusterTree` node is admissible

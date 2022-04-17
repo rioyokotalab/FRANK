@@ -22,7 +22,7 @@
 namespace hicma
 {
 
-std::vector<int64_t> getCartesianIndex(int64_t dim, int64_t mortonIndex) {
+std::vector<int64_t> getCartesianIndex(const int64_t dim, int64_t mortonIndex) {
   std::vector<int64_t> index(dim, 0);
   int64_t d = 0, level = 0;
   while (mortonIndex != 0) {
@@ -34,7 +34,7 @@ std::vector<int64_t> getCartesianIndex(int64_t dim, int64_t mortonIndex) {
   return index;
 }
 
-int64_t getMortonIndex(std::vector<int64_t> iX, int64_t level) {
+int64_t getMortonIndex(std::vector<int64_t>& iX, const int64_t level) {
   int64_t mortonIndex = 0;
   for(int64_t lev=0; lev<level; lev++) {
     for(size_t d=0; d<iX.size(); d++) {
@@ -45,21 +45,21 @@ int64_t getMortonIndex(std::vector<int64_t> iX, int64_t level) {
   return mortonIndex;
 }
 
-int64_t getBoxNumber(std::vector<double> p, int64_t level) {
+int64_t getBoxNumber(const std::vector<double>& p, const int64_t level) {
+  const int64_t nx = (1 << level);
   std::vector<int64_t> iX;
-  int64_t nx = (1 << level);
   for(size_t dim=0; dim<p.size(); dim++) {
     iX.push_back(p[dim] * nx);
   }
   return getMortonIndex(iX, level);
 }
 
-std::vector<std::vector<double>> normalizeWithinBox(std::vector<std::vector<double>>& x, double eps) {
+std::vector<std::vector<double>> normalizeWithinBox(std::vector<std::vector<double>>& x, const double eps) {
   std::vector<double> bmin;
   double bsize = 0.0;
   for(size_t dim=0; dim<x.size(); dim++) {
-    double xmin = *std::min_element(x[dim].begin(), x[dim].end());
-    double xmax = *std::max_element(x[dim].begin(), x[dim].end());
+    const double xmin = *std::min_element(x[dim].begin(), x[dim].end());
+    const double xmax = *std::max_element(x[dim].begin(), x[dim].end());
     bsize = std::max(bsize, xmax-xmin);
     bmin.push_back(xmin - eps);
   }
@@ -73,7 +73,7 @@ std::vector<std::vector<double>> normalizeWithinBox(std::vector<std::vector<doub
   return normalized;
 }
 
-void sortByMortonIndex(std::vector<std::vector<double>> &x, int64_t level, std::vector<int64_t>& perm) {
+void sortByMortonIndex(std::vector<std::vector<double>> &x, const int64_t level, std::vector<int64_t>& perm) {
   std::vector<std::vector<double>> xn = normalizeWithinBox(x, 5e-1);
   std::vector<std::vector<double>> xnT (xn[0].size(), std::vector<double>());
   for(size_t i=0; i<xnT.size(); i++) {

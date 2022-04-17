@@ -15,12 +15,12 @@
 namespace hicma
 {
 
-MatrixProxy resize(const Matrix& A, int64_t n_rows, int64_t n_cols) {
+MatrixProxy resize(const Matrix& A, const int64_t n_rows, const int64_t n_cols) {
   return resize_omm(A, n_rows, n_cols);
 }
 
 define_method(
-  MatrixProxy, resize_omm, (const Dense& A, int64_t n_rows, int64_t n_cols)
+  MatrixProxy, resize_omm, (const Dense& A, const int64_t n_rows, const int64_t n_cols)
 ) {
   assert(n_rows <= A.dim[0]);
   assert(n_cols <= A.dim[1]);
@@ -29,7 +29,7 @@ define_method(
   return resized;
 }
 
-define_method(MatrixProxy, resize_omm, (const Matrix& A, int64_t, int64_t)) {
+define_method(MatrixProxy, resize_omm, (const Matrix& A, const int64_t, const int64_t)) {
   omm_error_handler("resize", {A}, __FILE__, __LINE__);
   std::abort();
 }

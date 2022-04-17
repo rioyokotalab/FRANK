@@ -7,7 +7,7 @@ namespace hicma {
 
 std::map<std::string, std::string> globalKeyValue;
 
-std::string getGlobalValue(std::string key) {
+std::string getGlobalValue(const std::string key) {
   if(globalKeyValue.find(key) == globalKeyValue.end()) {
     if(std::getenv(key.c_str()) != nullptr)
       return std::string(std::getenv(key.c_str())); //Fallback to ENV Variable
@@ -17,7 +17,7 @@ std::string getGlobalValue(std::string key) {
   else return globalKeyValue[key];
 }
 
-void setGlobalValue(std::string key, std::string value) {
+void setGlobalValue(const std::string key, const std::string value) {
   globalKeyValue[key] = value;
 }
 

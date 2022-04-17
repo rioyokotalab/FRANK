@@ -147,7 +147,7 @@ class Dense : public Matrix {
    *
    * All elements of the newly created `Dense` matrix will be initialized to 0.
    */
-  Dense(int64_t n_rows, int64_t n_cols=1);
+  Dense(const int64_t n_rows, const int64_t n_cols=1);
 
   // TODO Add overload where vector doesn't need to be passed. That function
   // should forward to this one with a 0-sized vector. This is to make
@@ -191,13 +191,13 @@ class Dense : public Matrix {
    */
   Dense(
     void (*kernel)(
-      double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+      double* A, const uint64_t A_rows, const uint64_t A_cols, const uint64_t A_stride,
       const std::vector<std::vector<double>>& params,
-      int64_t row_start, int64_t col_start
+      const int64_t row_start, const int64_t col_start
     ),
     const std::vector<std::vector<double>>& params,
-    int64_t n_rows, int64_t n_cols=1,
-    int64_t row_start=0, int64_t col_start=0
+    const int64_t n_rows, const int64_t n_cols=1,
+    const int64_t row_start=0, const int64_t col_start=0
   );
 
   /**
@@ -217,9 +217,9 @@ class Dense : public Matrix {
    * Column offset
    */
   Dense(
-    std::string filename, MatrixLayout ordering,
-    int64_t n_rows, int64_t n_cols,
-    int64_t row_start=0, int64_t col_start=0
+    const std::string filename, const MatrixLayout ordering,
+    const int64_t n_rows, const int64_t n_cols,
+    const int64_t row_start=0, const int64_t col_start=0
   );
 
   /**
@@ -232,7 +232,7 @@ class Dense : public Matrix {
    * @param column_start
    * Column offset for the values to be copied
    */
-  void copy_to(Dense &A, int64_t row_start=0, int64_t col_start=0) const;
+  void copy_to(Dense &A, const int64_t row_start=0, const int64_t col_start=0) const;
 
   /**
    * @brief Assign the constant value \p a to all elements of the `Dense` matrix
@@ -258,7 +258,7 @@ class Dense : public Matrix {
    * It works for both row and column vectors, and also if the vector is part of
    * a larger matrix in memory (stride is used).
    */
-  double& operator[](int64_t i);
+  double& operator[](const int64_t i);
 
   /**
    * @brief Access elements of `Dense` matrix assuming it is a vector
@@ -270,7 +270,7 @@ class Dense : public Matrix {
    *
    * Same as `operator[](int64_t)`, but a constant reference is returned.
    */
-  const double& operator[](int64_t i) const;
+  const double& operator[](const int64_t i) const;
 
   /**
    * @brief Access elements of `Dense` matrix
@@ -282,7 +282,7 @@ class Dense : public Matrix {
    * @return double&
    * Reference to the matrix element at (\p i, \p j)
    */
-  double& operator()(int64_t i, int64_t j);
+  double& operator()(const int64_t i, const int64_t j);
 
   /**
    * @brief Access elements of `Dense` matrix
@@ -294,7 +294,7 @@ class Dense : public Matrix {
    * @return double&
    * Constant reference to the matrix element at (\p i, \p j)
    */
-  const double& operator()(int64_t i, int64_t j) const;
+  const double& operator()(const int64_t i, const int64_t j) const;
 
   /**
    * @brief Get pointer to start of array in memory
@@ -381,7 +381,7 @@ class Dense : public Matrix {
   std::vector<Dense> split(
     const std::vector<IndexRange>& row_ranges,
     const std::vector<IndexRange>& col_ranges,
-    bool copy=false
+    const bool copy=false
   ) const;
 
   /**
@@ -407,7 +407,9 @@ class Dense : public Matrix {
    * for the column splits.
    */
   std::vector<Dense> split(
-    uint64_t n_row_splits, uint64_t n_col_splits, bool copy=false
+    const uint64_t n_row_splits,
+    const uint64_t n_col_splits,
+    const bool copy=false
   ) const;
 };
 

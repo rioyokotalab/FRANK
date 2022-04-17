@@ -108,23 +108,23 @@ define_method(void, zero_upper_omm, (Matrix& A)) {
 
 
 double cond(Dense A) {
-  int64_t k = std::min(A.dim[0], A.dim[1]);
+  const int64_t k = std::min(A.dim[0], A.dim[1]);
   std::vector<double> S = get_singular_values(A);
   return (S[0] / S[k-1]);
 }
 
-std::vector<double> equallySpacedVector(int64_t N, double minVal, double maxVal) {
+std::vector<double> equallySpacedVector(const int64_t N, const double minVal, const double maxVal) {
   std::vector<double> res(N, 0.0);
-  double rnge = maxVal - minVal;
+  const double rnge = maxVal - minVal;
   for(int64_t i=0; i<N; i++) {
-    res[i] = minVal + ((double)i/(double)rnge);
+    res[i] = minVal + ((double)i/rnge);
   }
   return res;
 }
 
-int64_t find_svd_truncation_rank(const Dense& S, double eps) {
-  double threshold = eps * std::sqrt(norm(S));
-  int64_t min_dim = std::min(S.dim[0], S.dim[1]);
+int64_t find_svd_truncation_rank(const Dense& S, const double eps) {
+  const double threshold = eps * std::sqrt(norm(S));
+  const int64_t min_dim = std::min(S.dim[0], S.dim[1]);
   int64_t rank = 0;
   double err = 0;
   do {
@@ -138,7 +138,7 @@ int64_t find_svd_truncation_rank(const Dense& S, double eps) {
 }
 
 Hierarchical split(
-  const Matrix& A, int64_t n_row_blocks, int64_t n_col_blocks, bool copy
+  const Matrix& A, const int64_t n_row_blocks, const int64_t n_col_blocks, const bool copy
 ) {
   return split_omm(
     A,
@@ -148,7 +148,7 @@ Hierarchical split(
   );
 }
 
-Hierarchical split(const Matrix& A, const Hierarchical& like, bool copy) {
+Hierarchical split(const Matrix& A, const Hierarchical& like, const bool copy) {
   assert(get_n_rows(A) == get_n_rows(like));
   assert(get_n_cols(A) == get_n_cols(like));
   return split_omm(
@@ -165,7 +165,7 @@ define_method(
     const Dense& A,
     const std::vector<IndexRange>& row_splits,
     const std::vector<IndexRange>& col_splits,
-    bool copy
+    const bool copy
   )
 ) {
   Hierarchical out(row_splits.size(), col_splits.size());
@@ -184,7 +184,7 @@ define_method(
     const LowRank& A,
     const std::vector<IndexRange>& row_splits,
     const std::vector<IndexRange>& col_splits,
-    bool copy
+    const bool copy
   )
 ) {
   Hierarchical out(row_splits.size(), col_splits.size());
@@ -228,7 +228,7 @@ define_method(
     const Hierarchical& A,
     const std::vector<IndexRange>& row_splits,
     const std::vector<IndexRange>& col_splits,
-    bool copy
+    const bool copy
   )
 ) {
   if (
@@ -258,7 +258,7 @@ define_method(
   Hierarchical, split_omm,
   (
     const Matrix& A,
-    const std::vector<IndexRange>&, const std::vector<IndexRange>&, bool
+    const std::vector<IndexRange>&, const std::vector<IndexRange>&, const bool
   )
 ) {
   omm_error_handler("split", {A}, __FILE__, __LINE__);

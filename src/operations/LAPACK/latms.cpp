@@ -20,10 +20,10 @@ namespace hicma
     std::vector<int>& iseed,
     const char& sym,
     std::vector<double>& d,
-    int mode,
-    double cond,
-    double dmax,
-    int kl, int ku,
+    const int mode,
+    const double cond,
+    const double dmax,
+    const int kl, const int ku,
     const char& pack,
     Dense& A
   ) {

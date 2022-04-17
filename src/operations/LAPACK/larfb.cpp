@@ -24,13 +24,13 @@
 namespace hicma
 {
 
-void larfb(const Matrix& V, const Matrix& T, Matrix& C, bool trans) {
+void larfb(const Matrix& V, const Matrix& T, Matrix& C, const bool trans) {
   larfb_omm(V, T, C, trans);
 }
 
 define_method(
   void, larfb_omm,
-  (const Dense& V, const Dense& T, Dense& C, bool trans)
+  (const Dense& V, const Dense& T, Dense& C, const bool trans)
 ) {
   LAPACKE_dlarfb(
     LAPACK_ROW_MAJOR,
@@ -44,14 +44,14 @@ define_method(
 
 define_method(
   void, larfb_omm,
-  (const Dense& V, const Dense& T, LowRank& C, bool trans)
+  (const Dense& V, const Dense& T, LowRank& C, const bool trans)
 ) {
   larfb(V, T, C.U, trans);
 }
 
 // Fallback default, abort with error message
 define_method(
-  void, larfb_omm, (const Matrix& V, const Matrix& T, Matrix& C, bool)
+  void, larfb_omm, (const Matrix& V, const Matrix& T, Matrix& C, const bool)
 ) {
   omm_error_handler("larfb", {V, T, C}, __FILE__, __LINE__);
   std::abort();
