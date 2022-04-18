@@ -102,7 +102,7 @@ define_method(Dense&&, move_from_dense, (Matrix& A)) {
   std::abort();
 }
 
-Dense::Dense(int64_t n_rows, int64_t n_cols)
+Dense::Dense(const int64_t n_rows, const int64_t n_cols)
 : dim{n_rows, n_cols}, stride(dim[1]), unique_id(next_unique_id++) {
   data = std::make_shared<std::vector<double>>(dim[0]*dim[1], 0);
   rel_start = {0, 0};
@@ -111,13 +111,13 @@ Dense::Dense(int64_t n_rows, int64_t n_cols)
 
 Dense::Dense(
   void (*kernel)(
-    double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+    double* A, const uint64_t A_rows, const uint64_t A_cols, const uint64_t A_stride,
     const std::vector<std::vector<double>>& params,
-    int64_t row_start, int64_t col_start
+    const int64_t row_start, const int64_t col_start
   ),
   const std::vector<std::vector<double>>& params,
-  int64_t n_rows, int64_t n_cols,
-  int64_t row_start, int64_t col_start
+  const int64_t n_rows, const int64_t n_cols,
+  const int64_t row_start, const int64_t col_start
 ) : Dense(n_rows, n_cols) {
     kernel(
       &(*this), dim[0], dim[1], stride, params, row_start, col_start
@@ -125,18 +125,17 @@ Dense::Dense(
 }
 
 Dense::Dense(
-  std::string filename, MatrixLayout ordering,
-  int64_t n_rows, int64_t n_cols,
-  int64_t row_start, int64_t col_start
+  const std::string filename, const MatrixLayout ordering,
+  const int64_t n_rows, const int64_t n_cols,
+  const int64_t row_start, const int64_t col_start
 ) : Dense(n_rows, n_cols) {
-  MatrixInitializerFile initializer(filename, ordering, 0, 0, 0,
-                                    {}, AdmisType::PositionBased);
+  MatrixInitializerFile initializer(filename, ordering);
   initializer.fill_dense_representation(*this,
                                         {row_start, n_rows},
                                         {col_start, n_cols});
 }
 
-void Dense::copy_to(Dense &A, int64_t row_start, int64_t col_start) const {
+void Dense::copy_to(Dense &A, const int64_t row_start, const int64_t col_start) const {
   assert(dim[0]-row_start >= A.dim[0]);
   assert(dim[1]-col_start >= A.dim[1]);
   for (int64_t i=0; i<A.dim[0]; i++) {
@@ -155,7 +154,7 @@ Dense& Dense::operator=(const double a) {
   return *this;
 }
 
-double& Dense::operator[](int64_t i) {
+double& Dense::operator[](const int64_t i) {
   assert(dim[0] == 1 || dim[1] == 1);
   if (dim[0] == 1) {
     assert(i < dim[1]);
@@ -166,7 +165,7 @@ double& Dense::operator[](int64_t i) {
   }
 }
 
-const double& Dense::operator[](int64_t i) const {
+const double& Dense::operator[](const int64_t i) const {
   assert(dim[0] == 1 || dim[1] == 1);
   if (dim[0] == 1) {
     assert(i < dim[1]);
@@ -177,13 +176,13 @@ const double& Dense::operator[](int64_t i) const {
   }
 }
 
-double& Dense::operator()(int64_t i, int64_t j) {
+double& Dense::operator()(const int64_t i, const int64_t j) {
   assert(i < dim[0]);
   assert(j < dim[1]);
   return data_ptr[i*stride+j];
 }
 
-const double& Dense::operator()(int64_t i, int64_t j) const {
+const double& Dense::operator()(const int64_t i, const int64_t j) const {
   assert(i < dim[0]);
   assert(j < dim[1]);
   return data_ptr[i*stride+j];
@@ -216,7 +215,7 @@ uint64_t Dense::id() const { return unique_id; }
 std::vector<Dense> Dense::split(
   const std::vector<IndexRange>& row_ranges,
   const std::vector<IndexRange>& col_ranges,
-  bool copy
+  const bool copy
 ) const {
   std::vector<Dense> out(row_ranges.size()*col_ranges.size());
   if (copy) {
@@ -247,7 +246,9 @@ std::vector<Dense> Dense::split(
 }
 
 std::vector<Dense> Dense::split(
-  uint64_t n_row_splits, uint64_t n_col_splits, bool copy
+  const uint64_t n_row_splits,
+  const uint64_t n_col_splits,
+  const bool copy
 ) const {
   IndexRange row_index(0, dim[0]), col_index(0, dim[1]);
   return split(

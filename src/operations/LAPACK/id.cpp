@@ -26,7 +26,7 @@ namespace hicma
 {
 
 Dense interleave_id(const Dense& A, std::vector<int64_t>& P) {
-  int64_t k = P.size() - A.dim[1];
+  const int64_t k = P.size() - A.dim[1];
   assert(k >= 0); // 0 case if for k=min(M, N), ie full rank
   Dense Anew(A.dim[0], P.size());
   for (int64_t i=0; i<Anew.dim[0]; ++i) {
@@ -37,11 +37,11 @@ Dense interleave_id(const Dense& A, std::vector<int64_t>& P) {
   return Anew;
 }
 
-std::tuple<Dense, std::vector<int64_t>> one_sided_id(Matrix& A, int64_t k) {
+std::tuple<Dense, std::vector<int64_t>> one_sided_id(Matrix& A, const int64_t k) {
   return one_sided_id_omm(A, k);
 }
 
-define_method(DenseIndexSetPair, one_sided_id_omm, (Dense& A, int64_t k)) {
+define_method(DenseIndexSetPair, one_sided_id_omm, (Dense& A, const int64_t k)) {
   assert(k <= std::min(A.dim[0], A.dim[1]));
   Dense R;
   std::vector<int64_t> selected_cols;
@@ -66,12 +66,12 @@ define_method(DenseIndexSetPair, one_sided_id_omm, (Dense& A, int64_t k)) {
 }
 
 // Fallback default, abort with error message
-define_method(DenseIndexSetPair, one_sided_id_omm, (Matrix& A, int64_t)) {
+define_method(DenseIndexSetPair, one_sided_id_omm, (Matrix& A, const int64_t)) {
   omm_error_handler("id", {A}, __FILE__, __LINE__);
   std::abort();
 }
 
-std::tuple<Dense, Dense, Dense> id(Matrix& A, int64_t k) {
+std::tuple<Dense, Dense, Dense> id(Matrix& A, const int64_t k) {
   return id_omm(A, k);
 }
 
@@ -95,7 +95,7 @@ Dense get_rows(const Dense& A, std::vector<int64_t> Pr) {
   return B;
 }
 
-define_method(DenseTriplet, id_omm, (Dense& A, int64_t k)) {
+define_method(DenseTriplet, id_omm, (Dense& A, const int64_t k)) {
   Dense V(k, A.dim[1]);
   Dense Awork(A);
   std::vector<int64_t> selected_cols;
@@ -109,7 +109,7 @@ define_method(DenseTriplet, id_omm, (Dense& A, int64_t k)) {
 }
 
 // Fallback default, abort with error message
-define_method(DenseTriplet, id_omm, (Matrix& A, int64_t)) {
+define_method(DenseTriplet, id_omm, (Matrix& A, const int64_t)) {
   omm_error_handler("id", {A}, __FILE__, __LINE__);
   std::abort();
 }

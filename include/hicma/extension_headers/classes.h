@@ -28,7 +28,7 @@ declare_method(
   (
     virtual_<const Matrix&>,
     const std::vector<IndexRange>&, const std::vector<IndexRange>&,
-    bool
+    const bool
   )
 )
 

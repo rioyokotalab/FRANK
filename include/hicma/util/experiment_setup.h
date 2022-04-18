@@ -20,7 +20,7 @@ namespace hicma
  * @param N size of the resulting vector (i.e. number of values)
  * @return std::vector<double> sorted vector of random numbers
  */
-std::vector<double> get_sorted_random_vector(int64_t N);
+std::vector<double> get_sorted_random_vector(const int64_t N);
 
 /**
  * @brief Create a vector of non-negative numbers
@@ -30,7 +30,7 @@ std::vector<double> get_sorted_random_vector(int64_t N);
  * @param N size of the resulting vector (i.e. number of values)
  * @return std::vector<double> vector of non-negative numbers
  */
-std::vector<double> get_non_negative_vector(int64_t N);
+std::vector<double> get_non_negative_vector(const int64_t N);
  
 } // namespace hicma
 

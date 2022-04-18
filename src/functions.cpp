@@ -12,8 +12,8 @@ namespace hicma
 {
 
 void zeros(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-  const std::vector<std::vector<double>>&, int64_t, int64_t
+  double* A, const uint64_t A_rows, const uint64_t A_cols, const uint64_t A_stride,
+  const std::vector<std::vector<double>>&, const int64_t, const int64_t
 ) {
   for (uint64_t i=0; i<A_rows; i++) {
     for (uint64_t j=0; j<A_cols; j++) {
@@ -23,8 +23,8 @@ void zeros(
 }
 
 void identity(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-  const std::vector<std::vector<double>>&, int64_t row_start, int64_t col_start
+  double* A, const uint64_t A_rows, const uint64_t A_cols, const uint64_t A_stride,
+  const std::vector<std::vector<double>>&, const int64_t row_start, const int64_t col_start
 ) {
   for (uint64_t i=0; i<A_rows; i++) {
     for (uint64_t j=0; j<A_cols; j++) {
@@ -34,8 +34,8 @@ void identity(
 }
 
 void random_normal(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-  const std::vector<std::vector<double>>&, int64_t, int64_t
+  double* A, const uint64_t A_rows, const uint64_t A_cols, const uint64_t A_stride,
+  const std::vector<std::vector<double>>&, const int64_t, const int64_t
 ) {
   std::random_device rd;
   std::mt19937 gen(rd());
@@ -50,8 +50,8 @@ void random_normal(
 }
 
 void random_uniform(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-  const std::vector<std::vector<double>>&, int64_t, int64_t
+  double* A, const uint64_t A_rows, const uint64_t A_cols, const uint64_t A_stride,
+  const std::vector<std::vector<double>>&, const int64_t, const int64_t
 ) {
   std::random_device rd;
   std::mt19937 gen(rd());
@@ -66,8 +66,8 @@ void random_uniform(
 }
 
 void arange(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
-  const std::vector<std::vector<double>>&, int64_t, int64_t
+  double* A, const uint64_t A_rows, const uint64_t A_cols, const uint64_t A_stride,
+  const std::vector<std::vector<double>>&, const int64_t, const int64_t
 ) {
   for (uint64_t i=0; i<A_rows; i++) {
     for (uint64_t j=0; j<A_cols; j++) {
@@ -77,23 +77,22 @@ void arange(
 }
 
 void cauchy2d(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  double* A, const uint64_t A_rows, const uint64_t A_cols, const uint64_t A_stride,
   const std::vector<std::vector<double>>& x,
-  int64_t row_start, int64_t col_start
+  const int64_t row_start, const int64_t col_start
 ) {
   for (uint64_t i=0; i<A_rows; i++) {
     for (uint64_t j=0; j<A_cols; j++) {
-      // double sgn = (arc4random() % 2 ? 1.0 : -1.0);
-      double rij = (x[0][i+row_start] - x[1][j+col_start]) + 1e-2;
+      const double rij = (x[0][i+row_start] - x[1][j+col_start]) + 1e-2;
       A[i*A_stride+j] = 1.0 / rij;
     }
   }
 }
 
 void laplacend(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  double* A, const uint64_t A_rows, const uint64_t A_cols, const uint64_t A_stride,
   const std::vector<std::vector<double>>& x,
-  int64_t row_start, int64_t col_start
+  const int64_t row_start, const int64_t col_start
 ) {
   for (uint64_t i=0; i<A_rows; i++) {
     for (uint64_t j=0; j<A_cols; j++) {
@@ -110,9 +109,9 @@ void laplacend(
 }
 
 void helmholtznd(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  double* A, const uint64_t A_rows, const uint64_t A_cols, const uint64_t A_stride,
   const std::vector<std::vector<double>>& x,
-  int64_t row_start, int64_t col_start
+  const int64_t row_start, const int64_t col_start
 ) {
   for (uint64_t i=0; i<A_rows; i++) {
     for (uint64_t j=0; j<A_cols; j++) {

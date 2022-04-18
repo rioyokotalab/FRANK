@@ -32,9 +32,9 @@ namespace hicma
  * This function is used as kernel to generate matrix with `MatrixInitializerKernel`.
  */
 void zeros(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  double* A, const uint64_t A_rows, const uint64_t A_cols, const uint64_t A_stride,
   const std::vector<std::vector<double>>& x,
-  int64_t row_start, int64_t col_start
+  const int64_t row_start, const int64_t col_start
 );
 
 /**
@@ -58,9 +58,9 @@ void zeros(
  * This function is used as kernel to generate matrix with `MatrixInitializerKernel`.
  */
 void identity(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  double* A, const uint64_t A_rows, const uint64_t A_cols, const uint64_t A_stride,
   const std::vector<std::vector<double>>& x,
-  int64_t row_start, int64_t col_start
+  const int64_t row_start, const int64_t col_start
 );
 
 /**
@@ -85,9 +85,9 @@ void identity(
  * This function is used as kernel to generate matrix with `MatrixInitializerKernel`.
  */
 void random_normal(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  double* A, const uint64_t A_rows, const uint64_t A_cols, const uint64_t A_stride,
   const std::vector<std::vector<double>>& x,
-  int64_t row_start, int64_t col_start
+  const int64_t row_start, const int64_t col_start
 );
 
 /**
@@ -112,9 +112,9 @@ void random_normal(
  * This function is used as kernel to generate matrix with `MatrixInitializerKernel`.
  */
 void random_uniform(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  double* A, const uint64_t A_rows, const uint64_t A_cols, const uint64_t A_stride,
   const std::vector<std::vector<double>>& x,
-  int64_t row_start, int64_t col_start
+  const int64_t row_start, const int64_t col_start
 );
 
 /**
@@ -140,9 +140,9 @@ void random_uniform(
  * This function is used as kernel to generate matrix with `MatrixInitializerKernel`.
  */
 void arange(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  double* A, const uint64_t A_rows, const uint64_t A_cols, const uint64_t A_stride,
   const std::vector<std::vector<double>>& x,
-  int64_t row_start, int64_t col_start
+  const int64_t row_start, const int64_t col_start
 );
 
 /**
@@ -166,9 +166,9 @@ void arange(
  * This function is used as kernel to generate matrix with `MatrixInitializerKernel`.
  */
 void cauchy2d(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  double* A, const uint64_t A_rows, const uint64_t A_cols, const uint64_t A_stride,
   const std::vector<std::vector<double>>& x,
-  int64_t row_start, int64_t col_start
+  const int64_t row_start, const int64_t col_start
 );
 
 /**
@@ -192,9 +192,9 @@ void cauchy2d(
  * This function is used as kernel to generate matrix with `MatrixInitializerKernel`.
  */
 void laplacend(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  double* A, const uint64_t A_rows, const uint64_t A_cols, const uint64_t A_stride,
   const std::vector<std::vector<double>>& x,
-  int64_t row_start, int64_t col_start
+  const int64_t row_start, const int64_t col_start
 );
 
 /**
@@ -218,9 +218,9 @@ void laplacend(
  * This function is used as kernel to generate matrix with `MatrixInitializerKernel`.
  */
 void helmholtznd(
-  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  double* A, const uint64_t A_rows, const uint64_t A_cols, const uint64_t A_stride,
   const std::vector<std::vector<double>>& x,
-  int64_t row_start, int64_t col_start
+  const int64_t row_start, const int64_t col_start
 );
 
 } // namespace hicma

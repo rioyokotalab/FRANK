@@ -24,11 +24,11 @@ class HierarchicalFixedRankTest
   std::vector<std::vector<double>> randx_A;
 };
 
-void expect_uniform_rank(hicma::Hierarchical& A, int64_t rank) {
+void expect_uniform_rank(hicma::Hierarchical& A, const int64_t rank) {
   for(int64_t i=0; i<A.dim[0]; i++) {
     for(int64_t j=0; j<A.dim[1]; j++) {
       if(hicma::type(A(i, j)) == "LowRank") {
-        hicma::LowRank Aij(std::move(A(i, j)));
+        const hicma::LowRank Aij(std::move(A(i, j)));
         EXPECT_EQ(Aij.rank, rank);
       }
       else if(hicma::type(A(i, j)) == "Hierarchical") {

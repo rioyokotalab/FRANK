@@ -2,7 +2,6 @@
 list(
   APPEND EXECUTABLES
   "lr_add"
-  "blr_compress"
   "blocked_mgs_blr_qr"
   "blocked_householder_blr_qr"
   "tiled_householder_blr_qr"

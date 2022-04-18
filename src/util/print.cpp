@@ -52,12 +52,12 @@ define_method(std::string, type_omm, (const Matrix&)) {
 
 declare_method(
   void, to_json_omm,
-  (virtual_<const Matrix&>, nlohmann::json&, int64_t, int64_t, int64_t)
+  (virtual_<const Matrix&>, nlohmann::json&, const int64_t, const int64_t, const int64_t)
 )
 
 void to_json(
   nlohmann::json& json, const Matrix& A,
-  int64_t i_abs=0, int64_t j_abs=0, int64_t level=0
+  const int64_t i_abs=0, const int64_t j_abs=0, const int64_t level=0
 ) {
   json["type"] = type(A);
   json["dim"] = {get_n_rows(A), get_n_cols(A)};
@@ -68,7 +68,7 @@ define_method(
   void, to_json_omm,
   (
     const Hierarchical& A, nlohmann::json& json,
-    int64_t i_abs, int64_t j_abs, int64_t level
+    const int64_t i_abs, const int64_t j_abs, const int64_t level
   )
 ) {
   json["abs_pos"] = {i_abs, j_abs};
@@ -90,7 +90,7 @@ define_method(
   void, to_json_omm,
   (
     const LowRank& A, nlohmann::json& json,
-    int64_t i_abs, int64_t j_abs, int64_t level
+    const int64_t i_abs, const int64_t j_abs, const int64_t level
   )
 ) {
   json["abs_pos"] = {i_abs, j_abs};
@@ -104,7 +104,7 @@ define_method(
   void, to_json_omm,
   (
     const Dense& A, nlohmann::json& json,
-    int64_t i_abs, int64_t j_abs, int64_t level
+    const int64_t i_abs, const int64_t j_abs, const int64_t level
   )
 ) {
   json["abs_pos"] = {i_abs, j_abs};
@@ -115,12 +115,12 @@ define_method(
 
 define_method(
   void, to_json_omm,
-  (const Matrix& A, nlohmann::json&, int64_t, int64_t, int64_t)
+  (const Matrix& A, nlohmann::json&, const int64_t, const int64_t, const int64_t)
 ) {
   omm_error_handler("to_json", {A}, __FILE__, __LINE__);
 }
 
-void write_JSON(const Matrix& A, std::string filename) {
+void write_JSON(const Matrix& A, const std::string filename) {
   nlohmann::json json(A);
   std::ofstream out_file(filename);
   out_file << json;
@@ -180,7 +180,7 @@ void print(std::string s) {
 }
 
 template<typename T>
-void print(std::string s, T v, bool fixed) {
+void print(const std::string s, const T v, const bool fixed) {
   if (!VERBOSE) return;
   std::cout << std::setw(stringLength) << std::left << s << " : ";
   if(fixed)
@@ -190,9 +190,9 @@ void print(std::string s, T v, bool fixed) {
   std::cout << v << std::endl;
 }
 
-template void print<int>(std::string s, int v, bool fixed=true);
-template void print<int64_t>(std::string s, int64_t v, bool fixed=true);
-template void print<float>(std::string s, float v, bool fixed=true);
-template void print<double>(std::string s, double v, bool fixed=true);
+template void print<int>(const std::string s, const int v, const bool fixed=true);
+template void print<int64_t>(const std::string s, const int64_t v, const bool fixed=true);
+template void print<float>(const std::string s, const float v, const bool fixed=true);
+template void print<double>(const std::string s, const double v, const bool fixed=true);
 
 } // namespace hicma

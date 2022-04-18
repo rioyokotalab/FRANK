@@ -119,12 +119,12 @@ class ClusterTree {
    * it is to be the root.
    */
   ClusterTree(
-    IndexRange rows, IndexRange cols,
-    int64_t n_row_blocks=0, int64_t n_col_blocks=0,
-    int64_t nleaf=0,
-    int64_t level=0,
-    int64_t i_rel=0, int64_t j_rel=0,
-    int64_t i_abs=0, int64_t j_abs=0,
+    const IndexRange rows, const IndexRange cols,
+    const int64_t n_row_blocks=0, const int64_t n_col_blocks=0,
+    const int64_t nleaf=0,
+    const int64_t level=0,
+    const int64_t i_rel=0, const int64_t j_rel=0,
+    const int64_t i_abs=0, const int64_t j_abs=0,
     ClusterTree* parent=nullptr
   );
 
@@ -187,7 +187,7 @@ class ClusterTree {
    * Reference to the child with the \p i-th row and \p-th column child index
    * range.
    */
-  ClusterTree& operator()(int64_t i, int64_t j);
+  ClusterTree& operator()(const int64_t i, const int64_t j);
 
   /**
    * @brief Return the child with the \p i-th row and \p-th column child index
@@ -201,7 +201,7 @@ class ClusterTree {
    * Constant reference to the child with the \p i-th row and \p-th column child
    * index range .
    */
-  const ClusterTree& operator()(int64_t i, int64_t j) const;
+  const ClusterTree& operator()(const int64_t i, const int64_t j) const;
 
   /**
    * @brief Returns the distance to the diagonal in terms of blocks on the same

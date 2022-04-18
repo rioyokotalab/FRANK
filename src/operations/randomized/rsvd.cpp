@@ -14,7 +14,7 @@
 namespace hicma
 {
 
-std::tuple<Dense, Dense, Dense> rsvd(const Dense& A, int64_t sample_size) {
+std::tuple<Dense, Dense, Dense> rsvd(const Dense& A, const int64_t sample_size) {
   Dense RN(random_uniform, {}, A.dim[1], sample_size);
   Dense Y = gemm(A, RN);
   Dense Q(Y.dim[0], Y.dim[1]);
@@ -28,7 +28,7 @@ std::tuple<Dense, Dense, Dense> rsvd(const Dense& A, int64_t sample_size) {
   return {std::move(U), std::move(S), std::move(V)};
 }
 
-std::tuple<Dense, Dense, Dense> old_rsvd(const Dense& A, int64_t sample_size) {
+std::tuple<Dense, Dense, Dense> old_rsvd(const Dense& A, const int64_t sample_size) {
   Dense RN(random_uniform, {}, A.dim[1], sample_size);
   Dense Y = gemm(A, RN);
   Dense Q(Y.dim[0], Y.dim[1]);

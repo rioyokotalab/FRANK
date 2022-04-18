@@ -21,7 +21,7 @@ Timer GlobalTimer;
 // Timer into recursive state machine
 Timer* current_timer = &GlobalTimer;
 
-Timer& start(std::string event) {
+Timer& start(const std::string event) {
   if(getGlobalValue("HICMA_DISABLE_TIMER") != "1") {
     current_timer->start_subtimer(event);
     current_timer = &(*current_timer)[event];
@@ -30,10 +30,10 @@ Timer& start(std::string event) {
 }
 
 // TODO Refactor so this doesn't need event?
-double stop([[maybe_unused]] std::string event) {
+double stop([[maybe_unused]] const std::string event) {
   if(getGlobalValue("HICMA_DISABLE_TIMER") != "1") {
     assert(current_timer->get_name() == event);
-    double duration = current_timer->stop();
+    const double duration = current_timer->stop();
     if (current_timer->get_parent() != nullptr) {
       current_timer = current_timer->get_parent();
     }
@@ -44,22 +44,22 @@ double stop([[maybe_unused]] std::string event) {
 
 void clearTimers() { GlobalTimer.clear(); }
 
-void stopAndPrint(std::string event, int depth) {
+void stopAndPrint(const std::string event, const int depth) {
   if(getGlobalValue("HICMA_DISABLE_TIMER") != "1") {
     stop(event);
     printTime(event, depth);
   }
 }
 
-void printTime(std::string event, int depth) {
+void printTime(const std::string event, const int depth) {
   (*current_timer)[event].print_to_depth(depth);
 }
 
-double getTotalTime(std::string event) {
+double getTotalTime(const std::string event) {
   return (*current_timer)[event].get_total_time();
 }
 
-unsigned int getNRuns(std::string event){
+unsigned int getNRuns(const std::string event){
   return (*current_timer)[event].get_n_runs();
 }
 
@@ -70,7 +70,7 @@ Timer::Timer() {
   running = false;
 }
 
-Timer::Timer(std::string name, Timer* parent)
+Timer::Timer(const std::string name, Timer* parent)
 : name(name), parent(parent) {
   total_time = seconds::zero();
   running = false;
@@ -82,7 +82,7 @@ void Timer::start() {
   start_time = clock::now();
 }
 
-void Timer::start_subtimer(std::string event) {
+void Timer::start_subtimer(const std::string event) {
   if (subtimers.find(event) == subtimers.end()) {
     subtimers[event] = Timer(event, this);
   }
@@ -91,9 +91,9 @@ void Timer::start_subtimer(std::string event) {
 
 double Timer::stop() {
   assert(running);
-  time_point end_time = clock::now();
+  const time_point end_time = clock::now();
   running = false;
-  seconds time = end_time - start_time;
+  const seconds time = end_time - start_time;
   times.push_back(time);
   total_time += time;
   return time.count();
@@ -130,23 +130,23 @@ const std::map<std::string, double> Timer::get_subtimers() const {
   return subtimer_list;
 }
 
-const Timer& Timer::operator[](std::string event) const {
+const Timer& Timer::operator[](const std::string event) const {
   assert(subtimers.find(event) != subtimers.end());
   return subtimers.at(event);
 }
 
-Timer& Timer::operator[](std::string event) {
+Timer& Timer::operator[](const std::string event) {
   assert(subtimers.find(event) != subtimers.end());
   return subtimers[event];
 }
 
-void Timer::print_to_depth(int depth) const {
+void Timer::print_to_depth(const int depth) const {
   assert(!running);
   print_to_depth(depth, 0);
 }
 
-void Timer::print_to_depth(int depth, int at_depth, std::string tag_pre) const {
-  std::string tag = tag_pre;
+void Timer::print_to_depth(const int depth, const int at_depth, const std::string tag_pre) const {
+  const std::string tag = tag_pre;
   print(at_depth == 0 ? name : tag+"--"+name, total_time.count());
   if (depth > 0) {
     std::vector<const Timer*> time_sorted;
@@ -160,8 +160,7 @@ void Timer::print_to_depth(int depth, int at_depth, std::string tag_pre) const {
       }
     );
     for (const Timer* ptr : time_sorted) {
-      std::string child_tag = tag_pre;
-      child_tag += " |";
+      const std::string child_tag = tag_pre + " |";
       ptr->print_to_depth(depth-1, at_depth+1, child_tag);
     }
   }

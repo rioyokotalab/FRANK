@@ -20,7 +20,7 @@ class Matrix;
  * of the `Matrix` is included in the result (e.g. row_num, col_num, etc.).
  * @return unsigned long size of the `Matrix` in bytes
  */
-unsigned long get_memory_usage(const Matrix&, bool include_structure=true);
+unsigned long get_memory_usage(const Matrix&, const bool include_structure=true);
 
 } // namespace hicma
 

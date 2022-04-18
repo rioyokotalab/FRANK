@@ -19,11 +19,11 @@ TEST_P(LowRankTest_FixedRank, Construction) {
 
   hicma::initialize();
   hicma::setGlobalValue("HICMA_LRA", lr_add_alg);
-  std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m>n?2*m:2*n)};
+  const std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m>n?2*m:2*n)};
 
   // Construct rank deficient block
-  hicma::Dense D(hicma::laplacend, randx_A, m, n, 0, n);
-  hicma::LowRank A(D, rank);
+  const hicma::Dense D(hicma::laplacend, randx_A, m, n, 0, n);
+  const hicma::LowRank A(D, rank);
   // Check rank
   EXPECT_EQ(A.rank, rank);
 }
@@ -36,26 +36,26 @@ TEST_P(LowRankTest_FixedRank, Addition) {
   hicma::initialize();
   // Set low-rank addition algorithm
   hicma::setGlobalValue("HICMA_LRA", lr_add_alg);
-  std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m>n?2*m:2*n)};
+  const std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m>n?2*m:2*n)};
 
-  hicma::Dense DA(hicma::laplacend, randx_A, m, n, 0, n);
+  const hicma::Dense DA(hicma::laplacend, randx_A, m, n, 0, n);
   hicma::LowRank A(DA, rank);
 
   // Add with similar low-rank block
-  hicma::Dense DB(DA);
-  hicma::LowRank B(DB, rank);
+  const hicma::Dense DB(DA);
+  const hicma::LowRank B(DB, rank);
   A += B;
   EXPECT_EQ(A.rank, rank);
 
   // Add with low-rank block with different rank
-  hicma::Dense DC(DA);
-  hicma::LowRank C(DC, std::min(rank + 4, std::min(m, n)));
+  const hicma::Dense DC(DA);
+  const hicma::LowRank C(DC, std::min(rank + 4, std::min(m, n)));
   A += C;
   EXPECT_EQ(A.rank, rank);
 
   // Add with full-rank random block
-  hicma::Dense DD(hicma::random_normal, randx_A, m, n);
-  hicma::LowRank D(DD, rank);
+  const hicma::Dense DD(hicma::random_normal, randx_A, m, n);
+  const hicma::LowRank D(DD, rank);
   A += D;
   EXPECT_EQ(A.rank, rank);
 }
@@ -68,13 +68,13 @@ TEST_P(LowRankTest_FixedAccuracy, Construction) {
 
   hicma::initialize();
   hicma::setGlobalValue("HICMA_LRA", lr_add_alg);
-  std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m>n?2*m:2*n)};
+  const std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m>n?2*m:2*n)};
 
   // Construct rank deficient block
-  hicma::Dense D(hicma::laplacend, randx_A, m, n, 0, n);
-  hicma::LowRank A(D, eps);
+  const hicma::Dense D(hicma::laplacend, randx_A, m, n, 0, n);
+  const hicma::LowRank A(D, eps);
   // Check compression error
-  double error = hicma::l2_error(D, A);
+  const double error = hicma::l2_error(D, A);
   EXPECT_NEAR(error, eps, 10*eps);
 }
 
@@ -87,43 +87,43 @@ TEST_P(LowRankTest_FixedAccuracy, Addition) {
   hicma::initialize();
   // Set low-rank addition algorithm
   hicma::setGlobalValue("HICMA_LRA", lr_add_alg);
-  std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m>n?2*m:2*n)};
+  const std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m>n?2*m:2*n)};
 
-  hicma::Dense DA(hicma::laplacend, randx_A, m, n, 0, n);
+  const hicma::Dense DA(hicma::laplacend, randx_A, m, n, 0, n);
   hicma::LowRank A(DA, eps);
 
   // Add with similar low-rank block
-  hicma::Dense DB(DA);
-  hicma::LowRank B(DB, eps);
+  const hicma::Dense DB(DA);
+  const hicma::LowRank B(DB, eps);
   A += B;
   error = hicma::l2_error((DA+DB), A);
   EXPECT_NEAR(error, eps, 10*eps);
 
   // Add with low-rank block with different rank
-  hicma::Dense DC(DA);
-  hicma::LowRank C(DC, eps*1e-2);
+  const hicma::Dense DC(DA);
+  const hicma::LowRank C(DC, eps*1e-2);
   A += C;
   error = hicma::l2_error((DA+DB+DC), A);
   EXPECT_NEAR(error, eps, 10*eps);
 
   // Add with full-rank random block
-  hicma::Dense DD(hicma::random_normal, randx_A, m, n);
-  hicma::LowRank D(DD, eps);
+  const hicma::Dense DD(hicma::random_normal, randx_A, m, n);
+  const hicma::LowRank D(DD, eps);
   A += D;
   error = hicma::l2_error((DA+DB+DC+DD), A);
   EXPECT_NEAR(error, eps, 10*eps);
 }
 
 INSTANTIATE_TEST_SUITE_P(LowRank, LowRankTest_FixedRank,
-			 testing::Combine(testing::Values("rounded_addition", "fast_rounded_addition"),
-					  testing::Values(64, 32),
-					  testing::Values(64, 21),
-					  testing::Values(1, 2, 4, 8)
-					  ));
+                         testing::Combine(testing::Values("rounded_addition", "fast_rounded_addition"),
+                                          testing::Values(64, 32),
+                                          testing::Values(64, 21),
+                                          testing::Values(1, 2, 4, 8)
+                                          ));
 
 INSTANTIATE_TEST_SUITE_P(LowRank, LowRankTest_FixedAccuracy,
-			 testing::Combine(testing::Values("rounded_addition", "fast_rounded_addition"),
-					  testing::Values(64, 32),
-					  testing::Values(64, 32),
-					  testing::Values(1e-6, 1e-8, 1e-10, 1e-12)
-					  ));
+                         testing::Combine(testing::Values("rounded_addition", "fast_rounded_addition"),
+                                          testing::Values(64, 32),
+                                          testing::Values(64, 32),
+                                          testing::Values(1e-6, 1e-8, 1e-10, 1e-12)
+                                          ));

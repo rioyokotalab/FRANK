@@ -27,14 +27,14 @@ namespace hicma
 {
 
 void tpmqrt(
-  const Matrix& V, const Matrix& T, Matrix& A, Matrix& B, bool trans
+  const Matrix& V, const Matrix& T, Matrix& A, Matrix& B, const bool trans
 ) {
   tpmqrt_omm(V, T, A, B, trans);
 }
 
 define_method(
   void, tpmqrt_omm,
-  (const Dense& V, const Dense& T, Dense& A, Dense& B, bool trans)
+  (const Dense& V, const Dense& T, Dense& A, Dense& B, const bool trans)
 ) {
   // D D D D
   LAPACKE_dtprfb(
@@ -50,7 +50,7 @@ define_method(
 
 define_method(
   void, tpmqrt_omm,
-  (const LowRank& V, const Dense& T, Dense& A, Dense& B, bool trans)
+  (const LowRank& V, const Dense& T, Dense& A, Dense& B, const bool trans)
 ) {
   // LR D D D
   Dense C(A);
@@ -66,7 +66,7 @@ define_method(
 
 define_method(
   void, tpmqrt_omm,
-  (const Dense& V, const Dense& T, LowRank& A, Dense& B, bool trans)
+  (const Dense& V, const Dense& T, LowRank& A, Dense& B, const bool trans)
 ) {
   // D D LR D
   Dense C(A);
@@ -81,7 +81,7 @@ define_method(
 
 define_method(
   void, tpmqrt_omm,
-  (const Dense& V, const Dense& T, Dense& A, LowRank& B, bool trans)
+  (const Dense& V, const Dense& T, Dense& A, LowRank& B, const bool trans)
 ) {
   // D D D LR
   Dense C(A);
@@ -97,7 +97,7 @@ define_method(
 
 define_method(
   void, tpmqrt_omm,
-  (const LowRank& V, const Dense& T, LowRank& A, Dense& B, bool trans)
+  (const LowRank& V, const Dense& T, LowRank& A, Dense& B, const bool trans)
 ) {
   // LR D LR D
   LowRank C(A);
@@ -113,7 +113,7 @@ define_method(
 
 define_method(
   void, tpmqrt_omm,
-  (const LowRank& V, const Dense& T, Dense& A, LowRank& B, bool trans)
+  (const LowRank& V, const Dense& T, Dense& A, LowRank& B, const bool trans)
 ) {
   // LR D D LR
   Dense C(A);
@@ -129,7 +129,7 @@ define_method(
 
 define_method(
   void, tpmqrt_omm,
-  (const Dense& V, const Dense& T, LowRank& A, LowRank& B, bool trans)
+  (const Dense& V, const Dense& T, LowRank& A, LowRank& B, const bool trans)
 ) {
   // D D LR LR
   LowRank C(A);
@@ -145,7 +145,7 @@ define_method(
 
 define_method(
   void, tpmqrt_omm,
-  (const LowRank& V, const Dense& T, LowRank& A, LowRank& B, bool trans)
+  (const LowRank& V, const Dense& T, LowRank& A, LowRank& B, const bool trans)
 ) {
   // LR D LR LR
   LowRank C(A);
@@ -162,7 +162,7 @@ define_method(
 // Fallback default, abort with error message
 define_method(
   void, tpmqrt_omm,
-  (const Matrix& V, const Matrix& T, Matrix& A, Matrix& B, bool)
+  (const Matrix& V, const Matrix& T, Matrix& A, Matrix& B, const bool)
 ) {
   omm_error_handler("tpmqrt", {V, T, A, B}, __FILE__, __LINE__);
   std::abort();

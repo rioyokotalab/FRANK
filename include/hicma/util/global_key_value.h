@@ -15,7 +15,7 @@ namespace hicma {
  * @return std::string the value corresponding to the identifier,
  * empty if the key is not found
  */
-std::string getGlobalValue(std::string key);
+std::string getGlobalValue(const std::string key);
 
 /**
  * @brief Specify a global key and value pair
@@ -23,7 +23,7 @@ std::string getGlobalValue(std::string key);
  * @param key the identifier
  * @param value the corresponding value
  */
-void setGlobalValue(std::string key, std::string value);
+void setGlobalValue(const std::string key, const std::string value);
 
 } // namespace hicma
 

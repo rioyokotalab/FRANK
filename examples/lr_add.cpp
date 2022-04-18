@@ -8,13 +8,13 @@ using namespace hicma;
 
 int main(int argc, char** argv) {
   hicma::initialize();
-  int64_t N = argc > 1 ? atoi(argv[1]) : 128;
-  int64_t rank = argc > 2 ? atoi(argv[2]) : 16;
-  std::vector<std::vector<double>> randx{get_sorted_random_vector(2*N)};
+  const int64_t N = argc > 1 ? atoi(argv[1]) : 128;
+  const int64_t rank = argc > 2 ? atoi(argv[2]) : 16;
+  const std::vector<std::vector<double>> randx{ get_sorted_random_vector(2*N) };
   timing::start("Init matrix");
-  Dense D(laplacend, randx, N, N, 0, N);
-  LowRank A(D, rank);
-  LowRank B(D, rank);
+  const Dense D(laplacend, randx, N, N, 0, N);
+  const LowRank A(D, rank);
+  const LowRank B(D, rank);
   LowRank AWork(A);
   timing::stop("Init matrix");
 

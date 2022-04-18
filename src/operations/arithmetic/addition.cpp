@@ -56,7 +56,7 @@ define_method(Matrix&, addition_omm, (Hierarchical& A, const Hierarchical& B)) {
 }
 
 define_method(Matrix&, addition_omm, (Hierarchical& A, const LowRank& B)) {
-  Hierarchical BH = split(B, A.dim[0], A.dim[1]);
+  const Hierarchical BH = split(B, A.dim[0], A.dim[1]);
   A += BH;
   return A;
 }
@@ -89,8 +89,8 @@ void naive_addition(LowRank& A, const LowRank& B) {
 void rounded_addition(LowRank& A, const LowRank& B) {
   //Concat U bases
   Dense Uc(get_n_rows(A.U), A.S.dim[1]+B.S.dim[1]);
-  IndexRange U_row_range(0, Uc.dim[0]);
-  IndexRange U_col_range(0, Uc.dim[1]);
+  const IndexRange U_row_range(0, Uc.dim[0]);
+  const IndexRange U_col_range(0, Uc.dim[1]);
   auto Uc_splits = Uc.split({ U_row_range }, U_col_range.split_at(A.S.dim[1]), false);
   gemm(A.U, A.S, Uc_splits[0], 1, 0);
   gemm(B.U, B.S, Uc_splits[1], 1, 0);
@@ -100,8 +100,8 @@ void rounded_addition(LowRank& A, const LowRank& B) {
 
   //Concat V bases
   Dense VcT(A.V.dim[0]+B.V.dim[0], get_n_cols(A.V));
-  IndexRange V_row_range(0, VcT.dim[0]);
-  IndexRange V_col_range(0, VcT.dim[1]);
+  const IndexRange V_row_range(0, VcT.dim[0]);
+  const IndexRange V_col_range(0, VcT.dim[1]);
   auto VcT_splits = VcT.split(V_row_range.split_at(A.V.dim[0]), { V_col_range }, false);
   A.V.copy_to(VcT_splits[0]);
   B.V.copy_to(VcT_splits[1]);
@@ -114,7 +114,7 @@ void rounded_addition(LowRank& A, const LowRank& B) {
   Dense RRU, RRS, RRV;
   std::tie(RRU, RRS, RRV) = svd(RuRvT);
   // Find truncation rank if needed
-  bool use_eps = (A.eps != 0);
+  const bool use_eps = (A.eps != 0);
   if(use_eps) A.rank = find_svd_truncation_rank(RRS, A.eps);
   // Truncate
   A.S = resize(RRS, A.rank, A.rank);
@@ -143,8 +143,8 @@ void fast_rounded_addition(LowRank& A, const LowRank& B) {
   qr(Yu, Qu, Ru);
   // Uc = [A.U  Qu]
   Dense Uc(A.U.dim[0], A.U.dim[1]+Qu.dim[1]);
-  IndexRange U_row_range(0, Uc.dim[0]);
-  IndexRange U_col_range(0, Uc.dim[1]);
+  const IndexRange U_row_range(0, Uc.dim[0]);
+  const IndexRange U_col_range(0, Uc.dim[1]);
   auto Uc_splits = Uc.split({ U_row_range }, U_col_range.split_at(A.U.dim[1]), false);
   A.U.copy_to(Uc_splits[0]);
   Qu.copy_to(Uc_splits[1]);
@@ -158,15 +158,15 @@ void fast_rounded_addition(LowRank& A, const LowRank& B) {
   rq(YvT, RvT, QvT);
   // Vc^T = [A.V  Qv]^T
   Dense VcT(A.V.dim[0]+QvT.dim[0], A.V.dim[1]);
-  IndexRange V_row_range(0, VcT.dim[0]);
-  IndexRange V_col_range(0, VcT.dim[1]);
+  const IndexRange V_row_range(0, VcT.dim[0]);
+  const IndexRange V_col_range(0, VcT.dim[1]);
   auto VcT_splits = VcT.split(V_row_range.split_at(A.V.dim[0]), { V_col_range }, false);
   A.V.copy_to(VcT_splits[0]);
   QvT.copy_to(VcT_splits[1]);
 
   Dense M(A.S.dim[0]+B.S.dim[0], A.S.dim[1]+B.S.dim[1]);
-  IndexRange M_row_range(0, M.dim[0]);
-  IndexRange M_col_range(0, M.dim[1]);
+  const IndexRange M_row_range(0, M.dim[0]);
+  const IndexRange M_col_range(0, M.dim[1]);
   auto M_splits = M.split(M_row_range.split_at(A.S.dim[0]), M_col_range.split_at(A.S.dim[1]), false);
   Dense ZuSb = gemm(Zu, B.S);
   Dense RuSb = gemm(Ru, B.S);

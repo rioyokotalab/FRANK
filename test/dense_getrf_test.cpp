@@ -19,21 +19,20 @@ TEST_P(GETRFTests, DenseGetrf) {
   }
 
   hicma::initialize();
-  //std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m>n?m:n)};
-  std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m)};
+  const std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m)};
   hicma::Dense A(hicma::laplacend, randx_A, m, m);
 
   // Set a large value on the diagonal to avoid pivoting
   int64_t d = m * n;
-  int64_t n_diag = m>n?n:m;
+  const int64_t n_diag = m>n?n:m;
   for (int64_t i = 0; i < n_diag; ++i) {
     A(i, i) += d--;
   }
 
-  hicma::Dense A_copy(A);
+  const hicma::Dense A_copy(A);
   hicma::Dense L, U;
   std::tie(L, U) = hicma::getrf(A);
-  hicma::Dense A_rebuilt = gemm(L, U);
+  const hicma::Dense A_rebuilt = gemm(L, U);
 
   // Check result
   for (int64_t i = 0; i < m; ++i) {

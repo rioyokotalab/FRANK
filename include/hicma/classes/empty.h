@@ -23,7 +23,7 @@ class Empty : public Matrix {
 
   Empty& operator=(Empty&& A) = default;
 
-  Empty(int64_t n_rows, int64_t n_cols) : dim{n_rows, n_cols} {}
+  Empty(const int64_t n_rows, const int64_t n_cols) : dim{n_rows, n_cols} {}
 };
 
 }

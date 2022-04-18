@@ -31,8 +31,8 @@ namespace hicma
 
 void gemm(
   const Matrix& A, const Matrix& B, Matrix& C,
-  double alpha, double beta,
-  bool TransA, bool TransB
+  const double alpha, const double beta,
+  const bool TransA, const bool TransB
 ) {
   assert((TransA ? get_n_cols(A) : get_n_rows(A)) == get_n_rows(C));
   assert(
@@ -44,7 +44,8 @@ void gemm(
 }
 
 MatrixProxy gemm(
-  const Matrix& A, const Matrix& B, double alpha, bool TransA, bool TransB
+  const Matrix& A, const Matrix& B,
+  const double alpha, const bool TransA, const bool TransB
 ) {
   assert(
     (TransA ? get_n_rows(A) : get_n_cols(A))
@@ -57,7 +58,7 @@ define_method(
   MatrixProxy, gemm_omm,
   (
     const Hierarchical& A, const Hierarchical& B,
-    double alpha, bool TransA, bool TransB
+    const double alpha, const bool TransA, const bool TransB
   )
 ) {
   // H H new
@@ -95,7 +96,7 @@ define_method(
   MatrixProxy, gemm_omm,
   (
     const Matrix& A, const Matrix& B,
-    double alpha, bool TransA, bool TransB
+    const double alpha, const bool TransA, const bool TransB
   )
 ) {
   Dense C(
@@ -110,12 +111,12 @@ define_method(
   void, gemm_omm,
   (
     const Dense& A, const Dense& B, Dense& C,
-    double alpha, double beta,
-    bool TransA, bool TransB
+    const double alpha, const double beta,
+    const bool TransA, const bool TransB
   )
 ) {
   // D D D
-  int64_t k = TransA ? A.dim[0] : A.dim[1];
+  const int64_t k = TransA ? A.dim[0] : A.dim[1];
   cblas_dgemm(
     CblasRowMajor,
     TransA?CblasTrans:CblasNoTrans, TransB?CblasTrans:CblasNoTrans,
@@ -132,12 +133,12 @@ define_method(
   void, gemm_omm,
   (
     const LowRank& A, const Dense& B, Dense& C,
-    double alpha, double beta,
-    bool TransA, bool TransB
+    const double alpha, const double beta,
+    const bool TransA, const bool TransB
   )
 ) {
   // LR D D
-  Dense AS_basis_B = gemm(
+  const Dense AS_basis_B = gemm(
     A.S, gemm(TransA ? A.U : A.V, B, alpha, TransA, TransB),
     1, TransA, false
   );
@@ -148,12 +149,12 @@ define_method(
   void, gemm_omm,
   (
     const Dense& A, const LowRank& B, Dense& C,
-    double alpha, double beta,
-    bool TransA, bool TransB
+    const double alpha, const double beta,
+    const bool TransA, const bool TransB
   )
 ) {
   // D LR D
-  Dense A_basis_BS = gemm(
+  const Dense A_basis_BS = gemm(
     gemm(A, TransB ? B.V : B.U, alpha, TransA, TransB), B.S,
     1, false, TransB
   );
@@ -164,14 +165,14 @@ define_method(
   void, gemm_omm,
   (
     const LowRank& A, const LowRank& B, Dense& C,
-    double alpha, double beta,
-    bool TransA, bool TransB
+    const double alpha, const double beta,
+    const bool TransA, const bool TransB
   )
 ) {
   // LR LR D
   // TODO Many optimizations possible
   // Even in non-shared case, UxS, SxV may be optimized across blocks!
-  Dense Abasis_inner_matrices = gemm(
+  const Dense Abasis_inner_matrices = gemm(
     TransA ? A.V : A.U, gemm(
       gemm(
         A.S, gemm(TransA ? A.U : A.V, TransB ? B.V : B.U, alpha, TransA, TransB),
@@ -186,13 +187,13 @@ define_method(
   void, gemm_omm,
   (
     const Dense& A, const Dense& B, LowRank& C,
-    double alpha, double beta,
-    bool TransA, bool TransB
+    const double alpha, const double beta,
+    const bool TransA, const bool TransB
   )
 ) {
   // D D LR
   C.S *= beta;
-  bool use_eps = (C.eps != 0.0);
+  const bool use_eps = (C.eps != 0.0);
   if(use_eps)
     C += LowRank(gemm(A, B, alpha, TransA, TransB), C.eps);
   else
@@ -203,8 +204,8 @@ define_method(
   void, gemm_omm,
   (
     const LowRank& A, const Dense& B, LowRank& C,
-    double alpha, double beta,
-    bool TransA, bool TransB
+    const double alpha, const double beta,
+    const bool TransA, const bool TransB
   )
 ) {
   // LR D LR
@@ -212,7 +213,7 @@ define_method(
   if (TransA) std::abort();
   Dense AVxB = gemm(A.V, B, alpha, false, TransB);
   C.S *= beta;
-  LowRank AxB(A.U, A.S, AVxB, false);
+  const LowRank AxB(A.U, A.S, AVxB, false);
   C += AxB;
 }
 
@@ -220,8 +221,8 @@ define_method(
   void, gemm_omm,
   (
     const Dense& A, const LowRank& B, LowRank& C,
-    double alpha, double beta,
-    bool TransA, bool TransB
+    const double alpha, const double beta,
+    const bool TransA, const bool TransB
   )
 ) {
   // D LR LR
@@ -229,7 +230,7 @@ define_method(
   if (TransB) std::abort();
   Dense AxBU = gemm(A, B.U, alpha, TransA, false);
   C.S *= beta;
-  LowRank AxB(AxBU, B.S, B.V, false);
+  const LowRank AxB(AxBU, B.S, B.V, false);
   C += AxB;
 }
 
@@ -237,17 +238,17 @@ define_method(
   void, gemm_omm,
   (
     const LowRank& A, const LowRank& B, LowRank& C,
-    double alpha, double beta,
-    bool TransA, bool TransB
+    const double alpha, const double beta,
+    const bool TransA, const bool TransB
   )
 ) {
   // LR LR LR
   // TODO Not implemented
   if (TransA || TransB) std::abort();
-  Dense SxVxU = gemm(A.S, gemm(A.V, B.U, alpha));
+  const Dense SxVxU = gemm(A.S, gemm(A.V, B.U, alpha));
   Dense SxVxUxS = gemm(SxVxU, B.S);
   C.S *= beta;
-  LowRank AxB(A.U, SxVxUxS, B.V, false);
+  const LowRank AxB(A.U, SxVxUxS, B.V, false);
   C += AxB;
 }
 
@@ -255,15 +256,15 @@ define_method(
   void, gemm_omm,
   (
     const Hierarchical& A, const LowRank& B, LowRank& C,
-    double alpha, double beta,
-    bool TransA, bool TransB
+    const double alpha, const double beta,
+    const bool TransA, const bool TransB
   )
 ) {
   // H LR LR
   // TODO Not implemented
   if (TransA || TransB) std::abort();
   MatrixProxy AxBU = gemm(A, B.U, alpha, TransA, false);
-  LowRank AxB(AxBU, B.S, B.V, false);
+  const LowRank AxB(AxBU, B.S, B.V, false);
   C.S *= beta;
   C += AxB;
 }
@@ -272,15 +273,15 @@ define_method(
   void, gemm_omm,
   (
     const Dense& A, const Hierarchical& B, LowRank& C,
-    double alpha, double beta,
-    bool TransA, bool TransB
+    const double alpha, const double beta,
+    const bool TransA, const bool TransB
   )
 ) {
   // D H LR
-  Hierarchical HA = split(A,
-			  TransA ? B.dim[TransB ? 1 : 0] : 1,
-			  TransA ? 1 : B.dim[TransB ? 1 : 0],
-			  false);
+  const Hierarchical HA = split(A,
+                                TransA ? B.dim[TransB ? 1 : 0] : 1,
+                                TransA ? 1 : B.dim[TransB ? 1 : 0],
+                                false);
   gemm(HA, B, C, alpha, beta, TransA, TransB);
 }
 
@@ -288,15 +289,15 @@ define_method(
   void, gemm_omm,
   (
     const Hierarchical& A, const Dense& B, LowRank& C,
-    double alpha, double beta,
-    bool TransA, bool TransB
+    const double alpha, const double beta,
+    const bool TransA, const bool TransB
   )
 ) {
   // H D LR
-  Hierarchical HB = split(B,
-			  TransB ? 1 : A.dim[TransA ? 0 : 1],
-			  TransB ? A.dim[TransA ? 0 : 1] : 1,
-			  false);
+  const Hierarchical HB = split(B,
+                          TransB ? 1 : A.dim[TransA ? 0 : 1],
+                          TransB ? A.dim[TransA ? 0 : 1] : 1,
+                          false);
   gemm(A, HB, C, alpha, beta, TransA, TransB);
 }
 
@@ -304,15 +305,15 @@ define_method(
   void, gemm_omm,
   (
     const LowRank& A, const Hierarchical& B, LowRank& C,
-    double alpha, double beta,
-    bool TransA, bool TransB
+    const double alpha, const double beta,
+    const bool TransA, const bool TransB
   )
 ) {
   // LR H LR
   // TODO Not implemented
   if (TransA || TransB) std::abort();
   MatrixProxy AVxB = gemm(A.V, B, alpha, false, TransB);
-  LowRank AxB(A.U, A.S, AVxB, false);
+  const LowRank AxB(A.U, A.S, AVxB, false);
   C.S *= beta;
   C += AxB;
 }
@@ -321,15 +322,15 @@ define_method(
   void, gemm_omm,
   (
     const Dense& A, const LowRank& B, Hierarchical& C,
-    double alpha, double beta,
-    bool TransA, bool TransB
+    const double alpha, const double beta,
+    const bool TransA, const bool TransB
   )
 ) {
   // D LR H
   // TODO Not implemented
   if (TransA || TransB) std::abort();
   Dense AxBU = gemm(A, B.U, alpha);
-  LowRank AxB(AxBU, B.S, B.V, false);
+  const LowRank AxB(AxBU, B.S, B.V, false);
   C *= beta;
   C += AxB;
 }
@@ -338,15 +339,15 @@ define_method(
   void, gemm_omm,
   (
     const LowRank& A, const Dense& B, Hierarchical& C,
-    double alpha, double beta,
-    bool TransA, bool TransB
+    const double alpha, const double beta,
+    const bool TransA, const bool TransB
   )
 ) {
   // LR D H
   // TODO Not implemented
   if (TransA || TransB) std::abort();
   Dense AVxB = gemm(A.V, B, alpha);
-  LowRank AxB(A.U, A.S, AVxB, false);
+  const LowRank AxB(A.U, A.S, AVxB, false);
   C *= beta;
   C += AxB;
 }
@@ -355,15 +356,15 @@ define_method(
   void, gemm_omm,
   (
     const LowRank& A, const LowRank& B, Hierarchical& C,
-    double alpha, double beta,
-    bool TransA, bool TransB
+    const double alpha, const double beta,
+    const bool TransA, const bool TransB
   )
 ) {
   // LR LR H
   // TODO Not implemented
   if (TransA || TransB) std::abort();
   Dense SxVxUxS = gemm(gemm(A.S, gemm(A.V, B.U, alpha)), B.S);
-  LowRank AxB(A.U, SxVxUxS, B.V, false);
+  const LowRank AxB(A.U, SxVxUxS, B.V, false);
   C *= beta;
   C += AxB;
 }
@@ -372,8 +373,8 @@ define_method(
   void, gemm_omm,
   (
     const Hierarchical& A, const Hierarchical& B, LowRank& C,
-    double alpha, double beta,
-    bool TransA, bool TransB
+    const double alpha, const double beta,
+    const bool TransA, const bool TransB
   )
 ) {
   // H H LR
@@ -386,7 +387,7 @@ define_method(
   */
   Dense CD(C);
   gemm(A, B, CD, alpha, beta, TransA, TransB);
-  bool use_eps = (C.eps != 0.0);
+  const bool use_eps = (C.eps != 0.0);
   if(use_eps)
     C = LowRank(CD, C.eps);
   else
@@ -397,8 +398,8 @@ define_method(
   void, gemm_omm,
   (
     const Hierarchical& A, const Hierarchical& B, Hierarchical& C,
-    double alpha, double beta,
-    bool TransA, bool TransB
+    const double alpha, const double beta,
+    const bool TransA, const bool TransB
   )
 ) {
   // H H H
@@ -421,22 +422,22 @@ define_method(
   void, gemm_omm,
   (
     const Dense& A, const Dense& B, Hierarchical& C,
-    double alpha, double beta,
-    bool TransA, bool TransB
+    const double alpha, const double beta,
+    const bool TransA, const bool TransB
   )
 ) {
   // D D H
   // TODO Not implemented
   if (C.dim[0] == 1 && C.dim[1] == 1) std::abort();
   if (C.dim[1] == 1) {
-    Hierarchical AH = split(A, TransA ? 1 : C.dim[0], TransA ? C.dim[0] : 1);
+    const Hierarchical AH = split(A, TransA ? 1 : C.dim[0], TransA ? C.dim[0] : 1);
     gemm(AH, B, C, alpha, beta, TransA, TransB);
   } else if (C.dim[0] == 1) {
-    Hierarchical BH = split(B, TransB ? C.dim[1] : 1, TransB ? 1 : C.dim[1]);
+    const Hierarchical BH = split(B, TransB ? C.dim[1] : 1, TransB ? 1 : C.dim[1]);
     gemm(A, BH, C, alpha, beta, TransA, TransB);
   } else {
-    Hierarchical AH = split(A, TransA ? 1 : C.dim[0], TransA ? C.dim[0] : 1);
-    Hierarchical BH = split(B, TransB ? C.dim[1] : 1, TransB ? 1 : C.dim[1]);
+    const Hierarchical AH = split(A, TransA ? 1 : C.dim[0], TransA ? C.dim[0] : 1);
+    const Hierarchical BH = split(B, TransB ? C.dim[1] : 1, TransB ? 1 : C.dim[1]);
     gemm(AH, BH, C, alpha, beta, TransA, TransB);
   }
 }
@@ -445,8 +446,8 @@ define_method(
   void, gemm_omm,
   (
     const Matrix& A, const Hierarchical& B, Hierarchical& C,
-    double alpha, double beta,
-    bool TransA, bool TransB
+    const double alpha, const double beta,
+    const bool TransA, const bool TransB
   )
 ) {
   // D H H
@@ -459,7 +460,7 @@ define_method(
       gemm(A, B[j], C[j], alpha, beta, TransA, TransB);
     }
   } else {
-    Hierarchical AH = split(
+    const Hierarchical AH = split(
       A,
       TransA ? B.dim[TransB ? 1 : 0] : C.dim[0],
       TransA ? C.dim[0] : B.dim[TransB ? 1 : 0]
@@ -472,8 +473,8 @@ define_method(
   void, gemm_omm,
   (
     const Hierarchical& A, const Matrix& B, Hierarchical& C,
-    double alpha, double beta,
-    bool TransA, bool TransB
+    const double alpha, const double beta,
+    const bool TransA, const bool TransB
   )
 ) {
   // H D H
@@ -486,7 +487,7 @@ define_method(
       gemm(A[i], B, C[i], alpha, beta, TransA, TransB);
     }
   } else {
-    Hierarchical BH = split(
+    const Hierarchical BH = split(
       B,
       TransB ? C.dim[1] : A.dim[TransA ? 0 : 1],
       TransB ? A.dim[TransA ? 0 : 1] : C.dim[1]
@@ -499,8 +500,8 @@ define_method(
   void, gemm_omm,
   (
     const Hierarchical& A, const Hierarchical& B, Dense& C,
-    double alpha, double beta,
-    bool TransA, bool TransB
+    const double alpha, const double beta,
+    const bool TransA, const bool TransB
   )
 ) {
   // H H D
@@ -519,8 +520,8 @@ define_method(
   void, gemm_omm,
   (
     const Matrix& A, const Hierarchical& B, Dense& C,
-    double alpha, double beta,
-    bool TransA, bool TransB
+    const double alpha, const double beta,
+    const bool TransA, const bool TransB
   )
 ) {
   // D H D
@@ -531,14 +532,14 @@ define_method(
     Hierarchical CH = split(C, 1, B.dim[TransB ? 0 : 1]);
     gemm(A, B, CH, alpha, beta, TransA, TransB);
   } else if (B.dim[TransB ? 0 : 1] == 1) {
-    Hierarchical AH = split(
+    const Hierarchical AH = split(
       A,
       TransA ? B.dim[TransB ? 1 : 0] : 1,
       TransA ? 1 : B.dim[TransB ? 1 : 0]
     );
     gemm(AH, B, C, alpha, beta, TransA, TransB);
   } else {
-    Hierarchical AH = split(
+    const Hierarchical AH = split(
       A,
       TransA ? B.dim[TransB ? 1 : 0] : 1,
       TransA ? 1 : B.dim[TransB ? 1 : 0]
@@ -552,8 +553,8 @@ define_method(
   void, gemm_omm,
   (
     const Hierarchical& A, const Matrix& B, Dense& C,
-    double alpha, double beta,
-    bool TransA, bool TransB
+    const double alpha, const double beta,
+    const bool TransA, const bool TransB
   )
 ) {
   // H D D
@@ -564,14 +565,14 @@ define_method(
     Hierarchical CH = split(C, A.dim[TransA ? 1 : 0], 1);
     gemm(A, B, CH, alpha, beta, TransA, TransB);
   } else if (A.dim[TransA ? 1 : 0] == 1) {
-    Hierarchical BH = split(
+    const Hierarchical BH = split(
       B,
       TransB ? 1 : A.dim[TransA ? 0 : 1],
       TransB ? A.dim[TransA ? 0 : 1] : 1
     );
     gemm(A, BH, C, alpha, beta, TransA, TransB);
   } else {
-    Hierarchical BH = split(
+    const Hierarchical BH = split(
       B,
       TransB ? 1 : A.dim[TransA ? 0 : 1],
       TransB ? A.dim[TransA ? 0 : 1] : 1
@@ -584,7 +585,8 @@ define_method(
 // Fallback default, abort with error message
 define_method(
   void, gemm_omm,
-  (const Matrix& A, const Matrix& B, Matrix& C, double, double, bool, bool)
+  (const Matrix& A, const Matrix& B, Matrix& C,
+   const double, const double, const bool, const bool)
 ) {
   omm_error_handler("gemm", {A, B, C}, __FILE__, __LINE__);
   std::abort();

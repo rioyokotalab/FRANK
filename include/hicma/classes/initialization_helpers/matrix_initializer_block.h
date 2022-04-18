@@ -63,8 +63,8 @@ class MatrixInitializerBlock : public MatrixInitializer {
    * Either `AdmisType::PositionBased` or `AdmisType::GeometryBased`
    */
   MatrixInitializerBlock(
-    Dense&& A, double admis, double eps, int64_t rank,
-    std::vector<std::vector<double>> params, AdmisType admis_type
+    Dense&& A, const double admis, const double eps, const int64_t rank,
+    const std::vector<std::vector<double>> params, const AdmisType admis_type
   );
 
   /**

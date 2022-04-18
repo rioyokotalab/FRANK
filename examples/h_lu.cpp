@@ -11,26 +11,25 @@ using namespace hicma;
 int main(int argc, char** argv) {
   timing::start("Overall");
   hicma::initialize();
-  int64_t N = argc > 1 ? atoi(argv[1]) : 256;
-  int64_t nleaf = argc > 2 ? atoi(argv[2]) : 16;
-  int64_t rank = argc > 3 ? atoi(argv[3]) : 8;
-  int64_t nblocks = argc > 4 ? atoi(argv[4]) : 2;
-  double admis = argc > 5 ? atof(argv[5]) : 0;
+  const int64_t N = argc > 1 ? atoi(argv[1]) : 256;
+  const int64_t nleaf = argc > 2 ? atoi(argv[2]) : 16;
+  const int64_t rank = argc > 3 ? atoi(argv[3]) : 8;
+  const int64_t nblocks = argc > 4 ? atoi(argv[4]) : 2;
+  const double admis = argc > 5 ? atof(argv[5]) : 0;
 
-  std::vector<std::vector<double>> randx{get_sorted_random_vector(N)};
-  Dense x(random_uniform, {}, N);
+  const std::vector<std::vector<double>> randx{ get_sorted_random_vector(N) };
+  const Dense x(random_uniform, {}, N);
   Dense b(N);
-  Dense D(laplacend, randx, N, N);
+  const Dense D(laplacend, randx, N, N);
   timing::start("Hierarchical compression");
   Hierarchical A(laplacend, randx, N, N, rank, nleaf, admis, nblocks, nblocks);
   timing::stop("Hierarchical compression");
-  // write_JSON(A);
   gemm(A, x, b, 1, 1);
 
   print("Compression Accuracy");
   timing::start("Compression accuracy check");
-  double comp_error = l2_error(A, D);
-  double comp_rate = double(get_memory_usage(D)) / double(get_memory_usage(A));
+  const double comp_error = l2_error(D, A);
+  const double comp_rate = double(get_memory_usage(D)) / double(get_memory_usage(A));
   timing::stop("Compression accuracy check");
   print("Rel. L2 Error", comp_error, false);
   print("Compression factor", comp_rate);

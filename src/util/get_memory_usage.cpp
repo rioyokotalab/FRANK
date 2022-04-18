@@ -19,14 +19,14 @@
 namespace hicma
 {
 
-unsigned long get_memory_usage(const Matrix& A, bool include_structure) {
-  unsigned long memory_usage = get_memory_usage_omm(A, include_structure);
+unsigned long get_memory_usage(const Matrix& A, const bool include_structure) {
+  const unsigned long memory_usage = get_memory_usage_omm(A, include_structure);
   return memory_usage;
 }
 
 define_method(
   unsigned long, get_memory_usage_omm,
-  (const Dense& A, bool include_structure)
+  (const Dense& A, const bool include_structure)
 ) {
   unsigned long memory_usage = 0;
   memory_usage += A.dim[0]*A.dim[1]*sizeof(A[0]);
@@ -38,7 +38,7 @@ define_method(
 
 define_method(
   unsigned long, get_memory_usage_omm,
-  (const LowRank& A, bool include_structure)
+  (const LowRank& A, const bool include_structure)
 ) {
   unsigned long memory_usage = 0;
   memory_usage += get_memory_usage_omm(A.U, include_structure);
@@ -52,7 +52,7 @@ define_method(
 
 define_method(
   unsigned long, get_memory_usage_omm,
-  (const Hierarchical& A, bool include_structure)
+  (const Hierarchical& A, const bool include_structure)
 ) {
   unsigned long memory_usage = 0;
   for (int64_t i=0; i<A.dim[0]; ++i) {
@@ -67,7 +67,7 @@ define_method(
   return memory_usage;
 }
 
-define_method(unsigned long, get_memory_usage_omm, (const Matrix& A, bool)) {
+define_method(unsigned long, get_memory_usage_omm, (const Matrix& A, const bool)) {
   omm_error_handler("get_memory_usage", {A}, __FILE__, __LINE__);
   std::abort();
 }

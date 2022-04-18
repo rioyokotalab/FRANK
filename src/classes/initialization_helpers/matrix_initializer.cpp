@@ -20,8 +20,8 @@ namespace hicma
 {
 
 MatrixInitializer::MatrixInitializer(
-  double admis, double eps, int64_t rank,
-  std::vector<std::vector<double>> params, AdmisType admis_type
+  const double admis, const double eps, const int64_t rank,
+  const std::vector<std::vector<double>> params, const AdmisType admis_type
 ) : admis(admis), eps(eps), rank(rank),
     params(params), admis_type(admis_type) {}
 
@@ -34,8 +34,8 @@ Dense MatrixInitializer::get_dense_representation(
 }
 
 LowRank MatrixInitializer::get_compressed_representation(
-  const ClusterTree& node, bool fixed_rank
-) {
+  const ClusterTree& node, const bool fixed_rank
+) const {
   // TODO This function still relies on ClusterTree to be symmetric!
   if(fixed_rank) return LowRank(get_dense_representation(node), rank);
   else return LowRank(get_dense_representation(node), eps);
@@ -58,10 +58,10 @@ bool MatrixInitializer::is_admissible(const ClusterTree& node) const {
       break;
     case AdmisType::GeometryBased:
       //Get actual coordinates
-      std::vector<std::vector<double>> row_coords = get_coords_range(node.rows);
-      std::vector<std::vector<double>> col_coords = get_coords_range(node.cols);
+      const std::vector<std::vector<double>> row_coords = get_coords_range(node.rows);
+      const std::vector<std::vector<double>> col_coords = get_coords_range(node.cols);
       //Calculate bounding boxes
-      double offset = 5e-1;
+      const double offset = 5e-1;
       std::vector<double> max_coord_row, min_coord_row, center_coord_row;
       std::vector<double> max_coord_col, min_coord_col, center_coord_col;
       for(size_t d=0; d<row_coords.size(); d++) {
@@ -83,7 +83,7 @@ bool MatrixInitializer::is_admissible(const ClusterTree& node) const {
         double d = std::fabs(center_coord_row[k] - center_coord_col[k]);
         dist += d * d;
       }
-      double diam = std::max(max_length_row, max_length_col);
+      const double diam = std::max(max_length_row, max_length_col);
       admissible &= ((admis * admis * diam * diam) < dist);
       break;
   }

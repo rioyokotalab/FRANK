@@ -29,7 +29,7 @@ namespace hicma
 void trmm(
   const Matrix& A, Matrix& B,
   const Side side, const Mode uplo, const char& trans, const char& diag,
-  double alpha
+  const double alpha
 ) {
   trmm_omm(A, B, side, uplo, trans, diag, alpha);
 }
@@ -37,7 +37,7 @@ void trmm(
 void trmm(
   const Matrix& A, Matrix& B,
   const Side side, const Mode uplo,
-  double alpha
+  const double alpha
 ) {
   trmm_omm(A, B, side, uplo, 'n', 'n', alpha);
 }
@@ -47,7 +47,7 @@ define_method(
   (
     const Dense& A, Dense& B,
     const Side side, const Mode uplo, const char& trans, const char& diag,
-    double alpha
+    const double alpha
   )
 ) {
   // D D
@@ -68,7 +68,7 @@ define_method(
   (
     const Dense& A, LowRank& B,
     const Side side, const Mode uplo,  const char& trans, const char& diag,
-    double alpha
+    const double alpha
   )
 ) {
   // D LR
@@ -85,17 +85,17 @@ define_method(
   (
     const Dense& A, Hierarchical& B,
     const Side side, const Mode uplo,  const char& trans, const char& diag,
-    double alpha
+    const double alpha
   )
 ) {
   // D H
   assert(A.dim[0] == A.dim[1]);
   assert(A.dim[0] == (side == Side::Left ? get_n_rows(B) : get_n_cols(B)));
-  Hierarchical HA = split(A,
-			  side == Side::Left ? B.dim[0] : B.dim[1],
-			  side == Side::Left ? B.dim[0] : B.dim[1],
-			  false);
-  trmm(HA, B, side, uplo, trans, diag, alpha);
+  const Hierarchical AH = split(A,
+                                side == Side::Left ? B.dim[0] : B.dim[1],
+                                side == Side::Left ? B.dim[0] : B.dim[1],
+                                false);
+  trmm(AH, B, side, uplo, trans, diag, alpha);
 }
 
 define_method(
@@ -103,17 +103,17 @@ define_method(
   (
     const Hierarchical& A, Dense& B,
     const Side side, const Mode uplo,  const char& trans, const char& diag,
-    double alpha
+    const double alpha
   )
 ) {
   // H D
   assert(A.dim[0] == A.dim[1]);
   assert(get_n_rows(A) == (side == Side::Left ? B.dim[0] : B.dim[1]));
-  Hierarchical HB = split(B,
+  Hierarchical BH = split(B,
                           side == Side::Left ? A.dim[1] : 1,
                           side == Side::Left ? 1 : A.dim[0],
                           false);
-  trmm(A, HB, side, uplo, trans, diag, alpha);
+  trmm(A, BH, side, uplo, trans, diag, alpha);
 }
 
 define_method(
@@ -121,18 +121,18 @@ define_method(
   (
     const Hierarchical& A, LowRank& B,
     const Side side, const Mode uplo,  const char& trans, const char& diag,
-    double alpha
+    const double alpha
   )
 ) {
   // H LR
   assert(A.dim[0] == A.dim[1]);
   assert(get_n_rows(A) == (side == Side::Left ? B.dim[0] : B.dim[1]));
-  Hierarchical HB = split(
+  Hierarchical BH = split(
       side == Side::Left ? B.U : B.V,
       side == Side::Left ? A.dim[1] : 1,
       side == Side::Left ? 1 : A.dim[0],
       false);
-  trmm(A, HB, side, uplo, trans, diag, alpha);
+  trmm(A, BH, side, uplo, trans, diag, alpha);
 }
 
 define_method(
@@ -140,14 +140,14 @@ define_method(
   (
     const Hierarchical& A, Hierarchical& B,
     const Side side, const Mode uplo, const char& trans, const char& diag,
-    double alpha
+    const double alpha
   )
 ) {
   // H H
   assert(A.dim[0] == A.dim[1]);
   assert(A.dim[0] == (side == Side::Left ? B.dim[0] : B.dim[1]));
   assert(trans != 't'); //TODO implement for transposed case: need transposed gemm complete
-  Hierarchical B_copy(B);
+  const Hierarchical B_copy(B);
   switch(uplo) {
     case Mode::Upper:
       switch(side) {
@@ -213,7 +213,7 @@ define_method(
   void, trmm_omm,
   (
     const Matrix& A, Matrix& B,
-    const Side, const Mode, const char&, const char&, double
+    const Side, const Mode, const char&, const char&, const double
   )
 ) {
   omm_error_handler("trmm", {A, B}, __FILE__, __LINE__);

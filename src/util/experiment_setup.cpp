@@ -9,7 +9,7 @@
 namespace hicma
 {
 
-std::vector<double> get_sorted_random_vector(int64_t N) {
+std::vector<double> get_sorted_random_vector(const int64_t N) {
   std::vector<double> randx(N);
   std::random_device rd;
   std::mt19937 gen(rd());
@@ -22,7 +22,7 @@ std::vector<double> get_sorted_random_vector(int64_t N) {
   return randx;
 }
 
-std::vector<double> get_non_negative_vector(int64_t N) {
+std::vector<double> get_non_negative_vector(const int64_t N) {
   std::vector<double> randx(N);
   for (int i = 0; i < N; ++i) {
     randx[i] = i;

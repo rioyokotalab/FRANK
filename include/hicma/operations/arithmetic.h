@@ -77,7 +77,7 @@ MatrixProxy operator-(const Matrix& A, const Matrix& B);
  * The multi-dispatcher then will select the correct implementation based on the types of parameters given at runtime.
  * Read \ext_hicma for more information.
  */
-Matrix& operator*=(Matrix& A, double b);
+Matrix& operator*=(Matrix& A, const double b);
 
 } // namespace hicma
 

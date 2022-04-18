@@ -48,8 +48,8 @@ class Matrix;
  */
 void gemm(
   const Matrix& A, const Matrix& B, Matrix& C,
-  double alpha=1, double beta=1,
-  bool TransA=false, bool TransB=false
+  const double alpha=1, const double beta=1,
+  const bool TransA=false, const bool TransB=false
 );
 
 /**
@@ -87,8 +87,8 @@ void gemm(
  */
 MatrixProxy gemm(
   const Matrix& A, const Matrix& B,
-  double alpha=1,
-  bool TransA=false, bool TransB=false
+  const double alpha=1,
+  const bool TransA=false, const bool TransB=false
 );
 
 /**
@@ -129,7 +129,7 @@ MatrixProxy gemm(
 void trmm(
   const Matrix& A, Matrix& B,
   const Side side, const Mode uplo, const char& trans, const char& diag,
-  double alpha
+  const double alpha
 );
 
 /**
@@ -166,7 +166,7 @@ void trmm(
 void trmm(
   const Matrix& A, Matrix& B,
   const Side side, const Mode uplo,
-  double alpha
+  const double alpha
 );
 
 /**
