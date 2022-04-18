@@ -526,19 +526,22 @@ define_method(
 ) {
   // D H D
   // LR H D
-  // TODO Not implemented
-  if (B.dim[0] == 1 && B.dim[1] == 1) std::abort();
-  if (B.dim[TransB ? 1 : 0] == 1) {
+  if (B.dim[0] == 1 && B.dim[1] == 1) {
+    gemm(A, B(0, 0), C, alpha, beta, TransA, TransB);
+  }
+  else if (B.dim[TransB ? 1 : 0] == 1) {
     Hierarchical CH = split(C, 1, B.dim[TransB ? 0 : 1]);
     gemm(A, B, CH, alpha, beta, TransA, TransB);
-  } else if (B.dim[TransB ? 0 : 1] == 1) {
+  }
+  else if (B.dim[TransB ? 0 : 1] == 1) {
     const Hierarchical AH = split(
       A,
       TransA ? B.dim[TransB ? 1 : 0] : 1,
       TransA ? 1 : B.dim[TransB ? 1 : 0]
     );
     gemm(AH, B, C, alpha, beta, TransA, TransB);
-  } else {
+  }
+  else {
     const Hierarchical AH = split(
       A,
       TransA ? B.dim[TransB ? 1 : 0] : 1,
