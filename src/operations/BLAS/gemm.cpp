@@ -209,11 +209,11 @@ define_method(
   )
 ) {
   // LR D LR
-  // TODO Not implemented
-  if (TransA) std::abort();
-  Dense AVxB = gemm(A.V, B, alpha, false, TransB);
-  C.S *= beta;
-  const LowRank AxB(A.U, A.S, AVxB, false);
+  const Dense AxB_U = TransA ? transpose(A.V) : shallow_copy(A.U);
+  const Dense AxB_S = TransA ? transpose(A.S) : shallow_copy(A.S);
+  const Dense AxB_V = gemm(TransA ? A.U : A.V, B, alpha, TransA, TransB);
+  const LowRank AxB(AxB_U, AxB_S, AxB_V, false);
+  C *= beta;
   C += AxB;
 }
 
