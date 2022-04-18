@@ -9,6 +9,7 @@ list(
   "dense_id"
   "dense_qr"
   "rsvd"
+  "gemm"
   "trmm"
   "misc"
   "lowrank"
