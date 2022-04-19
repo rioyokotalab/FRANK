@@ -264,11 +264,11 @@ define_method(
   )
 ) {
   // H LR LR
-  // TODO Not implemented
-  if (TransA || TransB) std::abort();
-  MatrixProxy AxBU = gemm(A, B.U, alpha, TransA, false);
-  const LowRank AxB(AxBU, B.S, B.V, false);
-  C.S *= beta;
+  const Dense AxB_U = gemm(A, TransB ? B.V : B.U, alpha, TransA, TransB);
+  const Dense AxB_S = TransB ? transpose(B.S) : shallow_copy(B.S);
+  const Dense AxB_V = TransB ? transpose(B.U) : shallow_copy(B.V);
+  const LowRank AxB(AxB_U, AxB_S, AxB_V, false);
+  C *= beta;
   C += AxB;
 }
 
