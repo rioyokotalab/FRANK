@@ -488,14 +488,15 @@ define_method(
 ) {
   // H D H
   // H LR H
-  // TODO Not implemented
-  if (A.dim[0] == 1 && A.dim[1] == 1) std::abort();
-  assert(A.dim[TransA ? 1 : 0] == C.dim[0]);
-  if (A.dim[TransA ? 0 : 1] == 1 && C.dim[1] == 1) {
+  if (A.dim[0] == 1 && A.dim[1] == 1) {
+    gemm(A(0, 0), B, C, alpha, beta, TransA, TransB);
+  }
+  else if (A.dim[TransA ? 0 : 1] == 1 && C.dim[1] == 1) {
     for (int64_t i=0; i<A.dim[TransA ? 1 : 0]; ++i) {
       gemm(A[i], B, C[i], alpha, beta, TransA, TransB);
     }
-  } else {
+  }
+  else {
     const Hierarchical BH = split(
       B,
       TransB ? C.dim[1] : A.dim[TransA ? 0 : 1],
