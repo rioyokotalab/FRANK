@@ -2,7 +2,6 @@ list(
   APPEND GTEST_TESTS
   "dense"
   "dense_arithmetic"
-  "dense_gemm"
   "dense_getrf"
   "dense_trsm"
   "dense_svd"
