@@ -77,7 +77,7 @@ define_method(void, fill_dense_from, (const Dense& A, Dense& B)) {
   A.copy_to(B);
 }
 
-define_method(void, fill_dense_from, (const Empty& A, Dense& B)) {
+define_method(void, fill_dense_from, ([[maybe_unused]] const Empty& A, Dense& B)) {
   assert(A.dim[0] == B.dim[0]);
   assert(A.dim[1] == B.dim[1]);
   B = 0.0;
