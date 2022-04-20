@@ -209,11 +209,11 @@ define_method(
   )
 ) {
   // LR D LR
-  // TODO Not implemented
-  if (TransA) std::abort();
-  Dense AVxB = gemm(A.V, B, alpha, false, TransB);
-  C.S *= beta;
-  const LowRank AxB(A.U, A.S, AVxB, false);
+  const Dense AxB_U = TransA ? transpose(A.V) : shallow_copy(A.U);
+  const Dense AxB_S = TransA ? transpose(A.S) : shallow_copy(A.S);
+  const Dense AxB_V = gemm(TransA ? A.U : A.V, B, alpha, TransA, TransB);
+  const LowRank AxB(AxB_U, AxB_S, AxB_V, false);
+  C *= beta;
   C += AxB;
 }
 
@@ -226,11 +226,11 @@ define_method(
   )
 ) {
   // D LR LR
-  // TODO Not implemented
-  if (TransB) std::abort();
-  Dense AxBU = gemm(A, B.U, alpha, TransA, false);
-  C.S *= beta;
-  const LowRank AxB(AxBU, B.S, B.V, false);
+  const Dense AxB_U = gemm(A, TransB ? B.V : B.U, alpha, TransA, TransB);
+  const Dense AxB_S = TransB ? transpose(B.S) : shallow_copy(B.S);
+  const Dense AxB_V = TransB ? transpose(B.U) : shallow_copy(B.V);
+  const LowRank AxB(AxB_U, AxB_S, AxB_V, false);
+  C *= beta;
   C += AxB;
 }
 
@@ -243,12 +243,15 @@ define_method(
   )
 ) {
   // LR LR LR
-  // TODO Not implemented
-  if (TransA || TransB) std::abort();
-  const Dense SxVxU = gemm(A.S, gemm(A.V, B.U, alpha));
-  Dense SxVxUxS = gemm(SxVxU, B.S);
-  C.S *= beta;
-  const LowRank AxB(A.U, SxVxUxS, B.V, false);
+  const Dense AxB_U = TransA ? transpose(A.V) : shallow_copy(A.U);
+  const Dense AxB_S = gemm(
+      gemm(A.S, TransA ? A.U : A.V, 1, TransA, TransA),
+      gemm(TransB ? B.V : B.U, B.S, 1, TransB, TransB),
+      alpha
+  );
+  const Dense AxB_V = TransB ? transpose(B.U) : shallow_copy(B.V);
+  const LowRank AxB(AxB_U, AxB_S, AxB_V, false);
+  C *= beta;
   C += AxB;
 }
 
@@ -261,11 +264,11 @@ define_method(
   )
 ) {
   // H LR LR
-  // TODO Not implemented
-  if (TransA || TransB) std::abort();
-  MatrixProxy AxBU = gemm(A, B.U, alpha, TransA, false);
-  const LowRank AxB(AxBU, B.S, B.V, false);
-  C.S *= beta;
+  const Dense AxB_U = gemm(A, TransB ? B.V : B.U, alpha, TransA, TransB);
+  const Dense AxB_S = TransB ? transpose(B.S) : shallow_copy(B.S);
+  const Dense AxB_V = TransB ? transpose(B.U) : shallow_copy(B.V);
+  const LowRank AxB(AxB_U, AxB_S, AxB_V, false);
+  C *= beta;
   C += AxB;
 }
 
@@ -310,11 +313,11 @@ define_method(
   )
 ) {
   // LR H LR
-  // TODO Not implemented
-  if (TransA || TransB) std::abort();
-  MatrixProxy AVxB = gemm(A.V, B, alpha, false, TransB);
-  const LowRank AxB(A.U, A.S, AVxB, false);
-  C.S *= beta;
+  const Dense AxB_U = TransA ? transpose(A.V) : shallow_copy(A.U);
+  const Dense AxB_S = TransA ? transpose(A.S) : shallow_copy(A.S);
+  const Dense AxB_V = gemm(TransA ? A.U : A.V, B, alpha, TransA, TransB);
+  const LowRank AxB(AxB_U, AxB_S, AxB_V, false);
+  C *= beta;
   C += AxB;
 }
 
@@ -327,10 +330,10 @@ define_method(
   )
 ) {
   // D LR H
-  // TODO Not implemented
-  if (TransA || TransB) std::abort();
-  Dense AxBU = gemm(A, B.U, alpha);
-  const LowRank AxB(AxBU, B.S, B.V, false);
+  const Dense AxB_U = gemm(A, TransB ? B.V : B.U, alpha, TransA, TransB);
+  const Dense AxB_S = TransB ? transpose(B.S) : shallow_copy(B.S);
+  const Dense AxB_V = TransB ? transpose(B.U) : shallow_copy(B.V);
+  const LowRank AxB(AxB_U, AxB_S, AxB_V, false);
   C *= beta;
   C += AxB;
 }
@@ -344,10 +347,10 @@ define_method(
   )
 ) {
   // LR D H
-  // TODO Not implemented
-  if (TransA || TransB) std::abort();
-  Dense AVxB = gemm(A.V, B, alpha);
-  const LowRank AxB(A.U, A.S, AVxB, false);
+  const Dense AxB_U = TransA ? transpose(A.V) : shallow_copy(A.U);
+  const Dense AxB_S = TransA ? transpose(A.S) : shallow_copy(A.S);
+  const Dense AxB_V = gemm(TransA ? A.U : A.V, B, alpha, TransA, TransB);
+  const LowRank AxB(AxB_U, AxB_S, AxB_V, false);
   C *= beta;
   C += AxB;
 }
@@ -361,10 +364,14 @@ define_method(
   )
 ) {
   // LR LR H
-  // TODO Not implemented
-  if (TransA || TransB) std::abort();
-  Dense SxVxUxS = gemm(gemm(A.S, gemm(A.V, B.U, alpha)), B.S);
-  const LowRank AxB(A.U, SxVxUxS, B.V, false);
+  const Dense AxB_U = TransA ? transpose(A.V) : shallow_copy(A.U);
+  const Dense AxB_S = gemm(
+      gemm(A.S, TransA ? A.U : A.V, 1, TransA, TransA),
+      gemm(TransB ? B.V : B.U, B.S, 1, TransB, TransB),
+      alpha
+  );
+  const Dense AxB_V = TransB ? transpose(B.U) : shallow_copy(B.V);
+  const LowRank AxB(AxB_U, AxB_S, AxB_V, false);
   C *= beta;
   C += AxB;
 }
@@ -452,14 +459,16 @@ define_method(
 ) {
   // D H H
   // LR H H
-  // TODO Not implemented
-  if (B.dim[0] == 1 && B.dim[1] == 1) std::abort();
   assert(B.dim[TransB ? 0 : 1] == C.dim[1]);
-  if (B.dim[TransB ? 1 : 0] == 1 && C.dim[0] == 1) {
+  if (B.dim[0] == 1 && B.dim[1] == 1) {
+    gemm(A, B(0, 0), C, alpha, beta, TransA, TransB);
+  }
+  else if (B.dim[TransB ? 1 : 0] == 1 && C.dim[0] == 1) {
     for (int64_t j=0; j<B.dim[TransB ? 0 : 1]; ++j) {
       gemm(A, B[j], C[j], alpha, beta, TransA, TransB);
     }
-  } else {
+  }
+  else {
     const Hierarchical AH = split(
       A,
       TransA ? B.dim[TransB ? 1 : 0] : C.dim[0],
@@ -479,14 +488,15 @@ define_method(
 ) {
   // H D H
   // H LR H
-  // TODO Not implemented
-  if (A.dim[0] == 1 && A.dim[1] == 1) std::abort();
-  assert(A.dim[TransA ? 1 : 0] == C.dim[0]);
-  if (A.dim[TransA ? 0 : 1] == 1 && C.dim[1] == 1) {
+  if (A.dim[0] == 1 && A.dim[1] == 1) {
+    gemm(A(0, 0), B, C, alpha, beta, TransA, TransB);
+  }
+  else if (A.dim[TransA ? 0 : 1] == 1 && C.dim[1] == 1) {
     for (int64_t i=0; i<A.dim[TransA ? 1 : 0]; ++i) {
       gemm(A[i], B, C[i], alpha, beta, TransA, TransB);
     }
-  } else {
+  }
+  else {
     const Hierarchical BH = split(
       B,
       TransB ? C.dim[1] : A.dim[TransA ? 0 : 1],
@@ -526,19 +536,22 @@ define_method(
 ) {
   // D H D
   // LR H D
-  // TODO Not implemented
-  if (B.dim[0] == 1 && B.dim[1] == 1) std::abort();
-  if (B.dim[TransB ? 1 : 0] == 1) {
+  if (B.dim[0] == 1 && B.dim[1] == 1) {
+    gemm(A, B(0, 0), C, alpha, beta, TransA, TransB);
+  }
+  else if (B.dim[TransB ? 1 : 0] == 1) {
     Hierarchical CH = split(C, 1, B.dim[TransB ? 0 : 1]);
     gemm(A, B, CH, alpha, beta, TransA, TransB);
-  } else if (B.dim[TransB ? 0 : 1] == 1) {
+  }
+  else if (B.dim[TransB ? 0 : 1] == 1) {
     const Hierarchical AH = split(
       A,
       TransA ? B.dim[TransB ? 1 : 0] : 1,
       TransA ? 1 : B.dim[TransB ? 1 : 0]
     );
     gemm(AH, B, C, alpha, beta, TransA, TransB);
-  } else {
+  }
+  else {
     const Hierarchical AH = split(
       A,
       TransA ? B.dim[TransB ? 1 : 0] : 1,
@@ -559,19 +572,22 @@ define_method(
 ) {
   // H D D
   // H LR D
-  // TODO Not implemented
-  if (A.dim[0] == 1 && A.dim[1] == 1) std::abort();
-  if (A.dim[TransA ? 0 : 1] == 1) {
+  if (A.dim[0] == 1 && A.dim[1] == 1) {
+    gemm(A(0, 0), B, C, alpha, beta, TransA, TransB);
+  }
+  else if (A.dim[TransA ? 0 : 1] == 1) {
     Hierarchical CH = split(C, A.dim[TransA ? 1 : 0], 1);
     gemm(A, B, CH, alpha, beta, TransA, TransB);
-  } else if (A.dim[TransA ? 1 : 0] == 1) {
+  }
+  else if (A.dim[TransA ? 1 : 0] == 1) {
     const Hierarchical BH = split(
       B,
       TransB ? 1 : A.dim[TransA ? 0 : 1],
       TransB ? A.dim[TransA ? 0 : 1] : 1
     );
     gemm(A, BH, C, alpha, beta, TransA, TransB);
-  } else {
+  }
+  else {
     const Hierarchical BH = split(
       B,
       TransB ? 1 : A.dim[TransA ? 0 : 1],

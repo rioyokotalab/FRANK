@@ -16,6 +16,7 @@
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
+#include <limits>
 
 
 namespace hicma
@@ -30,7 +31,7 @@ double l2_error(const Matrix& A, const Matrix& B) {
   assert(get_n_cols(A) == get_n_cols(B));
   double diff, mat_norm;
   std::tie(diff, mat_norm) = collect_diff_norm(A, B);
-  return std::sqrt(diff/mat_norm);
+  return std::sqrt(diff/(mat_norm + std::numeric_limits<double>::epsilon()));
 }
 
 define_method(
