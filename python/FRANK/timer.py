@@ -1,6 +1,6 @@
 from timeit import default_timer as timer
 
-from hicma.print import print_time
+from FRANK.print import print_time
 
 
 tic = {}

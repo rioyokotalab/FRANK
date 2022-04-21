@@ -3,9 +3,9 @@ import numpy as np
 import numbers
 import scipy.linalg as sl
 
-from hicma.node import Node
-import hicma.low_rank as HL
-import hicma.hierarchical as HH
+from FRANK.node import Node
+import FRANK.low_rank as HL
+import FRANK.hierarchical as HH
 
 
 class Dense(Node):

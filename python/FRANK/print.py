@@ -1,5 +1,5 @@
 import xml.etree.ElementTree as ET
-from hicma.dense import Dense
+from FRANK.dense import Dense
 
 def printf(s, n=None):
     if n is None:

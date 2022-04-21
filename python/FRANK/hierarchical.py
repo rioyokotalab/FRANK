@@ -2,8 +2,8 @@
 import numpy as np
 
 from .node import Node
-import hicma.dense as HD
-import hicma.low_rank as HL
+import FRANK.dense as HD
+import FRANK.low_rank as HL
 
 
 class Hierarchical(Node):
