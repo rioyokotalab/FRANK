@@ -1,13 +1,13 @@
-#include "hicma/hicma.h"
+#include "FRANK/FRANK.h"
 
 #include <cstdint>
 #include <vector>
 
 
-using namespace hicma;
+using namespace FRANK;
 
 int main(int argc, char** argv) {
-  hicma::initialize();
+  FRANK::initialize();
   const int64_t N = argc > 1 ? atoi(argv[1]) : 128;
   const int64_t rank = argc > 2 ? atoi(argv[2]) : 16;
   const std::vector<std::vector<double>> randx{ get_sorted_random_vector(2*N) };
@@ -28,7 +28,7 @@ int main(int argc, char** argv) {
   AWork = A;
   timing::stop("Init matrix");
   print("LR Add Naive");
-  setGlobalValue("HICMA_LRA", "naive");
+  setGlobalValue("FRANK_LRA", "naive");
   timing::start("LR Add Naive");
   AWork += B;
   timing::stopAndPrint("LR Add Naive", 2);
@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
   AWork = A;
   timing::stop("Init matrix");
   print("LR Add Orthogonal");
-  setGlobalValue("HICMA_LRA", "rounded_addition");
+  setGlobalValue("FRANK_LRA", "rounded_addition");
   timing::start("LR Add Orthogonal");
   AWork += B;
   timing::stopAndPrint("LR Add Orthogonal", 2);

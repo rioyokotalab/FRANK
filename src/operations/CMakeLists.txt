@@ -1,4 +1,4 @@
-target_sources(hicma PRIVATE
+target_sources(FRANK PRIVATE
   ${CMAKE_CURRENT_LIST_DIR}/arithmetic/addition.cpp
   ${CMAKE_CURRENT_LIST_DIR}/arithmetic/multiplication.cpp
   ${CMAKE_CURRENT_LIST_DIR}/arithmetic/subtraction.cpp

@@ -1,11 +1,11 @@
-#include "hicma/operations/LAPACK.h"
-#include "hicma/operations/misc.h"
+#include "FRANK/operations/LAPACK.h"
+#include "FRANK/operations/misc.h"
 
-#include "hicma/definitions.h"
-#include "hicma/classes/dense.h"
-#include "hicma/classes/matrix.h"
-#include "hicma/util/omm_error_handler.h"
-#include "hicma/util/timer.h"
+#include "FRANK/definitions.h"
+#include "FRANK/classes/dense.h"
+#include "FRANK/classes/matrix.h"
+#include "FRANK/util/omm_error_handler.h"
+#include "FRANK/util/timer.h"
 
 #ifdef USE_MKL
 #include <mkl.h>
@@ -25,7 +25,7 @@ using yorel::yomm2::virtual_;
 #include <vector>
 
 
-namespace hicma
+namespace FRANK
 {
 
 declare_method(DenseIndexSetPair, geqp3_omm, (virtual_<Matrix&>))
@@ -190,4 +190,4 @@ std::tuple<Dense, Dense> truncated_geqp3(const Dense& _A, const double eps) {
   return {Q, RP};
 }
 
-} // namespace hicma
+} // namespace FRANK

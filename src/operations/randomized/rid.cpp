@@ -1,10 +1,10 @@
-#include "hicma/operations/randomized_factorizations.h"
+#include "FRANK/operations/randomized_factorizations.h"
 
-#include "hicma/classes/dense.h"
-#include "hicma/functions.h"
-#include "hicma/operations/BLAS.h"
-#include "hicma/operations/LAPACK.h"
-#include "hicma/operations/misc.h"
+#include "FRANK/classes/dense.h"
+#include "FRANK/functions.h"
+#include "FRANK/operations/BLAS.h"
+#include "FRANK/operations/LAPACK.h"
+#include "FRANK/operations/misc.h"
 
 #include <cstdint>
 #include <tuple>
@@ -12,7 +12,7 @@
 #include <vector>
 
 
-namespace hicma
+namespace FRANK
 {
 
 std::tuple<Dense, Dense, Dense> rid(
@@ -69,4 +69,4 @@ std::tuple<Dense, std::vector<int64_t>> old_one_sided_rid(
   return {std::move(V), std::move(selected_cols)};
 }
 
-} // namespace hicma
+} // namespace FRANK

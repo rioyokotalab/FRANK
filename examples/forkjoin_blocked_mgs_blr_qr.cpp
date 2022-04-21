@@ -1,4 +1,4 @@
-#include "hicma/hicma.h"
+#include "FRANK/FRANK.h"
 
 #include <algorithm>
 #include <cmath>
@@ -10,7 +10,7 @@
 #include <cstdlib>
 #include <cassert>
 
-using namespace hicma;
+using namespace FRANK;
 
 double get_time() {
   struct timeval tv;
@@ -19,14 +19,14 @@ double get_time() {
 }
 
 int main(int argc, char** argv) {
-  hicma::initialize();
+  FRANK::initialize();
   const int64_t m = argc > 1 ? atoi(argv[1]) : 256;
   const int64_t n = argc > 2 ? atoi(argv[2]) : m / 2;
   const int64_t b = argc > 3 ? atoi(argv[3]) : 32;
   const double eps = argc > 4 ? atof(argv[4]) : 1e-6;
   const double admis = argc > 5 ? atof(argv[5]) : 0;
-  setGlobalValue("HICMA_LRA", "rounded_addition");
-  setGlobalValue("HICMA_DISABLE_TIMER", "1");
+  setGlobalValue("FRANK_LRA", "rounded_addition");
+  setGlobalValue("FRANK_DISABLE_TIMER", "1");
 
   assert(m >= n);
   assert(m % b == 0);
@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
   print("BLR-QR Accuracy");
   //Residual
   Hierarchical QR(Q);
-  trmm(R, QR, hicma::Side::Right, hicma::Mode::Upper, 'n', 'n', 1.);
+  trmm(R, QR, FRANK::Side::Right, FRANK::Mode::Upper, 'n', 'n', 1.);
   print("Residual", l2_error(D, QR), false);
   //Orthogonality
   Hierarchical QtQ(zeros, randpts, n, n, b, eps, admis, q, q);

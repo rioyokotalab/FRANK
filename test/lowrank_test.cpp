@@ -4,7 +4,7 @@
 #include <tuple>
 #include <iostream>
 
-#include "hicma/hicma.h"
+#include "FRANK/FRANK.h"
 #include "gtest/gtest.h"
 
 class LowRankTest_FixedRank
@@ -17,13 +17,13 @@ TEST_P(LowRankTest_FixedRank, Construction) {
   int64_t m, n, rank;
   std::tie(lr_add_alg, m, n, rank) = GetParam();
 
-  hicma::initialize();
-  hicma::setGlobalValue("HICMA_LRA", lr_add_alg);
-  const std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m>n?2*m:2*n)};
+  FRANK::initialize();
+  FRANK::setGlobalValue("FRANK_LRA", lr_add_alg);
+  const std::vector<std::vector<double>> randx_A{FRANK::get_sorted_random_vector(m>n?2*m:2*n)};
 
   // Construct rank deficient block
-  const hicma::Dense D(hicma::laplacend, randx_A, m, n, 0, n);
-  const hicma::LowRank A(D, rank);
+  const FRANK::Dense D(FRANK::laplacend, randx_A, m, n, 0, n);
+  const FRANK::LowRank A(D, rank);
   // Check rank
   EXPECT_EQ(A.rank, rank);
 }
@@ -33,29 +33,29 @@ TEST_P(LowRankTest_FixedRank, Addition) {
   int64_t m, n, rank;
   std::tie(lr_add_alg, m, n, rank) = GetParam();
 
-  hicma::initialize();
+  FRANK::initialize();
   // Set low-rank addition algorithm
-  hicma::setGlobalValue("HICMA_LRA", lr_add_alg);
-  const std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m>n?2*m:2*n)};
+  FRANK::setGlobalValue("FRANK_LRA", lr_add_alg);
+  const std::vector<std::vector<double>> randx_A{FRANK::get_sorted_random_vector(m>n?2*m:2*n)};
 
-  const hicma::Dense DA(hicma::laplacend, randx_A, m, n, 0, n);
-  hicma::LowRank A(DA, rank);
+  const FRANK::Dense DA(FRANK::laplacend, randx_A, m, n, 0, n);
+  FRANK::LowRank A(DA, rank);
 
   // Add with similar low-rank block
-  const hicma::Dense DB(DA);
-  const hicma::LowRank B(DB, rank);
+  const FRANK::Dense DB(DA);
+  const FRANK::LowRank B(DB, rank);
   A += B;
   EXPECT_EQ(A.rank, rank);
 
   // Add with low-rank block with different rank
-  const hicma::Dense DC(DA);
-  const hicma::LowRank C(DC, std::min(rank + 4, std::min(m, n)));
+  const FRANK::Dense DC(DA);
+  const FRANK::LowRank C(DC, std::min(rank + 4, std::min(m, n)));
   A += C;
   EXPECT_EQ(A.rank, rank);
 
   // Add with full-rank random block
-  const hicma::Dense DD(hicma::random_normal, randx_A, m, n);
-  const hicma::LowRank D(DD, rank);
+  const FRANK::Dense DD(FRANK::random_normal, randx_A, m, n);
+  const FRANK::LowRank D(DD, rank);
   A += D;
   EXPECT_EQ(A.rank, rank);
 }
@@ -66,15 +66,15 @@ TEST_P(LowRankTest_FixedAccuracy, Construction) {
   double eps;
   std::tie(lr_add_alg, m, n, eps) = GetParam();
 
-  hicma::initialize();
-  hicma::setGlobalValue("HICMA_LRA", lr_add_alg);
-  const std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m>n?2*m:2*n)};
+  FRANK::initialize();
+  FRANK::setGlobalValue("FRANK_LRA", lr_add_alg);
+  const std::vector<std::vector<double>> randx_A{FRANK::get_sorted_random_vector(m>n?2*m:2*n)};
 
   // Construct rank deficient block
-  const hicma::Dense D(hicma::laplacend, randx_A, m, n, 0, n);
-  const hicma::LowRank A(D, eps);
+  const FRANK::Dense D(FRANK::laplacend, randx_A, m, n, 0, n);
+  const FRANK::LowRank A(D, eps);
   // Check compression error
-  const double error = hicma::l2_error(D, A);
+  const double error = FRANK::l2_error(D, A);
   EXPECT_NEAR(error, eps, 10*eps);
 }
 
@@ -84,33 +84,33 @@ TEST_P(LowRankTest_FixedAccuracy, Addition) {
   double eps, error;
   std::tie(lr_add_alg, m, n, eps) = GetParam();
 
-  hicma::initialize();
+  FRANK::initialize();
   // Set low-rank addition algorithm
-  hicma::setGlobalValue("HICMA_LRA", lr_add_alg);
-  const std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m>n?2*m:2*n)};
+  FRANK::setGlobalValue("FRANK_LRA", lr_add_alg);
+  const std::vector<std::vector<double>> randx_A{FRANK::get_sorted_random_vector(m>n?2*m:2*n)};
 
-  const hicma::Dense DA(hicma::laplacend, randx_A, m, n, 0, n);
-  hicma::LowRank A(DA, eps);
+  const FRANK::Dense DA(FRANK::laplacend, randx_A, m, n, 0, n);
+  FRANK::LowRank A(DA, eps);
 
   // Add with similar low-rank block
-  const hicma::Dense DB(DA);
-  const hicma::LowRank B(DB, eps);
+  const FRANK::Dense DB(DA);
+  const FRANK::LowRank B(DB, eps);
   A += B;
-  error = hicma::l2_error((DA+DB), A);
+  error = FRANK::l2_error((DA+DB), A);
   EXPECT_NEAR(error, eps, 10*eps);
 
   // Add with low-rank block with different rank
-  const hicma::Dense DC(DA);
-  const hicma::LowRank C(DC, eps*1e-2);
+  const FRANK::Dense DC(DA);
+  const FRANK::LowRank C(DC, eps*1e-2);
   A += C;
-  error = hicma::l2_error((DA+DB+DC), A);
+  error = FRANK::l2_error((DA+DB+DC), A);
   EXPECT_NEAR(error, eps, 10*eps);
 
   // Add with full-rank random block
-  const hicma::Dense DD(hicma::random_normal, randx_A, m, n);
-  const hicma::LowRank D(DD, eps);
+  const FRANK::Dense DD(FRANK::random_normal, randx_A, m, n);
+  const FRANK::LowRank D(DD, eps);
   A += D;
-  error = hicma::l2_error((DA+DB+DC+DD), A);
+  error = FRANK::l2_error((DA+DB+DC+DD), A);
   EXPECT_NEAR(error, eps, 10*eps);
 }
 

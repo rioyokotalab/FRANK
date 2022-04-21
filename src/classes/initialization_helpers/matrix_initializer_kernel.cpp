@@ -1,13 +1,13 @@
-#include "hicma/classes/initialization_helpers/matrix_initializer_kernel.h"
+#include "FRANK/classes/initialization_helpers/matrix_initializer_kernel.h"
 
-#include "hicma/classes/dense.h"
-#include "hicma/classes/initialization_helpers/cluster_tree.h"
-#include "hicma/classes/initialization_helpers/matrix_initializer.h"
+#include "FRANK/classes/dense.h"
+#include "FRANK/classes/initialization_helpers/cluster_tree.h"
+#include "FRANK/classes/initialization_helpers/matrix_initializer.h"
 
 #include <cstdint>
 
 
-namespace hicma
+namespace FRANK
 {
 
 MatrixInitializerKernel::MatrixInitializerKernel(
@@ -28,4 +28,4 @@ void MatrixInitializerKernel::fill_dense_representation(
          params, row_range.start, col_range.start);
 }
 
-} // namespace hicma
+} // namespace FRANK

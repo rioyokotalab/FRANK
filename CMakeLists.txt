@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.6)
 
-project(HICMA
+project(FRANK
   LANGUAGES CXX
   VERSION 1.0
 )
@@ -13,15 +13,15 @@ endif()
 # Require C++ 17
 if(${CMAKE_VERSION} VERSION_LESS "3.8.2")
   # TODO This is not compiler agnostic (only clang, gcc)
-  list(APPEND HICMA_OPTIONS -std=c++17)
+  list(APPEND FRANK_OPTIONS -std=c++17)
 else()
-  list(APPEND HICMA_FEATURES cxx_std_17)
+  list(APPEND FRANK_FEATURES cxx_std_17)
 endif()
 
 # Set warnings and optimization level
-list(APPEND HICMA_OPTIONS -O3 -Wall -Wextra -pedantic)
+list(APPEND FRANK_OPTIONS -O3 -Wall -Wextra -pedantic)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-  list(APPEND HICMA_OPTIONS -g)
+  list(APPEND FRANK_OPTIONS -g)
 endif()
 
 # Decide where build results should be saved
@@ -56,7 +56,7 @@ endif("${isSystemDir}" STREQUAL "-1")
 
 ## Dependencies
 # Standard library dependency
-list(APPEND HICMA_DEPENDENCIES stdc++ m dl)
+list(APPEND FRANK_DEPENDENCIES stdc++ m dl)
 # Import external dependency loading script
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(find_or_download)
@@ -69,28 +69,28 @@ endif()
 
 # JSON writer
 find_or_download(nlohmann_json)
-list(APPEND HICMA_DEPENDENCIES nlohmann_json::nlohmann_json)
+list(APPEND FRANK_DEPENDENCIES nlohmann_json::nlohmann_json)
 
 # MKL or other BLAS/LAPACK libraries (default is other)
 option(USE_MKL "Use Parallel Intel Math Kernel Libraries (MKL) + Intel OpenMP" OFF)
 if(${USE_MKL})
-  list(APPEND HICMA_DEFINITIONS USE_MKL)
+  list(APPEND FRANK_DEFINITIONS USE_MKL)
   set(BLA_VENDOR Intel10_64lp)
   set(OpenMP_LIB_NAMES iomp5;pthread)
   find_package(BLAS REQUIRED)
   find_package(LAPACK REQUIRED)
-  list(APPEND HICMA_DEPENDENCIES ${BLAS_LIBRARIES})
+  list(APPEND FRANK_DEPENDENCIES ${BLAS_LIBRARIES})
 else()
   find_package(BLAS REQUIRED)
   find_package(LAPACK REQUIRED)
   find_or_download(CBLAS)
   find_or_download(LAPACKE)
-  list(APPEND HICMA_DEPENDENCIES cblas lapacke ${OpenMP_LIB_NAMES})
+  list(APPEND FRANK_DEPENDENCIES cblas lapacke ${OpenMP_LIB_NAMES})
 endif()
 
 # Open Multi-Method depdency
 find_or_download(YOMM2)
-list(APPEND HICMA_DEPENDENCIES YOMM2::yomm2)
+list(APPEND FRANK_DEPENDENCIES YOMM2::yomm2)
 
 
 ## Main source tree
@@ -121,23 +121,23 @@ endif()
 # Create version file for cmake package
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
-  HiCMAConfigVersion.cmake
+  FRANKConfigVersion.cmake
   VERSION ${PACKAGE_VERSION}
   COMPATIBILITY SameMajorVersion
 )
 install(FILES
-  "${CMAKE_CURRENT_BINARY_DIR}/HiCMAConfigVersion.cmake"
-  DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/cmake/HiCMA
+  "${CMAKE_CURRENT_BINARY_DIR}/FRANKConfigVersion.cmake"
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/cmake/FRANK
 )
-# Create config file of HiCMA
+# Create config file of FRANK
 # No public dependencies so a Config file with the targets is enough
-install(EXPORT HiCMATargets
-  FILE HiCMAConfig.cmake
-  NAMESPACE HiCMA::
-  DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/cmake/HiCMA
+install(EXPORT FRANKTargets
+  FILE FRANKConfig.cmake
+  NAMESPACE FRANK::
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/cmake/FRANK
 )
 # Copy headers to install directory
 install(
-  DIRECTORY ${CMAKE_SOURCE_DIR}/include/hicma
+  DIRECTORY ${CMAKE_SOURCE_DIR}/include/FRANK
   DESTINATION include
 )

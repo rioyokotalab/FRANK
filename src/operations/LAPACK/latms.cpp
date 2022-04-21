@@ -1,6 +1,6 @@
-#include "hicma/operations/LAPACK.h"
+#include "FRANK/operations/LAPACK.h"
 
-#include "hicma/classes/dense.h"
+#include "FRANK/classes/dense.h"
 
 #ifdef USE_MKL
 #include <mkl.h>
@@ -12,7 +12,7 @@
 #include <vector>
 
 
-namespace hicma
+namespace FRANK
 {
 
   void latms(
@@ -34,4 +34,4 @@ namespace hicma
     );
   }
 
-} // namespace hicma
+} // namespace FRANK

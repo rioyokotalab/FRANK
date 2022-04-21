@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 
-#include "hicma/hicma.h"
+#include "FRANK/FRANK.h"
 #include "gtest/gtest.h"
 
 class SVDTests : public testing::TestWithParam<std::tuple<int64_t, int64_t>> {};
@@ -11,14 +11,14 @@ TEST_P(SVDTests, DenseSvd) {
   int64_t m, n;
   std::tie(m, n) = GetParam();
 
-  hicma::initialize();
-  const std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(n)};
-  hicma::Dense A(hicma::laplacend, randx_A, n, n);
+  FRANK::initialize();
+  const std::vector<std::vector<double>> randx_A{FRANK::get_sorted_random_vector(n)};
+  FRANK::Dense A(FRANK::laplacend, randx_A, n, n);
 
-  const hicma::Dense A_copy(A);
-  hicma::Dense U, S, V;
-  std::tie(U, S, V) = hicma::svd(A);
-  const hicma::Dense A_rebuilt = hicma::gemm(hicma::gemm(U, S), V);
+  const FRANK::Dense A_copy(A);
+  FRANK::Dense U, S, V;
+  std::tie(U, S, V) = FRANK::svd(A);
+  const FRANK::Dense A_rebuilt = FRANK::gemm(FRANK::gemm(U, S), V);
 
   // Check result
   for (int64_t i = 0; i < A.dim[0]; ++i) {

@@ -1,15 +1,15 @@
-#include "hicma/operations/LAPACK.h"
+#include "FRANK/operations/LAPACK.h"
 
-#include "hicma/definitions.h"
-#include "hicma/classes/dense.h"
-#include "hicma/classes/hierarchical.h"
-#include "hicma/classes/low_rank.h"
-#include "hicma/classes/matrix.h"
-#include "hicma/classes/initialization_helpers/index_range.h"
-#include "hicma/functions.h"
-#include "hicma/operations/BLAS.h"
-#include "hicma/operations/misc.h"
-#include "hicma/util/omm_error_handler.h"
+#include "FRANK/definitions.h"
+#include "FRANK/classes/dense.h"
+#include "FRANK/classes/hierarchical.h"
+#include "FRANK/classes/low_rank.h"
+#include "FRANK/classes/matrix.h"
+#include "FRANK/classes/initialization_helpers/index_range.h"
+#include "FRANK/functions.h"
+#include "FRANK/operations/BLAS.h"
+#include "FRANK/operations/misc.h"
+#include "FRANK/util/omm_error_handler.h"
 
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
@@ -23,7 +23,7 @@ using yorel::yomm2::virtual_;
 #include <vector>
 
 
-namespace hicma
+namespace FRANK
 {
 
 Dense interleave_id(const Dense& A, std::vector<int64_t>& P) {
@@ -121,4 +121,4 @@ define_method(DenseTriplet, id_omm, (Matrix& A, const int64_t)) {
   std::abort();
 }
 
-} // namespace hicma
+} // namespace FRANK

@@ -1,7 +1,7 @@
-#include "hicma/operations/LAPACK.h"
+#include "FRANK/operations/LAPACK.h"
 
-#include "hicma/classes/dense.h"
-#include "hicma/util/timer.h"
+#include "FRANK/classes/dense.h"
+#include "FRANK/util/timer.h"
 
 #ifdef USE_MKL
 #include <mkl.h>
@@ -17,7 +17,7 @@
 #include <vector>
 
 
-namespace hicma
+namespace FRANK
 {
 
 std::tuple<Dense, Dense, Dense> svd(Dense& A) {
@@ -60,4 +60,4 @@ std::vector<double> get_singular_values(Dense& A) {
   return Sdiag;
 }
 
-} // namespace hicma
+} // namespace FRANK

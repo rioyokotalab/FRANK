@@ -1,13 +1,13 @@
-#include "hicma/operations/BLAS.h"
+#include "FRANK/operations/BLAS.h"
 
-#include "hicma/classes/dense.h"
-#include "hicma/classes/hierarchical.h"
-#include "hicma/classes/low_rank.h"
-#include "hicma/classes/matrix.h"
-#include "hicma/operations/BLAS.h"
-#include "hicma/operations/misc.h"
-#include "hicma/util/omm_error_handler.h"
-#include "hicma/util/timer.h"
+#include "FRANK/classes/dense.h"
+#include "FRANK/classes/hierarchical.h"
+#include "FRANK/classes/low_rank.h"
+#include "FRANK/classes/matrix.h"
+#include "FRANK/operations/BLAS.h"
+#include "FRANK/operations/misc.h"
+#include "FRANK/util/omm_error_handler.h"
+#include "FRANK/util/timer.h"
 
 #ifdef USE_MKL
 #include <mkl.h>
@@ -23,7 +23,7 @@ using yorel::yomm2::virtual_;
 #include <cstdlib>
 
 
-namespace hicma
+namespace FRANK
 {
 
 declare_method(
@@ -228,4 +228,4 @@ define_method(
   std::abort();
 }
 
-} // namespace hicma
+} // namespace FRANK

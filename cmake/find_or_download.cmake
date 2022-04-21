@@ -1,5 +1,5 @@
 macro(find_or_download PACKAGE)
-  set(options EXACT PKG_CONFIG INSTALL_WITH_HiCMA)
+  set(options EXACT PKG_CONFIG INSTALL_WITH_FRANK)
   set(oneValueArgs VERSION)
   cmake_parse_arguments(ARGS
     "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN}
@@ -85,9 +85,9 @@ macro(find_or_download PACKAGE)
         PATHS "${DEPENDENCY_INSTALL_PREFIX}"
       )
     endif()
-    # Install the built package alongside HiCMA if so desired, by copying the
+    # Install the built package alongside FRANK if so desired, by copying the
     # install made in the build tree
-    if(${ARGS_INSTALL_WITH_HiCMA})
+    if(${ARGS_INSTALL_WITH_FRANK})
       install(
         DIRECTORY ${DEPENDENCY_INSTALL_PREFIX}/
         DESTINATION ${CMAKE_INSTALL_PREFIX}

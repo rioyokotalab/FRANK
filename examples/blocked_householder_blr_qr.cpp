@@ -1,4 +1,4 @@
-#include "hicma/hicma.h"
+#include "FRANK/FRANK.h"
 
 #include <cmath>
 #include <cstdint>
@@ -7,16 +7,16 @@
 #include <cassert>
 
 
-using namespace hicma;
+using namespace FRANK;
 
 int main(int argc, char** argv) {
-  hicma::initialize();
+  FRANK::initialize();
   const int64_t m = argc > 1 ? atoi(argv[1]) : 256;
   const int64_t n = argc > 2 ? atoi(argv[2]) : m / 2;
   const int64_t b = argc > 3 ? atoi(argv[3]) : 32;
   const double eps = argc > 4 ? atof(argv[4]) : 1e-6;
   const double admis = argc > 5 ? atof(argv[5]) : 0;
-  setGlobalValue("HICMA_LRA", "rounded_addition");
+  setGlobalValue("FRANK_LRA", "rounded_addition");
 
   assert(m >= n);
   assert(m % b == 0);

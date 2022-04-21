@@ -1,4 +1,4 @@
-target_sources(hicma PRIVATE
+target_sources(FRANK PRIVATE
   ${CMAKE_CURRENT_LIST_DIR}/global_key_value.cpp
   ${CMAKE_CURRENT_LIST_DIR}/experiment_setup.cpp
   ${CMAKE_CURRENT_LIST_DIR}/get_memory_usage.cpp

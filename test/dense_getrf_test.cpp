@@ -4,7 +4,7 @@
 #include <vector>
 #include <iostream>
 
-#include "hicma/hicma.h"
+#include "FRANK/FRANK.h"
 #include "gtest/gtest.h"
 
 class GETRFTests : public testing::TestWithParam<std::tuple<int64_t, int64_t>> {};
@@ -18,9 +18,9 @@ TEST_P(GETRFTests, DenseGetrf) {
     return;
   }
 
-  hicma::initialize();
-  const std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m)};
-  hicma::Dense A(hicma::laplacend, randx_A, m, m);
+  FRANK::initialize();
+  const std::vector<std::vector<double>> randx_A{FRANK::get_sorted_random_vector(m)};
+  FRANK::Dense A(FRANK::laplacend, randx_A, m, m);
 
   // Set a large value on the diagonal to avoid pivoting
   int64_t d = m * n;
@@ -29,10 +29,10 @@ TEST_P(GETRFTests, DenseGetrf) {
     A(i, i) += d--;
   }
 
-  const hicma::Dense A_copy(A);
-  hicma::Dense L, U;
-  std::tie(L, U) = hicma::getrf(A);
-  const hicma::Dense A_rebuilt = gemm(L, U);
+  const FRANK::Dense A_copy(A);
+  FRANK::Dense L, U;
+  std::tie(L, U) = FRANK::getrf(A);
+  const FRANK::Dense A_rebuilt = gemm(L, U);
 
   // Check result
   for (int64_t i = 0; i < m; ++i) {

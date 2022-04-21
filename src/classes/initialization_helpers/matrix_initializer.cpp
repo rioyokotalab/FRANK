@@ -1,13 +1,13 @@
-#include "hicma/classes/initialization_helpers/matrix_initializer.h"
+#include "FRANK/classes/initialization_helpers/matrix_initializer.h"
 
-#include "hicma/classes/dense.h"
-#include "hicma/classes/hierarchical.h"
-#include "hicma/classes/low_rank.h"
-#include "hicma/classes/initialization_helpers/cluster_tree.h"
-#include "hicma/functions.h"
-#include "hicma/operations/BLAS.h"
-#include "hicma/operations/misc.h"
-#include "hicma/operations/randomized_factorizations.h"
+#include "FRANK/classes/dense.h"
+#include "FRANK/classes/hierarchical.h"
+#include "FRANK/classes/low_rank.h"
+#include "FRANK/classes/initialization_helpers/cluster_tree.h"
+#include "FRANK/functions.h"
+#include "FRANK/operations/BLAS.h"
+#include "FRANK/operations/misc.h"
+#include "FRANK/operations/randomized_factorizations.h"
 
 #include <algorithm>
 #include <cassert>
@@ -16,7 +16,7 @@
 #include <cmath>
 
 
-namespace hicma
+namespace FRANK
 {
 
 MatrixInitializer::MatrixInitializer(
@@ -90,4 +90,4 @@ bool MatrixInitializer::is_admissible(const ClusterTree& node) const {
   return admissible;
 }
 
-} // namespace hicma
+} // namespace FRANK

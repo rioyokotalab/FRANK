@@ -4,7 +4,7 @@
 #include <vector>
 #include <limits>
 
-#include "hicma/hicma.h"
+#include "FRANK/FRANK.h"
 #include "gtest/gtest.h"
 
 class QRTests
@@ -16,13 +16,13 @@ TEST_P(QRTests, DenseQr) {
   int64_t m, n, k;
   std::tie(m, n, k) = GetParam();
 
-  hicma::initialize();
-  const std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m>n?m:n)};
-  hicma::Dense A(hicma::laplacend, randx_A, m, n);
-  const hicma::Dense A_copy(A);
-  hicma::Dense Q(m, k), R(k, n);
-  hicma::qr(A, Q, R);
-  const hicma::Dense A_rebuilt = hicma::gemm(Q, R);
+  FRANK::initialize();
+  const std::vector<std::vector<double>> randx_A{FRANK::get_sorted_random_vector(m>n?m:n)};
+  FRANK::Dense A(FRANK::laplacend, randx_A, m, n);
+  const FRANK::Dense A_copy(A);
+  FRANK::Dense Q(m, k), R(k, n);
+  FRANK::qr(A, Q, R);
+  const FRANK::Dense A_rebuilt = FRANK::gemm(Q, R);
 
   // Check accuracy
   for (int64_t i = 0; i < m; i++) {
@@ -31,7 +31,7 @@ TEST_P(QRTests, DenseQr) {
     }
   }
   // Check orthogonality
-  const hicma::Dense QtQ = gemm(Q, Q, 1, true, false);
+  const FRANK::Dense QtQ = gemm(Q, Q, 1, true, false);
   for (int64_t i = 0; i < QtQ.dim[0]; i++) {
     for (int64_t j = 0; j < QtQ.dim[1]; j++) {
       if (i == j)
@@ -46,13 +46,13 @@ TEST_P(QRTests, DenseRq) {
   int64_t m, n, k;
   std::tie(m, n, k) = GetParam();
 
-  hicma::initialize();
-  const std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m>n?m:n)};
-  hicma::Dense A(hicma::laplacend, randx_A, n, m);
-  const hicma::Dense A_copy(A);
-  hicma::Dense R(n, k), Q(k, m);
-  hicma::rq(A, R, Q);
-  const hicma::Dense A_rebuilt = hicma::gemm(R, Q);
+  FRANK::initialize();
+  const std::vector<std::vector<double>> randx_A{FRANK::get_sorted_random_vector(m>n?m:n)};
+  FRANK::Dense A(FRANK::laplacend, randx_A, n, m);
+  const FRANK::Dense A_copy(A);
+  FRANK::Dense R(n, k), Q(k, m);
+  FRANK::rq(A, R, Q);
+  const FRANK::Dense A_rebuilt = FRANK::gemm(R, Q);
 
   // Check accuracy
   for (int64_t i = 0; i < n; i++) {
@@ -61,7 +61,7 @@ TEST_P(QRTests, DenseRq) {
     }
   }
   // Check orthogonality
-  const hicma::Dense QQt = gemm(Q, Q, 1, false, true);
+  const FRANK::Dense QQt = gemm(Q, Q, 1, false, true);
   for (int64_t i = 0; i < QQt.dim[0]; i++) {
     for (int64_t j = 0; j < QQt.dim[1]; j++) {
       if (i == j)
@@ -77,12 +77,12 @@ TEST_P(TruncatedQRTests, ThresholdBasedTruncation) {
   double eps;
   std::tie(m, n, eps) = GetParam();
   
-  hicma::initialize();
-  const std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m>n?2*m:2*n)};
+  FRANK::initialize();
+  const std::vector<std::vector<double>> randx_A{FRANK::get_sorted_random_vector(m>n?2*m:2*n)};
   
   // Construct rank deficient block
-  const hicma::Dense D(hicma::laplacend, randx_A, m, n, 0, n);
-  hicma::Dense Q, RP;
+  const FRANK::Dense D(FRANK::laplacend, randx_A, m, n, 0, n);
+  FRANK::Dense Q, RP;
   std::tie(Q, RP) = truncated_geqp3(D, eps);
 
   // Check dimensions
@@ -91,7 +91,7 @@ TEST_P(TruncatedQRTests, ThresholdBasedTruncation) {
   EXPECT_EQ(RP.dim[1], D.dim[1]);
   
   // Check compression error
-  const double error = hicma::l2_error(D, hicma::gemm(Q, RP));
+  const double error = FRANK::l2_error(D, FRANK::gemm(Q, RP));
   EXPECT_NEAR(error, eps, 10*eps);
 }
 
@@ -100,11 +100,11 @@ TEST_P(TruncatedQRTests, ZeroMatrixHandler) {
   double eps;
   std::tie(m, n, eps) = GetParam();
   
-  hicma::initialize();
+  FRANK::initialize();
   
   // Construct m x n zero matrix
-  const hicma::Dense D(m, n);
-  hicma::Dense Q, RP;
+  const FRANK::Dense D(m, n);
+  FRANK::Dense Q, RP;
   std::tie(Q, RP) = truncated_geqp3(D, eps);
   
   // Check dimensions

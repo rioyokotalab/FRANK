@@ -1,15 +1,15 @@
-#include "hicma/operations/LAPACK.h"
+#include "FRANK/operations/LAPACK.h"
 
-#include "hicma/definitions.h"
-#include "hicma/classes/dense.h"
-#include "hicma/classes/empty.h"
-#include "hicma/classes/hierarchical.h"
-#include "hicma/classes/low_rank.h"
-#include "hicma/classes/matrix.h"
-#include "hicma/operations/BLAS.h"
-#include "hicma/operations/misc.h"
-#include "hicma/util/omm_error_handler.h"
-#include "hicma/util/timer.h"
+#include "FRANK/definitions.h"
+#include "FRANK/classes/dense.h"
+#include "FRANK/classes/empty.h"
+#include "FRANK/classes/hierarchical.h"
+#include "FRANK/classes/low_rank.h"
+#include "FRANK/classes/matrix.h"
+#include "FRANK/operations/BLAS.h"
+#include "FRANK/operations/misc.h"
+#include "FRANK/util/omm_error_handler.h"
+#include "FRANK/util/timer.h"
 
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
@@ -29,7 +29,7 @@ using yorel::yomm2::virtual_;
 #include <vector>
 
 
-namespace hicma
+namespace FRANK
 {
 
 declare_method(
@@ -88,4 +88,4 @@ define_method(MatrixPair, getrf_omm, (Matrix& A)) {
   std::abort();
 }
 
-} // namespace hicma
+} // namespace FRANK

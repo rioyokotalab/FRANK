@@ -1,7 +1,7 @@
-#include "hicma/util/timer.h"
+#include "FRANK/util/timer.h"
 
-#include "hicma/util/print.h"
-#include "hicma/util/global_key_value.h"
+#include "FRANK/util/print.h"
+#include "FRANK/util/global_key_value.h"
 
 #include <algorithm>
 #include <cassert>
@@ -11,7 +11,7 @@
 #include <vector>
 
 
-namespace hicma
+namespace FRANK
 {
 namespace timing
 {
@@ -22,7 +22,7 @@ Timer GlobalTimer;
 Timer* current_timer = &GlobalTimer;
 
 Timer& start(const std::string event) {
-  if(getGlobalValue("HICMA_DISABLE_TIMER") != "1") {
+  if(getGlobalValue("FRANK_DISABLE_TIMER") != "1") {
     current_timer->start_subtimer(event);
     current_timer = &(*current_timer)[event];
   }
@@ -31,7 +31,7 @@ Timer& start(const std::string event) {
 
 // TODO Refactor so this doesn't need event?
 double stop([[maybe_unused]] const std::string event) {
-  if(getGlobalValue("HICMA_DISABLE_TIMER") != "1") {
+  if(getGlobalValue("FRANK_DISABLE_TIMER") != "1") {
     assert(current_timer->get_name() == event);
     const double duration = current_timer->stop();
     if (current_timer->get_parent() != nullptr) {
@@ -45,7 +45,7 @@ double stop([[maybe_unused]] const std::string event) {
 void clearTimers() { GlobalTimer.clear(); }
 
 void stopAndPrint(const std::string event, const int depth) {
-  if(getGlobalValue("HICMA_DISABLE_TIMER") != "1") {
+  if(getGlobalValue("FRANK_DISABLE_TIMER") != "1") {
     stop(event);
     printTime(event, depth);
   }
@@ -177,4 +177,4 @@ void Timer::print_to_depth(const int depth, const int at_depth, const std::strin
 }
 
 } // namespace timing
-} // namespace hicma
+} // namespace FRANK

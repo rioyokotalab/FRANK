@@ -1,7 +1,7 @@
-#include "hicma/util/omm_error_handler.h"
+#include "FRANK/util/omm_error_handler.h"
 
-#include "hicma/classes/matrix.h"
-#include "hicma/util/print.h"
+#include "FRANK/classes/matrix.h"
+#include "FRANK/util/print.h"
 
 #include <cstdint>
 #include <functional>
@@ -9,7 +9,7 @@
 #include <vector>
 
 
-namespace hicma
+namespace FRANK
 {
 
 void omm_error_handler(
@@ -29,4 +29,4 @@ void omm_error_handler(
   std::cerr << "specialization of type_omm() for any new classes!" << std::endl;
 }
 
-} // namespace hicma
+} // namespace FRANK

@@ -1,10 +1,10 @@
-#include "hicma/operations/arithmetic.h"
+#include "FRANK/operations/arithmetic.h"
 
-#include "hicma/classes/dense.h"
-#include "hicma/classes/matrix.h"
-#include "hicma/classes/matrix_proxy.h"
-#include "hicma/operations/misc.h"
-#include "hicma/util/omm_error_handler.h"
+#include "FRANK/classes/dense.h"
+#include "FRANK/classes/matrix.h"
+#include "FRANK/classes/matrix_proxy.h"
+#include "FRANK/operations/misc.h"
+#include "FRANK/util/omm_error_handler.h"
 
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
@@ -14,7 +14,7 @@ using yorel::yomm2::virtual_;
 #include <cstdlib>
 
 
-namespace hicma
+namespace FRANK
 {
 
 declare_method(
@@ -45,4 +45,4 @@ define_method(
   std::abort();
 }
 
-} // namespace hicma
+} // namespace FRANK

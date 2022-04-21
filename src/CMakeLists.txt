@@ -1,16 +1,16 @@
-add_library(hicma SHARED functions.cpp)
+add_library(FRANK SHARED functions.cpp)
 add_subdirectory(classes)
 add_subdirectory(operations)
 add_subdirectory(util)
-target_include_directories(hicma
+target_include_directories(FRANK
   PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
-target_compile_definitions(hicma PRIVATE ${HICMA_DEFINITIONS})
-target_compile_features(hicma PRIVATE ${HICMA_FEATURES})
-target_compile_options(hicma PRIVATE ${HICMA_OPTIONS})
-target_link_libraries(hicma PRIVATE ${HICMA_DEPENDENCIES})
+target_compile_definitions(FRANK PRIVATE ${FRANK_DEFINITIONS})
+target_compile_features(FRANK PRIVATE ${FRANK_FEATURES})
+target_compile_options(FRANK PRIVATE ${FRANK_OPTIONS})
+target_link_libraries(FRANK PRIVATE ${FRANK_DEPENDENCIES})
 
 # Install instructions
-install(TARGETS hicma EXPORT HiCMATargets DESTINATION lib)
+install(TARGETS FRANK EXPORT FRANKTargets DESTINATION lib)
