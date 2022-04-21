@@ -1,11 +1,11 @@
-#include "hicma/util/geometry_file.h"
+#include "FRANK/util/geometry_file.h"
 
 #include <cstdint>
 #include <vector>
 #include <fstream>
 
 
-namespace hicma
+namespace FRANK
 {
 
 std::vector<std::vector<double>> read_geometry_file(const std::string filename) {
@@ -25,4 +25,4 @@ std::vector<std::vector<double>> read_geometry_file(const std::string filename) 
   return vertices;
 }
 
-} // namespace hicma
+} // namespace FRANK

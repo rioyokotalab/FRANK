@@ -1,12 +1,12 @@
-#include "hicma/util/get_memory_usage.h"
+#include "FRANK/util/get_memory_usage.h"
 
-#include "hicma/classes/dense.h"
-#include "hicma/classes/hierarchical.h"
-#include "hicma/classes/low_rank.h"
-#include "hicma/classes/matrix.h"
-#include "hicma/classes/matrix_proxy.h"
-#include "hicma/util/omm_error_handler.h"
-#include "hicma/util/print.h"
+#include "FRANK/classes/dense.h"
+#include "FRANK/classes/hierarchical.h"
+#include "FRANK/classes/low_rank.h"
+#include "FRANK/classes/matrix.h"
+#include "FRANK/classes/matrix_proxy.h"
+#include "FRANK/util/omm_error_handler.h"
+#include "FRANK/util/print.h"
 
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
@@ -16,7 +16,7 @@ using yorel::yomm2::virtual_;
 #include <memory>
 
 
-namespace hicma
+namespace FRANK
 {
 
 declare_method(
@@ -76,4 +76,4 @@ define_method(unsigned long, get_memory_usage_omm, (const Matrix& A, const bool)
   std::abort();
 }
 
-} // namespace hicma
+} // namespace FRANK

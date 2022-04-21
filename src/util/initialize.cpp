@@ -1,10 +1,10 @@
-#include "hicma/util/initialize.h"
-#include "hicma/classes.h"
+#include "FRANK/util/initialize.h"
+#include "FRANK/classes.h"
 
 #include "yorel/yomm2/cute.hpp"
 
 
-namespace hicma {
+namespace FRANK {
   // Register all classes for the open multi methods
   register_class(Matrix)
   register_class(Dense, Matrix)
@@ -16,4 +16,4 @@ namespace hicma {
     yorel::yomm2::update_methods();
   }
 
-} // namespace hicma
+} // namespace FRANK

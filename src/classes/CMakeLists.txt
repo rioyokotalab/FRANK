@@ -1,4 +1,4 @@
-target_sources(hicma PRIVATE
+target_sources(FRANK PRIVATE
   ${CMAKE_CURRENT_LIST_DIR}/dense.cpp
   ${CMAKE_CURRENT_LIST_DIR}/hierarchical.cpp
   ${CMAKE_CURRENT_LIST_DIR}/low_rank.cpp

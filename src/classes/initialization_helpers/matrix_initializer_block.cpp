@@ -1,14 +1,14 @@
-#include "hicma/classes/initialization_helpers/matrix_initializer_block.h"
+#include "FRANK/classes/initialization_helpers/matrix_initializer_block.h"
 
-#include "hicma/classes/dense.h"
-#include "hicma/classes/initialization_helpers/cluster_tree.h"
-#include "hicma/classes/initialization_helpers/index_range.h"
+#include "FRANK/classes/dense.h"
+#include "FRANK/classes/initialization_helpers/cluster_tree.h"
+#include "FRANK/classes/initialization_helpers/index_range.h"
 
 #include <cstdint>
 #include <utility>
 
 
-namespace hicma
+namespace FRANK
 {
 
 // Additional constructors
@@ -29,4 +29,4 @@ void MatrixInitializerBlock::fill_dense_representation(
   }
 }
 
-} // namespace hicma
+} // namespace FRANK

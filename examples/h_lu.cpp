@@ -1,4 +1,4 @@
-#include "hicma/hicma.h"
+#include "FRANK/FRANK.h"
 
 #include <cassert>
 #include <cstdint>
@@ -6,11 +6,11 @@
 #include <vector>
 
 
-using namespace hicma;
+using namespace FRANK;
 
 int main(int argc, char** argv) {
   timing::start("Overall");
-  hicma::initialize();
+  FRANK::initialize();
   const int64_t N = argc > 1 ? atoi(argv[1]) : 256;
   const int64_t nleaf = argc > 2 ? atoi(argv[2]) : 16;
   const int64_t rank = argc > 3 ? atoi(argv[3]) : 8;

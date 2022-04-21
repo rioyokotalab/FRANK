@@ -1,9 +1,9 @@
-#include "hicma/util/global_key_value.h"
+#include "FRANK/util/global_key_value.h"
 
 #include <cstdlib>
 #include <map>
 
-namespace hicma {
+namespace FRANK {
 
 std::map<std::string, std::string> globalKeyValue;
 
@@ -21,4 +21,4 @@ void setGlobalValue(const std::string key, const std::string value) {
   globalKeyValue[key] = value;
 }
 
-} // namespace hicma
+} // namespace FRANK

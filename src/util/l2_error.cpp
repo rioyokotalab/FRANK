@@ -1,14 +1,14 @@
-#include "hicma/util/l2_error.h"
+#include "FRANK/util/l2_error.h"
 
-#include "hicma/definitions.h"
-#include "hicma/classes/dense.h"
-#include "hicma/classes/hierarchical.h"
-#include "hicma/classes/low_rank.h"
-#include "hicma/classes/matrix.h"
-#include "hicma/operations/arithmetic.h"
-#include "hicma/operations/misc.h"
-#include "hicma/util/omm_error_handler.h"
-#include "hicma/util/print.h"
+#include "FRANK/definitions.h"
+#include "FRANK/classes/dense.h"
+#include "FRANK/classes/hierarchical.h"
+#include "FRANK/classes/low_rank.h"
+#include "FRANK/classes/matrix.h"
+#include "FRANK/operations/arithmetic.h"
+#include "FRANK/operations/misc.h"
+#include "FRANK/util/omm_error_handler.h"
+#include "FRANK/util/print.h"
 
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
@@ -20,7 +20,7 @@ using yorel::yomm2::virtual_;
 #include <limits>
 
 
-namespace hicma
+namespace FRANK
 {
 
 declare_method(
@@ -107,4 +107,4 @@ define_method(
   std::abort();
 }
 
-} // namespace hicma
+} // namespace FRANK

@@ -1,4 +1,4 @@
-#include "hicma/util/experiment_setup.h"
+#include "FRANK/util/experiment_setup.h"
 
 #include <algorithm>
 #include <cstdint>
@@ -6,7 +6,7 @@
 #include <vector>
 
 
-namespace hicma
+namespace FRANK
 {
 
 std::vector<double> get_sorted_random_vector(const int64_t N) {
@@ -30,4 +30,4 @@ std::vector<double> get_non_negative_vector(const int64_t N) {
   return randx;
 }
 
-} // namespace hicma
+} // namespace FRANK

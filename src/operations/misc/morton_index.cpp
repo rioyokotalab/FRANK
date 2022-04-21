@@ -1,13 +1,13 @@
-#include "hicma/operations/misc.h"
+#include "FRANK/operations/misc.h"
 
-#include "hicma/classes/dense.h"
-#include "hicma/classes/hierarchical.h"
-#include "hicma/classes/low_rank.h"
-#include "hicma/classes/matrix.h"
-#include "hicma/classes/initialization_helpers/index_range.h"
-#include "hicma/operations/BLAS.h"
-#include "hicma/operations/LAPACK.h"
-#include "hicma/util/omm_error_handler.h"
+#include "FRANK/classes/dense.h"
+#include "FRANK/classes/hierarchical.h"
+#include "FRANK/classes/low_rank.h"
+#include "FRANK/classes/matrix.h"
+#include "FRANK/classes/initialization_helpers/index_range.h"
+#include "FRANK/operations/BLAS.h"
+#include "FRANK/operations/LAPACK.h"
+#include "FRANK/util/omm_error_handler.h"
 
 #include <algorithm>
 #include <cassert>
@@ -18,7 +18,7 @@
 #include <vector>
 
 
-namespace hicma
+namespace FRANK
 {
 
 std::vector<int64_t> getCartesianIndex(const int64_t dim, int64_t mortonIndex) {
@@ -97,4 +97,4 @@ void sortByMortonIndex(std::vector<std::vector<double>> &x, const int64_t level,
   }
 }
 
-} // namespace hicma
+} // namespace FRANK

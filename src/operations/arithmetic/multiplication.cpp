@@ -1,10 +1,10 @@
-#include "hicma/operations/arithmetic.h"
+#include "FRANK/operations/arithmetic.h"
 
-#include "hicma/classes/dense.h"
-#include "hicma/classes/hierarchical.h"
-#include "hicma/classes/low_rank.h"
-#include "hicma/classes/matrix.h"
-#include "hicma/util/omm_error_handler.h"
+#include "FRANK/classes/dense.h"
+#include "FRANK/classes/hierarchical.h"
+#include "FRANK/classes/low_rank.h"
+#include "FRANK/classes/matrix.h"
+#include "FRANK/util/omm_error_handler.h"
 
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
@@ -13,7 +13,7 @@ using yorel::yomm2::virtual_;
 #include <cstdlib>
 
 
-namespace hicma
+namespace FRANK
 {
 
 declare_method(
@@ -59,4 +59,4 @@ define_method(Matrix&, multiplication_omm, (Matrix& A, const double)) {
   std::abort();
 }
 
-} // namespace hicma
+} // namespace FRANK

@@ -1,15 +1,15 @@
-#include "hicma/hicma.h"
+#include "FRANK/FRANK.h"
 
 #include <cstdint>
 #include <iostream>
 #include <vector>
 
 
-using namespace hicma;
+using namespace FRANK;
 
 int main(int argc, char** argv) {
-  hicma::initialize();
-  hicma::setGlobalValue("HICMA_LRA", "rounded_addition");
+  FRANK::initialize();
+  FRANK::setGlobalValue("FRANK_LRA", "rounded_addition");
   constexpr int64_t N = 128;
   constexpr int64_t nleaf = 16;
   constexpr double eps = 1e-6;
@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
   
   print("H-QR Accuracy");
   Hierarchical QR(Q);
-  trmm(R, QR, hicma::Side::Right, hicma::Mode::Upper, 'n', 'n', 1.);
+  trmm(R, QR, FRANK::Side::Right, FRANK::Mode::Upper, 'n', 'n', 1.);
   print("Residual", l2_error(D, QR), false);
   
   Hierarchical QtQ(zeros, randx, N, N, nleaf, eps, admis, nblocks, nblocks);

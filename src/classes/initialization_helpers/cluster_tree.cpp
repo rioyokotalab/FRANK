@@ -1,14 +1,14 @@
-#include "hicma/classes/initialization_helpers/cluster_tree.h"
+#include "FRANK/classes/initialization_helpers/cluster_tree.h"
 
-#include "hicma/classes/hierarchical.h"
-#include "hicma/operations/misc.h"
+#include "FRANK/classes/hierarchical.h"
+#include "FRANK/operations/misc.h"
 
 #include <cmath>
 #include <cstdint>
 #include <functional>
 
 
-namespace hicma
+namespace FRANK
 {
 
 ClusterTree::ClusterTree(
@@ -99,4 +99,4 @@ ClusterTree::get_block_col() const {
   return block_col;
 }
 
-} // namespace hicma
+} // namespace FRANK

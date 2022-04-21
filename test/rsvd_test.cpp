@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include "hicma/hicma.h"
+#include "FRANK/FRANK.h"
 #include "gtest/gtest.h"
 
 
@@ -13,12 +13,12 @@ TEST_P(RSVDTests, randomizedSVD) {
   int64_t n, rank;
   std::tie(n, rank) = GetParam();
 
-  hicma::initialize();
-  const std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(2*n)};
-  const hicma::Dense A(hicma::laplacend, randx_A, n, n, 0, n);
+  FRANK::initialize();
+  const std::vector<std::vector<double>> randx_A{FRANK::get_sorted_random_vector(2*n)};
+  const FRANK::Dense A(FRANK::laplacend, randx_A, n, n, 0, n);
 
-  const hicma::LowRank LR(A, rank);
-  const double error = hicma::l2_error(A, LR);
+  const FRANK::LowRank LR(A, rank);
+  const double error = FRANK::l2_error(A, LR);
   EXPECT_LT(error, 1e-8);
 }
 

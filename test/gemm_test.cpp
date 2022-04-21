@@ -4,19 +4,19 @@
 #include <tuple>
 #include <limits>
 
-#include "hicma/hicma.h"
+#include "FRANK/FRANK.h"
 #include "gtest/gtest.h"
 
 class GEMMTests
     : public testing::TestWithParam<std::tuple<int64_t, int64_t, int64_t, double, double, bool, bool>> {
  protected:
   void SetUp() override {
-    hicma::initialize();
-    hicma::setGlobalValue("HICMA_LRA", "rounded_addition");
+    FRANK::initialize();
+    FRANK::setGlobalValue("FRANK_LRA", "rounded_addition");
     std::tie(m, k, n, alpha, beta, transA, transB) = GetParam();
-    randx_A = { hicma::get_sorted_random_vector(4 * std::max(m, k)) };
-    randx_B = { hicma::get_sorted_random_vector(4 * std::max(k, n)) };
-    randx_C = { hicma::get_sorted_random_vector(4 * std::max(m, n)) };
+    randx_A = { FRANK::get_sorted_random_vector(4 * std::max(m, k)) };
+    randx_B = { FRANK::get_sorted_random_vector(4 * std::max(k, n)) };
+    randx_C = { FRANK::get_sorted_random_vector(4 * std::max(m, n)) };
   }
   int64_t m, k, n;
   double alpha, beta;
@@ -30,7 +30,7 @@ constexpr int64_t nleaf = 4;
 constexpr int64_t nblocks = 2;
 constexpr double admis = 0;
 
-static void naive_gemm(const hicma::Dense &A, const hicma::Dense &B, hicma::Dense &C,
+static void naive_gemm(const FRANK::Dense &A, const FRANK::Dense &B, FRANK::Dense &C,
                        const double alpha, const double beta, const bool transA, const bool transB) {
   for (int64_t i = 0; i < C.dim[0]; i++) {
     for (int64_t j = 0; j < C.dim[1]; j++) {
@@ -47,682 +47,682 @@ static void naive_gemm(const hicma::Dense &A, const hicma::Dense &B, hicma::Dens
 
 TEST_P(GEMMTests, DenseDenseDense) {
   //D D D
-  const hicma::Dense A(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k);
-  const hicma::Dense B(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n);
-  hicma::Dense C(hicma::laplacend, randx_C, m, n);
-  hicma::Dense C_check(C);
-  hicma::gemm(A, B, C, alpha, beta, transA, transB);
+  const FRANK::Dense A(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k);
+  const FRANK::Dense B(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n);
+  FRANK::Dense C(FRANK::laplacend, randx_C, m, n);
+  FRANK::Dense C_check(C);
+  FRANK::gemm(A, B, C, alpha, beta, transA, transB);
   
   naive_gemm(A, B, C_check, alpha, beta, transA, transB);
 
   // Check result
-  const double error = hicma::l2_error(C_check, C);
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, EPSILON);
 }
 
 TEST_P(GEMMTests, DenseDenseLowrank) {
   //D D LR
-  const hicma::Dense A(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k);
-  const hicma::Dense B(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n);
-  hicma::Dense CD(hicma::laplacend, randx_C, m, n, 0, 2 * std::max(m, n));
-  hicma::Dense C_check(CD);
-  hicma::LowRank C(CD, THRESHOLD);
+  const FRANK::Dense A(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k);
+  const FRANK::Dense B(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n);
+  FRANK::Dense CD(FRANK::laplacend, randx_C, m, n, 0, 2 * std::max(m, n));
+  FRANK::Dense C_check(CD);
+  FRANK::LowRank C(CD, THRESHOLD);
 
-  hicma::gemm(A, B, C, alpha, beta, transA, transB);
+  FRANK::gemm(A, B, C, alpha, beta, transA, transB);
   naive_gemm(A, B, C_check, alpha, beta, transA, transB);
 
   // Check result
-  const double error = hicma::l2_error(C_check, C);
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, 10 * THRESHOLD);
 }
 
 TEST_P(GEMMTests, DenseDenseHierarchical) {
   //D D H
-  const hicma::Dense A(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k);
-  const hicma::Dense B(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n);
-  hicma::Dense CD(hicma::laplacend, randx_C, m, n);
-  hicma::Dense C_check(CD);
-  hicma::Hierarchical C(hicma::laplacend, randx_C, m, n,
-                        nleaf, THRESHOLD, admis, nblocks, nblocks, hicma::AdmisType::PositionBased);
+  const FRANK::Dense A(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k);
+  const FRANK::Dense B(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n);
+  FRANK::Dense CD(FRANK::laplacend, randx_C, m, n);
+  FRANK::Dense C_check(CD);
+  FRANK::Hierarchical C(FRANK::laplacend, randx_C, m, n,
+                        nleaf, THRESHOLD, admis, nblocks, nblocks, FRANK::AdmisType::PositionBased);
 
-  hicma::gemm(A, B, C, alpha, beta, transA, transB);
+  FRANK::gemm(A, B, C, alpha, beta, transA, transB);
   naive_gemm(A, B, C_check, alpha, beta, transA, transB);
 
   // Check result
-  const double error = hicma::l2_error(C_check, C);
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, 10 * THRESHOLD);
 }
 
 TEST_P(GEMMTests, DenseLowrankDense) {
   //D LR D
-  const hicma::Dense A(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k);
-  const hicma::Dense BD(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n, 0, 2 * std::max(n, k));
-  const hicma::LowRank B(BD, THRESHOLD);
+  const FRANK::Dense A(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k);
+  const FRANK::Dense BD(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n, 0, 2 * std::max(n, k));
+  const FRANK::LowRank B(BD, THRESHOLD);
   
-  hicma::Dense C(hicma::laplacend, randx_C, m, n);
-  hicma::Dense C_check(C);
+  FRANK::Dense C(FRANK::laplacend, randx_C, m, n);
+  FRANK::Dense C_check(C);
 
-  hicma::gemm(A, B, C, alpha, beta, transA, transB);
+  FRANK::gemm(A, B, C, alpha, beta, transA, transB);
   naive_gemm(A, BD, C_check, alpha, beta, transA, transB);
 
   // Check result
-  const double error = hicma::l2_error(C_check, C);
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, 10 * THRESHOLD);
 }
 
 TEST_P(GEMMTests, DenseLowrankLowrank) {
   //D LR LR
-  const hicma::Dense A(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k);
-  const hicma::Dense BD(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n, 0, 2 * std::max(n, k));
-  const hicma::LowRank B(BD, THRESHOLD);
+  const FRANK::Dense A(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k);
+  const FRANK::Dense BD(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n, 0, 2 * std::max(n, k));
+  const FRANK::LowRank B(BD, THRESHOLD);
 
-  hicma::Dense CD(hicma::laplacend, randx_C, m, n, 0, 2 * std::max(m, n));
-  hicma::Dense C_check(CD);
-  hicma::LowRank C(CD, THRESHOLD);
+  FRANK::Dense CD(FRANK::laplacend, randx_C, m, n, 0, 2 * std::max(m, n));
+  FRANK::Dense C_check(CD);
+  FRANK::LowRank C(CD, THRESHOLD);
 
-  hicma::gemm(A, B, C, alpha, beta, transA, transB);
+  FRANK::gemm(A, B, C, alpha, beta, transA, transB);
   naive_gemm(A, BD, C_check, alpha, beta, transA, transB);
 
   // Check result
-  const double error = hicma::l2_error(C_check, C);
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, 10 * THRESHOLD);
 }
 
 TEST_P(GEMMTests, DenseLowrankHierarchical) {
   //D LR LR
-  const hicma::Dense A(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k);
-  const hicma::Dense BD(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n, 0, 2 * std::max(n, k));
-  const hicma::LowRank B(BD, THRESHOLD);
+  const FRANK::Dense A(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k);
+  const FRANK::Dense BD(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n, 0, 2 * std::max(n, k));
+  const FRANK::LowRank B(BD, THRESHOLD);
 
-  hicma::Dense CD(hicma::laplacend, randx_C, m, n);
-  hicma::Dense C_check(CD);
-  hicma::Hierarchical C(hicma::laplacend, randx_C, m, n,
-                        nleaf, THRESHOLD, admis, nblocks, nblocks, hicma::AdmisType::PositionBased);
+  FRANK::Dense CD(FRANK::laplacend, randx_C, m, n);
+  FRANK::Dense C_check(CD);
+  FRANK::Hierarchical C(FRANK::laplacend, randx_C, m, n,
+                        nleaf, THRESHOLD, admis, nblocks, nblocks, FRANK::AdmisType::PositionBased);
 
-  hicma::gemm(A, B, C, alpha, beta, transA, transB);
+  FRANK::gemm(A, B, C, alpha, beta, transA, transB);
   naive_gemm(A, BD, C_check, alpha, beta, transA, transB);
 
   // Check result
-  const double error = hicma::l2_error(C_check, C);
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, 10 * THRESHOLD);
 }
 
 TEST_P(GEMMTests, DenseHierarchicalDense) {
   //D H D
-  const hicma::Dense A(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k);
-  const hicma::Dense BD(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n);
-  const hicma::Hierarchical B(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n,
-                              nleaf, THRESHOLD, admis, nblocks, nblocks, hicma::AdmisType::PositionBased);
+  const FRANK::Dense A(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k);
+  const FRANK::Dense BD(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n);
+  const FRANK::Hierarchical B(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n,
+                              nleaf, THRESHOLD, admis, nblocks, nblocks, FRANK::AdmisType::PositionBased);
 
-  hicma::Dense C(hicma::laplacend, randx_C, m, n);
-  hicma::Dense C_check(C);
+  FRANK::Dense C(FRANK::laplacend, randx_C, m, n);
+  FRANK::Dense C_check(C);
 
-  hicma::gemm(A, B, C, alpha, beta, transA, transB);
+  FRANK::gemm(A, B, C, alpha, beta, transA, transB);
   naive_gemm(A, BD, C_check, alpha, beta, transA, transB);
 
   // Check result
-  const double error = hicma::l2_error(C_check, C);
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, 10 * THRESHOLD);
 }
 
 TEST_P(GEMMTests, DenseHierarchicalLowrank) {
   //D H LR
-  const hicma::Dense A(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k);
-  const hicma::Dense BD(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n);
-  const hicma::Hierarchical B(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n,
-                              nleaf, THRESHOLD, admis, nblocks, nblocks, hicma::AdmisType::PositionBased);
+  const FRANK::Dense A(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k);
+  const FRANK::Dense BD(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n);
+  const FRANK::Hierarchical B(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n,
+                              nleaf, THRESHOLD, admis, nblocks, nblocks, FRANK::AdmisType::PositionBased);
 
-  hicma::Dense CD(hicma::laplacend, randx_C, m, n, 0, 2 * std::max(m, n));
-  hicma::Dense C_check(CD);
-  hicma::LowRank C(CD, THRESHOLD);
+  FRANK::Dense CD(FRANK::laplacend, randx_C, m, n, 0, 2 * std::max(m, n));
+  FRANK::Dense C_check(CD);
+  FRANK::LowRank C(CD, THRESHOLD);
 
-  hicma::gemm(A, B, C, alpha, beta, transA, transB);
+  FRANK::gemm(A, B, C, alpha, beta, transA, transB);
   naive_gemm(A, BD, C_check, alpha, beta, transA, transB);
 
   // Check result
-  const double error = hicma::l2_error(C_check, C);
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, 10 * THRESHOLD);
 }
 
 TEST_P(GEMMTests, DenseHierarchicalHierarchical) {
   //D H H
-  const hicma::Dense A(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k);
-  const hicma::Dense BD(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n);
-  const hicma::Hierarchical B(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n,
-                              nleaf, THRESHOLD, admis, nblocks, nblocks, hicma::AdmisType::PositionBased);
+  const FRANK::Dense A(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k);
+  const FRANK::Dense BD(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n);
+  const FRANK::Hierarchical B(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n,
+                              nleaf, THRESHOLD, admis, nblocks, nblocks, FRANK::AdmisType::PositionBased);
 
-  hicma::Dense CD(hicma::laplacend, randx_C, m, n);
-  hicma::Dense C_check(CD);
-  hicma::Hierarchical C(hicma::laplacend, randx_C, m, n,
-                        nleaf, THRESHOLD, admis, nblocks, nblocks, hicma::AdmisType::PositionBased);
+  FRANK::Dense CD(FRANK::laplacend, randx_C, m, n);
+  FRANK::Dense C_check(CD);
+  FRANK::Hierarchical C(FRANK::laplacend, randx_C, m, n,
+                        nleaf, THRESHOLD, admis, nblocks, nblocks, FRANK::AdmisType::PositionBased);
 
-  hicma::gemm(A, B, C, alpha, beta, transA, transB);
+  FRANK::gemm(A, B, C, alpha, beta, transA, transB);
   naive_gemm(A, BD, C_check, alpha, beta, transA, transB);
 
   // Check result
-  const double error = hicma::l2_error(C_check, C);
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, 10 * THRESHOLD);
 }
 
 TEST_P(GEMMTests, LowrankDenseDense) {
   //LR D D
-  const hicma::Dense AD(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k, 0, 2 * std::max(m, k));
-  const hicma::LowRank A(AD, THRESHOLD);
-  const hicma::Dense B(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n);
+  const FRANK::Dense AD(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k, 0, 2 * std::max(m, k));
+  const FRANK::LowRank A(AD, THRESHOLD);
+  const FRANK::Dense B(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n);
 
-  hicma::Dense C(hicma::laplacend, randx_C, m, n);
-  hicma::Dense C_check(C);
+  FRANK::Dense C(FRANK::laplacend, randx_C, m, n);
+  FRANK::Dense C_check(C);
 
-  hicma::gemm(A, B, C, alpha, beta, transA, transB);
+  FRANK::gemm(A, B, C, alpha, beta, transA, transB);
   naive_gemm(AD, B, C_check, alpha, beta, transA, transB);
 
   // Check result
-  const double error = hicma::l2_error(C_check, C);
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, 10 * THRESHOLD);
 }
 
 TEST_P(GEMMTests, LowrankDenseLowrank) {
   //LR D LR
-  const hicma::Dense AD(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k, 0, 2 * std::max(m, k));
-  const hicma::LowRank A(AD, THRESHOLD);
-  const hicma::Dense B(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n);
+  const FRANK::Dense AD(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k, 0, 2 * std::max(m, k));
+  const FRANK::LowRank A(AD, THRESHOLD);
+  const FRANK::Dense B(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n);
 
-  hicma::Dense CD(hicma::laplacend, randx_C, m, n, 0, 2 * std::max(m, n));
-  hicma::Dense C_check(CD);
-  hicma::LowRank C(CD, THRESHOLD);
+  FRANK::Dense CD(FRANK::laplacend, randx_C, m, n, 0, 2 * std::max(m, n));
+  FRANK::Dense C_check(CD);
+  FRANK::LowRank C(CD, THRESHOLD);
 
-  hicma::gemm(A, B, C, alpha, beta, transA, transB);
+  FRANK::gemm(A, B, C, alpha, beta, transA, transB);
   naive_gemm(AD, B, C_check, alpha, beta, transA, transB);
 
   // Check result
-  const double error = hicma::l2_error(C_check, C);
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, 10 * THRESHOLD);
 }
 
 TEST_P(GEMMTests, LowrankDenseHierarchical) {
   //LR D H
-  const hicma::Dense AD(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k, 0, 2 * std::max(m, k));
-  const hicma::LowRank A(AD, THRESHOLD);
-  const hicma::Dense B(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n);
+  const FRANK::Dense AD(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k, 0, 2 * std::max(m, k));
+  const FRANK::LowRank A(AD, THRESHOLD);
+  const FRANK::Dense B(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n);
 
-  hicma::Dense CD(hicma::laplacend, randx_C, m, n);
-  hicma::Dense C_check(CD);
-  hicma::Hierarchical C(hicma::laplacend, randx_C, m, n,
-                        nleaf, THRESHOLD, admis, nblocks, nblocks, hicma::AdmisType::PositionBased);
+  FRANK::Dense CD(FRANK::laplacend, randx_C, m, n);
+  FRANK::Dense C_check(CD);
+  FRANK::Hierarchical C(FRANK::laplacend, randx_C, m, n,
+                        nleaf, THRESHOLD, admis, nblocks, nblocks, FRANK::AdmisType::PositionBased);
 
-  hicma::gemm(A, B, C, alpha, beta, transA, transB);
+  FRANK::gemm(A, B, C, alpha, beta, transA, transB);
   naive_gemm(AD, B, C_check, alpha, beta, transA, transB);
 
   // Check result
-  const double error = hicma::l2_error(C_check, C);
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, 10 * THRESHOLD);
 }
 
 TEST_P(GEMMTests, LowrankLowrankDense) {
   //LR LR D
-  const hicma::Dense AD(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k, 0, 2 * std::max(m, k));
-  const hicma::LowRank A(AD, THRESHOLD);
-  const hicma::Dense BD(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n, 0, 2 * std::max(n, k));
-  const hicma::LowRank B(BD, THRESHOLD);
+  const FRANK::Dense AD(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k, 0, 2 * std::max(m, k));
+  const FRANK::LowRank A(AD, THRESHOLD);
+  const FRANK::Dense BD(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n, 0, 2 * std::max(n, k));
+  const FRANK::LowRank B(BD, THRESHOLD);
 
-  hicma::Dense C(hicma::laplacend, randx_C, m, n);
-  hicma::Dense C_check(C);
+  FRANK::Dense C(FRANK::laplacend, randx_C, m, n);
+  FRANK::Dense C_check(C);
 
-  hicma::gemm(A, B, C, alpha, beta, transA, transB);
+  FRANK::gemm(A, B, C, alpha, beta, transA, transB);
   naive_gemm(AD, BD, C_check, alpha, beta, transA, transB);
 
   // Check result
-  const double error = hicma::l2_error(C_check, C);
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, 10 * THRESHOLD);
 }
 
 TEST_P(GEMMTests, LowrankLowrankLowrank) {
   //LR LR LR
-  const hicma::Dense AD(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k, 0, 2 * std::max(m, k));
-  const hicma::LowRank A(AD, THRESHOLD);
-  const hicma::Dense BD(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n, 0, 2 * std::max(n, k));
-  const hicma::LowRank B(BD, THRESHOLD);
+  const FRANK::Dense AD(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k, 0, 2 * std::max(m, k));
+  const FRANK::LowRank A(AD, THRESHOLD);
+  const FRANK::Dense BD(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n, 0, 2 * std::max(n, k));
+  const FRANK::LowRank B(BD, THRESHOLD);
 
-  hicma::Dense CD(hicma::laplacend, randx_C, m, n, 0, 2 * std::max(m, n));
-  hicma::Dense C_check(CD);
-  hicma::LowRank C(CD, THRESHOLD);
+  FRANK::Dense CD(FRANK::laplacend, randx_C, m, n, 0, 2 * std::max(m, n));
+  FRANK::Dense C_check(CD);
+  FRANK::LowRank C(CD, THRESHOLD);
 
-  hicma::gemm(A, B, C, alpha, beta, transA, transB);
+  FRANK::gemm(A, B, C, alpha, beta, transA, transB);
   naive_gemm(AD, BD, C_check, alpha, beta, transA, transB);
 
   // Check result
-  const double error = hicma::l2_error(C_check, C);
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, 10 * THRESHOLD);
 }
 
 TEST_P(GEMMTests, LowrankLowrankHierarchical) {
   //LR LR H
-  const hicma::Dense AD(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k, 0, 2 * std::max(m, k));
-  const hicma::LowRank A(AD, THRESHOLD);
-  const hicma::Dense BD(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n, 0, 2 * std::max(n, k));
-  const hicma::LowRank B(BD, THRESHOLD);
+  const FRANK::Dense AD(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k, 0, 2 * std::max(m, k));
+  const FRANK::LowRank A(AD, THRESHOLD);
+  const FRANK::Dense BD(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n, 0, 2 * std::max(n, k));
+  const FRANK::LowRank B(BD, THRESHOLD);
 
-  hicma::Dense CD(hicma::laplacend, randx_C, m, n);
-  hicma::Dense C_check(CD);
-  hicma::Hierarchical C(hicma::laplacend, randx_C, m, n,
-                        nleaf, THRESHOLD, admis, nblocks, nblocks, hicma::AdmisType::PositionBased);
+  FRANK::Dense CD(FRANK::laplacend, randx_C, m, n);
+  FRANK::Dense C_check(CD);
+  FRANK::Hierarchical C(FRANK::laplacend, randx_C, m, n,
+                        nleaf, THRESHOLD, admis, nblocks, nblocks, FRANK::AdmisType::PositionBased);
 
-  hicma::gemm(A, B, C, alpha, beta, transA, transB);
+  FRANK::gemm(A, B, C, alpha, beta, transA, transB);
   naive_gemm(AD, BD, C_check, alpha, beta, transA, transB);
 
   // Check result
-  const double error = hicma::l2_error(C_check, C);
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, 10 * THRESHOLD);
 }
 
 TEST_P(GEMMTests, LowrankHierarchicalDense) {
   //LR H D
-  const hicma::Dense AD(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k, 0, 2 * std::max(m, k));
-  const hicma::LowRank A(AD, THRESHOLD);
-  const hicma::Dense BD(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n);
-  const hicma::Hierarchical B(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n,
-                              nleaf, THRESHOLD, admis, nblocks, nblocks, hicma::AdmisType::PositionBased);
+  const FRANK::Dense AD(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k, 0, 2 * std::max(m, k));
+  const FRANK::LowRank A(AD, THRESHOLD);
+  const FRANK::Dense BD(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n);
+  const FRANK::Hierarchical B(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n,
+                              nleaf, THRESHOLD, admis, nblocks, nblocks, FRANK::AdmisType::PositionBased);
 
-  hicma::Dense C(hicma::laplacend, randx_C, m, n);
-  hicma::Dense C_check(C);
+  FRANK::Dense C(FRANK::laplacend, randx_C, m, n);
+  FRANK::Dense C_check(C);
 
-  hicma::gemm(A, B, C, alpha, beta, transA, transB);
+  FRANK::gemm(A, B, C, alpha, beta, transA, transB);
   naive_gemm(AD, BD, C_check, alpha, beta, transA, transB);
 
   // Check result
-  const double error = hicma::l2_error(C_check, C);
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, 10 * THRESHOLD);
 }
 
 TEST_P(GEMMTests, LowrankHierarchicalLowrank) {
   //LR H LR
-  const hicma::Dense AD(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k, 0, 2 * std::max(m, k));
-  const hicma::LowRank A(AD, THRESHOLD);
-  const hicma::Dense BD(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n);
-  const hicma::Hierarchical B(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n,
-                              nleaf, THRESHOLD, admis, nblocks, nblocks, hicma::AdmisType::PositionBased);
+  const FRANK::Dense AD(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k, 0, 2 * std::max(m, k));
+  const FRANK::LowRank A(AD, THRESHOLD);
+  const FRANK::Dense BD(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n);
+  const FRANK::Hierarchical B(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n,
+                              nleaf, THRESHOLD, admis, nblocks, nblocks, FRANK::AdmisType::PositionBased);
 
-  hicma::Dense CD(hicma::laplacend, randx_C, m, n, 0, 2 * std::max(m, n));
-  hicma::Dense C_check(CD);
-  hicma::LowRank C(CD, THRESHOLD);
+  FRANK::Dense CD(FRANK::laplacend, randx_C, m, n, 0, 2 * std::max(m, n));
+  FRANK::Dense C_check(CD);
+  FRANK::LowRank C(CD, THRESHOLD);
 
-  hicma::gemm(A, B, C, alpha, beta, transA, transB);
+  FRANK::gemm(A, B, C, alpha, beta, transA, transB);
   naive_gemm(AD, BD, C_check, alpha, beta, transA, transB);
 
   // Check result
-  const double error = hicma::l2_error(C_check, C);
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, 10 * THRESHOLD);
 }
 
 TEST_P(GEMMTests, LowrankHierarchicalHierarchical) {
   //LR H H
-  const hicma::Dense AD(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k, 0, 2 * std::max(m, k));
-  const hicma::LowRank A(AD, THRESHOLD);
-  const hicma::Dense BD(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n);
-  const hicma::Hierarchical B(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n,
-                              nleaf, THRESHOLD, admis, nblocks, nblocks, hicma::AdmisType::PositionBased);
+  const FRANK::Dense AD(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k, 0, 2 * std::max(m, k));
+  const FRANK::LowRank A(AD, THRESHOLD);
+  const FRANK::Dense BD(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n);
+  const FRANK::Hierarchical B(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n,
+                              nleaf, THRESHOLD, admis, nblocks, nblocks, FRANK::AdmisType::PositionBased);
 
-  hicma::Dense CD(hicma::laplacend, randx_C, m, n);
-  hicma::Dense C_check(CD);
-  hicma::Hierarchical C(hicma::laplacend, randx_C, m, n,
-                        nleaf, THRESHOLD, admis, nblocks, nblocks, hicma::AdmisType::PositionBased);
+  FRANK::Dense CD(FRANK::laplacend, randx_C, m, n);
+  FRANK::Dense C_check(CD);
+  FRANK::Hierarchical C(FRANK::laplacend, randx_C, m, n,
+                        nleaf, THRESHOLD, admis, nblocks, nblocks, FRANK::AdmisType::PositionBased);
 
-  hicma::gemm(A, B, C, alpha, beta, transA, transB);
+  FRANK::gemm(A, B, C, alpha, beta, transA, transB);
   naive_gemm(AD, BD, C_check, alpha, beta, transA, transB);
 
   // Check result
-  const double error = hicma::l2_error(C_check, C);
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, 10 * THRESHOLD);
 }
 
 TEST_P(GEMMTests, HierarchicalDenseDense) {
   //H D D
-  const hicma::Dense AD(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k);
-  const hicma::Hierarchical A(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k,
-                              nleaf, THRESHOLD, admis, nblocks, nblocks, hicma::AdmisType::PositionBased);
-  const hicma::Dense B(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n);
+  const FRANK::Dense AD(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k);
+  const FRANK::Hierarchical A(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k,
+                              nleaf, THRESHOLD, admis, nblocks, nblocks, FRANK::AdmisType::PositionBased);
+  const FRANK::Dense B(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n);
 
-  hicma::Dense C(hicma::laplacend, randx_C, m, n);
-  hicma::Dense C_check(C);
+  FRANK::Dense C(FRANK::laplacend, randx_C, m, n);
+  FRANK::Dense C_check(C);
 
-  hicma::gemm(A, B, C, alpha, beta, transA, transB);
+  FRANK::gemm(A, B, C, alpha, beta, transA, transB);
   naive_gemm(AD, B, C_check, alpha, beta, transA, transB);
 
   // Check result
-  const double error = hicma::l2_error(C_check, C);
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, 10 * THRESHOLD);
 }
 
 TEST_P(GEMMTests, HierarchicalDenseLowrank) {
   //H D LR
-  const hicma::Dense AD(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k);
-  const hicma::Hierarchical A(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k,
-                              nleaf, THRESHOLD, admis, nblocks, nblocks, hicma::AdmisType::PositionBased);
-  const hicma::Dense B(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n);
+  const FRANK::Dense AD(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k);
+  const FRANK::Hierarchical A(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k,
+                              nleaf, THRESHOLD, admis, nblocks, nblocks, FRANK::AdmisType::PositionBased);
+  const FRANK::Dense B(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n);
 
-  hicma::Dense CD(hicma::laplacend, randx_C, m, n, 0, 2 * std::max(m, n));
-  hicma::Dense C_check(CD);
-  hicma::LowRank C(CD, THRESHOLD);
+  FRANK::Dense CD(FRANK::laplacend, randx_C, m, n, 0, 2 * std::max(m, n));
+  FRANK::Dense C_check(CD);
+  FRANK::LowRank C(CD, THRESHOLD);
 
-  hicma::gemm(A, B, C, alpha, beta, transA, transB);
+  FRANK::gemm(A, B, C, alpha, beta, transA, transB);
   naive_gemm(AD, B, C_check, alpha, beta, transA, transB);
 
   // Check result
-  const double error = hicma::l2_error(C_check, C);
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, 10 * THRESHOLD);
 }
 
 TEST_P(GEMMTests, HierarchicalDenseHierarchical) {
   //H D H
-  const hicma::Dense AD(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k);
-  const hicma::Hierarchical A(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k,
-                              nleaf, THRESHOLD, admis, nblocks, nblocks, hicma::AdmisType::PositionBased);
-  const hicma::Dense B(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n);
+  const FRANK::Dense AD(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k);
+  const FRANK::Hierarchical A(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k,
+                              nleaf, THRESHOLD, admis, nblocks, nblocks, FRANK::AdmisType::PositionBased);
+  const FRANK::Dense B(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n);
 
-  hicma::Dense CD(hicma::laplacend, randx_C, m, n);
-  hicma::Dense C_check(CD);
-  hicma::Hierarchical C(hicma::laplacend, randx_C, m, n,
-                        nleaf, THRESHOLD, admis, nblocks, nblocks, hicma::AdmisType::PositionBased);
+  FRANK::Dense CD(FRANK::laplacend, randx_C, m, n);
+  FRANK::Dense C_check(CD);
+  FRANK::Hierarchical C(FRANK::laplacend, randx_C, m, n,
+                        nleaf, THRESHOLD, admis, nblocks, nblocks, FRANK::AdmisType::PositionBased);
 
-  hicma::gemm(A, B, C, alpha, beta, transA, transB);
+  FRANK::gemm(A, B, C, alpha, beta, transA, transB);
   naive_gemm(AD, B, C_check, alpha, beta, transA, transB);
 
   // Check result
-  const double error = hicma::l2_error(C_check, C);
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, 10 * THRESHOLD);
 }
 
 TEST_P(GEMMTests, HierarchicalLowrankDense) {
   //H LR D
-  const hicma::Dense AD(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k);
-  const hicma::Hierarchical A(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k,
-                              nleaf, THRESHOLD, admis, nblocks, nblocks, hicma::AdmisType::PositionBased);
-  const hicma::Dense BD(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n, 0, 2 * std::max(n, k));
-  const hicma::LowRank B(BD, THRESHOLD);
+  const FRANK::Dense AD(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k);
+  const FRANK::Hierarchical A(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k,
+                              nleaf, THRESHOLD, admis, nblocks, nblocks, FRANK::AdmisType::PositionBased);
+  const FRANK::Dense BD(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n, 0, 2 * std::max(n, k));
+  const FRANK::LowRank B(BD, THRESHOLD);
 
-  hicma::Dense C(hicma::laplacend, randx_C, m, n);
-  hicma::Dense C_check(C);
+  FRANK::Dense C(FRANK::laplacend, randx_C, m, n);
+  FRANK::Dense C_check(C);
 
-  hicma::gemm(A, B, C, alpha, beta, transA, transB);
+  FRANK::gemm(A, B, C, alpha, beta, transA, transB);
   naive_gemm(AD, BD, C_check, alpha, beta, transA, transB);
 
   // Check result
-  const double error = hicma::l2_error(C_check, C);
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, 10 * THRESHOLD);
 }
 
 TEST_P(GEMMTests, HierarchicalLowrankLowrank) {
   //H LR LR
-  const hicma::Dense AD(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k);
-  const hicma::Hierarchical A(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k,
-                              nleaf, THRESHOLD, admis, nblocks, nblocks, hicma::AdmisType::PositionBased);
-  const hicma::Dense BD(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n, 0, 2 * std::max(n, k));
-  const hicma::LowRank B(BD, THRESHOLD);
+  const FRANK::Dense AD(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k);
+  const FRANK::Hierarchical A(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k,
+                              nleaf, THRESHOLD, admis, nblocks, nblocks, FRANK::AdmisType::PositionBased);
+  const FRANK::Dense BD(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n, 0, 2 * std::max(n, k));
+  const FRANK::LowRank B(BD, THRESHOLD);
 
-  hicma::Dense CD(hicma::laplacend, randx_C, m, n, 0, 2 * std::max(m, n));
-  hicma::Dense C_check(CD);
-  hicma::LowRank C(CD, THRESHOLD);
+  FRANK::Dense CD(FRANK::laplacend, randx_C, m, n, 0, 2 * std::max(m, n));
+  FRANK::Dense C_check(CD);
+  FRANK::LowRank C(CD, THRESHOLD);
 
-  hicma::gemm(A, B, C, alpha, beta, transA, transB);
+  FRANK::gemm(A, B, C, alpha, beta, transA, transB);
   naive_gemm(AD, BD, C_check, alpha, beta, transA, transB);
 
   // Check result
-  const double error = hicma::l2_error(C_check, C);
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, 10 * THRESHOLD);
 }
 
 TEST_P(GEMMTests, HierarchicalLowrankHierarchical) {
   //H LR H
-  const hicma::Dense AD(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k);
-  const hicma::Hierarchical A(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k,
-                              nleaf, THRESHOLD, admis, nblocks, nblocks, hicma::AdmisType::PositionBased);
-  const hicma::Dense BD(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n, 0, 2 * std::max(n, k));
-  const hicma::LowRank B(BD, THRESHOLD);
+  const FRANK::Dense AD(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k);
+  const FRANK::Hierarchical A(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k,
+                              nleaf, THRESHOLD, admis, nblocks, nblocks, FRANK::AdmisType::PositionBased);
+  const FRANK::Dense BD(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n, 0, 2 * std::max(n, k));
+  const FRANK::LowRank B(BD, THRESHOLD);
 
-  hicma::Dense CD(hicma::laplacend, randx_C, m, n);
-  hicma::Dense C_check(CD);
-  hicma::Hierarchical C(hicma::laplacend, randx_C, m, n,
-                        nleaf, THRESHOLD, admis, nblocks, nblocks, hicma::AdmisType::PositionBased);
+  FRANK::Dense CD(FRANK::laplacend, randx_C, m, n);
+  FRANK::Dense C_check(CD);
+  FRANK::Hierarchical C(FRANK::laplacend, randx_C, m, n,
+                        nleaf, THRESHOLD, admis, nblocks, nblocks, FRANK::AdmisType::PositionBased);
 
-  hicma::gemm(A, B, C, alpha, beta, transA, transB);
+  FRANK::gemm(A, B, C, alpha, beta, transA, transB);
   naive_gemm(AD, BD, C_check, alpha, beta, transA, transB);
 
   // Check result
-  const double error = hicma::l2_error(C_check, C);
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, 10 * THRESHOLD);
 }
 
 TEST_P(GEMMTests, HierarchicalHierarchicalDense) {
   //H H D
-  const hicma::Dense AD(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k);
-  const hicma::Hierarchical A(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k,
-                              nleaf, THRESHOLD, admis, nblocks, nblocks, hicma::AdmisType::PositionBased);
-  const hicma::Dense BD(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n);
-  const hicma::Hierarchical B(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n,
-                              nleaf, THRESHOLD, admis, nblocks, nblocks, hicma::AdmisType::PositionBased);
+  const FRANK::Dense AD(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k);
+  const FRANK::Hierarchical A(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k,
+                              nleaf, THRESHOLD, admis, nblocks, nblocks, FRANK::AdmisType::PositionBased);
+  const FRANK::Dense BD(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n);
+  const FRANK::Hierarchical B(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n,
+                              nleaf, THRESHOLD, admis, nblocks, nblocks, FRANK::AdmisType::PositionBased);
 
-  hicma::Dense C(hicma::laplacend, randx_C, m, n);
-  hicma::Dense C_check(C);
+  FRANK::Dense C(FRANK::laplacend, randx_C, m, n);
+  FRANK::Dense C_check(C);
 
-  hicma::gemm(A, B, C, alpha, beta, transA, transB);
+  FRANK::gemm(A, B, C, alpha, beta, transA, transB);
   naive_gemm(AD, BD, C_check, alpha, beta, transA, transB);
 
   // Check result
-  const double error = hicma::l2_error(C_check, C);
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, 10 * THRESHOLD);
 }
 
 TEST_P(GEMMTests, HierarchicalHierarchicalLowrank) {
   //H H LR
-  const hicma::Dense AD(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k);
-  const hicma::Hierarchical A(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k,
-                              nleaf, THRESHOLD, admis, nblocks, nblocks, hicma::AdmisType::PositionBased);
-  const hicma::Dense BD(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n);
-  const hicma::Hierarchical B(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n,
-                              nleaf, THRESHOLD, admis, nblocks, nblocks, hicma::AdmisType::PositionBased);
+  const FRANK::Dense AD(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k);
+  const FRANK::Hierarchical A(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k,
+                              nleaf, THRESHOLD, admis, nblocks, nblocks, FRANK::AdmisType::PositionBased);
+  const FRANK::Dense BD(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n);
+  const FRANK::Hierarchical B(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n,
+                              nleaf, THRESHOLD, admis, nblocks, nblocks, FRANK::AdmisType::PositionBased);
 
-  hicma::Dense CD(hicma::laplacend, randx_C, m, n, 0, 2 * std::max(m, n));
-  hicma::Dense C_check(CD);
-  hicma::LowRank C(CD, THRESHOLD);
+  FRANK::Dense CD(FRANK::laplacend, randx_C, m, n, 0, 2 * std::max(m, n));
+  FRANK::Dense C_check(CD);
+  FRANK::LowRank C(CD, THRESHOLD);
 
-  hicma::gemm(A, B, C, alpha, beta, transA, transB);
+  FRANK::gemm(A, B, C, alpha, beta, transA, transB);
   naive_gemm(AD, BD, C_check, alpha, beta, transA, transB);
 
   // Check result
-  const double error = hicma::l2_error(C_check, C);
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, 10 * THRESHOLD);
 }
 
 TEST_P(GEMMTests, HierarchicalHierarchicalHierarchical) {
   //H H H
-  const hicma::Dense AD(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k);
-  const hicma::Hierarchical A(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k,
-                              nleaf, THRESHOLD, admis, nblocks, nblocks, hicma::AdmisType::PositionBased);
-  const hicma::Dense BD(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n);
-  const hicma::Hierarchical B(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n,
-                              nleaf, THRESHOLD, admis, nblocks, nblocks, hicma::AdmisType::PositionBased);
+  const FRANK::Dense AD(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k);
+  const FRANK::Hierarchical A(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k,
+                              nleaf, THRESHOLD, admis, nblocks, nblocks, FRANK::AdmisType::PositionBased);
+  const FRANK::Dense BD(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n);
+  const FRANK::Hierarchical B(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n,
+                              nleaf, THRESHOLD, admis, nblocks, nblocks, FRANK::AdmisType::PositionBased);
 
-  hicma::Dense CD(hicma::laplacend, randx_C, m, n);
-  hicma::Dense C_check(CD);
-  hicma::Hierarchical C(hicma::laplacend, randx_C, m, n,
-                        nleaf, THRESHOLD, admis, nblocks, nblocks, hicma::AdmisType::PositionBased);
+  FRANK::Dense CD(FRANK::laplacend, randx_C, m, n);
+  FRANK::Dense C_check(CD);
+  FRANK::Hierarchical C(FRANK::laplacend, randx_C, m, n,
+                        nleaf, THRESHOLD, admis, nblocks, nblocks, FRANK::AdmisType::PositionBased);
 
-  hicma::gemm(A, B, C, alpha, beta, transA, transB);
+  FRANK::gemm(A, B, C, alpha, beta, transA, transB);
   naive_gemm(AD, BD, C_check, alpha, beta, transA, transB);
 
   // Check result
-  const double error = hicma::l2_error(C_check, C);
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, 10 * THRESHOLD);
 }
 
 TEST_P(GEMMTests, DenseDenseNewDense) {
   //D D New(D)
   if(beta != 0) GTEST_SKIP();
-  const hicma::Dense A(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k);
-  const hicma::Dense B(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n);
+  const FRANK::Dense A(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k);
+  const FRANK::Dense B(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n);
 
-  hicma::Dense C_check(m, n);
-  hicma::Dense C = gemm(A, B, alpha, transA, transB);
+  FRANK::Dense C_check(m, n);
+  FRANK::Dense C = gemm(A, B, alpha, transA, transB);
   naive_gemm(A, B, C_check, alpha, 0, transA, transB);
 
   // Check result
   EXPECT_EQ(C.dim[0], C_check.dim[0]);
   EXPECT_EQ(C.dim[1], C_check.dim[1]);
-  const double error = hicma::l2_error(C_check, C);
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, EPSILON);
 }
 
 TEST_P(GEMMTests, DenseLowrankNewDense) {
   //D LR New(D)
   if(beta != 0) GTEST_SKIP();
-  const hicma::Dense A(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k);
-  const hicma::Dense BD(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n, 0, 2 * std::max(n, k));
-  const hicma::LowRank B(BD, THRESHOLD);
+  const FRANK::Dense A(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k);
+  const FRANK::Dense BD(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n, 0, 2 * std::max(n, k));
+  const FRANK::LowRank B(BD, THRESHOLD);
 
-  hicma::Dense C_check(m, n);
-  hicma::Dense C = gemm(A, B, alpha, transA, transB);
+  FRANK::Dense C_check(m, n);
+  FRANK::Dense C = gemm(A, B, alpha, transA, transB);
   naive_gemm(A, BD, C_check, alpha, 0, transA, transB);
 
   // Check result
   EXPECT_EQ(C.dim[0], C_check.dim[0]);
   EXPECT_EQ(C.dim[1], C_check.dim[1]);
-  const double error = hicma::l2_error(C_check, C);
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, 10 * THRESHOLD);
 }
 
 TEST_P(GEMMTests, DenseHierarchicalNewDense) {
   //D H New(D)
   if(beta != 0) GTEST_SKIP();
-  const hicma::Dense A(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k);
-  const hicma::Dense BD(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n);
-  const hicma::Hierarchical B(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n,
-                              nleaf, THRESHOLD, admis, nblocks, nblocks, hicma::AdmisType::PositionBased);
+  const FRANK::Dense A(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k);
+  const FRANK::Dense BD(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n);
+  const FRANK::Hierarchical B(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n,
+                              nleaf, THRESHOLD, admis, nblocks, nblocks, FRANK::AdmisType::PositionBased);
 
-  hicma::Dense C_check(m, n);
-  hicma::Dense C = gemm(A, B, alpha, transA, transB);
+  FRANK::Dense C_check(m, n);
+  FRANK::Dense C = gemm(A, B, alpha, transA, transB);
   naive_gemm(A, BD, C_check, alpha, 0, transA, transB);
 
   // Check result
   EXPECT_EQ(C.dim[0], C_check.dim[0]);
   EXPECT_EQ(C.dim[1], C_check.dim[1]);
-  const double error = hicma::l2_error(C_check, C);
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, 10 * THRESHOLD);
 }
 
 TEST_P(GEMMTests, LowrankDenseNewDense) {
   //LR D New(D)
   if(beta != 0) GTEST_SKIP();
-  const hicma::Dense AD(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k, 0, 2 * std::max(m, k));
-  const hicma::LowRank A(AD, THRESHOLD);
-  const hicma::Dense B(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n);
+  const FRANK::Dense AD(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k, 0, 2 * std::max(m, k));
+  const FRANK::LowRank A(AD, THRESHOLD);
+  const FRANK::Dense B(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n);
 
-  hicma::Dense C_check(m, n);
-  hicma::Dense C = gemm(A, B, alpha, transA, transB);
+  FRANK::Dense C_check(m, n);
+  FRANK::Dense C = gemm(A, B, alpha, transA, transB);
   naive_gemm(AD, B, C_check, alpha, 0, transA, transB);
 
   // Check result
   EXPECT_EQ(C.dim[0], C_check.dim[0]);
   EXPECT_EQ(C.dim[1], C_check.dim[1]);
-  const double error = hicma::l2_error(C_check, C);
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, 10 * THRESHOLD);
 }
 
 TEST_P(GEMMTests, LowrankLowrankNewDense) {
   //LR LR New(D)
   if(beta != 0) GTEST_SKIP();
-  const hicma::Dense AD(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k, 0, 2 * std::max(m, k));
-  const hicma::LowRank A(AD, THRESHOLD);
-  const hicma::Dense BD(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n, 0, 2 * std::max(n, k));
-  const hicma::LowRank B(BD, THRESHOLD);
+  const FRANK::Dense AD(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k, 0, 2 * std::max(m, k));
+  const FRANK::LowRank A(AD, THRESHOLD);
+  const FRANK::Dense BD(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n, 0, 2 * std::max(n, k));
+  const FRANK::LowRank B(BD, THRESHOLD);
 
-  hicma::Dense C_check(m, n);
-  hicma::Dense C = gemm(A, B, alpha, transA, transB);
+  FRANK::Dense C_check(m, n);
+  FRANK::Dense C = gemm(A, B, alpha, transA, transB);
   naive_gemm(AD, BD, C_check, alpha, 0, transA, transB);
 
   // Check result
   EXPECT_EQ(C.dim[0], C_check.dim[0]);
   EXPECT_EQ(C.dim[1], C_check.dim[1]);
-  const double error = hicma::l2_error(C_check, C);
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, 10 * THRESHOLD);
 }
 
 TEST_P(GEMMTests, LowrankHierarchicalNewDense) {
   //LR H New(D)
   if(beta != 0) GTEST_SKIP();
-  const hicma::Dense AD(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k, 0, 2 * std::max(m, k));
-  const hicma::LowRank A(AD, THRESHOLD);
-  const hicma::Dense BD(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n);
-  const hicma::Hierarchical B(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n,
-                              nleaf, THRESHOLD, admis, nblocks, nblocks, hicma::AdmisType::PositionBased);
+  const FRANK::Dense AD(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k, 0, 2 * std::max(m, k));
+  const FRANK::LowRank A(AD, THRESHOLD);
+  const FRANK::Dense BD(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n);
+  const FRANK::Hierarchical B(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n,
+                              nleaf, THRESHOLD, admis, nblocks, nblocks, FRANK::AdmisType::PositionBased);
 
-  hicma::Dense C_check(m, n);
-  hicma::Dense C = gemm(A, B, alpha, transA, transB);
+  FRANK::Dense C_check(m, n);
+  FRANK::Dense C = gemm(A, B, alpha, transA, transB);
   naive_gemm(AD, BD, C_check, alpha, 0, transA, transB);
 
   // Check result
   EXPECT_EQ(C.dim[0], C_check.dim[0]);
   EXPECT_EQ(C.dim[1], C_check.dim[1]);
-  const double error = hicma::l2_error(C_check, C);
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, 10 * THRESHOLD);
 }
 
 TEST_P(GEMMTests, HierarchicalDenseNewDense) {
   //H D New(D)
   if(beta != 0) GTEST_SKIP();
-  const hicma::Dense AD(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k);
-  const hicma::Hierarchical A(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k,
-                              nleaf, THRESHOLD, admis, nblocks, nblocks, hicma::AdmisType::PositionBased);
-  const hicma::Dense B(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n);
+  const FRANK::Dense AD(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k);
+  const FRANK::Hierarchical A(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k,
+                              nleaf, THRESHOLD, admis, nblocks, nblocks, FRANK::AdmisType::PositionBased);
+  const FRANK::Dense B(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n);
 
-  hicma::Dense C_check(m, n);
-  hicma::Dense C = gemm(A, B, alpha, transA, transB);
+  FRANK::Dense C_check(m, n);
+  FRANK::Dense C = gemm(A, B, alpha, transA, transB);
   naive_gemm(AD, B, C_check, alpha, 0, transA, transB);
 
   // Check result
   EXPECT_EQ(C.dim[0], C_check.dim[0]);
   EXPECT_EQ(C.dim[1], C_check.dim[1]);
-  const double error = hicma::l2_error(C_check, C);
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, 10 * THRESHOLD);
 }
 
 TEST_P(GEMMTests, HierarchicalLowrankNewDense) {
   //H LR New(D)
   if(beta != 0) GTEST_SKIP();
-  const hicma::Dense AD(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k);
-  const hicma::Hierarchical A(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k,
-                              nleaf, THRESHOLD, admis, nblocks, nblocks, hicma::AdmisType::PositionBased);
-  const hicma::Dense BD(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n, 0, 2 * std::max(n, k));
-  const hicma::LowRank B(BD, THRESHOLD);
+  const FRANK::Dense AD(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k);
+  const FRANK::Hierarchical A(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k,
+                              nleaf, THRESHOLD, admis, nblocks, nblocks, FRANK::AdmisType::PositionBased);
+  const FRANK::Dense BD(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n, 0, 2 * std::max(n, k));
+  const FRANK::LowRank B(BD, THRESHOLD);
 
-  hicma::Dense C_check(m, n);
-  hicma::Dense C = gemm(A, B, alpha, transA, transB);
+  FRANK::Dense C_check(m, n);
+  FRANK::Dense C = gemm(A, B, alpha, transA, transB);
   naive_gemm(AD, BD, C_check, alpha, 0, transA, transB);
 
   // Check result
   EXPECT_EQ(C.dim[0], C_check.dim[0]);
   EXPECT_EQ(C.dim[1], C_check.dim[1]);
-  const double error = hicma::l2_error(C_check, C);
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, 10 * THRESHOLD);
 }
 
 TEST_P(GEMMTests, HierarchicalHierarchicalNewHierarchical) {
   //H H New(H)
   if(beta != 0) GTEST_SKIP();
-  const hicma::Dense AD(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k);
-  const hicma::Hierarchical A(hicma::laplacend, randx_A, transA ? k : m, transA ? m : k,
-                              nleaf, THRESHOLD, admis, nblocks, nblocks, hicma::AdmisType::PositionBased);
-  const hicma::Dense BD(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n);
-  const hicma::Hierarchical B(hicma::laplacend, randx_B, transB ? n : k, transB ? k : n,
-                              nleaf, THRESHOLD, admis, nblocks, nblocks, hicma::AdmisType::PositionBased);
+  const FRANK::Dense AD(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k);
+  const FRANK::Hierarchical A(FRANK::laplacend, randx_A, transA ? k : m, transA ? m : k,
+                              nleaf, THRESHOLD, admis, nblocks, nblocks, FRANK::AdmisType::PositionBased);
+  const FRANK::Dense BD(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n);
+  const FRANK::Hierarchical B(FRANK::laplacend, randx_B, transB ? n : k, transB ? k : n,
+                              nleaf, THRESHOLD, admis, nblocks, nblocks, FRANK::AdmisType::PositionBased);
 
-  hicma::Dense C_check(m, n);
-  hicma::Hierarchical C = gemm(A, B, alpha, transA, transB);
+  FRANK::Dense C_check(m, n);
+  FRANK::Hierarchical C = gemm(A, B, alpha, transA, transB);
   naive_gemm(AD, BD, C_check, alpha, 0, transA, transB);
 
   // Check result
-  EXPECT_EQ(hicma::get_n_rows(C), hicma::get_n_rows(C_check));
-  EXPECT_EQ(hicma::get_n_cols(C), hicma::get_n_cols(C_check));
-  const double error = hicma::l2_error(C_check, C);
+  EXPECT_EQ(FRANK::get_n_rows(C), FRANK::get_n_rows(C_check));
+  EXPECT_EQ(FRANK::get_n_cols(C), FRANK::get_n_cols(C_check));
+  const double error = FRANK::l2_error(C_check, C);
   EXPECT_LE(error, 10 * THRESHOLD);
 }
 

@@ -1,6 +1,6 @@
-#include "hicma/functions.h"
+#include "FRANK/functions.h"
 
-#include "hicma/operations/misc.h"
+#include "FRANK/operations/misc.h"
 
 #include <algorithm>
 #include <cmath>
@@ -8,7 +8,7 @@
 #include <random>
 #include <vector>
 
-namespace hicma
+namespace FRANK
 {
 
 void zeros(
@@ -127,4 +127,4 @@ void helmholtznd(
   }
 }
 
-} // namespace hicma
+} // namespace FRANK

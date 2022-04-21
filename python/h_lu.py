@@ -1,16 +1,16 @@
 import numpy as np
 import sys
 
-from hicma.hierarchical import Hierarchical
-from hicma.dense import Dense
-from hicma.functions import (
+from FRANK.hierarchical import Hierarchical
+from FRANK.dense import Dense
+from FRANK.functions import (
     laplace1d,
     rand_data,
     zeros,
     Rand48
 )
-from hicma.print import printf
-from hicma.timer import (
+from FRANK.print import printf
+from FRANK.timer import (
     start,
     stop
 )

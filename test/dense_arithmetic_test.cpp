@@ -3,7 +3,7 @@
 #include <tuple>
 #include <vector>
 
-#include "hicma/hicma.h"
+#include "FRANK/FRANK.h"
 #include "gtest/gtest.h"
 
 class ArithmeticTests
@@ -18,12 +18,12 @@ TEST_P(ArithmeticTests, DenseAddition) {
   int64_t m, n;
   std::tie(m, n) = GetParam();
 
-  hicma::initialize();
-  const std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m>n?m:n)};
-  const hicma::Dense A(hicma::laplacend, randx_A, m, n);
-  const std::vector<std::vector<double>> randx_B{hicma::get_sorted_random_vector(m>n?m:n)};
-  const hicma::Dense B(hicma::laplacend, randx_B, m, n);
-  const hicma::Dense C = A + B;
+  FRANK::initialize();
+  const std::vector<std::vector<double>> randx_A{FRANK::get_sorted_random_vector(m>n?m:n)};
+  const FRANK::Dense A(FRANK::laplacend, randx_A, m, n);
+  const std::vector<std::vector<double>> randx_B{FRANK::get_sorted_random_vector(m>n?m:n)};
+  const FRANK::Dense B(FRANK::laplacend, randx_B, m, n);
+  const FRANK::Dense C = A + B;
 
   for (int64_t i = 0; i < m; ++i)
     for (int64_t j = 0; j < n; ++j) {
@@ -35,12 +35,12 @@ TEST_P(ArithmeticTests, DensePlusEquals) {
   int64_t m, n;
   std::tie(m, n) = GetParam();
 
-  hicma::initialize();
-  const std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m>n?m:n)};
-  hicma::Dense A(hicma::laplacend, randx_A, m, n);
-  const hicma::Dense A_check(A);
-  const std::vector<std::vector<double>> randx_B{hicma::get_sorted_random_vector(m>n?m:n)};
-  const hicma::Dense B(hicma::laplacend, randx_B, m, n);
+  FRANK::initialize();
+  const std::vector<std::vector<double>> randx_A{FRANK::get_sorted_random_vector(m>n?m:n)};
+  FRANK::Dense A(FRANK::laplacend, randx_A, m, n);
+  const FRANK::Dense A_check(A);
+  const std::vector<std::vector<double>> randx_B{FRANK::get_sorted_random_vector(m>n?m:n)};
+  const FRANK::Dense B(FRANK::laplacend, randx_B, m, n);
   A += B;
 
   for (int64_t i = 0; i < m; ++i)
@@ -53,12 +53,12 @@ TEST_P(ArithmeticTests, DenseSubtraction) {
   int64_t m, n;
   std::tie(m, n) = GetParam();
 
-  hicma::initialize();
-  const std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m>n?m:n)};
-  const hicma::Dense A(hicma::laplacend, randx_A, m, n);
-  const std::vector<std::vector<double>> randx_B{hicma::get_sorted_random_vector(m>n?m:n)};
-  const hicma::Dense B(hicma::laplacend, randx_B, m, n);
-  const hicma::Dense C = A - B;
+  FRANK::initialize();
+  const std::vector<std::vector<double>> randx_A{FRANK::get_sorted_random_vector(m>n?m:n)};
+  const FRANK::Dense A(FRANK::laplacend, randx_A, m, n);
+  const std::vector<std::vector<double>> randx_B{FRANK::get_sorted_random_vector(m>n?m:n)};
+  const FRANK::Dense B(FRANK::laplacend, randx_B, m, n);
+  const FRANK::Dense C = A - B;
 
   for (int64_t i = 0; i < m; ++i)
     for (int64_t j = 0; j < n; ++j) {
@@ -71,12 +71,12 @@ TEST_P(ArithmeticTests, MinusEqualsOperator) {
   int64_t m, n;
   std::tie(m, n) = GetParam();
 
-  hicma::initialize();
-  const std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m>n?m:n)};
-  hicma::Dense A(hicma::laplacend, randx_A, m, n);
-  const hicma::Dense A_check(A);
-  const std::vector<std::vector<double>> randx_B{hicma::get_sorted_random_vector(m>n?m:n)};
-  const hicma::Dense B(hicma::laplacend, randx_B, m, n);
+  FRANK::initialize();
+  const std::vector<std::vector<double>> randx_A{FRANK::get_sorted_random_vector(m>n?m:n)};
+  FRANK::Dense A(FRANK::laplacend, randx_A, m, n);
+  const FRANK::Dense A_check(A);
+  const std::vector<std::vector<double>> randx_B{FRANK::get_sorted_random_vector(m>n?m:n)};
+  const FRANK::Dense B(FRANK::laplacend, randx_B, m, n);
   A -= B;
 
   for (int64_t i = 0; i < m; ++i)
@@ -90,10 +90,10 @@ TEST_P(ArithmeticTests, abs) {
   int64_t m, n;
   std::tie(m, n) = GetParam();
 
-  hicma::initialize();
-  const std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m>n?m:n)};
-  const hicma::Dense A(hicma::laplacend, randx_A, m, n);
-  const hicma::Dense A_check = abs(A);
+  FRANK::initialize();
+  const std::vector<std::vector<double>> randx_A{FRANK::get_sorted_random_vector(m>n?m:n)};
+  const FRANK::Dense A(FRANK::laplacend, randx_A, m, n);
+  const FRANK::Dense A_check = abs(A);
 
   for (int64_t i = 0; i < m; ++i)
     for (int64_t j = 0; j < n; ++j) {
@@ -106,11 +106,11 @@ TEST_P(ArithmeticTests, Transpose) {
   int64_t m, n;
   std::tie(m, n) = GetParam();
 
-  hicma::initialize();
-  const std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m>n?m:n)};
-  const hicma::Dense A(hicma::laplacend, randx_A, m, n);
-  const hicma::Dense A_copy(A);
-  const hicma::Dense A_trans = transpose(A);
+  FRANK::initialize();
+  const std::vector<std::vector<double>> randx_A{FRANK::get_sorted_random_vector(m>n?m:n)};
+  const FRANK::Dense A(FRANK::laplacend, randx_A, m, n);
+  const FRANK::Dense A_copy(A);
+  const FRANK::Dense A_trans = transpose(A);
 
   EXPECT_EQ(A_trans.dim[0], n);
   EXPECT_EQ(A_trans.dim[1], m);
@@ -136,10 +136,10 @@ TEST_P(ArithmeticTests2, DenseScalarMultiplicationEqualsOperator) {
   double alpha;
   std::tie(m, n, alpha) = GetParam();
 
-  hicma::initialize();
-  const std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m>n?m:n)};
-  hicma::Dense A(hicma::laplacend, randx_A, m, n);
-  const hicma::Dense A_copy(A);
+  FRANK::initialize();
+  const std::vector<std::vector<double>> randx_A{FRANK::get_sorted_random_vector(m>n?m:n)};
+  FRANK::Dense A(FRANK::laplacend, randx_A, m, n);
+  const FRANK::Dense A_copy(A);
   A *= alpha;
 
   // Check result
@@ -166,14 +166,14 @@ TEST_P(MatMulOperatorTests, MultiplicationOperator) {
   int64_t m, n, k;
   std::tie(m, n, k) = GetParam();
 
-  hicma::initialize();
-  const std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(m>k?m:k)};
-  const hicma::Dense A(hicma::laplacend, randx_A, m, k);
-  const std::vector<std::vector<double>> randx_B{hicma::get_sorted_random_vector(k>n?k:n)};
-  const hicma::Dense B(hicma::laplacend, randx_B, k, n);
-  const hicma::Dense C_check = A * B;
-  hicma::Dense C(m, n);
-  hicma::gemm(A, B, C, false, false, 1, 0);
+  FRANK::initialize();
+  const std::vector<std::vector<double>> randx_A{FRANK::get_sorted_random_vector(m>k?m:k)};
+  const FRANK::Dense A(FRANK::laplacend, randx_A, m, k);
+  const std::vector<std::vector<double>> randx_B{FRANK::get_sorted_random_vector(k>n?k:n)};
+  const FRANK::Dense B(FRANK::laplacend, randx_B, k, n);
+  const FRANK::Dense C_check = A * B;
+  FRANK::Dense C(m, n);
+  FRANK::gemm(A, B, C, false, false, 1, 0);
 
   // Check result
   for (int64_t i = 0; i < m; ++i) {

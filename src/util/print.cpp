@@ -1,13 +1,13 @@
-#include "hicma/util/print.h"
+#include "FRANK/util/print.h"
 
-#include "hicma/classes/dense.h"
-#include "hicma/classes/empty.h"
-#include "hicma/classes/hierarchical.h"
-#include "hicma/classes/low_rank.h"
-#include "hicma/classes/matrix.h"
-#include "hicma/operations/LAPACK.h"
-#include "hicma/operations/misc.h"
-#include "hicma/util/omm_error_handler.h"
+#include "FRANK/classes/dense.h"
+#include "FRANK/classes/empty.h"
+#include "FRANK/classes/hierarchical.h"
+#include "FRANK/classes/low_rank.h"
+#include "FRANK/classes/matrix.h"
+#include "FRANK/operations/LAPACK.h"
+#include "FRANK/operations/misc.h"
+#include "FRANK/util/omm_error_handler.h"
 
 #include "nlohmann/json.hpp"
 #include "yorel/yomm2/cute.hpp"
@@ -20,7 +20,7 @@ using yorel::yomm2::virtual_;
 #include <string>
 
 
-namespace hicma
+namespace FRANK
 {
 
 bool VERBOSE = true;
@@ -198,4 +198,4 @@ template void print<int64_t>(const std::string s, const int64_t v, const bool fi
 template void print<float>(const std::string s, const float v, const bool fixed=true);
 template void print<double>(const std::string s, const double v, const bool fixed=true);
 
-} // namespace hicma
+} // namespace FRANK

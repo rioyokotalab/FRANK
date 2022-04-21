@@ -1,9 +1,9 @@
-#include "hicma/operations/randomized_factorizations.h"
+#include "FRANK/operations/randomized_factorizations.h"
 
-#include "hicma/classes/dense.h"
-#include "hicma/functions.h"
-#include "hicma/operations/BLAS.h"
-#include "hicma/operations/LAPACK.h"
+#include "FRANK/classes/dense.h"
+#include "FRANK/functions.h"
+#include "FRANK/operations/BLAS.h"
+#include "FRANK/operations/LAPACK.h"
 
 #include <cstdint>
 #include <tuple>
@@ -11,7 +11,7 @@
 #include <vector>
 
 
-namespace hicma
+namespace FRANK
 {
 
 std::tuple<Dense, Dense, Dense> rsvd(const Dense& A, const int64_t sample_size) {
@@ -47,4 +47,4 @@ std::tuple<Dense, Dense, Dense> old_rsvd(const Dense& A, const int64_t sample_si
   return {std::move(U), std::move(S), std::move(V)};
 }
 
-} // namespace hicma
+} // namespace FRANK

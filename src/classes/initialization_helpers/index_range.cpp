@@ -1,13 +1,13 @@
-#include "hicma/classes/initialization_helpers/index_range.h"
+#include "FRANK/classes/initialization_helpers/index_range.h"
 
-#include "hicma/classes/hierarchical.h"
-#include "hicma/operations/misc.h"
+#include "FRANK/classes/hierarchical.h"
+#include "FRANK/operations/misc.h"
 
 #include <cstdint>
 #include <vector>
 
 
-namespace hicma
+namespace FRANK
 {
 
 IndexRange::IndexRange(const int64_t start, const int64_t n) : start(start), n(n) {}
@@ -42,4 +42,4 @@ std::vector<IndexRange> IndexRange::split_like(
   return children;
 }
 
-} // namespace hicma
+} // namespace FRANK

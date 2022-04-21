@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 
-#include "hicma/hicma.h"
+#include "FRANK/FRANK.h"
 #include "gtest/gtest.h"
 
 class TRSMTests : public testing::TestWithParam<int64_t> {};
@@ -11,16 +11,16 @@ TEST_P(TRSMTests, DenseTrsm) {
   int64_t n;
   n = GetParam();
 
-  hicma::initialize();
-  const std::vector<std::vector<double>> randx_A{hicma::get_sorted_random_vector(n)};
-  hicma::Dense A(hicma::laplacend, randx_A, n, n);
-  const hicma::Dense x(hicma::random_uniform, {}, n);
-  hicma::Dense b = gemm(A, x);
-  hicma::Dense L, U;
+  FRANK::initialize();
+  const std::vector<std::vector<double>> randx_A{FRANK::get_sorted_random_vector(n)};
+  FRANK::Dense A(FRANK::laplacend, randx_A, n, n);
+  const FRANK::Dense x(FRANK::random_uniform, {}, n);
+  FRANK::Dense b = gemm(A, x);
+  FRANK::Dense L, U;
 
-  std::tie(L, U) = hicma::getrf(A);
-  hicma::trsm(L, b, hicma::Mode::Lower);
-  hicma::trsm(U, b, hicma::Mode::Upper);
+  std::tie(L, U) = FRANK::getrf(A);
+  FRANK::trsm(L, b, FRANK::Mode::Lower);
+  FRANK::trsm(U, b, FRANK::Mode::Upper);
 
   // Check result
   for (int64_t i = 0; i < n; ++i) {

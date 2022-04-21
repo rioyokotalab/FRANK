@@ -1,10 +1,10 @@
-# HiCMA
+# FRANK (Factorization of RANK structured matrices)
 
 “Any intelligent fool can make things bigger and more complex.
 It takes a touch of genius - and a lot of courage to move in the
 opposite direction.” - Albert Einstein
 
-Library for hierarchical low-rank matrix operations that calls kblas.
+Library for hierarchical low-rank matrix factorizations.
 
 # How to build and make
 ```
@@ -13,7 +13,7 @@ cd build
 cmake -DUSE_MKL=ON ..
 make
 ```
-binaries will be compiled into bin. C++17 is requiered in order to build HiCMA. The build process will try to detect or download the following dependencies:
+binaries will be compiled into bin. C++17 is required in order to build FRANK. The build process will try to detect or download the following dependencies:
 - nlohmann_json
 - YOMM2
 
@@ -22,7 +22,7 @@ binaries will be compiled into bin. C++17 is requiered in order to build HiCMA. 
 ```
 -DUSE_MKL
 ```
-If this is specified, HiCMA will try to use the Intel MKL library on your system. Otherwise it will try to detect the default BLAS and LAPACK libraries installed on your system.
+If this is specified, FRANK will try to use the Intel MKL library on your system. Otherwise it will try to detect the default BLAS and LAPACK libraries installed on your system.
 
 ```
 -DBUILD_DOCS
@@ -180,13 +180,13 @@ std::vector<std::shared_ptr<Node>> data;
 Node& operator(i,j) {data[2*i+j]};
 
 enum{
-  HICMA_NODE;
-  HICMA_DENSE;
-  HICMA_LOWRANK;
-  HICMA_HIERARCHIAL;
+  FRANK_NODE;
+  FRANK_DENSE;
+  FRANK_LOWRANK;
+  FRANK_HIERARCHIAL;
 }
 Hierarchical::is(const int enum_id) {
-  return enum_id == HICMA_HIERARCHICAL;
+  return enum_id == FRANK_HIERARCHICAL;
 }
 ```
 #### Features
@@ -225,13 +225,13 @@ NodePtr data;
 NodePtr operator(i,j) {data[2*i+j]};
 
 enum{
-  HICMA_NODE;
-  HICMA_DENSE;
-  HICMA_LOWRANK;
-  HICMA_HIERARCHIAL;
+  FRANK_NODE;
+  FRANK_DENSE;
+  FRANK_LOWRANK;
+  FRANK_HIERARCHIAL;
 }
 Hierarchical::is(const int enum_id) {
-  return enum_id == HICMA_HIERARCHICAL;
+  return enum_id == FRANK_HIERARCHICAL;
 }
 ```
 #### Features
@@ -262,13 +262,13 @@ const Node& operator(i,j) {data[2*i+j]};
 Any& operator(i,j) {data[2*i+j]};
 
 enum{
-  HICMA_NODE;
-  HICMA_DENSE;
-  HICMA_LOWRANK;
-  HICMA_HIERARCHIAL;
+  FRANK_NODE;
+  FRANK_DENSE;
+  FRANK_LOWRANK;
+  FRANK_HIERARCHIAL;
 }
 Hierarchical::is(const int enum_id) {
-  return enum_id == HICMA_HIERARCHICAL;
+  return enum_id == FRANK_HIERARCHICAL;
 }
 ```
 
