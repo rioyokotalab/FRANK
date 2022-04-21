@@ -1,5 +1,4 @@
 #include "hicma/operations/BLAS.h"
-#include "hicma/extension_headers/operations.h"
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
@@ -17,6 +16,7 @@
 #include <lapacke.h>
 #endif
 #include "yorel/yomm2/cute.hpp"
+using yorel::yomm2::virtual_;
 
 #include <cassert>
 #include <cstdint>
@@ -25,6 +25,14 @@
 
 namespace hicma
 {
+
+declare_method(
+  void, trmm_omm,
+  (
+    virtual_<const Matrix&>, virtual_<Matrix&>,
+    const Side, const Mode, const char&, const char&, const double
+  )
+)
 
 void trmm(
   const Matrix& A, Matrix& B,

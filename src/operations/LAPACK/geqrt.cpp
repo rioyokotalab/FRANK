@@ -1,5 +1,4 @@
 #include "hicma/operations/LAPACK.h"
-#include "hicma/extension_headers/operations.h"
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
@@ -12,7 +11,9 @@
 #include <cblas.h>
 #include <lapacke.h>
 #endif
+
 #include "yorel/yomm2/cute.hpp"
+using yorel::yomm2::virtual_;
 
 #include <cassert>
 #include <cstdint>
@@ -22,6 +23,11 @@
 
 namespace hicma
 {
+
+declare_method(
+  void, geqrt_omm,
+  (virtual_<Matrix&>, virtual_<Matrix&>)
+)
 
 void geqrt(Matrix& A, Matrix& T) { geqrt_omm(A, T); }
 

@@ -1,5 +1,4 @@
 #include "hicma/classes/dense.h"
-#include "hicma/extension_headers/classes.h"
 
 #include "hicma/classes/empty.h"
 #include "hicma/classes/hierarchical.h"
@@ -28,6 +27,10 @@ namespace hicma
 {
 
 uint64_t next_unique_id = 0;
+
+declare_method(
+  void, fill_dense_from, (virtual_<const Matrix&>, virtual_<Matrix&>)
+)
 
 Dense::Dense(const Dense& A)
 : Matrix(A), dim{A.dim[0], A.dim[1]}, stride(A.dim[1]), rel_start{0, 0},
@@ -77,7 +80,7 @@ define_method(void, fill_dense_from, (const Dense& A, Dense& B)) {
   A.copy_to(B);
 }
 
-define_method(void, fill_dense_from, (const Empty& A, Dense& B)) {
+define_method(void, fill_dense_from, ([[maybe_unused]] const Empty& A, Dense& B)) {
   assert(A.dim[0] == B.dim[0]);
   assert(A.dim[1] == B.dim[1]);
   B = 0.0;

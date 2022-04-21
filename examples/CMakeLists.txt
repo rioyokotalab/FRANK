@@ -7,7 +7,7 @@ list(
   "tiled_householder_blr_qr"
   "blocked_mgs_h_qr"
   "h_lu"
-  "kernel-test"
+  "Hmatrix_to_json"
 )
 foreach(EXECUTABLE ${EXECUTABLES})
   add_executable(${EXECUTABLE} ${EXECUTABLE}.cpp)

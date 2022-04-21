@@ -1,6 +1,6 @@
 #include "hicma/operations/LAPACK.h"
-#include "hicma/extension_headers/operations.h"
 
+#include "hicma/definitions.h"
 #include "hicma/classes/dense.h"
 #include "hicma/classes/empty.h"
 #include "hicma/classes/hierarchical.h"
@@ -31,6 +31,11 @@ using yorel::yomm2::virtual_;
 
 namespace hicma
 {
+
+declare_method(
+  MatrixPair, getrf_omm,
+  (virtual_<Matrix&>)
+)
 
 std::tuple<MatrixProxy, MatrixProxy> getrf(Matrix& A) {
   std::tuple<MatrixProxy, MatrixProxy> out = getrf_omm(A);

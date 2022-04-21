@@ -1,6 +1,6 @@
 #include "hicma/util/l2_error.h"
-#include "hicma/extension_headers/util.h"
 
+#include "hicma/definitions.h"
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
@@ -11,6 +11,7 @@
 #include "hicma/util/print.h"
 
 #include "yorel/yomm2/cute.hpp"
+using yorel::yomm2::virtual_;
 
 #include <cassert>
 #include <cmath>
@@ -21,6 +22,11 @@
 
 namespace hicma
 {
+
+declare_method(
+  DoublePair, collect_diff_norm_omm,
+  (virtual_<const Matrix&>, virtual_<const Matrix&>)
+)
 
 std::tuple<double, double> collect_diff_norm(const Matrix& A, const Matrix& B) {
   return collect_diff_norm_omm(A, B);

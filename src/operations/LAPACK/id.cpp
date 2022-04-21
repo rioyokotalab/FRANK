@@ -1,6 +1,6 @@
 #include "hicma/operations/LAPACK.h"
-#include "hicma/extension_headers/operations.h"
 
+#include "hicma/definitions.h"
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
@@ -12,6 +12,7 @@
 #include "hicma/util/omm_error_handler.h"
 
 #include "yorel/yomm2/cute.hpp"
+using yorel::yomm2::virtual_;
 
 #include <algorithm>
 #include <cassert>
@@ -36,6 +37,10 @@ Dense interleave_id(const Dense& A, std::vector<int64_t>& P) {
   }
   return Anew;
 }
+
+declare_method(
+  DenseIndexSetPair, one_sided_id_omm, (virtual_<Matrix&>, const int64_t)
+)
 
 std::tuple<Dense, std::vector<int64_t>> one_sided_id(Matrix& A, const int64_t k) {
   return one_sided_id_omm(A, k);
@@ -70,6 +75,8 @@ define_method(DenseIndexSetPair, one_sided_id_omm, (Matrix& A, const int64_t)) {
   omm_error_handler("id", {A}, __FILE__, __LINE__);
   std::abort();
 }
+
+declare_method(DenseTriplet, id_omm, (virtual_<Matrix&>, const int64_t))
 
 std::tuple<Dense, Dense, Dense> id(Matrix& A, const int64_t k) {
   return id_omm(A, k);

@@ -1,5 +1,4 @@
 #include "hicma/operations/LAPACK.h"
-#include "hicma/extension_headers/operations.h"
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
@@ -12,14 +11,15 @@
 #include "hicma/util/omm_error_handler.h"
 #include "hicma/util/timer.h"
 
-#include "yorel/yomm2/cute.hpp"
-
 #ifdef USE_MKL
 #include <mkl.h>
 #else
 #include <cblas.h>
 #include <lapacke.h>
 #endif
+
+#include "yorel/yomm2/cute.hpp"
+using yorel::yomm2::virtual_;
 
 #include <algorithm>
 #include <cassert>
@@ -33,14 +33,29 @@
 namespace hicma
 {
 
+declare_method(
+  void, qr_omm,
+  (virtual_<Matrix&>, virtual_<Matrix&>, virtual_<Matrix&>)
+)
+
 void qr(Matrix& A, Matrix& Q, Matrix& R) {
   // TODO consider moving assertions here (same in other files)!
   qr_omm(A, Q, R);
 }
 
+declare_method(
+  Dense, get_right_factor_omm,
+  (virtual_<const Matrix&>)
+)
+
 Dense get_right_factor(const Matrix& A) {
   return get_right_factor_omm(A);
 }
+
+declare_method(
+  void, update_right_factor_omm,
+  (virtual_<Matrix&>, virtual_<Matrix&>)
+)
 
 void update_right_factor(Matrix& A, Matrix& R) {
   update_right_factor_omm(A, R);

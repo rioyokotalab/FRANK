@@ -1,5 +1,4 @@
 #include "hicma/operations/arithmetic.h"
-#include "hicma/extension_headers/operations.h"
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
@@ -7,12 +6,20 @@
 #include "hicma/classes/matrix.h"
 #include "hicma/util/omm_error_handler.h"
 
+#include "yorel/yomm2/cute.hpp"
+using yorel::yomm2::virtual_;
+
 #include <cstdint>
 #include <cstdlib>
 
 
 namespace hicma
 {
+
+declare_method(
+  Matrix&, multiplication_omm,
+  (virtual_<Matrix&>, double)
+)
 
 Matrix& operator*=(Matrix& A, const double b) {
   return multiplication_omm(A, b);

@@ -1,6 +1,4 @@
 #include "hicma/operations/misc.h"
-#include "hicma/extension_headers/classes.h"
-#include "hicma/extension_headers/operations.h"
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
@@ -10,6 +8,9 @@
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/LAPACK.h"
 #include "hicma/util/omm_error_handler.h"
+
+#include "yorel/yomm2/cute.hpp"
+using yorel::yomm2::virtual_;
 
 #include <algorithm>
 #include <cassert>
@@ -22,6 +23,8 @@
 
 namespace hicma
 {
+
+declare_method(void, zero_all_omm, (virtual_<Matrix&>))
 
 void zero_all(Matrix& A) {
   zero_all_omm(A);
@@ -56,6 +59,8 @@ define_method(void, zero_all_omm, (Matrix& A)) {
 }
 
 
+declare_method(void, zero_lower_omm, (virtual_<Matrix&>))
+
 void zero_lower(Matrix& A) {
   zero_lower_omm(A);
 }
@@ -80,6 +85,9 @@ define_method(void, zero_lower_omm, (Matrix& A)) {
   omm_error_handler("zero_lower", {A}, __FILE__, __LINE__);
   std::abort();
 }
+
+
+declare_method(void, zero_upper_omm, (virtual_<Matrix&>))
 
 void zero_upper(Matrix& A) {
   zero_upper_omm(A);
@@ -136,6 +144,15 @@ int64_t find_svd_truncation_rank(const Dense& S, const double eps) {
   } while(rank < min_dim && std::sqrt(err) > threshold);
   return rank;
 }
+
+declare_method(
+  Hierarchical, split_omm,
+  (
+    virtual_<const Matrix&>,
+    const std::vector<IndexRange>&, const std::vector<IndexRange>&,
+    const bool
+  )
+)
 
 Hierarchical split(
   const Matrix& A, const int64_t n_row_blocks, const int64_t n_col_blocks, const bool copy
@@ -264,6 +281,8 @@ define_method(
   omm_error_handler("split", {A}, __FILE__, __LINE__);
   std::abort();
 }
+
+declare_method(MatrixProxy, shallow_copy_omm, (virtual_<const Matrix&>))
 
 MatrixProxy shallow_copy(const Matrix& A) {
   return shallow_copy_omm(A);

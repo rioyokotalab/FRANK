@@ -1,5 +1,4 @@
 #include "hicma/operations/misc.h"
-#include "hicma/extension_headers/operations.h"
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/empty.h"
@@ -9,6 +8,7 @@
 #include "hicma/util/omm_error_handler.h"
 
 #include "yorel/yomm2/cute.hpp"
+using yorel::yomm2::virtual_;
 
 #include <cstdint>
 #include <cstdlib>
@@ -16,6 +16,8 @@
 
 namespace hicma
 {
+
+declare_method(int64_t, get_n_rows_omm, (virtual_<const Matrix&>))
 
 int64_t get_n_rows(const Matrix& A) { return get_n_rows_omm(A); }
 
@@ -38,6 +40,8 @@ define_method(int64_t, get_n_rows_omm, (const Matrix& A)) {
   std::abort();
 }
 
+
+declare_method(int64_t, get_n_cols_omm, (virtual_<const Matrix&>))
 
 int64_t get_n_cols(const Matrix& A) { return get_n_cols_omm(A); }
 
