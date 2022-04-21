@@ -33,10 +33,6 @@ declare_method(
   Matrix&, addition_omm,
   (virtual_<Matrix&>, virtual_<const Matrix&>)
 )
-declare_method(
-  MatrixProxy, addition_omm,
-  (virtual_<const Matrix&>, virtual_<const Matrix&>)
-)
 
 Matrix& operator+=(Matrix& A, const Matrix& B) { return addition_omm(A, B); }
 
