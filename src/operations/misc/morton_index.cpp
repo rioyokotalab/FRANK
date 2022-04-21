@@ -1,5 +1,4 @@
 #include "hicma/operations/misc.h"
-#include "hicma/extension_headers/classes.h"
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"

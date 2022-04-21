@@ -1,7 +1,6 @@
 #include "hicma/operations/arithmetic.h"
-#include "hicma/extension_headers/operations.h"
-#include "hicma/extension_headers/tuple_types.h"
 
+#include "hicma/definitions.h"
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
@@ -29,6 +28,15 @@ using yorel::yomm2::virtual_;
 
 namespace hicma
 {
+
+declare_method(
+  Matrix&, addition_omm,
+  (virtual_<Matrix&>, virtual_<const Matrix&>)
+)
+declare_method(
+  MatrixProxy, addition_omm,
+  (virtual_<const Matrix&>, virtual_<const Matrix&>)
+)
 
 Matrix& operator+=(Matrix& A, const Matrix& B) { return addition_omm(A, B); }
 

@@ -1,5 +1,4 @@
 #include "hicma/util/print.h"
-#include "hicma/extension_headers/util.h"
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/empty.h"
@@ -27,6 +26,8 @@ namespace hicma
 bool VERBOSE = true;
 static const int stringLength = 35; //!< Length of formatted string
 static const int decimal = 7; //!< Decimal precision
+
+declare_method(std::string, type_omm, (virtual_<const Matrix&>))
 
 std::string type(const Matrix& A) { return type_omm(A); }
 
@@ -125,6 +126,8 @@ void write_JSON(const Matrix& A, const std::string filename) {
   std::ofstream out_file(filename);
   out_file << json;
 }
+
+declare_method(void, print_omm, (virtual_<const Matrix&>))
 
 void print(const Matrix& A) {
   if (!VERBOSE) return;

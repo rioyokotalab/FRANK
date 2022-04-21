@@ -1,5 +1,4 @@
 #include "hicma/operations/misc.h"
-#include "hicma/extension_headers/operations.h"
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
@@ -9,12 +8,15 @@
 #include "hicma/util/omm_error_handler.h"
 
 #include "yorel/yomm2/cute.hpp"
+using yorel::yomm2::virtual_;
 
 #include <cstdint>
 
 
 namespace hicma
 {
+
+declare_method(MatrixProxy, transpose_omm, (virtual_<const Matrix&>))
 
 MatrixProxy transpose(const Matrix& A) { return transpose_omm(A); }
 

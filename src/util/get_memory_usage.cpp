@@ -1,5 +1,4 @@
 #include "hicma/util/get_memory_usage.h"
-#include "hicma/extension_headers/util.h"
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
@@ -10,6 +9,7 @@
 #include "hicma/util/print.h"
 
 #include "yorel/yomm2/cute.hpp"
+using yorel::yomm2::virtual_;
 
 #include <cstdint>
 #include <cstdlib>
@@ -18,6 +18,10 @@
 
 namespace hicma
 {
+
+declare_method(
+  unsigned long, get_memory_usage_omm, (virtual_<const Matrix&>, const bool)
+)
 
 unsigned long get_memory_usage(const Matrix& A, const bool include_structure) {
   const unsigned long memory_usage = get_memory_usage_omm(A, include_structure);

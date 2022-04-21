@@ -1,6 +1,6 @@
 #include "hicma/operations/LAPACK.h"
-#include "hicma/extension_headers/operations.h"
 
+#include "hicma/definitions.h"
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
@@ -13,6 +13,7 @@
 #include "hicma/util/timer.h"
 
 #include "yorel/yomm2/cute.hpp"
+using yorel::yomm2::virtual_;
 
 #ifdef USE_MKL
 #include <mkl.h>
@@ -32,6 +33,11 @@
 
 namespace hicma
 {
+
+declare_method(
+  DensePair, make_left_orthogonal_omm,
+  (virtual_<const Matrix&>)
+)
 
 std::tuple<Dense, Dense> make_left_orthogonal(const Matrix& A) {
   return make_left_orthogonal_omm(A);
@@ -55,6 +61,11 @@ define_method(DensePair, make_left_orthogonal_omm, (const Matrix& A)) {
   std::abort();
 }
 
+
+declare_method(
+  MatrixProxy, split_by_column_omm,
+  (virtual_<const Matrix&>, virtual_<Matrix&>, int64_t&)
+)
 
 MatrixProxy split_by_column(
   const Matrix& A, Matrix& storage, int64_t &currentRow
@@ -108,6 +119,14 @@ define_method(
   std::abort();
 }
 
+
+declare_method(
+  MatrixProxy, concat_columns_omm,
+  (
+    virtual_<const Matrix&>, virtual_<const Matrix&>, virtual_<const Matrix&>,
+    int64_t&
+  )
+)
 
 MatrixProxy concat_columns(
   const Matrix& A, const Matrix& splitted, const Matrix& Q, int64_t& currentRow
@@ -186,6 +205,11 @@ define_method(
 }
 
 
+declare_method(
+  void, update_splitted_size_omm,
+  (virtual_<const Matrix&>, int64_t&, int64_t&)
+)
+
 void update_splitted_size(const Matrix& A, int64_t& rows, int64_t& cols) {
   update_splitted_size_omm(A, rows, cols);
 }
@@ -234,9 +258,19 @@ void restore_block_col(
 }
 
 
+declare_method(
+  void, mgs_qr_omm,
+  (virtual_<Matrix&>, virtual_<Matrix&>, virtual_<Matrix&>)
+)
+
 void mgs_qr(Matrix& A, Matrix& Q, Matrix& R) {
   mgs_qr_omm(A, Q, R);
 }
+
+declare_method(
+  void, orthogonalize_block_col_omm,
+  (const int64_t, virtual_<const Matrix&>, virtual_<Matrix&>, virtual_<Matrix&>)
+)
 
 void orthogonalize_block_col(const int64_t j, const Matrix& A, Matrix& Q, Matrix& R) {
   orthogonalize_block_col_omm(j, A, Q, R);

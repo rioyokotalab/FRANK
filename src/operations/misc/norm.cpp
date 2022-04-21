@@ -1,5 +1,4 @@
 #include "hicma/operations/misc.h"
-#include "hicma/extension_headers/operations.h"
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
@@ -9,6 +8,7 @@
 #include "hicma/util/timer.h"
 
 #include "yorel/yomm2/cute.hpp"
+using yorel::yomm2::virtual_;
 
 #include <cstdint>
 #include <cstdlib>
@@ -16,6 +16,8 @@
 
 namespace hicma
 {
+
+declare_method(double, norm_omm, (virtual_<const Matrix&>))
 
 double norm(const Matrix& A) { return norm_omm(A); }
 

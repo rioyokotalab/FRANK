@@ -1,5 +1,4 @@
 #include "hicma/operations/BLAS.h"
-#include "hicma/extension_headers/operations.h"
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
@@ -10,6 +9,7 @@
 #include "hicma/util/timer.h"
 
 #include "yorel/yomm2/cute.hpp"
+using yorel::yomm2::virtual_;
 
 #ifdef USE_MKL
 #include <mkl.h>
@@ -25,6 +25,11 @@
 
 namespace hicma
 {
+
+declare_method(
+  void, trsm_omm,
+  (virtual_<const Matrix&>, virtual_<Matrix&>, const Mode, const Side)
+)
 
 void trsm(const Matrix& A, Matrix& B, const Mode uplo, const Side side) {
   assert(uplo == Mode::Upper || uplo == Mode::Lower);

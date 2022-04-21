@@ -1,7 +1,7 @@
 #include "hicma/operations/LAPACK.h"
 #include "hicma/operations/misc.h"
-#include "hicma/extension_headers/operations.h"
 
+#include "hicma/definitions.h"
 #include "hicma/classes/dense.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/util/omm_error_handler.h"
@@ -14,6 +14,7 @@
 #include <lapacke.h>
 #endif
 #include "yorel/yomm2/cute.hpp"
+using yorel::yomm2::virtual_;
 
 #include <algorithm>
 #include <cmath>
@@ -26,6 +27,8 @@
 
 namespace hicma
 {
+
+declare_method(DenseIndexSetPair, geqp3_omm, (virtual_<Matrix&>))
 
 std::tuple<Dense, std::vector<int64_t>> geqp3(Matrix& A) {
   return geqp3_omm(A);

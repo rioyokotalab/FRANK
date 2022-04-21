@@ -1,5 +1,4 @@
 #include "hicma/operations/LAPACK.h"
-#include "hicma/extension_headers/operations.h"
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
@@ -12,14 +11,15 @@
 #include "hicma/util/omm_error_handler.h"
 #include "hicma/util/timer.h"
 
-#include "yorel/yomm2/cute.hpp"
-
 #ifdef USE_MKL
 #include <mkl.h>
 #else
 #include <cblas.h>
 #include <lapacke.h>
 #endif
+
+#include "yorel/yomm2/cute.hpp"
+using yorel::yomm2::virtual_;
 
 #include <algorithm>
 #include <cassert>
@@ -32,6 +32,11 @@
 
 namespace hicma
 {
+
+declare_method(
+  void, rq_omm,
+  (virtual_<Matrix&>, virtual_<Matrix&>, virtual_<Matrix&>)
+)
 
 void rq(Matrix& A, Matrix& R, Matrix& Q) { rq_omm(A, R, Q); }
 

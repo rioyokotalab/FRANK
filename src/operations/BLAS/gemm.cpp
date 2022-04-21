@@ -1,5 +1,4 @@
 #include "hicma/operations/BLAS.h"
-#include "hicma/extension_headers/operations.h"
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
@@ -29,6 +28,14 @@ using yorel::yomm2::virtual_;
 namespace hicma
 {
 
+declare_method(
+  void, gemm_omm,
+  (
+    virtual_<const Matrix&>, virtual_<const Matrix&>, virtual_<Matrix&>,
+    const double, const double, const bool, const bool
+  )
+)
+
 void gemm(
   const Matrix& A, const Matrix& B, Matrix& C,
   const double alpha, const double beta,
@@ -42,6 +49,14 @@ void gemm(
   assert((TransB ? get_n_rows(B) : get_n_cols(B)) == get_n_cols(C));
   gemm_omm(A, B, C, alpha, beta, TransA, TransB);
 }
+
+declare_method(
+  MatrixProxy, gemm_omm,
+  (
+    virtual_<const Matrix&>, virtual_<const Matrix&>,
+    const double, const bool, const bool
+  )
+)
 
 MatrixProxy gemm(
   const Matrix& A, const Matrix& B,
@@ -61,7 +76,7 @@ define_method(
     const double alpha, const bool TransA, const bool TransB
   )
 ) {
-  // H H new
+  // H H New(H)
   MatrixProxy C;
   if (A.dim[TransA ? 1 : 0] == 1 && B.dim[TransB ? 0 : 1] == 1) {
     // TODO Determine out type based on first pair? (A[0], A[1])
@@ -99,6 +114,7 @@ define_method(
     const double alpha, const bool TransA, const bool TransB
   )
 ) {
+  // * * New(D)
   Dense C(
     TransA ? get_n_cols(A) : get_n_rows(A),
     TransB ? get_n_rows(B) : get_n_cols(B)

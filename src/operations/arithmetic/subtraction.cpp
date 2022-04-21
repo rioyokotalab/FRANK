@@ -1,11 +1,13 @@
 #include "hicma/operations/arithmetic.h"
-#include "hicma/extension_headers/operations.h"
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/matrix.h"
 #include "hicma/classes/matrix_proxy.h"
 #include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
+
+#include "yorel/yomm2/cute.hpp"
+using yorel::yomm2::virtual_;
 
 #include <cassert>
 #include <cstdint>
@@ -14,6 +16,11 @@
 
 namespace hicma
 {
+
+declare_method(
+  MatrixProxy, subtraction_omm,
+  (virtual_<const Matrix&>, virtual_<const Matrix&>)
+)
 
 MatrixProxy operator-(const Matrix& A, const Matrix& B) {
   assert(get_n_rows(A) == get_n_rows(B));

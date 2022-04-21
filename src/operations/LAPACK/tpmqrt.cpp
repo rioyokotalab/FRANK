@@ -1,5 +1,4 @@
 #include "hicma/operations/LAPACK.h"
-#include "hicma/extension_headers/operations.h"
 
 #include "hicma/classes/dense.h"
 #include "hicma/classes/hierarchical.h"
@@ -16,7 +15,9 @@
 #include <cblas.h>
 #include <lapacke.h>
 #endif
+
 #include "yorel/yomm2/cute.hpp"
+using yorel::yomm2::virtual_;
 
 #include <cstdint>
 #include <cstdlib>
@@ -25,6 +26,15 @@
 
 namespace hicma
 {
+
+declare_method(
+  void, tpmqrt_omm,
+  (
+    virtual_<const Matrix&>, virtual_<const Matrix&>,
+    virtual_<Matrix&>, virtual_<Matrix&>,
+    const bool
+  )
+)
 
 void tpmqrt(
   const Matrix& V, const Matrix& T, Matrix& A, Matrix& B, const bool trans
