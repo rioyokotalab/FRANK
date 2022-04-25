@@ -1,15 +1,21 @@
-*.a
+# Ignore build artifact folders
+build
+bin
+lib
+install
+.env
+dependencies
+
+*.json
 *.pdf
-*.o
-*.out
-*.txt
-*.xml
 TAGS
 *~
 
-# Python ignores
-**/__pycache__
-**/*.pyc
+# VSCode ignore
+.vscode
+
+# MACOS Ignore
+.DS_Store
 
 # core dumps
 vgcore.[0-9]*
@@ -18,3 +24,5 @@ GPATH
 GRPATH
 GTAGS
 GRTAGS
+
+job.sh

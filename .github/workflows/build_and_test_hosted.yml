@@ -1,0 +1,37 @@
+
+name: Build and test
+
+on:
+  pull_request:
+    branches: [ dev ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install system dependencies
+        run: sudo apt-get update
+
+      - name: Install system dependencies
+        run: sudo apt-get install liblapack-dev gfortran libboost-dev libhwloc-dev
+
+      - name: Cache build dependencies
+        uses: actions/cache@master
+        env:
+          cache-name: cache-built-dependencies
+        with:
+          path: |
+            dependencies/include
+            dependencies/lib
+          key: ${{ runner.os }}-build
+
+      - name: CMake configuration
+        run: mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=RELEASE ..
+      - name: Build using make
+        run: cd build && make -j
+      - name: Run tests
+        run: cd build && make test
