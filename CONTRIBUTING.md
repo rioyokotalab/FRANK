@@ -1,186 +1,230 @@
-# Logs and conclusions
+# Design decisions for the Hierarchical class
 
-Logs and conclusions for meetings taking place:
+## Idea 1: Use pointer to base class (doesn't work)
+#### Implementation
+Hierarchical has
+```c++
+std::vector<Node*> data[4];
+Node* operator(i,j) {data[2*i+j]};
+```
+#### Example usage
+```c++
+Hierarchical H;
+H(0,0) = new Dense;
+H(0,1) = new LowRank;
+H(1,0) = new LowRank;
+H(1,1) = new Dense;
+```
+### Issues with this approach
+Accessing `Dense*` and `LowRank*` elements using the above method requires all functions of
+Dense and LowRank to be defined as virtual functions in the base class Node*
+However, since we want to overload `operator*(Dense)` in all three classes we will need to define:
+```c++
+virtual Dense operator*(Dense)
+virtual LowRank operator*(Dense)
+virtual Hierarchical operator*(Dense)
+```
+in the base Node class.
+This is not allowed since it will be operator overloading for the same input with different output
 
-** 21 Sept 2018 **
+## Idea 2: Use struct/union (doesn't work)
+#### Implementation
+```c++
+struct/union DLH {
+  Dense D;
+  LowRank L;
+  Hierarchical H;
+};
+```
+Hierarchical has
+```c++
+std::vector<DLH> data[4];`
+DLH operator(i,j) {data[2*i+j]};
+```
+#### Example usage
+```c++
+Hierarchical H;
+H(0,0).D = A(0,0);
+H(0,1).L = LowRank(A(0,1));
+H(1,0).L = LowRank(A(1,0));
+H(1,1).D = A(1,1);
+```
+#### Issues with this approach
+What we want to do during the hierarchical matrix operation is to call operations like
+```c++
+H(1,1) -= H(1,0) * H(0,1)
+```
+without knowing what type they are
+This approach requires .D, .L, .H to be specified and will not work
 
-Meeting between Sameer and Yokota-sensei.
+## Idea 3: Use boost::any (works, but not elegant)
+#### Implementation
+```c++
+std::vector<boost::any> data;
+boost::any& operator(i,j) {data[2*i+j]};
+```
+#### Example usage
+```c++
+Dense A;
+Hierarchical H;
+H(0,0) = A(0,0);
+H(0,1) = LowRank(A(0,1));
+H(1,0) = LowRank(A(1,0));
+H(1,1) = A(1,1);
+```
+#### Issues with this approach
+We don't want our code to depend on boost.
+No way of inferring the correct overloaded function for each type.
+Which resulted in many if statements for each type.
+For GEMM it has three nested if statement.
+All arguments including output were passed as variables to all functions.
 
-We discussed how the current hicma code can be modified to make it MPI-compatible. We came
-up with a novel scheme for distributing hierarchically recursive blocks over multiple processes.
-The scheme is inspired by SLATE and will allow us to change the granularity of the
-computation at runtime. We can also change how exactly we want the data distribution of a
-block and not be restricted to exclusively using block-cyclic distribution of all blocks.
+## Idea 4: Use a shared_ptr to Node
+#### Implementation
+```c++
+std::vector<std::shared_ptr<Node>> data;
+Node& operator(i,j) {data[2*i+j]};
 
-Following is a summary of the new approach:
+enum{
+  FRANK_NODE;
+  FRANK_DENSE;
+  FRANK_LOWRANK;
+  FRANK_HIERARCHIAL;
+}
+Hierarchical::is(const int enum_id) {
+  return enum_id == FRANK_HIERARCHICAL;
+}
+```
+#### Features
+This solved the dependency on boost.
 
-Copy SLATE design methodologies.
-Dissociate creation of matrix object from memory allocation.
-Have some way of determinining which object is present on which node.
+Inferring the correct overloaded function for each type is now done through an is() function.
 
-A 'tile' is SLATE is actually the underlying matrix block (Dense/LR/HMat) in hicma.
+Now you could return Dense, LowRank, Hierarchical types from functions as shared_ptr<Node>.
 
-On object creation:
-+ Specify the "N", "NB" and number of processes over which the matrix will be distributed
-over.
-+ This will be executed by each process and that will create a 'map' in each process.
-+ There are two cases in this case:
-  - The first time the matrix is created and there is no data.
-  - There is already data in the matrix and it needs to be split further.
+#### Issues with this approach
+We still have many if statements for each type (although it uses is() now).
 
-+ First case of no data:
-  - Simply create the map in each process so that each process will come to know
-    which block it owns and does not own.
-+ Second case of with data:
-  - In this case, the process that creates the split has two options:
-    - Keep the block within itself.
-    - Broadcast it to all other processes.
-  - If it keeps it within itself it does not need to do anything special since all
-    computation will be handled on one process itself.
-  - If it decides to broadcast, it will send a broadcast to all process with its data
-    and communicate the new map to them.
+We cannot operate on the return values as Dense, LowRank, Hierarchical types because they are shared_ptr<Node> type.
 
-Pros of mapping approach:
-+ Since we don't know how well the algorithm can load balance, we can dynamically
-change the process mapping depending on the kind of process block that we encounter
-simply by changing the process mapping.
-+ Thus we make no assumptions about the splitting of the data when working with
-the matrix for the first time.
-+ Changing the process distribution of the block is basically a matter of changing
-the way the map is stored and then distributing the data accordingly.
-** 8 Aug 2018 **
+Following assignments no longer work:
+```c++
+Dense A;
+Hierarchical H;
+H(0,0) = A(0,0);
+H(0,1) = LowRank(A(0,1));
+H(1,0) = LowRank(A(1,0));
+H(1,1) = A(1,1);
+```
 
-Meeting between Sameer and Peter.
+## Idea 5: Subclass the shared_ptr class as a BlockPtr class
+#### Implementation
+```c++
+template<Typename T = Node>
+class BlockPtr : public std::shared_ptr<T> {
+  void getrf();
+  void trsm(const Node&, const char&);
+  void gemm(const Node&, const Node&);
+}
+typedef std::vector<BlockPtr> NodePtr;
+NodePtr data;
+NodePtr operator(i,j) {data[2*i+j]};
 
-Make a simple MPI code for the current class structure.
+enum{
+  FRANK_NODE;
+  FRANK_DENSE;
+  FRANK_LOWRANK;
+  FRANK_HIERARCHIAL;
+}
+Hierarchical::is(const int enum_id) {
+  return enum_id == FRANK_HIERARCHICAL;
+}
+```
+#### Features
+By subclassing the shared_ptr class we can define functions within the subclass BlockPtr,
+which then allows us operate on the return values of Dense, LowRank, Hierarchical types.
 
-The code will have the following features:
-* Make a basic code that is split across 4 processes.
-* Don't make it block cyclic. Instead, keep it cyclic and simply split 4 blocks across 4 processes.
-* If there is further split down any level, it stays on the same processor.
-* We do not handle recursively split multi-process blocks at this point of time.
-* Run this through Yokota sensei and set timeline.
+Following assignments are possible again:
+```c++
+Dense A;
+Hierarchical H;
+H(0,0) = A(0,0);
+H(0,1) = LowRank(A(0,1));
+H(1,0) = LowRank(A(1,0));
+H(1,1) = A(1,1);
+```
 
-** 9 Aug 2018  **
+#### Issues with this approach
+Data ownership of data for the BlockPtr is not clear.
 
-Meeting between Sameer and Yokota-sensei.
+## Idea 6: Create a class Any (formerly Block) which contains a unique_ptr<Node>
+```c++
+class Any {
+  std::unique_ptr<Node> ptr;
+}
+std::vector<Any> data;
 
-We improved on yesterday's discussion between Sameer and Peter. Yesterday
-we had thought of two ways of implementing the splitting: one kind of matrix
-block is distributed and the other one is not. The one which is not distributed
-is too small to qualify for distribution and therefore we need to split it accoross
-many processes, we can just compute it on a single process and distribute the results.
+const Node& operator(i,j) {data[2*i+j]};
+Any& operator(i,j) {data[2*i+j]};
 
-However, Yokota-sensei pointed out that this can lead to imbalance since only a corner
-process will be kept busy and all the others will need to wait for the communication from it.
+enum{
+  FRANK_NODE;
+  FRANK_DENSE;
+  FRANK_LOWRANK;
+  FRANK_HIERARCHIAL;
+}
+Hierarchical::is(const int enum_id) {
+  return enum_id == FRANK_HIERARCHICAL;
+}
+```
 
-He suggested a new way of looking at it:
-* Only distribute the full rank matrices until it no longer makes sense to distribute
-them further.
-* Never compute a full LU decomposition of a subdivided block only on a single process.
-Always keep the decomposition distributed.
-* Since it does not seem efficient to distribute the low rank block accross processes,
-duplicate the low rank block and the reduction across all the processes. The communication
-from the full rank blocks (for the L and U parts) will then basically be a broadcast of the
-computed blocks to all the processes so they do the (duplicated) computation by themselves.
+#### Features
+Has almost the same functionality as BlockPtr, but a little bit cleaner.
 
-Here's a photo of the whiteboard:
+#### Issues with this approach
+All functions {gemm, trsm, etc.} are defined in all classes {Dense, LowRank, etc.}
 
-![9 aug 2018 whiteboard](images/9_8_18.jpeg**)
+Using if checks in all functions {gemm, trsm, etc.} to determine the right combination of classes {Dense, LowRank, etc.}
 
-# Contribution guidelines
+## Idea 7: Add multimethods through YOMM. Define functions {gemm, trsm, etc.} outside of the classes {Dense, LowRank, etc.}.
+```c++
+class Any {
+  std::unique_ptr<Node> ptr;
+}
+std::vector<Any> data;
 
-Document all the classes/functions you write. Follow this guide:
+const Node& operator(i,j) {data[2*i+j]};
+Any& operator(i,j) {data[2*i+j]};
 
-# Code structure explanations
+void getrf(Any& A) {
+  getrf_omm(*A.ptr.get());
+}
+void getrf(Node& A) {
+  getrf_omm(A);
+}
+```
 
-## Runtime polymorphism
+#### Features
+With multimethods we no longer need checks for classes {Dense, LowRank, etc.}.
 
-### Why do we need runtime polymorphism?
+#### Issues with this approach
+*A.ptr.get() is ugly and pointer is exposed
 
-The decomposition of the matrix cannot be known at run time since it depends on
-the data. Thus, for many operations, it is not know at compile time what types
-the parameters actually have and how they should be treated. For functions like
-operator\* the return type may also not be known at compile time. Runtime
-polymorphism is thus needed to resolve whether something is a Dense, LowRank or
-Hierarchical type.
+## Minor fix
+#### Name change
+Any is now MatrixProxy
+Node is now Matrix
 
-### How do we implement runtime polymorphism?
+#### Private pointers
+```c++
+class MatrixProxy {
+private:
+  std::unique_ptr<Matrix> ptr;
+}
+```
 
-The central mechanism for runtime polymorphism that we use is inheritance.
-Dense, LowRank and Hierarchical all inherit from Node. References or pointers
-to Node can thus refer/point to Node or any of the three child classes mentioned
-above. It is reasonable to use inheritance since all three matrix types are
-nodes in the hierarchical tree-like structure, thus forming "is a" relationships
-with their parent Node.
-
-### Why is the indirection through Block also needed?
-
-The member functions operator+, operator- and operator\* have to create a new
-object. They thus need to return this new object by value. If we, for example,
-multiply two Hierarchical types, operator\* needs to return a Hierarchical type.
-If the return type is Node however, the function will compile but slice the
-Hierarchical type to a Node and thus make it unusable. If we wrap these in
-Block, which holds a unique\_ptr to a Node (which can thus also point to the
-child types), we can return this Block by value and be sure that the contained
-Hierarchical (in above example) remains intact. This has the added benefit of
-properly managed lifetime, thus preventing memory leaks. Accordingly, the
-Hierarchical class holds a vector of Block types.
-
-### What is Node(Node&&) and why do we need a swap(Node&, Node&) functions?
-
-With the introduction of move semantics in C++11, what used to be the rule of
-three (destructor, copy constructor, copy assignment operator) became the rule
-of five with the addition of a move constructor and a move assignment operator.
-Implementing these five functions correctly are necessary for exception-safe
-code and proper resource management (leak protection). The swap function is
-implemented for all types defined in the project. This reduces code duplication,
-as both move constructor and move assigment operator rely on swapping for a
-efficient and safe implementation (see std::swap). If an lvalue is to be moved
-from, std::move has to be used to pass it to any of the two functions (see
-use in block\_lu). Using swap also allows to combine the copy assigment and
-move assigment operator into a single operator that takes the right-hand-side
-by value (thus creating a local copy) and then moves from it.
-
-### Avoiding unnecessary copies
-
-The methods above, when done correctly, should allow us to avoid unnecessary
-copies of objects, particularly of big objects like LowRank or Dense. While
-optimizations should not happen early in a project, this one is intimately
-linked with the basic class architecture. It may be reasonable to consider this
-before extending the classes and refining the algorithms themselves. Getting
-this basic architecture right also allows compiler optimizations like copy
-elision to be properly applied. There is are two great talks by Sean Parents on
-[Runtime Polymorphism](https://www.youtube.com/watch?v=QGcVXgEVMJg) and
-[Data structures](https://www.youtube.com/watch?v=sWgDk-o-6ZE&t=1s)
-from his Better Code series that go into detail on these issues.
-
-### Possible alternatives
-
-In Sean Parents talk on
-[Runtime Polymorphism](https://www.youtube.com/watch?v=QGcVXgEVMJg) he suggests
-type erasure over inheritance to achieve polymorphism. I (Peter) have tried to
-implement this for our case but was unable to implement interaction between
-different concepts. A solution to this may be to use auto and dynamic\_cast,
-but these might be features we do not want to use. Inheritance seems to do the
-job fine, although there is currently no way to gauge the performance overhead.
-
-### Notes on testing framework
-Moving to the catch2 C++ testing framework seems like a good idea. It is header-only (no external
-dependencies) and provides a host of easy to use matchers which are extensible as per use case.
-Have a look at the list of matchers [here](https://github.com/catchorg/Catch2/blob/master/docs/matchers.md).
-If a test fails, catch2 will provide very useful output that can be compared easily on the
-terminal. It allows running specific tests from the test suite.
-The only downside is increase in compilation time, but that can be taken care of with some
-modifications to the way we structure the test code (which will be done in the future).
-
-### Null pointers
-Do not use `NULL`. Use `nullptr` everywhere. Good article comparing them both can be found
-[here](https://embeddedartistry.com/blog/2017/2/28/migrating-from-c-to-c-null-vs-nullptr).
-
-### Adding new functions
-If you want to add a new function that is supposed to work across all kinds of matrix blocks,
-follow this procedure.
-* Add a `virtual` function to `Node` class.
-* Override the same function in any or all of the subclasses of `Node` : `Hierarchical`,
-`Dense` or `LowRank`.
+#### Conversion operators so that MatrixProxy is automatically converted to Matrix
+```c++
+operator const Matrix&() const;
+operator Matrix&();
+```
