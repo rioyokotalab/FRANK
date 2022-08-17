@@ -9,14 +9,19 @@ namespace FRANK
 {
 
 /**
- * @brief reads the geometry information from a file
- * 
- * The first two values read must contain the number of rows and colums to be read.
- * I.e:
- * n_rows n_cols value value value ...
+ * @brief Reads the geometry information from a text file
  * 
  * @param filename location of the file to be read
  * @return std::vector<std::vector<double>> matrix of vertices representing the geometry
+ *
+ * Geometry file format
+ * ```
+ * n dim
+ * x1 y1 z1
+ * x2 y2 z2
+ * ...
+ * xn yn zn
+ * ```
  */
 std::vector<std::vector<double>> read_geometry_file(const std::string filename);
 
