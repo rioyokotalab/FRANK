@@ -19,9 +19,12 @@ else()
 endif()
 
 # Set warnings and optimization level
-list(APPEND FRANK_OPTIONS -O3 -Wall -Wextra -pedantic)
+list(APPEND FRANK_OPTIONS -Wall -Wextra -pedantic)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   list(APPEND FRANK_OPTIONS -g)
+endif()
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+  list(APPEND FRANK_OPTIONS -O3)
 endif()
 
 # Decide where build results should be saved
