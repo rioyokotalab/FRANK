@@ -1,4 +1,4 @@
-add_library(hicma SHARED functions.cpp)
+add_library(hicma STATIC functions.cpp)
 add_subdirectory(classes)
 add_subdirectory(operations)
 add_subdirectory(util)

@@ -343,6 +343,9 @@ void tpmqrt(const Matrix& V, const Matrix& T, Matrix& A, Matrix& B, bool);
  */
 void tpqrt(Matrix& A, Matrix& B, Matrix& T);
 
+template<typename T>
+void inverse(Dense<T>& A);
+
 } // namespace hicma
 
 #endif // hicma_operations_LAPACK_h

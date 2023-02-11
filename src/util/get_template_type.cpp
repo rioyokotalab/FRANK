@@ -25,7 +25,7 @@ define_method(bool, is_double, (const LowRank<double>&)) {
 }
 
 define_method(bool, is_double, (const LowRank<float>&)) {
-  return true;
+  return false;
 }
 
 define_method(bool, is_double, (const Hierarchical<double>&)) {

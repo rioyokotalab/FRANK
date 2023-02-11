@@ -282,4 +282,29 @@ template void print<int64_t>(std::string s, int64_t v, bool fixed=true);
 template void print<float>(std::string s, float v, bool fixed=true);
 template void print<double>(std::string s, double v, bool fixed=true);
 
+define_method(bool, is_double, (const Dense<double>&)) {
+  return true;
+}
+
+define_method(bool, is_double, (const Dense<float>&)) {
+  return false;
+}
+
+define_method(bool, is_double, (const LowRank<double>&)) {
+  return true;
+}
+
+define_method(bool, is_double, (const LowRank<float>&)) {
+  return false;
+}
+
+define_method(bool, is_double, (const Hierarchical<double>&)) {
+  return true;
+}
+
+define_method(bool, is_double, (const Matrix& A)) {
+  omm_error_handler("is_double", {A}, __FILE__, __LINE__);
+  std::abort();
+}
+
 } // namespace hicma

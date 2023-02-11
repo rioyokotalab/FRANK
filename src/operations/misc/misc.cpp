@@ -29,13 +29,28 @@ template Hierarchical<float> split(const Matrix&, const Hierarchical<float>&, bo
 template Hierarchical<double> split(const Matrix&, const Hierarchical<double>&, bool);
 template double cond(Dense<float>);
 template double cond(Dense<double>);
+template double cond_inf(Dense<float>);
+template double cond_inf(Dense<double>);
 
 // TODO change return value to float?
 template<typename T>
 double cond(Dense<T> A) {
+  double norm_A = norm(A);
+  inverse(A);
+  double norm_inv = norm(A);
+  return std::sqrt(norm_A) * std::sqrt(norm_inv);
+  //int64_t k = std::min(A.dim[0], A.dim[1]);
+  //std::vector<T> S = get_singular_values(A);
+  //std::cout<<S[0]<<" vs "<<S[1]<<" vs "<<S[k-3]<<" vs "<<S[k-2]<<" vs "<<S[k-1]<<std::endl;
+  //return (S[0] / S[k-1]);
+}
+
+// TODO change return value to float?
+template<typename T>
+double cond_inf(Dense<T> A) {
   int64_t k = std::min(A.dim[0], A.dim[1]);
   std::vector<T> S = get_singular_values(A);
-  return (S[0] / S[k-1]);
+  return (((double)S[0]) / S[k-1]);
 }
 
 // TODO this is not used anywhere, so no template for now

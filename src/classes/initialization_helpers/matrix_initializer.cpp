@@ -39,7 +39,7 @@ LowRank<T> MatrixInitializer::get_compressed_representation(
 
 vec2d<double> MatrixInitializer::get_coords_range(const IndexRange& range) const {
   vec2d<double> coords_range;
-  for(size_t d=0; d<params.size(); d++)
+  for(size_t d=0; d<params.size()-1; d++)
     coords_range.push_back(std::vector<double>(params[d].begin()+range.start, params[d].begin()+range.start+range.n));
   return coords_range;
 }

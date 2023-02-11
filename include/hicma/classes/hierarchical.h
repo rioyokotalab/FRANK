@@ -48,6 +48,7 @@ class Hierarchical : public Matrix {
    * @brief Dimension in terms of submatrices {block_rows, block_columns}
    */
   std::array<int64_t, 2> dim = {0, 0};
+  char lock[2][2];
  private:
   std::vector<MatrixProxy> data;
  public:

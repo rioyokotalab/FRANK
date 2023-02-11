@@ -75,7 +75,7 @@ find_or_download(nlohmann_json)
 list(APPEND HICMA_DEPENDENCIES nlohmann_json::nlohmann_json)
 
 # MKL or other BLAS/LAPACK libraries (default is other)
-option(USE_MKL "Use Intel Math Kernel Libraries (MKL)" OFF)
+option(USE_MKL "Use Intel Math Kernel Libraries (MKL)" ON)
 option(USE_IOMP "Use parallel MKL with Intel OpenMP" OFF)
 if(${USE_MKL})
   list(APPEND HICMA_DEFINITIONS USE_MKL)

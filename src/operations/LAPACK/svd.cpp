@@ -14,6 +14,7 @@
 #include <tuple>
 #include <utility>
 #include <vector>
+#include <iostream>
 
 
 namespace hicma
@@ -157,6 +158,34 @@ std::vector<double> get_singular_values(Dense<double>& A) {
     &work
   );
   return Sdiag;
+}
+
+template<>
+void inverse(Dense<double>& A) {
+  std::vector<int> ipiv(std::min(A.dim[0], A.dim[1]));
+  int info;
+  info = LAPACKE_dgetrf(LAPACK_ROW_MAJOR, A.dim[0], A.dim[1], &A, A.stride, ipiv.data());
+  if (info != 0) {
+    std::cout << "DGETRF failed in inverse().\n";
+  }
+  info = LAPACKE_dgetri(LAPACK_ROW_MAJOR, A.dim[0], &A, A.stride, ipiv.data());
+  if (info != 0) {
+    std::cout << "DGETRI failed in inverse().\n";
+  }
+}
+
+template<>
+void inverse(Dense<float>& A) {
+  std::vector<int> ipiv(std::min(A.dim[0], A.dim[1]));
+  int info;
+  info = LAPACKE_sgetrf(LAPACK_ROW_MAJOR, A.dim[0], A.dim[1], &A, A.stride, ipiv.data());
+  if (info != 0) {
+    std::cout << "DGETRF failed in inverse().\n";
+  }
+  info = LAPACKE_sgetri(LAPACK_ROW_MAJOR, A.dim[0], &A, A.stride, ipiv.data());
+  if (info != 0) {
+    std::cout << "DGETRI failed in inverse().\n";
+  }
 }
 
 } // namespace hicma

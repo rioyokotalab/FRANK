@@ -71,6 +71,9 @@ int64_t get_n_cols(const Matrix&);
 template<typename T>
 double cond(Dense<T> A);
 
+template<typename T>
+double cond_inf(Dense<T> A);
+
 void sortByMortonIndex(std::vector<std::vector<double>> &x, int64_t level, std::vector<int64_t>& perm);
 
 /**

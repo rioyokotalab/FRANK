@@ -88,6 +88,36 @@ template void helmholtznd(
   const std::vector<std::vector<double>>& x,
   int64_t row_start, int64_t col_start
 );
+template void gaussiannd(
+  float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
+template void gaussiannd(
+  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
+template void imqnd(
+  float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
+template void imqnd(
+  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
+template void maternnd(
+  float* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
+template void maternnd(
+  double* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
 
 template<typename T>
 void zeros(
@@ -185,18 +215,36 @@ void laplacend(
   const std::vector<std::vector<double>>& x,
   int64_t row_start, int64_t col_start
 ) {
+  size_t d = x.size() -1;
+  assert(x[d].size() == 2);
+  T l = x[d][0];
+  T shift = x[d][1];
+
+  double min = 1;
+
   for (uint64_t i=0; i<A_rows; i++) {
     for (uint64_t j=0; j<A_cols; j++) {
       double rij = 0.0;
-      for(size_t k=0; k<x.size(); k++) {
+      for(size_t k=0; k<d; k++) {
         rij += (
           (x[k][i+row_start] - x[k][j+col_start])
           * (x[k][i+row_start] - x[k][j+col_start])
         );
       }
       // relies on implicit type conversion
-      A[i*A_stride+j] = 1 / (std::sqrt(rij) + 1e-3);
+      if (i == j) 
+        A[i*A_stride+j] = 0;
+      else {
+        double dist = std::sqrt(rij);
+        if (min > dist)
+          min = dist;
+        A[i*A_stride+j] = 1 / (l * dist);
+        //A[i*A_stride+j] = 1 / (std::sqrt(rij) + 1e-3);
+      }
     }
+  }
+  for (uint64_t i=0; i<A_rows; i++) {
+    A[i*A_stride+i] = 1 / (l * min) + shift;
   }
 }
 
@@ -206,17 +254,130 @@ void helmholtznd(
   const std::vector<std::vector<double>>& x,
   int64_t row_start, int64_t col_start
 ) {
+  size_t d = x.size() -1;
+  assert(x[d].size() == 2);
+  T l = x[d][0];
+  T shift = x[d][1];
+
+  double min = 1;
+
   for (uint64_t i=0; i<A_rows; i++) {
     for (uint64_t j=0; j<A_cols; j++) {
       double rij = 0.0;
-      for(size_t k=0; k<x.size(); k++) {
+      for(size_t k=0; k<d; k++) {
+        rij += (
+          (x[k][i+row_start] - x[k][j+col_start])
+          * (x[k][i+row_start] - x[k][j+col_start])
+        );
+      }
+      if (i == j) 
+        A[i*A_stride+j] = 1;
+      else {
+        double dist = std::sqrt(rij);
+        if (min > dist)
+          min = dist;
+        A[i*A_stride+j] = std::exp(-l * rij) / (dist);
+        // relies on implicit type conversion
+        //A[i*A_stride+j] = std::exp(-1.0 * rij) / (std::sqrt(rij) + shift);
+      }
+    }
+  }
+  for (uint64_t i=0; i<A_rows; i++) {
+    A[i*A_stride+i] = (1 / min) + shift;
+  }
+}
+
+// we use the 3rd entry of x to pass the parameter l
+template<typename T>
+void gaussiannd(
+  T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+) {
+  size_t d = x.size() -1;
+  assert(x[d].size() == 2);
+  T l = x[d][0];
+  T shift = x[d][1];
+
+  for (uint64_t i=0; i<A_rows; i++) {
+    for (uint64_t j=0; j<A_cols; j++) {
+      double rij = 0.0;
+      for(size_t k=0; k<d; k++) {
         rij += (
           (x[k][i+row_start] - x[k][j+col_start])
           * (x[k][i+row_start] - x[k][j+col_start])
         );
       }
       // relies on implicit type conversion
-      A[i*A_stride+j] = std::exp(-1.0 * rij) / (std::sqrt(rij) + 1e-3);
+      A[i*A_stride+j] = std::exp(-l * rij);
+      // diagonal shift
+      if (i == j) {
+        A[i*A_stride+j] += shift;
+      }
+    }
+  }
+}
+
+// we use the 3rd entry of x to pass the parameter l
+template<typename T>
+void imqnd(
+  T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+) {
+  size_t d = x.size() -1;
+  assert(x[d].size() == 2);
+  T l = x[d][0];
+  T shift = x[d][1];
+
+  for (uint64_t i=0; i<A_rows; i++) {
+    for (uint64_t j=0; j<A_cols; j++) {
+      double rij = 0.0;
+      for(size_t k=0; k<d; k++) {
+        rij += (
+          (x[k][i+row_start] - x[k][j+col_start])
+          * (x[k][i+row_start] - x[k][j+col_start])
+        );
+      }
+      // relies on implicit type conversion
+      A[i*A_stride+j] = 1.0 / std::sqrt(1.0 + l * rij);
+      // diagonal shift
+      if (i == j) {
+        A[i*A_stride+j] += shift;
+      }
+    }
+  }
+}
+
+// we use the 3rd entry of x to pass the parameter l
+template<typename T>
+void maternnd(
+  T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+) {
+    size_t d = x.size() -1;
+  assert(x[d].size() == 2);
+  T l = x[d][0];
+  T shift = x[d][1];
+
+  for (uint64_t i=0; i<A_rows; i++) {
+    for (uint64_t j=0; j<A_cols; j++) {
+      double rij = 0.0;
+      for(size_t k=0; k<d; k++) {
+        rij += (
+          (x[k][i+row_start] - x[k][j+col_start])
+          * (x[k][i+row_start] - x[k][j+col_start])
+        );
+      }
+      rij = std::sqrt(rij);
+      // relies on implicit type conversion
+      A[i*A_stride+j] = 1.0 + std::sqrt(3) * l * rij
+                        * std::exp(-std::sqrt(3)* l * rij);
+      // diagonal shift
+      if (i == j) {
+        A[i*A_stride+j] += shift;
+      }
     }
   }
 }

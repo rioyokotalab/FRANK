@@ -231,6 +231,87 @@ void helmholtznd(
   int64_t row_start, int64_t col_start
 );
 
+/**
+ * @brief Kernel function that generates gaussian matrix using set of 2D points
+ *
+ * @param A
+ * Array to be filled with entries
+ * @param A_rows
+ * Number of rows of \p A
+ * @param A_cols
+ * Number of columns of \p A
+ * @param A_stride
+ * Stride of \p A
+ * @param x
+ * 2D vector that holds geometry information: list of 2D coordinates
+ * @param row_start
+ * Row offset (if generating a submatrix)
+ * @param col_start
+ * Column offset (if generating a submatrix)
+ *
+ * This function is used as kernel to generate matrix with `MatrixInitializerKernel`.
+ */
+template<typename T = double>
+void gaussiannd(
+  T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
+
+/**
+ * @brief Kernel function that generates IMQ matrix using set of 2D points
+ *
+ * @param A
+ * Array to be filled with entries
+ * @param A_rows
+ * Number of rows of \p A
+ * @param A_cols
+ * Number of columns of \p A
+ * @param A_stride
+ * Stride of \p A
+ * @param x
+ * 2D vector that holds geometry information: list of 2D coordinates
+ * @param row_start
+ * Row offset (if generating a submatrix)
+ * @param col_start
+ * Column offset (if generating a submatrix)
+ *
+ * This function is used as kernel to generate matrix with `MatrixInitializerKernel`.
+ */
+template<typename T = double>
+void imqnd(
+  T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
+
+/**
+ * @brief Kernel function that generates Matern matrix using set of 2D points
+ *
+ * @param A
+ * Array to be filled with entries
+ * @param A_rows
+ * Number of rows of \p A
+ * @param A_cols
+ * Number of columns of \p A
+ * @param A_stride
+ * Stride of \p A
+ * @param x
+ * 2D vector that holds geometry information: list of 2D coordinates
+ * @param row_start
+ * Row offset (if generating a submatrix)
+ * @param col_start
+ * Column offset (if generating a submatrix)
+ *
+ * This function is used as kernel to generate matrix with `MatrixInitializerKernel`.
+ */
+template<typename T = double>
+void maternnd(
+  T* A, uint64_t A_rows, uint64_t A_cols, uint64_t A_stride,
+  const std::vector<std::vector<double>>& x,
+  int64_t row_start, int64_t col_start
+);
+
 } // namespace hicma
 
 #endif // hicma_functions_h
