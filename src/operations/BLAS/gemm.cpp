@@ -468,13 +468,38 @@ define_method(
 define_method(
   void, gemm_omm,
   (
-    const Matrix& A, const Hierarchical& B, Hierarchical& C,
+    const LowRank& A, const Hierarchical& B, Hierarchical& C,
+    const double alpha, const double beta,
+    const bool TransA, const bool TransB
+  )
+) {
+  // LR H H
+  assert(B.dim[TransB ? 0 : 1] == C.dim[1]);
+  if (B.dim[0] == 1 && B.dim[1] == 1) {
+    gemm(A, B(0, 0), C, alpha, beta, TransA, TransB);
+  }
+  else if (B.dim[TransB ? 1 : 0] == 1 && C.dim[0] == 1) {
+    for (int64_t j=0; j<B.dim[TransB ? 0 : 1]; ++j) {
+      gemm(A, B[j], C[j], alpha, beta, TransA, TransB);
+    }
+  }
+  else {
+    Dense AVxB = gemm(A.V, B, alpha, false, TransB);
+    C *= beta;
+    LowRank AxB(A.U, A.S, AVxB, false);
+    C += AxB;
+  }
+}
+
+define_method(
+  void, gemm_omm,
+  (
+    const Dense& A, const Hierarchical& B, Hierarchical& C,
     const double alpha, const double beta,
     const bool TransA, const bool TransB
   )
 ) {
   // D H H
-  // LR H H
   assert(B.dim[TransB ? 0 : 1] == C.dim[1]);
   if (B.dim[0] == 1 && B.dim[1] == 1) {
     gemm(A, B(0, 0), C, alpha, beta, TransA, TransB);
@@ -497,13 +522,37 @@ define_method(
 define_method(
   void, gemm_omm,
   (
-    const Hierarchical& A, const Matrix& B, Hierarchical& C,
+    const Hierarchical& A, const LowRank& B, Hierarchical& C,
+    const double alpha, const double beta,
+    const bool TransA, const bool TransB
+  )
+) {
+  // H LR H
+  if (A.dim[0] == 1 && A.dim[1] == 1) {
+    gemm(A(0, 0), B, C, alpha, beta, TransA, TransB);
+  }
+  else if (A.dim[TransA ? 0 : 1] == 1 && C.dim[1] == 1) {
+    for (int64_t i=0; i<A.dim[TransA ? 1 : 0]; ++i) {
+      gemm(A[i], B, C[i], alpha, beta, TransA, TransB);
+    }
+  }
+  else {
+    Dense AxBU = gemm(A, B.U, alpha, false, TransB);
+    C *= beta;
+    LowRank AxB(AxBU, B.S, B.V, false);
+    C += AxB;
+  }
+}
+
+define_method(
+  void, gemm_omm,
+  (
+    const Hierarchical& A, const Dense& B, Hierarchical& C,
     const double alpha, const double beta,
     const bool TransA, const bool TransB
   )
 ) {
   // H D H
-  // H LR H
   if (A.dim[0] == 1 && A.dim[1] == 1) {
     gemm(A(0, 0), B, C, alpha, beta, TransA, TransB);
   }
@@ -555,7 +604,7 @@ define_method(
   if (B.dim[0] == 1 && B.dim[1] == 1) {
     gemm(A, B(0, 0), C, alpha, beta, TransA, TransB);
   }
-  else if (B.dim[TransB ? 1 : 0] == 1) {
+  /*else if (B.dim[TransB ? 1 : 0] == 1) {
     Hierarchical CH = split(C, 1, B.dim[TransB ? 0 : 1]);
     gemm(A, B, CH, alpha, beta, TransA, TransB);
   }
@@ -566,15 +615,15 @@ define_method(
       TransA ? 1 : B.dim[TransB ? 1 : 0]
     );
     gemm(AH, B, C, alpha, beta, TransA, TransB);
-  }
+  }*/
   else {
-    const Hierarchical AH = split(
+    /*const Hierarchical AH = split(
       A,
       TransA ? B.dim[TransB ? 1 : 0] : 1,
       TransA ? 1 : B.dim[TransB ? 1 : 0]
-    );
+    );*/
     Hierarchical CH = split(C, 1, B.dim[TransB ? 0 : 1]);
-    gemm(AH, B, CH, alpha, beta, TransA, TransB);
+    gemm(A, B, CH, alpha, beta, TransA, TransB);
   }
 }
 
@@ -591,7 +640,7 @@ define_method(
   if (A.dim[0] == 1 && A.dim[1] == 1) {
     gemm(A(0, 0), B, C, alpha, beta, TransA, TransB);
   }
-  else if (A.dim[TransA ? 0 : 1] == 1) {
+  /*else if (A.dim[TransA ? 0 : 1] == 1) {
     Hierarchical CH = split(C, A.dim[TransA ? 1 : 0], 1);
     gemm(A, B, CH, alpha, beta, TransA, TransB);
   }
@@ -602,15 +651,15 @@ define_method(
       TransB ? A.dim[TransA ? 0 : 1] : 1
     );
     gemm(A, BH, C, alpha, beta, TransA, TransB);
-  }
+  }*/
   else {
-    const Hierarchical BH = split(
+    /*const Hierarchical BH = split(
       B,
       TransB ? 1 : A.dim[TransA ? 0 : 1],
       TransB ? A.dim[TransA ? 0 : 1] : 1
-    );
+    );*/
     Hierarchical CH = split(C, A.dim[TransA ? 1 : 0], 1);
-    gemm(A, BH, CH, alpha, beta, TransA, TransB);
+    gemm(A, B, CH, alpha, beta, TransA, TransB);
   }
 }
 
