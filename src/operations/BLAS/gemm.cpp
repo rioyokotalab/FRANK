@@ -603,25 +603,7 @@ define_method(
   // LR H D
   if (B.dim[0] == 1 && B.dim[1] == 1) {
     gemm(A, B(0, 0), C, alpha, beta, TransA, TransB);
-  }
-  /*else if (B.dim[TransB ? 1 : 0] == 1) {
-    Hierarchical CH = split(C, 1, B.dim[TransB ? 0 : 1]);
-    gemm(A, B, CH, alpha, beta, TransA, TransB);
-  }
-  else if (B.dim[TransB ? 0 : 1] == 1) {
-    const Hierarchical AH = split(
-      A,
-      TransA ? B.dim[TransB ? 1 : 0] : 1,
-      TransA ? 1 : B.dim[TransB ? 1 : 0]
-    );
-    gemm(AH, B, C, alpha, beta, TransA, TransB);
-  }*/
-  else {
-    /*const Hierarchical AH = split(
-      A,
-      TransA ? B.dim[TransB ? 1 : 0] : 1,
-      TransA ? 1 : B.dim[TransB ? 1 : 0]
-    );*/
+  } else {
     Hierarchical CH = split(C, 1, B.dim[TransB ? 0 : 1]);
     gemm(A, B, CH, alpha, beta, TransA, TransB);
   }
@@ -639,25 +621,7 @@ define_method(
   // H LR D
   if (A.dim[0] == 1 && A.dim[1] == 1) {
     gemm(A(0, 0), B, C, alpha, beta, TransA, TransB);
-  }
-  /*else if (A.dim[TransA ? 0 : 1] == 1) {
-    Hierarchical CH = split(C, A.dim[TransA ? 1 : 0], 1);
-    gemm(A, B, CH, alpha, beta, TransA, TransB);
-  }
-  else if (A.dim[TransA ? 1 : 0] == 1) {
-    const Hierarchical BH = split(
-      B,
-      TransB ? 1 : A.dim[TransA ? 0 : 1],
-      TransB ? A.dim[TransA ? 0 : 1] : 1
-    );
-    gemm(A, BH, C, alpha, beta, TransA, TransB);
-  }*/
-  else {
-    /*const Hierarchical BH = split(
-      B,
-      TransB ? 1 : A.dim[TransA ? 0 : 1],
-      TransB ? A.dim[TransA ? 0 : 1] : 1
-    );*/
+  } else {
     Hierarchical CH = split(C, A.dim[TransA ? 1 : 0], 1);
     gemm(A, B, CH, alpha, beta, TransA, TransB);
   }
