@@ -13,6 +13,7 @@ namespace FRANK
 {
 
 class Dense;
+class Hierarchical;
 
 /**
  * @brief Compute randomized one-sided interpolatory decomposition (ID) of a `Dense` matrix
@@ -108,6 +109,8 @@ std::tuple<Dense, Dense, Dense> rid(
  * The SVD is the given by \f$A [M x N] \approx U [M x sample_size] D [sample_size x sample_size] V^T [sample_size x N]\f$.
  */
 std::tuple<Dense, Dense, Dense> rsvd(const Dense& A, const int64_t sample_size);
+
+std::tuple<Dense, Dense, Dense> rsvd(const Hierarchical& A, const int64_t sample_size);
 
 /**
  * @brief Calculates a randomized singular value decomposition (SVD) of a `Dense` matrix.

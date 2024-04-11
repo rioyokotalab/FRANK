@@ -47,6 +47,16 @@ LowRank::LowRank(const Dense& A, const int64_t rank)
   S = resize(S, rank, rank);
 }
 
+LowRank::LowRank(const Hierarchical& A, const int64_t rank)
+: Matrix(A), dim{A.dim[0], A.dim[1]}, rank(rank) {
+  // Rank with oversampling limited by dimensions
+  std::tie(U, S, V) = rsvd(A, std::min(std::min(rank+5, dim[0]), dim[1]));
+  // Reduce to actual desired rank
+  U = resize(U, dim[0], rank);
+  V = resize(V, rank, dim[1]);
+  S = resize(S, rank, rank);
+}
+
 LowRank::LowRank(const Dense& A, const double eps)
 : Matrix(A), dim{A.dim[0], A.dim[1]}, eps(eps) {
   Dense R;

@@ -210,10 +210,11 @@ define_method(
   // D D LR
   C.S *= beta;
   const bool use_eps = (C.eps != 0.0);
+  Dense AB = gemm(A, B, alpha, TransA, TransB);
   if(use_eps)
-    C += LowRank(gemm(A, B, alpha, TransA, TransB), C.eps);
+    C += LowRank(AB, C.eps);
   else
-    C += LowRank(gemm(A, B, alpha, TransA, TransB), C.rank);
+    C += LowRank(AB, C.rank);
 }
 
 define_method(
