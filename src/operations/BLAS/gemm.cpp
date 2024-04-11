@@ -402,20 +402,19 @@ define_method(
   )
 ) {
   // H H LR
-  /*
-    Making a Hierarchical out of C might be better
-    But LowRank(Hierarchical, rank) constructor is needed
-      Hierarchical CH(C);
-      gemm(A, B, CH, alpha, beta);
-      C = LowRank(CH, rank);
-  */
-  Dense CD(C);
-  gemm(A, B, CD, alpha, beta, TransA, TransB);
+  
   const bool use_eps = (C.eps != 0.0);
-  if(use_eps)
+  if(use_eps){
+    //not optimized for fixed error yet
+    Dense CD(C);
+    gemm(A, B, CD, alpha, beta, TransA, TransB);
     C = LowRank(CD, C.eps);
-  else
-    C = LowRank(CD, C.rank);
+  } else {
+    Hierarchical AB = gemm(A, B, alpha, TransA, TransB);
+    LowRank D(AB, C.rank);
+    C.S *= beta;
+    C += D;
+  }
 }
 
 define_method(
