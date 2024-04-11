@@ -19,6 +19,7 @@ using yorel::yomm2::virtual_;
 #include <cstdlib>
 #include <numeric>
 #include <vector>
+#include <utility>
 
 
 namespace FRANK
@@ -296,7 +297,7 @@ define_method(MatrixProxy, shallow_copy_omm, (const Dense& A)) {
 define_method(MatrixProxy, shallow_copy_omm, (const LowRank& A)) {
   LowRank scopy(A.U, A.S, A.V, false);
   scopy.eps = A.eps;
-  return scopy;
+  return std::move(scopy);
 }
 
 define_method(MatrixProxy, shallow_copy_omm, (const Hierarchical& A)) {
@@ -306,7 +307,7 @@ define_method(MatrixProxy, shallow_copy_omm, (const Hierarchical& A)) {
       new_shallow_copy(i, j) = shallow_copy(A(i, j));
     }
   }
-  return new_shallow_copy;
+  return std::move(new_shallow_copy);
 }
 
 define_method(MatrixProxy, shallow_copy_omm, (const Matrix& A)) {

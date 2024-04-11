@@ -12,6 +12,7 @@ using yorel::yomm2::virtual_;
 #include <cassert>
 #include <cstdint>
 #include <cstdlib>
+#include <utility>
 
 
 namespace FRANK
@@ -35,7 +36,7 @@ define_method(MatrixProxy, subtraction_omm, (const Dense& A, const Dense& B)) {
       out(i, j) = A(i, j) - B(i, j);
     }
   }
-  return out;
+  return std::move(out);
 }
 
 define_method(
