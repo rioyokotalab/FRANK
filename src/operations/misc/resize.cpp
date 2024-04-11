@@ -10,6 +10,7 @@ using yorel::yomm2::virtual_;
 
 #include <cassert>
 #include <cstdint>
+#include <utility>
 
 
 namespace FRANK
@@ -30,7 +31,7 @@ define_method(
   assert(n_cols <= A.dim[1]);
   Dense resized(n_rows, n_cols);
   A.copy_to(resized);
-  return resized;
+  return std::move(resized);
 }
 
 define_method(MatrixProxy, resize_omm, (const Matrix& A, const int64_t, const int64_t)) {

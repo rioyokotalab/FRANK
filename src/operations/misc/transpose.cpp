@@ -11,6 +11,7 @@
 using yorel::yomm2::virtual_;
 
 #include <cstdint>
+#include <utility>
 
 
 namespace FRANK
@@ -27,12 +28,12 @@ define_method(MatrixProxy, transpose_omm, (const Dense& A)) {
       transposed(j,i) = A(i,j);
     }
   }
-  return transposed;
+  return std::move(transposed);
 }
 
 define_method(MatrixProxy, transpose_omm, (const LowRank& A)) {
   LowRank transposed(transpose(A.V), transpose(A.S), transpose(A.U));
-  return transposed;
+  return std::move(transposed);
 }
 
 define_method(MatrixProxy, transpose_omm, (const Hierarchical& A)) {
@@ -42,7 +43,7 @@ define_method(MatrixProxy, transpose_omm, (const Hierarchical& A)) {
       transposed(j, i) = transpose(A(i, j));
     }
   }
-  return transposed;
+  return std::move(transposed);
 }
 
 define_method(MatrixProxy, transpose_omm, (const Matrix& A)) {

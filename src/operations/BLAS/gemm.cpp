@@ -120,7 +120,7 @@ define_method(
     TransB ? get_n_rows(B) : get_n_cols(B)
   );
   gemm(A, B, C, alpha, 0, TransA, TransB);
-  return C;
+  return std::move(C);
 }
 
 define_method(
