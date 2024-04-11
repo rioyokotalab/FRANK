@@ -8,6 +8,7 @@
 #define FRANK_classes_low_rank_h
 
 #include "FRANK/classes/dense.h"
+#include "FRANK/classes/hierarchical.h"
 #include "FRANK/classes/matrix.h"
 #include "FRANK/classes/matrix_proxy.h"
 
@@ -113,6 +114,8 @@ class LowRank : public Matrix {
    * #V.
    */
   LowRank(const Dense& A, const int64_t rank);
+
+  LowRank(const Hierarchical& A, const int64_t rank);
 
   /**
    * @brief Construct a new `LowRank` object by compressing a `Dense` matrix
