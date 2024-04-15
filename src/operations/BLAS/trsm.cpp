@@ -8,6 +8,7 @@
 #include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
 #include "hicma/util/timer.h"
+#include "hicma/util/global_key_value.h"
 
 #include "yorel/yomm2/cute.hpp"
 
@@ -98,7 +99,7 @@ define_method(
 
 // single precision
 define_method(void, trsm_omm, (const Dense<float>& A, Dense<float>& B, int uplo, int lr)) {
-  timing::start("STRSM");
+  //timing::start("STRSM");
   cblas_strsm(
     CblasRowMajor,
     lr==TRSM_LEFT?CblasLeft:CblasRight,
@@ -110,12 +111,13 @@ define_method(void, trsm_omm, (const Dense<float>& A, Dense<float>& B, int uplo,
     &A, A.stride,
     &B, B.stride
   );
-  timing::stop("STRSM");
+  add_trsm_flops(B.dim[0], B.dim[1], lr);
+  //timing::stop("STRSM");
 }
 
 // double precision
 define_method(void, trsm_omm, (const Dense<double>& A, Dense<double>& B, int uplo, int lr)) {
-  timing::start("DTRSM");
+  //timing::start("DTRSM");
   cblas_dtrsm(
     CblasRowMajor,
     lr==TRSM_LEFT?CblasLeft:CblasRight,
@@ -127,7 +129,8 @@ define_method(void, trsm_omm, (const Dense<double>& A, Dense<double>& B, int upl
     &A, A.stride,
     &B, B.stride
   );
-  timing::stop("DTRSM");
+  add_trsm_flops(B.dim[0], B.dim[1], lr);
+  //timing::stop("DTRSM");
 }
 
 template<typename T>

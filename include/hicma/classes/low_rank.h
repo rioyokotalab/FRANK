@@ -8,6 +8,7 @@
 #define hicma_classes_low_rank_h
 
 #include "hicma/classes/dense.h"
+#include "hicma/classes/hierarchical.h"
 #include "hicma/classes/matrix.h"
 
 #include <array>
@@ -110,6 +111,7 @@ class LowRank : public Matrix {
    * #V.
    */
   LowRank(const Dense<T>& A, int64_t rank);
+  LowRank(const Hierarchical<T>& A, int64_t rank);
 
   /**
    * @brief Construct a new `LowRank` object from the three factors

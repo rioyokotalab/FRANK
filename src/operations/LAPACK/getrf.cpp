@@ -10,6 +10,7 @@
 #include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
 #include "hicma/util/timer.h"
+#include "hicma/util/global_key_value.h"
 
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
@@ -41,10 +42,10 @@ std::tuple<MatrixProxy, MatrixProxy> getrf(Matrix& A) {
 template<typename T>
 MatrixPair hierarchical_getrf(Hierarchical<T>& A) {
   Hierarchical<T> L(A.dim[0], A.dim[1]);
-  Hierarchical<T> A_copy(A);
-  Hierarchical<T> L_copy(A.dim[0], A.dim[1]);
+  //Hierarchical<T> A_copy(A);
+  //Hierarchical<T> L_copy(A.dim[0], A.dim[1]);
   for (int64_t i=0; i<A.dim[0]; i++) {
-    std::cout<<"Iteration "<<i<<std::endl;
+    /*std::cout<<"Iteration "<<i<<std::endl;
     #pragma omp task depend(inout: A.lock[i][i])
       {std::cout<<"race ";}
     #pragma omp task depend(inout: A.lock[i][i])
@@ -53,7 +54,7 @@ MatrixPair hierarchical_getrf(Hierarchical<T>& A) {
     {
       MatrixPair test = getrf_omm(A(i, i));
       //std::tie(A_copy(i, i), A_copy(i, i)) = test;
-    }
+    }*/
     //#pragma omp task shared(A, L) depend(inout: A.lock[i][i])
     {
       std::tie(L(i, i), A(i, i)) = getrf_omm(A(i, i));
@@ -112,7 +113,7 @@ define_method(MatrixPair, getrf_omm, (Hierarchical<double>& A)) {
 
 // single precision
 define_method(MatrixPair, getrf_omm, (Dense<float>& A)) {
-  timing::start("SGETRF");
+  //timing::start("SGETRF");
   Dense<float> L(A.dim[0], A.dim[1]);
   //std::vector<int> ipiv(std::min(A.dim[0], A.dim[1]));
   LAPACKE_mkl_sgetrfnpi(
@@ -133,13 +134,14 @@ define_method(MatrixPair, getrf_omm, (Dense<float>& A)) {
     }
     L(i, i) = 1;
   }
-  timing::stop("SGETRF");
+  //timing::stop("SGETRF");
+  add_getrf_flops(A.dim[0], A.dim[1]);
   return {std::move(L), std::move(A)};
 }
 
 // double precision
 define_method(MatrixPair, getrf_omm, (Dense<double>& A)) {
-  timing::start("DGETRF");
+  //timing::start("DGETRF");
   Dense<double> L(A.dim[0], A.dim[1]);
   //std::vector<int> ipiv(std::min(A.dim[0], A.dim[1]));
   LAPACKE_mkl_dgetrfnpi(
@@ -160,7 +162,8 @@ define_method(MatrixPair, getrf_omm, (Dense<double>& A)) {
     }
     L(i, i) = 1;
   }
-  timing::stop("DGETRF");
+  //timing::stop("DGETRF");
+  add_getrf_flops(A.dim[0], A.dim[1]);
   return {std::move(L), std::move(A)};
 }
 

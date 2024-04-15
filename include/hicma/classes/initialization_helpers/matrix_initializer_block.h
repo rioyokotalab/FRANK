@@ -48,7 +48,10 @@ class MatrixInitializerBlock : public MatrixInitializer {
      * @param rank
      * Fixed rank to be used for approximating admissible submatrices.
      */
-    MatrixInitializerBlock(Dense<U>&& matrix, double admis, int64_t rank);
+    MatrixInitializerBlock(
+      Dense<U>&& matrix, double admis, int64_t rank,
+      int admis_type=POSITION_BASED_ADMIS, vec2d<double> params= vec2d<double>()
+    );
 
     /**
      * @brief Specialization for assigning matrix elements

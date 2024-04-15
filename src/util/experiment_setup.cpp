@@ -13,7 +13,7 @@ namespace hicma
 {
 
 template<typename U>
-void sort_coords(std::vector<std::vector<U>>& coords, int dim, int start, int end);
+void sort_coords(std::vector<std::vector<U>>& coords, int start, int end);
 
 // explicit template initialization (these are the only available types)
 template std::vector<float> get_sorted_random_vector(int64_t N, int seed);
@@ -26,8 +26,8 @@ template std::vector<std::vector<float>> get_rectangular_coords(int64_t N, int);
 template std::vector<std::vector<double>> get_rectangular_coords(int64_t N, int);
 template std::vector<std::vector<float>> get_rectangular_coords_rand(int64_t N, int);
 template std::vector<std::vector<double>> get_rectangular_coords_rand(int64_t N, int);
-template void sort_coords(std::vector<std::vector<double>>& coords, int dim, int start, int end);
-template void sort_coords(std::vector<std::vector<float>>& coords, int dim, int start, int end);
+template void sort_coords(std::vector<std::vector<double>>& coords, int start, int end);
+template void sort_coords(std::vector<std::vector<float>>& coords, int start, int end);
 
 
 template<typename U>
@@ -40,11 +40,17 @@ std::vector<std::vector<U>> get_circular_coords(int64_t N, int ndim) {
     std::vector<U> x_coords;
     std::vector<U> y_coords;
     // Generate a unit circle with N points on the circumference.
+    double radius = std::sqrt(N/(4 * PI));
     for (int64_t i = 0; i < N; i++) {
+        const double theta = (i * 2.0 * PI) / (double)N;
+        x_coords.push_back(std::cos(theta) * radius);
+        y_coords.push_back(std::sin(theta) * radius);
+      }
+    /*for (int64_t i = 0; i < N; i++) {
         const double theta = (i * 2.0 * PI) / (double)N;
         x_coords.push_back(std::cos(theta));
         y_coords.push_back(std::sin(theta));
-      }
+      }*/
     result.push_back(x_coords);
     result.push_back(y_coords);
   } else {
@@ -71,11 +77,46 @@ std::vector<std::vector<U>> get_circular_coords(int64_t N, int ndim) {
     result.push_back(z_coords);
   }
 
-  sort_coords(result, 0, 0, N);
+  sort_coords(result, 0, N);
 
   return result;
 }
 
+template<typename U>
+std::vector<std::vector<U>> get_rectangular_coords_rand(int64_t N, int ndim) {
+  assert (ndim > 1 && ndim <4);
+  std::vector<std::vector<U>> result;
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  gen.seed(0);
+  std::uniform_real_distribution<> dis(0, std::sqrt(N));
+
+  if (ndim > 1) {
+    std::vector<U> x_coords;
+    std::vector<U> y_coords;
+
+    for (int64_t i=0; i<N; ++i) {
+      x_coords.push_back(dis(gen));
+      y_coords.push_back(dis(gen));
+    }
+    result.push_back(x_coords);
+    result.push_back(y_coords);
+  } 
+  if (ndim > 2) {
+    std::vector<U> z_coords;
+
+    for (int64_t i=0; i<N; ++i) {
+      z_coords.push_back(dis(gen));
+    }
+    result.push_back(z_coords);
+  }
+
+  sort_coords(result, 0, N);
+  //sort_coords(result, 0, N);
+
+  return result;
+}
+/*
 template<typename U>
 std::vector<std::vector<U>> get_rectangular_coords_rand(int64_t N, int ndim) {
   assert (ndim > 1 && ndim <4);
@@ -105,10 +146,12 @@ std::vector<std::vector<U>> get_rectangular_coords_rand(int64_t N, int ndim) {
     result.push_back(z_coords);
   }
 
-  sort_coords(result, 0, 0, N);
+  sort_coords(result, 0, N);
+  //sort_coords(result, 0, N);
 
   return result;
 }
+*/
 
 template<typename U>
 std::vector<std::vector<U>> get_rectangular_coords(int64_t N, int ndim) {
@@ -226,7 +269,7 @@ std::vector<std::vector<U>> get_rectangular_coords(int64_t N, int ndim) {
     result.push_back(z_coords);
   }
 
-  sort_coords(result, 0, 0, N);
+  sort_coords(result, 0, N);
 
   return result;
 }
@@ -255,7 +298,7 @@ std::vector<U> get_non_negative_vector(int64_t N) {
 }
 
 template<typename U>
-void sort_coords(std::vector<std::vector<U>>& coords, int dim, int start, int end) {
+void sort_coords(std::vector<std::vector<U>>& coords, int start, int end) {
 
   if ((end - start) < 4)
     return;
@@ -278,6 +321,22 @@ void sort_coords(std::vector<std::vector<U>>& coords, int dim, int start, int en
   for (size_t d=0; d<coords.size(); ++d) {
     radius = std::max((coords_max[d] - coords_min[d]) / 2, radius);
   }*/
+  U x_max = coords[0][start];
+  U x_min = coords[0][start];
+  U y_max = coords[1][start];
+  U y_min = coords[1][start];
+  for (int i=start; i<end; ++i) {
+    if (coords[0][i] > x_max)
+      x_max = coords[0][i];
+    if (coords[0][i] < x_min)
+      x_min = coords[0][i];
+    if (coords[1][i] > y_max)
+      y_max = coords[1][i];
+    if (coords[1][i] < y_min)
+      y_min = coords[1][i];
+  }
+  int dim = y_max - y_min > x_max - x_min;
+
   std::vector<int> I(end-start);
   std::iota(I.begin(), I.end(), 0);
   std::sort(I.begin(), I.end(),
@@ -295,8 +354,8 @@ void sort_coords(std::vector<std::vector<U>>& coords, int dim, int start, int en
   }
 
   int mid = std::ceil(double(start+end) / 2.0);
-  sort_coords(coords, (dim+1) % coords.size(), start, mid);
-  sort_coords(coords, (dim+1) % coords.size(), mid, end);
+  sort_coords(coords, start, mid);
+  sort_coords(coords, mid, end);
 
 }
 

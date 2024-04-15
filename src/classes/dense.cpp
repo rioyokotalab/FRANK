@@ -29,7 +29,10 @@ template void Dense<float>::copy_to(Dense<float>&, int64_t, int64_t) const;
 template void Dense<float>::copy_to(Dense<double>&, int64_t, int64_t) const;
 template void Dense<double>::copy_to(Dense<float>&, int64_t, int64_t) const;
 template void Dense<double>::copy_to(Dense<double>&, int64_t, int64_t) const;
-
+template void Dense<float>::copy_cut(Dense<float>&, int64_t, int64_t) const;
+template void Dense<float>::copy_cut(Dense<double>&, int64_t, int64_t) const;
+template void Dense<double>::copy_cut(Dense<float>&, int64_t, int64_t) const;
+template void Dense<double>::copy_cut(Dense<double>&, int64_t, int64_t) const;
 
 //TODO no implicit type conversion
 template<typename T>
@@ -212,10 +215,24 @@ template<typename T> template<typename U>
 void Dense<T>::copy_to(Dense<U> &A, int64_t row_start, int64_t col_start) const {
   assert(dim[0]-row_start >= A.dim[0]);
   assert(dim[1]-col_start >= A.dim[1]);
+  #pragma omp parallel for
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {
       // relies on implicit conversion
       A(i, j) = (*this)(row_start+i, col_start+j);
+    }
+  }
+}
+
+template<typename T> template<typename U>
+void Dense<T>::copy_cut(Dense<U> &A, int64_t row_stop, int64_t col_stop) const {
+  //assert(dim[0]-row_start >= A.dim[0]);
+  //assert(dim[1]-col_start >= A.dim[1]);
+  #pragma omp parallel for
+  for (int64_t i=0; i<row_stop; i++) {
+    for (int64_t j=0; j<col_stop; j++) {
+      // relies on implicit conversion
+      A(i, j) = (*this)(i, j);
     }
   }
 }

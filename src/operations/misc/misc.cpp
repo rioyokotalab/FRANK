@@ -5,6 +5,7 @@
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
+#include "hicma/classes/empty.h"
 #include "hicma/classes/initialization_helpers/index_range.h"
 #include "hicma/operations/BLAS.h"
 #include "hicma/operations/LAPACK.h"
@@ -17,6 +18,7 @@
 #include <cstdlib>
 #include <numeric>
 #include <vector>
+#include <iostream>
 
 
 namespace hicma
@@ -279,6 +281,53 @@ define_method(MatrixProxy, shallow_copy_omm, (const Hierarchical<double>& A)) {
 
 define_method(MatrixProxy, shallow_copy_omm, (const Matrix& A)) {
   omm_error_handler("shallow_copy", {A}, __FILE__, __LINE__);
+  std::abort();
+}
+
+define_method(MatrixProxy, convert_omm, (const Hierarchical<double>& A, int64_t rank)) {
+  return std::move(Hierarchical<float>(A, rank));
+}
+
+define_method(MatrixProxy, convert_omm, (const Hierarchical<float>& A, int64_t rank)) {
+  return std::move(Hierarchical<double>(A, rank));
+}
+
+define_method(MatrixProxy, convert_omm, (const LowRank<double>& A, int64_t rank)) {
+  Dense<float> U(A.dim[0], rank);
+  A.U.copy_cut(U, A.dim[0], rank);
+  Dense<float> S(rank, rank);
+  A.S.copy_cut(S, rank, rank);
+  Dense<float> V(rank, A.dim[1]);
+  A.V.copy_cut(V, rank, A.dim[1]);
+  LowRank<float> LR(std::move(U), std::move(S), std::move(V));
+  return std::move(LR);;
+}
+
+define_method(MatrixProxy, convert_omm, (const LowRank<float>& A, int64_t rank)) {
+  Dense<double> U(A.dim[0], rank);
+  A.U.copy_cut(U, A.dim[0], rank);
+  Dense<double> S(rank, rank);
+  A.S.copy_cut(S, rank, rank);
+  Dense<double> V(rank, A.dim[1]);
+  A.V.copy_cut(V, rank, A.dim[1]);
+  LowRank<double> LR(std::move(U), std::move(S), std::move(V));
+  return std::move(LR);
+}
+
+define_method(MatrixProxy, convert_omm, (const Dense<double>& A, int64_t)) {
+  return std::move(Dense<float>(A));
+}
+
+define_method(MatrixProxy, convert_omm, (const Dense<float>& A, int64_t)) {
+  return std::move(Dense<double>(A));
+}
+
+define_method(MatrixProxy, convert_omm, (const Empty& A, int64_t)) {
+  return std::move(Empty());
+}
+
+define_method(MatrixProxy, convert_omm, (const Matrix& A, int64_t)) {
+  omm_error_handler("convert_omm", {A}, __FILE__, __LINE__);
   std::abort();
 }
 

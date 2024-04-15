@@ -202,11 +202,12 @@ define_method(void, print_omm, (const Matrix& A)) {
 
 template<typename T>
 void print_dense(const Dense<T>& A) {
+  std::cout<<A.dim[0]<<" "<<A.dim[1]<<std::endl;
   for (int64_t i=0; i<A.dim[0]; i++) {
     for (int64_t j=0; j<A.dim[1]; j++) {
-      std::cout << std::setw(20) << std::setprecision(15) << A(i, j) << ' ';
+      std::cout <<i<<" "<<j<<" "<< std::setprecision(16) << A(i, j) <<std::endl;
     }
-    std::cout << std::endl;
+    //std::cout << std::endl;
   }
   print_separation_line();
 }
@@ -295,6 +296,10 @@ define_method(bool, is_double, (const LowRank<double>&)) {
 }
 
 define_method(bool, is_double, (const LowRank<float>&)) {
+  return false;
+}
+
+define_method(bool, is_double, (const Hierarchical<float>&)) {
   return false;
 }
 

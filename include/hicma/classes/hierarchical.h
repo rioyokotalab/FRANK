@@ -65,6 +65,9 @@ class Hierarchical : public Matrix {
 
   Hierarchical& operator=(Hierarchical&& A) = default;
 
+  template<typename U>
+  Hierarchical(const Hierarchical<U>& A, int64_t rank);
+
   /**
    * @brief Move from a `MatrixProxy` instance containing a `Hierarchical`
    * matrix
@@ -96,6 +99,8 @@ class Hierarchical : public Matrix {
    * some child type of `Matrix`.
    */
   Hierarchical(int64_t n_row_blocks, int64_t n_col_blocks=1);
+
+  Hierarchical(int64_t n_row_blocks, int64_t n_col_blocks, std::vector<MatrixProxy>&& data);
 
   /**
    * @brief General constructor of the `Hierarchical` class
@@ -216,6 +221,17 @@ class Hierarchical : public Matrix {
   template<typename U>
   Hierarchical(
     Dense<U>&& A,
+    int64_t rank,
+    int64_t nleaf,
+    double admis=0,
+    int64_t n_row_blocks=2, int64_t n_col_blocks=2,
+    int64_t row_start=0, int64_t col_start=0
+  );
+
+  template<typename U>
+  Hierarchical(
+    Dense<U>&& A,
+    const vec2d<double>& params, 
     int64_t rank,
     int64_t nleaf,
     double admis=0,

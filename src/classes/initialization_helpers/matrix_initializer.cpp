@@ -7,6 +7,7 @@
 #include <vector>
 #include <algorithm>
 #include <cmath>
+#include <iostream>
 
 
 namespace hicma
@@ -55,7 +56,8 @@ bool MatrixInitializer::is_admissible(const ClusterTree& node) const {
     vec2d<double> row_coords = get_coords_range(node.rows);
     vec2d<double> col_coords = get_coords_range(node.cols);
     //Calculate bounding boxes
-    double offset = 5e-1;
+    //double offset = 5e-1;
+    double offset = 0;
     std::vector<double> max_coord_row, min_coord_row, center_coord_row;
     std::vector<double> max_coord_col, min_coord_col, center_coord_col;
     for(size_t d=0; d<row_coords.size(); d++) {

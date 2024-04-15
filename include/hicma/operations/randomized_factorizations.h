@@ -3,6 +3,7 @@
 
 //added instead of the definition below
 #include "hicma/classes/dense.h"
+#include "hicma/classes/hierarchical.h"
 
 #include <cstdint>
 #include <tuple>
@@ -115,6 +116,8 @@ std::tuple<Dense<T>, Dense<T>, Dense<T>> rid(
  */
 template<typename T>
 std::tuple<Dense<T>, Dense<T>, Dense<T>> rsvd(const Dense<T>& A, int64_t sample_size);
+template<typename T>
+std::tuple<Dense<T>, Dense<T>, Dense<T>> rsvd(const Hierarchical<T>& A, int64_t sample_size);
 
 /**
  * @brief Calculates a randomized singular value decomposition (SVD) of a `Dense` matrix.

@@ -18,6 +18,10 @@ declare_method(
 )
 
 declare_method(
+  unsigned long, get_num_dense_blocks_omm, (virtual_<const Matrix&>)
+)
+
+declare_method(
   DoublePair, collect_diff_norm_omm,
   (virtual_<const Matrix&>, virtual_<const Matrix&>)
 )

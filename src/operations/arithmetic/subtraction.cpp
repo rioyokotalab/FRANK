@@ -6,6 +6,7 @@
 #include "hicma/classes/matrix_proxy.h"
 #include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
+#include "hicma/util/global_key_value.h"
 
 #include <cassert>
 #include <cstdint>
@@ -29,6 +30,7 @@ Dense<T> subtraction_dense(const Dense<T>& A, const Dense<T>& B) {
       out(i, j) = A(i, j) - B(i, j);
     }
   }
+  add_plus_flops(A.dim[0], A.dim[1]);
   return out;
 }
 

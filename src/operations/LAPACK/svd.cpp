@@ -2,6 +2,7 @@
 
 #include "hicma/classes/dense.h"
 #include "hicma/util/timer.h"
+#include "hicma/util/global_key_value.h"
 
 #ifdef USE_MKL
 #include <mkl.h>
@@ -22,7 +23,7 @@ namespace hicma
 
 template<>
 std::tuple<Dense<double>, Dense<double>, Dense<double>> svd(Dense<double>& A) {
-  timing::start("DGESVD");
+  //timing::start("DGESVD");
   int64_t dim_min = std::min(A.dim[0], A.dim[1]);
   Dense<double> U(A.dim[0], dim_min);
   Dense<double> S(dim_min, dim_min);
@@ -42,13 +43,14 @@ std::tuple<Dense<double>, Dense<double>, Dense<double>> svd(Dense<double>& A) {
   for(int64_t i=0; i<S.dim[0]; i++){
     S(i, i) = Sdiag[i];
   }
-  timing::stop("DGESVD");
+  //timing::stop("DGESVD");
+  add_svd_flops(A.dim[0], A.dim[1]);
   return {std::move(U), std::move(S), std::move(V)};
 }
 
 template<>
 std::tuple<Dense<float>, Dense<float>, Dense<float>> svd(Dense<float>& A) {
-  timing::start("SGESVD");
+  //timing::start("SGESVD");
   int64_t dim_min = std::min(A.dim[0], A.dim[1]);
   Dense<float> U(A.dim[0], dim_min);
   Dense<float> S(dim_min, dim_min);
@@ -68,7 +70,8 @@ std::tuple<Dense<float>, Dense<float>, Dense<float>> svd(Dense<float>& A) {
   for(int64_t i=0; i<S.dim[0]; i++){
     S(i, i) = Sdiag[i];
   }
-  timing::stop("SGESVD");
+  //timing::stop("SGESVD");
+  add_svd_flops(A.dim[0], A.dim[1]);
   return {std::move(U), std::move(S), std::move(V)};
 }
 

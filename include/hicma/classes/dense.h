@@ -212,6 +212,8 @@ class Dense : public Matrix {
   template<typename U>
   void copy_to(Dense<U> &A, int64_t row_start=0, int64_t col_start=0) const;
 
+  template<typename U>
+  void copy_cut(Dense<U> &A, int64_t row_stop, int64_t col_stop) const;
   /**
    * @brief Assign the constant value \p a to all elements of the `Dense` matrix
    *

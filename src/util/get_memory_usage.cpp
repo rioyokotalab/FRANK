@@ -19,6 +19,69 @@
 namespace hicma
 {
 
+unsigned long get_num_dense_blocks(const Matrix& A) {
+  unsigned long num = get_num_dense_blocks_omm(A);
+  return num;
+}
+
+define_method(
+  unsigned long, get_num_dense_blocks_omm,
+  (const Dense<float>& A)
+) {
+  return 1;
+}
+
+define_method(
+  unsigned long, get_num_dense_blocks_omm,
+  (const Dense<double>& A)
+) {
+  return 1;
+}
+
+define_method(
+  unsigned long, get_num_dense_blocks_omm,
+  (const LowRank<float>& A)
+) {
+  return 0;
+}
+
+define_method(
+  unsigned long, get_num_dense_blocks_omm,
+  (const LowRank<double>& Ae)
+) {
+  return 0;
+}
+
+template<typename T>
+unsigned long get_num_dense_blocks(const Hierarchical<T>& A) {
+  unsigned long num = 0;
+  for (int64_t i=0; i<A.dim[0]; ++i) {
+    for (int64_t j=0; j<A.dim[1]; ++j) {
+      num += get_num_dense_blocks_omm(A(i, j));
+    }
+  }
+  return num;
+}
+
+define_method(
+  unsigned long, get_num_dense_blocks_omm,
+  (const Hierarchical<float>& A)
+) {
+  return get_num_dense_blocks(A);
+}
+
+define_method(
+  unsigned long, get_num_dense_blocks_omm,
+  (const Hierarchical<double>& A)
+) {
+  return get_num_dense_blocks(A);
+}
+
+define_method(unsigned long, get_num_dense_blocks_omm, (const Matrix& A)) {
+  omm_error_handler("get_num_dense_blocks", {A}, __FILE__, __LINE__);
+  std::abort();
+}
+
 unsigned long get_memory_usage(const Matrix& A, bool include_structure) {
   unsigned long memory_usage = get_memory_usage_omm(A, include_structure);
   return memory_usage;

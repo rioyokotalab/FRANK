@@ -17,8 +17,8 @@ template class MatrixInitializerBlock<double>;
 // always position based admissibility
 template<typename U>
 MatrixInitializerBlock<U>::MatrixInitializerBlock(
-  Dense<U>&& matrix, double admis, int64_t rank
-) : MatrixInitializer(admis, rank), matrix(std::move(matrix)) {}
+  Dense<U>&& matrix, double admis, int64_t rank, int admis_type, vec2d<double> params
+) : MatrixInitializer(admis, rank, admis_type, params), matrix(std::move(matrix)) {}
 
 
 template<typename U>

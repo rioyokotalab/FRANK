@@ -53,6 +53,17 @@ LowRank<T>::LowRank(const Dense<T>& A, int64_t rank)
   S = resize(S, rank, rank);
 }
 
+template<typename T>
+LowRank<T>::LowRank(const Hierarchical<T>& A, int64_t rank)
+: Matrix(A), dim{A.dim[0], A.dim[1]}, rank(rank) {
+  // Rank with oversampling limited by dimensions
+  std::tie(U, S, V) = rsvd(A, std::min(std::min(rank+5, dim[0]), dim[1]));
+  // Reduce to actual desired rank
+  U = resize(U, dim[0], rank);
+  V = resize(V, rank, dim[1]);
+  S = resize(S, rank, rank);
+}
+
 // Matrix here is needed to store e.g. the result of a gemm operation
 template<typename T>
 LowRank<T>::LowRank(const Matrix& U, const Dense<T>& S, const Matrix& V, bool copy)

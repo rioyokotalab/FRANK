@@ -11,6 +11,7 @@
 #include "hicma/util/omm_error_handler.h"
 #include "hicma/util/timer.h"
 #include "hicma/extension_headers/util.h"
+#include "hicma/util/global_key_value.h"
 
 #include "yorel/yomm2/cute.hpp"
 using yorel::yomm2::virtual_;
@@ -156,6 +157,7 @@ define_method(
       beta,
       &C, C.stride
     );
+    add_gemm_flops(A.dim[0], A.dim[1], 1);
   }
   else {
     int64_t k = TransA ? A.dim[0] : A.dim[1];
@@ -169,8 +171,9 @@ define_method(
       beta,
       &C, C.stride
     );
+    add_gemm_flops(C.dim[0], C.dim[1], k);
   }
-  timing::stop("SGEMM");
+   //timing::stop("SGEMM");
 }
 
 // double precision
@@ -183,7 +186,7 @@ define_method(
   )
 ) {
   // D D D
-  timing::start("DGEMM");
+  //timing::start("DGEMM");
     if (B.dim[1] == 1) {
     cblas_dgemv(
       CblasRowMajor,
@@ -195,6 +198,7 @@ define_method(
       beta,
       &C, C.stride
     );
+    add_gemm_flops(A.dim[0], A.dim[1], 1);
   }
   else {
     int64_t k = TransA ? A.dim[0] : A.dim[1];
@@ -208,8 +212,9 @@ define_method(
       beta,
       &C, C.stride
     );
+    add_gemm_flops(C.dim[0], C.dim[1], k);
   }
-  timing::stop("DGEMM");
+  //timing::stop("DGEMM");
 }
 
 template<typename T>
@@ -322,7 +327,8 @@ void gemm_d_d_lr(const Dense<T>& A, const Dense<T>& B, LowRank<T>& C,
   double alpha, double beta, bool TransA, bool TransB) {
   // D D LR
   C.S *= beta;
-  C += LowRank<T>(gemm(A, B, alpha, TransA, TransB), C.rank);
+  Dense<T> AB = gemm(A, B, alpha, TransA, TransB);
+  C += LowRank<T>(AB, C.rank);
 }
 
 define_method(
@@ -557,16 +563,18 @@ template<typename T>
 void gemm_h_h_lr(const Hierarchical<T>& A, const Hierarchical<T>& B, LowRank<T>& C,
   double alpha, double beta, bool TransA, bool TransB) {
   // H H LR
-  /*
-    Making a Hierarchical out of C might be better
-    But LowRank(Hierarchical, rank) constructor is needed
-    Hierarchical CH(C);
-      gemm(A, B, CH, alpha, beta);
-    C = LowRank(CH, rank);
-  */
-  Dense<T> CD(C);
+  
+    //Making a Hierarchical out of C might be better
+    //But LowRank(Hierarchical, rank) constructor is needed
+    Hierarchical<T> AB = gemm(A, B, alpha);
+    LowRank<T> D(AB, C.rank);
+    C.S *= beta;
+    C += D;
+  
+  /*Dense<T> CD(C);
   gemm(A, B, CD, alpha, beta, TransA, TransB);
   C = LowRank<T>(CD, C.rank);
+  */
 }
 
 define_method(
@@ -674,10 +682,35 @@ define_method(
 }
 
 template<typename T>
-void gemm_m_h_h(const Matrix& A, const Hierarchical<T>& B, Hierarchical<T>& C,
+void gemm_lr_h_h(const LowRank<T>& A, const Hierarchical<T>& B, Hierarchical<T>& C,
+  double alpha, double beta, bool TransA, bool TransB) {
+  // LR H H
+  // TODO Not implemented
+  if (B.dim[0] == 1 && B.dim[1] == 1) std::abort();
+  assert(B.dim[TransB ? 0 : 1] == C.dim[1]);
+  if (B.dim[TransB ? 1 : 0] == 1 && C.dim[0] == 1) {
+    for (int64_t j=0; j<B.dim[TransB ? 0 : 1]; ++j) {
+      gemm(A, B[j], C[j], alpha, beta, TransA, TransB);
+    }
+  } else {
+    /*Hierarchical<T> AH = split<T>(
+      A,
+      TransA ? B.dim[TransB ? 1 : 0] : C.dim[0],
+      TransA ? C.dim[0] : B.dim[TransB ? 1 : 0]
+    );
+    gemm(AH, B, C, alpha, beta, TransA, TransB);
+    */
+    Dense<T> AVxB = gemm(A.V, B, alpha, false, TransB);
+    C *= beta;
+    LowRank<T> AxB(A.U, A.S, AVxB, false);
+    C += AxB;
+  }
+}
+
+template<typename T>
+void gemm_d_h_h(const Dense<T>& A, const Hierarchical<T>& B, Hierarchical<T>& C,
   double alpha, double beta, bool TransA, bool TransB) {
   // D H H
-  // LR H H
   // TODO Not implemented
   if (B.dim[0] == 1 && B.dim[1] == 1) std::abort();
   assert(B.dim[TransB ? 0 : 1] == C.dim[1]);
@@ -695,37 +728,80 @@ void gemm_m_h_h(const Matrix& A, const Hierarchical<T>& B, Hierarchical<T>& C,
   }
 }
 
-// TODO this is not safe since Matrix could have any template
 define_method(
   void, gemm_omm,
   (
-    const Matrix& A, const Hierarchical<float>& B, Hierarchical<float>& C,
+    const LowRank<float>& A, const Hierarchical<float>& B, Hierarchical<float>& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
 ) {
-  if (is_double(A)) std::abort();
-  gemm_m_h_h(A, B, C, alpha, beta, TransA, TransB);
+  gemm_lr_h_h(A, B, C, alpha, beta, TransA, TransB);
 }
 
-// TODO this is not safe since Matrix could have any template
 define_method(
   void, gemm_omm,
   (
-    const Matrix& A, const Hierarchical<double>& B, Hierarchical<double>& C,
+    const LowRank<double>& A, const Hierarchical<double>& B, Hierarchical<double>& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
 ) {
-  if (!is_double(A)) std::abort();
-  gemm_m_h_h(A, B, C, alpha, beta, TransA, TransB);
+  gemm_lr_h_h(A, B, C, alpha, beta, TransA, TransB);
+}
+
+define_method(
+  void, gemm_omm,
+  (
+    const Dense<float>& A, const Hierarchical<float>& B, Hierarchical<float>& C,
+    double alpha, double beta,
+    bool TransA, bool TransB
+  )
+) {
+  gemm_d_h_h(A, B, C, alpha, beta, TransA, TransB);
+}
+
+define_method(
+  void, gemm_omm,
+  (
+    const Dense<double>& A, const Hierarchical<double>& B, Hierarchical<double>& C,
+    double alpha, double beta,
+    bool TransA, bool TransB
+  )
+) {
+  gemm_d_h_h(A, B, C, alpha, beta, TransA, TransB);
 }
 
 template<typename T>
-void gemm_h_m_h(const Hierarchical<T>& A, const Matrix& B, Hierarchical<T>& C,
+void gemm_h_lr_h(const Hierarchical<T>& A, const LowRank<T>& B, Hierarchical<T>& C,
+  double alpha, double beta, bool TransA, bool TransB) {
+  // H LR H
+  // TODO Not implemented
+  if (A.dim[0] == 1 && A.dim[1] == 1) std::abort();
+  assert(A.dim[TransA ? 1 : 0] == C.dim[0]);
+  if (A.dim[TransA ? 0 : 1] == 1 && C.dim[1] == 1) {
+    for (int64_t i=0; i<A.dim[TransA ? 1 : 0]; ++i) {
+      gemm(A[i], B, C[i], alpha, beta, TransA, TransB);
+    }
+  } else {
+    /*Hierarchical<T> BH = split<T>(
+      B,
+      TransB ? C.dim[1] : A.dim[TransA ? 0 : 1],
+      TransB ? A.dim[TransA ? 0 : 1] : C.dim[1]
+    );
+    gemm(A, BH, C, alpha, beta, TransA, TransB);
+    */
+    Dense<T> AxBU = gemm(A, B.U, alpha, false, TransB);
+    C *= beta;
+    LowRank<T> AxB(AxBU, B.S, B.V, false);
+    C += AxB;
+  }
+}
+
+template<typename T>
+void gemm_h_d_h(const Hierarchical<T>& A, const Dense<T>& B, Hierarchical<T>& C,
   double alpha, double beta, bool TransA, bool TransB) {
   // H D H
-  // H LR H
   // TODO Not implemented
   if (A.dim[0] == 1 && A.dim[1] == 1) std::abort();
   assert(A.dim[TransA ? 1 : 0] == C.dim[0]);
@@ -746,25 +822,45 @@ void gemm_h_m_h(const Hierarchical<T>& A, const Matrix& B, Hierarchical<T>& C,
 define_method(
   void, gemm_omm,
   (
-    const Hierarchical<float>& A, const Matrix& B, Hierarchical<float>& C,
+    const Hierarchical<float>& A, const LowRank<float>& B, Hierarchical<float>& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
 ) {
-  if (is_double(B)) std::abort();
-  gemm_h_m_h(A, B, C, alpha, beta, TransA, TransB);
+  gemm_h_lr_h(A, B, C, alpha, beta, TransA, TransB);
 }
 
 define_method(
   void, gemm_omm,
   (
-    const Hierarchical<double>& A, const Matrix& B, Hierarchical<double>& C,
+    const Hierarchical<double>& A, const LowRank<double>& B, Hierarchical<double>& C,
     double alpha, double beta,
     bool TransA, bool TransB
   )
 ) {
-  if (!is_double(B)) std::abort();
-  gemm_h_m_h(A, B, C, alpha, beta, TransA, TransB);
+  gemm_h_lr_h(A, B, C, alpha, beta, TransA, TransB);
+}
+
+define_method(
+  void, gemm_omm,
+  (
+    const Hierarchical<float>& A, const Dense<float>& B, Hierarchical<float>& C,
+    double alpha, double beta,
+    bool TransA, bool TransB
+  )
+) {
+  gemm_h_d_h(A, B, C, alpha, beta, TransA, TransB);
+}
+
+define_method(
+  void, gemm_omm,
+  (
+    const Hierarchical<double>& A, const Dense<double>& B, Hierarchical<double>& C,
+    double alpha, double beta,
+    bool TransA, bool TransB
+  )
+) {
+  gemm_h_d_h(A, B, C, alpha, beta, TransA, TransB);
 }
 
 template<typename T>
@@ -811,7 +907,7 @@ void gemm_m_h_d(const Matrix& A, const Hierarchical<T>& B, Dense<T>& C,
   // D H D
   // LR H D
   // TODO Not implemented
-  if (B.dim[0] == 1 && B.dim[1] == 1) std::abort();
+  /*if (B.dim[0] == 1 && B.dim[1] == 1) {std::abort()};
   if (B.dim[TransB ? 1 : 0] == 1) {
     Hierarchical<T> CH = split<T>(C, 1, B.dim[TransB ? 0 : 1]);
     gemm(A, B, CH, alpha, beta, TransA, TransB);
@@ -830,6 +926,12 @@ void gemm_m_h_d(const Matrix& A, const Hierarchical<T>& B, Dense<T>& C,
     );
     Hierarchical<T> CH = split<T>(C, 1, B.dim[TransB ? 0 : 1]);
     gemm(AH, B, CH, alpha, beta, TransA, TransB);
+  }*/
+  if (B.dim[0] == 1 && B.dim[1] == 1) {
+    gemm(A, B(0, 0), C, alpha, beta, TransA, TransB);
+  } else {
+    Hierarchical<T> CH = split<T>(C, 1, B.dim[TransB ? 0 : 1]);
+    gemm(A, B, CH, alpha, beta, TransA, TransB);
   }
 }
 
@@ -863,7 +965,7 @@ void gemm_h_m_d(const Hierarchical<T>& A, const Matrix& B, Dense<T>& C,
   // H D D
   // H LR D
   // TODO Not implemented
-  if (A.dim[0] == 1 && A.dim[1] == 1) std::abort();
+  /*if (A.dim[0] == 1 && A.dim[1] == 1) {std::abort()};
   if (A.dim[TransA ? 0 : 1] == 1) {
     Hierarchical<T> CH = split<T>(C, A.dim[TransA ? 1 : 0], 1);
     gemm(A, B, CH, alpha, beta, TransA, TransB);
@@ -882,6 +984,12 @@ void gemm_h_m_d(const Hierarchical<T>& A, const Matrix& B, Dense<T>& C,
     );
     Hierarchical<T> CH = split<T>(C, A.dim[TransA ? 1 : 0], 1);
     gemm(A, BH, CH, alpha, beta, TransA, TransB);
+  }*/
+  if (A.dim[0] == 1 && A.dim[1] == 1) {
+    gemm(A(0, 0), B, C, alpha, beta, TransA, TransB);
+  } else {
+    Hierarchical<T> CH = split<T>(C, A.dim[TransA ? 1 : 0], 1);
+    gemm(A, B, CH, alpha, beta, TransA, TransB);
   }
 }
 

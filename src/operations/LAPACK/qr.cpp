@@ -11,6 +11,7 @@
 #include "hicma/operations/misc.h"
 #include "hicma/util/omm_error_handler.h"
 #include "hicma/util/timer.h"
+#include "hicma/util/global_key_value.h"
 
 #include "yorel/yomm2/cute.hpp"
 
@@ -499,7 +500,7 @@ define_method(void, qr_omm, (Dense<float>& A, Dense<float>& Q, Dense<float>& R))
   assert(Q.dim[0] == A.dim[0]);
   assert(Q.dim[1] == R.dim[0]);
   assert(R.dim[1] == A.dim[1]);
-  timing::start("SQR");
+  //timing::start("SQR");
   int64_t k = std::min(A.dim[0], A.dim[1]);
   std::vector<float> tau(k);
   LAPACKE_sgeqrf(LAPACK_ROW_MAJOR, A.dim[0], A.dim[1], &A, A.stride, &tau[0]);
@@ -509,6 +510,7 @@ define_method(void, qr_omm, (Dense<float>& A, Dense<float>& Q, Dense<float>& R))
       R(i, j) = A(i, j);
     }
   }
+  add_geqrf_flops(A.dim[0], A.dim[1]);
   // Copy strictly lower triangular (or trapezoidal) part of A into Q
   for(int64_t i=0; i<Q.dim[0]; i++) {
     for(int64_t j=0; j<std::min(i, A.dim[1]); j++) {
@@ -521,7 +523,8 @@ define_method(void, qr_omm, (Dense<float>& A, Dense<float>& Q, Dense<float>& R))
   // reflector form, uses dormqr instead of gemm and can be transformed to
   // Dense via dorgqr!
   LAPACKE_sorgqr(LAPACK_ROW_MAJOR, Q.dim[0], Q.dim[1], k, &Q, Q.stride, &tau[0]);
-  timing::stop("SQR");
+  add_orgqr_flops(Q.dim[0], Q.dim[1], k);
+  //timing::stop("SQR");
 }
 
 // double precision
@@ -529,7 +532,7 @@ define_method(void, qr_omm, (Dense<double>& A, Dense<double>& Q, Dense<double>& 
   assert(Q.dim[0] == A.dim[0]);
   assert(Q.dim[1] == R.dim[0]);
   assert(R.dim[1] == A.dim[1]);
-  timing::start("DQR");
+  //timing::start("DQR");
   int64_t k = std::min(A.dim[0], A.dim[1]);
   std::vector<double> tau(k);
   LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, A.dim[0], A.dim[1], &A, A.stride, &tau[0]);
@@ -539,6 +542,7 @@ define_method(void, qr_omm, (Dense<double>& A, Dense<double>& Q, Dense<double>& 
       R(i, j) = A(i, j);
     }
   }
+  add_geqrf_flops(A.dim[0], A.dim[1]);
   // Copy strictly lower triangular (or trapezoidal) part of A into Q
   for(int64_t i=0; i<Q.dim[0]; i++) {
     for(int64_t j=0; j<std::min(i, A.dim[1]); j++) {
@@ -551,7 +555,8 @@ define_method(void, qr_omm, (Dense<double>& A, Dense<double>& Q, Dense<double>& 
   // reflector form, uses dormqr instead of gemm and can be transformed to
   // Dense via dorgqr!
   LAPACKE_dorgqr(LAPACK_ROW_MAJOR, Q.dim[0], Q.dim[1], k, &Q, Q.stride, &tau[0]);
-  timing::stop("DQR");
+  add_orgqr_flops(Q.dim[0], Q.dim[1], k);
+  //timing::stop("DQR");
 }
 
 template<typename T>
@@ -726,10 +731,11 @@ define_method(void, rq_omm, (Dense<float>& A, Dense<float>& R, Dense<float>& Q))
   assert(R.dim[0] == A.dim[0]);
   assert(R.dim[1] == Q.dim[0]);
   assert(Q.dim[1] == A.dim[1]);
-  timing::start("SRQ");
+  //timing::start("SRQ");
   int64_t k = std::min(A.dim[0], A.dim[1]);
   std::vector<float> tau(k);
   LAPACKE_sgerqf(LAPACK_ROW_MAJOR, A.dim[0], A.dim[1], &A, A.stride, &tau[0]);
+  add_gerqf_flops(A.dim[0], A.dim[1]);
   // Copy upper triangular into R
   for(int64_t i=0; i<R.dim[0]; i++) {
     for(int64_t j=std::max(i+A.dim[1]-A.dim[0], (int64_t)0); j<A.dim[1]; j++) {
@@ -750,7 +756,8 @@ define_method(void, rq_omm, (Dense<float>& A, Dense<float>& R, Dense<float>& Q))
   LAPACKE_sorgrq(
     LAPACK_ROW_MAJOR, Q.dim[0], Q.dim[1], k, &Q, Q.stride, &tau[0]
   );
-  timing::stop("SRQ");
+  add_orgrq_flops(Q.dim[0], Q.dim[1], k);
+  //timing::stop("SRQ");
 }
 
 // double precision
@@ -758,10 +765,11 @@ define_method(void, rq_omm, (Dense<double>& A, Dense<double>& R, Dense<double>& 
   assert(R.dim[0] == A.dim[0]);
   assert(R.dim[1] == Q.dim[0]);
   assert(Q.dim[1] == A.dim[1]);
-  timing::start("DRQ");
+  //timing::start("DRQ");
   int64_t k = std::min(A.dim[0], A.dim[1]);
   std::vector<double> tau(k);
   LAPACKE_dgerqf(LAPACK_ROW_MAJOR, A.dim[0], A.dim[1], &A, A.stride, &tau[0]);
+  add_gerqf_flops(A.dim[0], A.dim[1]);
   // Copy upper triangular into R
   for(int64_t i=0; i<R.dim[0]; i++) {
     for(int64_t j=std::max(i+A.dim[1]-A.dim[0], (int64_t)0); j<A.dim[1]; j++) {
@@ -782,7 +790,8 @@ define_method(void, rq_omm, (Dense<double>& A, Dense<double>& R, Dense<double>& 
   LAPACKE_dorgrq(
     LAPACK_ROW_MAJOR, Q.dim[0], Q.dim[1], k, &Q, Q.stride, &tau[0]
   );
-  timing::stop("DRQ");
+  add_orgrq_flops(Q.dim[0], Q.dim[1], k);
+  //timing::stop("DRQ");
 }
 
 template<>

@@ -16,6 +16,7 @@ using yorel::yomm2::virtual_;
 
 #include <cassert>
 #include <utility>
+#include <iostream>
 
 
 namespace hicma
@@ -24,6 +25,8 @@ namespace hicma
 // explicit template initialization (these are the only available types)
 template class Hierarchical<float>;
 template class Hierarchical<double>;
+template Hierarchical<float>::Hierarchical(const Hierarchical<double>&, int64_t);
+template Hierarchical<double>::Hierarchical(const Hierarchical<float>&, int64_t);
 template Hierarchical<float>::Hierarchical(Dense<float>&&, int64_t, int64_t, double, int64_t,
   int64_t, int64_t, int64_t);
 template Hierarchical<float>::Hierarchical(Dense<double>&&, int64_t, int64_t, double, int64_t,
@@ -31,6 +34,10 @@ template Hierarchical<float>::Hierarchical(Dense<double>&&, int64_t, int64_t, do
 template Hierarchical<double>::Hierarchical(Dense<float>&&, int64_t, int64_t, double, int64_t,
   int64_t, int64_t, int64_t);
 template Hierarchical<double>::Hierarchical(Dense<double>&&, int64_t, int64_t, double, int64_t,
+  int64_t, int64_t, int64_t);
+template Hierarchical<float>::Hierarchical(Dense<float>&&, const vec2d<double>&, int64_t, int64_t, double, int64_t,
+  int64_t, int64_t, int64_t);
+template Hierarchical<double>::Hierarchical(Dense<double>&&, const vec2d<double>&, int64_t, int64_t, double, int64_t,
   int64_t, int64_t, int64_t);
 
 declare_method(Matrix&&, move_from_hierarchical, (virtual_<Matrix&>))
@@ -54,9 +61,22 @@ define_method(Matrix&&, move_from_hierarchical, (Matrix& A)) {
   std::abort();
 }
 
+template<typename T> template<typename U>
+Hierarchical<T>::Hierarchical(const Hierarchical<U>& A, int64_t rank)
+: dim(A.dim), data(dim[0]*dim[1]) {
+  int64_t size = A.dim[0] * A.dim[1];
+  for (int64_t i=0; i<size; ++i) {
+    data[i] = convert_omm(A[i], rank);
+  }
+}
+
 template<typename T>
 Hierarchical<T>::Hierarchical(int64_t n_row_blocks, int64_t n_col_blocks)
 : dim{n_row_blocks, n_col_blocks}, data(dim[0]*dim[1]) {}
+
+template<typename T>
+Hierarchical<T>::Hierarchical(int64_t n_row_blocks, int64_t n_col_blocks, std::vector<MatrixProxy>&& data)
+: dim{n_row_blocks, n_col_blocks}, data(data) {}
 
 template<typename T>
 Hierarchical<T>::Hierarchical(
@@ -135,6 +155,24 @@ Hierarchical<T>::Hierarchical(
     n_row_blocks, n_col_blocks, nleaf
   );
   MatrixInitializerBlock<U> initializer(std::move(A), admis, rank);
+  *this = Hierarchical<T>(cluster_tree, initializer);
+}
+
+template<typename T> template<typename U>
+Hierarchical<T>::Hierarchical(
+  Dense<U>&& A,
+  const vec2d<double>& params,
+  int64_t rank,
+  int64_t nleaf,
+  double admis,
+  int64_t n_row_blocks, int64_t n_col_blocks,
+  int64_t row_start, int64_t col_start
+) {
+  ClusterTree cluster_tree(
+    {row_start, A.dim[0]}, {col_start, A.dim[1]},
+    n_row_blocks, n_col_blocks, nleaf
+  );
+  MatrixInitializerBlock<U> initializer(std::move(A), admis, rank, GEOMETRY_BASED_ADMIS, params);
   *this = Hierarchical<T>(cluster_tree, initializer);
 }
 

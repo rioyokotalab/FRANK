@@ -309,7 +309,7 @@ void gaussiannd(
         );
       }
       // relies on implicit type conversion
-      A[i*A_stride+j] = std::exp(-l * rij);
+      A[i*A_stride+j] = std::exp(-l * std::sqrt(rij));
       // diagonal shift
       if (i == j) {
         A[i*A_stride+j] += shift;
@@ -340,7 +340,7 @@ void imqnd(
         );
       }
       // relies on implicit type conversion
-      A[i*A_stride+j] = 1.0 / std::sqrt(1.0 + l * rij);
+      A[i*A_stride+j] = 1.0 / std::sqrt(1.0 + l * std::sqrt(rij));
       // diagonal shift
       if (i == j) {
         A[i*A_stride+j] += shift;

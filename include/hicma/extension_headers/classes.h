@@ -23,6 +23,8 @@ declare_method(std::unique_ptr<Matrix>, move_clone, (virtual_<Matrix&&>))
 
 declare_method(MatrixProxy, shallow_copy_omm, (virtual_<const Matrix&>))
 
+declare_method(MatrixProxy, convert_omm, (virtual_<const Matrix&>, int64_t))
+
 declare_method(
   MatrixProxy, split_omm,
   (
