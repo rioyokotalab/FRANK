@@ -2,6 +2,7 @@
 #include "hicma/extension_headers/operations.h"
 
 #include "hicma/classes/dense.h"
+#include "hicma/classes/empty.h"
 #include "hicma/classes/hierarchical.h"
 #include "hicma/classes/low_rank.h"
 #include "hicma/classes/matrix.h"
@@ -65,6 +66,11 @@ define_method(double, norm_omm, (const Hierarchical<float>& A)) {
 define_method(double, norm_omm, (const Hierarchical<double>& A)) {
   return hierarchical_norm(A);
 }
+
+define_method(double, norm_omm, (const Empty&)) {
+  return 0;
+}
+
 
 define_method(double, norm_omm, (const Matrix& A)) {
   omm_error_handler("norm", {A}, __FILE__, __LINE__);
