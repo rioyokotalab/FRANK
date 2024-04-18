@@ -566,15 +566,14 @@ void gemm_h_h_lr(const Hierarchical<T>& A, const Hierarchical<T>& B, LowRank<T>&
   
     //Making a Hierarchical out of C might be better
     //But LowRank(Hierarchical, rank) constructor is needed
-    Hierarchical<T> AB = gemm(A, B, alpha);
+    /*Hierarchical<T> AB = gemm(A, B, alpha);
     LowRank<T> D(AB, C.rank);
     C.S *= beta;
-    C += D;
+    C += D;*/
   
-  /*Dense<T> CD(C);
+  Dense<T> CD(C);
   gemm(A, B, CD, alpha, beta, TransA, TransB);
   C = LowRank<T>(CD, C.rank);
-  */
 }
 
 define_method(
