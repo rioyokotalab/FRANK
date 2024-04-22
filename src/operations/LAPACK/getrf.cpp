@@ -135,7 +135,7 @@ define_method(MatrixPair, getrf_omm, (Dense<float>& A)) {
     L(i, i) = 1;
   }
   //timing::stop("SGETRF");
-  add_getrf_flops(A.dim[0], A.dim[1]);
+  //add_getrf_flops(A.dim[0], A.dim[1]);
   return {std::move(L), std::move(A)};
 }
 
@@ -163,7 +163,7 @@ define_method(MatrixPair, getrf_omm, (Dense<double>& A)) {
     L(i, i) = 1;
   }
   //timing::stop("DGETRF");
-  add_getrf_flops(A.dim[0], A.dim[1]);
+  //add_getrf_flops(A.dim[0], A.dim[1]);
   return {std::move(L), std::move(A)};
 }
 

@@ -30,7 +30,7 @@ Dense<T> subtraction_dense(const Dense<T>& A, const Dense<T>& B) {
       out(i, j) = A(i, j) - B(i, j);
     }
   }
-  add_plus_flops(A.dim[0], A.dim[1]);
+  //add_plus_flops(A.dim[0], A.dim[1]);
   return out;
 }
 

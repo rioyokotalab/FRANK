@@ -157,7 +157,7 @@ define_method(
       beta,
       &C, C.stride
     );
-    add_gemm_flops(A.dim[0], A.dim[1], 1);
+    //add_gemm_flops(A.dim[0], A.dim[1], 1);
   }
   else {
     int64_t k = TransA ? A.dim[0] : A.dim[1];
@@ -171,7 +171,7 @@ define_method(
       beta,
       &C, C.stride
     );
-    add_gemm_flops(C.dim[0], C.dim[1], k);
+    //add_gemm_flops(C.dim[0], C.dim[1], k);
   }
    //timing::stop("SGEMM");
 }
@@ -198,7 +198,7 @@ define_method(
       beta,
       &C, C.stride
     );
-    add_gemm_flops(A.dim[0], A.dim[1], 1);
+    //add_gemm_flops(A.dim[0], A.dim[1], 1);
   }
   else {
     int64_t k = TransA ? A.dim[0] : A.dim[1];
@@ -212,7 +212,7 @@ define_method(
       beta,
       &C, C.stride
     );
-    add_gemm_flops(C.dim[0], C.dim[1], k);
+    //add_gemm_flops(C.dim[0], C.dim[1], k);
   }
   //timing::stop("DGEMM");
 }

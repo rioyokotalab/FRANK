@@ -510,7 +510,7 @@ define_method(void, qr_omm, (Dense<float>& A, Dense<float>& Q, Dense<float>& R))
       R(i, j) = A(i, j);
     }
   }
-  add_geqrf_flops(A.dim[0], A.dim[1]);
+  //add_geqrf_flops(A.dim[0], A.dim[1]);
   // Copy strictly lower triangular (or trapezoidal) part of A into Q
   for(int64_t i=0; i<Q.dim[0]; i++) {
     for(int64_t j=0; j<std::min(i, A.dim[1]); j++) {
@@ -523,7 +523,7 @@ define_method(void, qr_omm, (Dense<float>& A, Dense<float>& Q, Dense<float>& R))
   // reflector form, uses dormqr instead of gemm and can be transformed to
   // Dense via dorgqr!
   LAPACKE_sorgqr(LAPACK_ROW_MAJOR, Q.dim[0], Q.dim[1], k, &Q, Q.stride, &tau[0]);
-  add_orgqr_flops(Q.dim[0], Q.dim[1], k);
+  //add_orgqr_flops(Q.dim[0], Q.dim[1], k);
   //timing::stop("SQR");
 }
 
@@ -542,7 +542,7 @@ define_method(void, qr_omm, (Dense<double>& A, Dense<double>& Q, Dense<double>& 
       R(i, j) = A(i, j);
     }
   }
-  add_geqrf_flops(A.dim[0], A.dim[1]);
+  //add_geqrf_flops(A.dim[0], A.dim[1]);
   // Copy strictly lower triangular (or trapezoidal) part of A into Q
   for(int64_t i=0; i<Q.dim[0]; i++) {
     for(int64_t j=0; j<std::min(i, A.dim[1]); j++) {
@@ -555,7 +555,7 @@ define_method(void, qr_omm, (Dense<double>& A, Dense<double>& Q, Dense<double>& 
   // reflector form, uses dormqr instead of gemm and can be transformed to
   // Dense via dorgqr!
   LAPACKE_dorgqr(LAPACK_ROW_MAJOR, Q.dim[0], Q.dim[1], k, &Q, Q.stride, &tau[0]);
-  add_orgqr_flops(Q.dim[0], Q.dim[1], k);
+  //add_orgqr_flops(Q.dim[0], Q.dim[1], k);
   //timing::stop("DQR");
 }
 
@@ -735,7 +735,7 @@ define_method(void, rq_omm, (Dense<float>& A, Dense<float>& R, Dense<float>& Q))
   int64_t k = std::min(A.dim[0], A.dim[1]);
   std::vector<float> tau(k);
   LAPACKE_sgerqf(LAPACK_ROW_MAJOR, A.dim[0], A.dim[1], &A, A.stride, &tau[0]);
-  add_gerqf_flops(A.dim[0], A.dim[1]);
+  //add_gerqf_flops(A.dim[0], A.dim[1]);
   // Copy upper triangular into R
   for(int64_t i=0; i<R.dim[0]; i++) {
     for(int64_t j=std::max(i+A.dim[1]-A.dim[0], (int64_t)0); j<A.dim[1]; j++) {
@@ -756,7 +756,7 @@ define_method(void, rq_omm, (Dense<float>& A, Dense<float>& R, Dense<float>& Q))
   LAPACKE_sorgrq(
     LAPACK_ROW_MAJOR, Q.dim[0], Q.dim[1], k, &Q, Q.stride, &tau[0]
   );
-  add_orgrq_flops(Q.dim[0], Q.dim[1], k);
+  //add_orgrq_flops(Q.dim[0], Q.dim[1], k);
   //timing::stop("SRQ");
 }
 
@@ -769,7 +769,7 @@ define_method(void, rq_omm, (Dense<double>& A, Dense<double>& R, Dense<double>& 
   int64_t k = std::min(A.dim[0], A.dim[1]);
   std::vector<double> tau(k);
   LAPACKE_dgerqf(LAPACK_ROW_MAJOR, A.dim[0], A.dim[1], &A, A.stride, &tau[0]);
-  add_gerqf_flops(A.dim[0], A.dim[1]);
+  //add_gerqf_flops(A.dim[0], A.dim[1]);
   // Copy upper triangular into R
   for(int64_t i=0; i<R.dim[0]; i++) {
     for(int64_t j=std::max(i+A.dim[1]-A.dim[0], (int64_t)0); j<A.dim[1]; j++) {
@@ -790,7 +790,7 @@ define_method(void, rq_omm, (Dense<double>& A, Dense<double>& R, Dense<double>& 
   LAPACKE_dorgrq(
     LAPACK_ROW_MAJOR, Q.dim[0], Q.dim[1], k, &Q, Q.stride, &tau[0]
   );
-  add_orgrq_flops(Q.dim[0], Q.dim[1], k);
+  //add_orgrq_flops(Q.dim[0], Q.dim[1], k);
   //timing::stop("DRQ");
 }
 

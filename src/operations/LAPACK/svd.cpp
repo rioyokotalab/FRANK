@@ -44,7 +44,7 @@ std::tuple<Dense<double>, Dense<double>, Dense<double>> svd(Dense<double>& A) {
     S(i, i) = Sdiag[i];
   }
   //timing::stop("DGESVD");
-  add_svd_flops(A.dim[0], A.dim[1]);
+  //add_svd_flops(A.dim[0], A.dim[1]);
   return {std::move(U), std::move(S), std::move(V)};
 }
 
@@ -71,7 +71,7 @@ std::tuple<Dense<float>, Dense<float>, Dense<float>> svd(Dense<float>& A) {
     S(i, i) = Sdiag[i];
   }
   //timing::stop("SGESVD");
-  add_svd_flops(A.dim[0], A.dim[1]);
+  //add_svd_flops(A.dim[0], A.dim[1]);
   return {std::move(U), std::move(S), std::move(V)};
 }
 

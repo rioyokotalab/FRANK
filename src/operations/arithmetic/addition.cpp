@@ -43,7 +43,7 @@ Dense<T>& add_dense_to_dense(Dense<T>& A, const Dense<T>& B) {
       A(i, j) += B(i, j);
     }
   }
-  add_plus_flops(A.dim[0], A.dim[1]);
+  //add_plus_flops(A.dim[0], A.dim[1]);
   return A;
 }
 

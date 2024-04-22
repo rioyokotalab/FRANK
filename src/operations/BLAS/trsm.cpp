@@ -111,7 +111,7 @@ define_method(void, trsm_omm, (const Dense<float>& A, Dense<float>& B, int uplo,
     &A, A.stride,
     &B, B.stride
   );
-  add_trsm_flops(B.dim[0], B.dim[1], lr);
+  //add_trsm_flops(B.dim[0], B.dim[1], lr);
   //timing::stop("STRSM");
 }
 
@@ -129,7 +129,7 @@ define_method(void, trsm_omm, (const Dense<double>& A, Dense<double>& B, int upl
     &A, A.stride,
     &B, B.stride
   );
-  add_trsm_flops(B.dim[0], B.dim[1], lr);
+  //add_trsm_flops(B.dim[0], B.dim[1], lr);
   //timing::stop("DTRSM");
 }
 
